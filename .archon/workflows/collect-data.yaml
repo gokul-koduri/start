@@ -1,0 +1,47 @@
+# .archon/workflows/collect-data.yaml
+# Run all data collectors and seed the SQLite database
+#
+# Usage: Use archon to collect data for the startup research report
+
+nodes:
+  - id: check-dependencies
+    bash: "python3 -c 'import requests, feedparser, bs4, yaml, dotenv' 2>&1 && echo 'Dependencies OK' || pip3 install -r requirements.txt"
+
+  - id: seed-database
+    depends_on: [check-dependencies]
+    bash: "python3 seed_data.py"
+    description: "Populate SQLite with existing report data"
+
+  - id: run-collectors
+    depends_on: [seed-database]
+    bash: "python3 run_collectors.py --all"
+    description: "Run all 5 data collectors (BLS, Google News, TechCrunch, Failory, Reshoring PDF)"
+
+  - id: verify-data
+    depends_on: [run-collectors]
+    bash: |
+      python3 -c "
+      import sqlite3
+      conn = sqlite3.connect('data/startup_research.db')
+      tables = ['failed_startups', 'failure_reasons_taxonomy', 'failure_idea_patterns',
+                'manufacturing_failure_categories', 'bls_survival_rates', 'news_articles',
+                'reshoring_data', 'reshoring_summary_stats', 'revival_industries',
+                'geographic_hotspots', 'collection_runs']
+      for t in tables:
+          count = conn.execute(f'SELECT COUNT(*) FROM {t}').fetchone()[0]
+          print(f'  {t}: {count} records')
+      conn.close()
+      "
+    description: "Print record counts from all database tables"
+
+  - id: summarize
+    depends_on: [verify-data]
+    prompt: |
+      Summarize the data collection results. Read the output from the verify-data step
+      and present a concise summary showing:
+      - How many records are in each table
+      - Which collectors succeeded vs had errors
+      - Any data quality concerns
+
+      The project is at /Users/kodurigokul/Desktop/Startup_Research_Report
+      The database is at data/startup_research.db

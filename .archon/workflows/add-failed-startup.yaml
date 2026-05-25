@@ -1,0 +1,69 @@
+# .archon/workflows/add-failed-startup.yaml
+# Add a new failed startup to the database and regenerate the report
+#
+# Usage: Use archon to add [startup name] as a failed startup
+
+nodes:
+  - id: research
+    prompt: |
+      Research the failed startup mentioned by the user. Find:
+      - Full company name
+      - Sector / industry
+      - Country and region
+      - Funding raised (USD estimate)
+      - Year founded and year of shutdown/failure
+      - Primary failure reason
+      - Any manufacturing connection
+
+      Search the web for recent news, Crunchbase, and tech media coverage.
+      Present findings as structured data ready for database insertion.
+
+  - id: classify
+    depends_on: [research]
+    prompt: |
+      Based on the research findings, classify this startup:
+      - Assign a failure_category from: ran_out_of_cash, no_market_need, governance,
+        outcompeted, pilot_to_scale_gap, capital_intensity, supply_chain,
+        no_business_model, spac_overvaluation, market_timing
+      - Determine if it's manufacturing-related (has manufacturing_sub_sector)
+      - Determine if it's notable (should appear in the main report tables)
+      - Assign the appropriate region
+
+      Present the final record in the exact INSERT format needed for the failed_startups table.
+
+  - id: insert
+    depends_on: [classify]
+    prompt: |
+      Insert the classified startup record into the SQLite database.
+
+      Database: /Users/kodurigokul/Desktop/Startup_Research_Report/data/startup_research.db
+      Table: failed_startups
+
+      Run the INSERT using Python:
+      ```python
+      import sqlite3
+      conn = sqlite3.connect('data/startup_research.db')
+      # INSERT OR IGNORE to prevent duplicates
+      conn.execute("""INSERT OR IGNORE INTO failed_startups
+          (name, sector, manufacturing_sub_sector, country, region, funding_raised_usd,
+           funding_description, year_founded, year_shutdown, failure_reason, failure_category,
+           notable, source)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (...))
+      conn.commit()
+      conn.close()
+      ```
+
+      Verify the insert succeeded.
+
+  - id: regenerate
+    depends_on: [insert]
+    bash: "cd /Users/kodurigokul/Desktop/Startup_Research_Report && python3 run_report.py --output Failed_Startups_Manufacturing_Revival_Report.md"
+    description: "Regenerate the report with the new startup data"
+
+  - id: confirm
+    depends_on: [regenerate]
+    prompt: |
+      Confirm the new startup was added successfully:
+      1. Query the database to show the new record
+      2. Check the regenerated report includes the startup in the appropriate section
+      3. Report the final status to the user

@@ -1,0 +1,130 @@
+# Startup Research Report - Data Collection Configuration
+# Environment variables are referenced as ${VAR_NAME} and resolved at load time.
+
+api:
+  bls:
+    base_url: "https://api.bls.gov/publicAPI/v2/timeseries/data/"
+    api_key: "${BLS_API_KEY}"
+    registration_url: "https://www.bls.gov/developers/"
+    rate_limit:
+      daily_default: 25
+      daily_with_key: 500
+      requests_per_minute: 10
+  crunchbase:
+    api_key: "${CRUNCHBASE_API_KEY}"
+    enabled: false
+  cb_insights:
+    api_key: "${CB_INSIGHTS_API_KEY}"
+    enabled: false
+
+rss:
+  google_news:
+    base_url: "https://news.google.com/rss/search"
+    queries:
+      - query: "startup failed"
+        params: "hl=en-US&gl=US&ceid=US:en"
+      - query: "manufacturing startup bankruptcy"
+        params: "hl=en-US&gl=US&ceid=US:en"
+      - query: "startup shutdown funding"
+        params: "hl=en-US&gl=US&ceid=US:en"
+      - query: "EV startup bankruptcy 2024 OR 2025"
+        params: "hl=en-US&gl=US&ceid=US:en"
+      - query: "robotics company bankruptcy OR shutdown"
+        params: "hl=en-US&gl=US&ceid=US:en"
+      - query: "3D printing company bankruptcy OR shutdown"
+        params: "hl=en-US&gl=US&ceid=US:en"
+      - query: "battery manufacturing startup failed"
+        params: "hl=en-US&gl=US&ceid=US:en"
+  techcrunch:
+    url: "https://techcrunch.com/startups/feed/"
+
+scraping:
+  failory:
+    base_url: "https://failory.com"
+    failures_path: "/failures"
+    max_pages: 20
+    request_delay_seconds: 3
+    user_agent: "StartupResearchBot/1.0 (educational research project; contact if issues)"
+
+pdf:
+  reshoring_initiative:
+    base_url: "https://reshorenow.org"
+    pdf_download_dir: "data/pdfs"
+    known_pdfs:
+      - url: "https://reshorenow.org/content/pdf/2024-1Q2025_RI_DATA_Report.pdf"
+        report_year: 2024
+        data_year: 2024
+
+bls:
+  series:
+    - id: "BD110021000000000000003"
+      label: "Manufacturing establishment births"
+      naics: "31-33"
+      metric: "births"
+    - id: "BD110022000000000000003"
+      label: "Manufacturing establishment deaths"
+      naics: "31-33"
+      metric: "deaths"
+    - id: "BD110090000000000000003"
+      label: "Manufacturing 1-year survival rate"
+      naics: "31-33"
+      metric: "survival_1yr"
+    - id: "BD110091000000000000003"
+      label: "Manufacturing 2-year survival rate"
+      naics: "31-33"
+      metric: "survival_2yr"
+    - id: "BD110093000000000000003"
+      label: "Manufacturing 5-year survival rate"
+      naics: "31-33"
+      metric: "survival_5yr"
+  start_year: 2020
+  end_year: 2025
+
+classification:
+  manufacturing_keywords:
+    - manufacturing
+    - factory
+    - plant
+    - production
+    - battery
+    - semiconductor
+    - chip
+    - 3d printing
+    - robotics
+    - ev
+    - electric vehicle
+    - automotive
+    - supply chain
+    - fabrication
+    - assembly
+    - industrial
+    - steel
+    - solar panel
+    - textile
+    - pharmaceutical
+    - biomanufacturing
+    - construction
+    - modular
+  failure_keywords:
+    - failed
+    - shut down
+    - shutdown
+    - bankruptcy
+    - bankrupt
+    - closed
+    - collapsed
+    - went under
+    - ceased operations
+    - laid off
+    - chapter 11
+    - liquidation
+    - went bust
+    - insolvency
+    - winding down
+
+report:
+  output_path: "Failed_Startups_Manufacturing_Revival_Report.md"
+  include_sources_section: true
+  include_methodology_section: true
+  min_startups_for_region_section: 3
+  manufacturing_highlight_threshold: 5

@@ -1,0 +1,57 @@
+# .archon/workflows/full-pipeline.yaml
+# Full pipeline: collect data → generate report → review
+#
+# Usage: Use archon to run the full startup research pipeline
+
+nodes:
+  - id: collect
+    bash: "python3 seed_data.py && python3 run_collectors.py --all"
+    description: "Seed database and run all data collectors"
+
+  - id: verify-collection
+    depends_on: [collect]
+    bash: |
+      python3 -c "
+      import sqlite3
+      conn = sqlite3.connect('data/startup_research.db')
+      tables = ['failed_startups', 'failure_reasons_taxonomy', 'failure_idea_patterns',
+                'manufacturing_failure_categories', 'bls_survival_rates', 'news_articles',
+                'reshoring_data', 'reshoring_summary_stats', 'revival_industries',
+                'geographic_hotspots', 'collection_runs']
+      total = 0
+      for t in tables:
+          count = conn.execute(f'SELECT COUNT(*) FROM {t}').fetchone()[0]
+          total += count
+          print(f'  {t}: {count}')
+      print(f'  TOTAL: {total} records across {len(tables)} tables')
+      conn.close()
+      "
+
+  - id: generate
+    depends_on: [verify-collection]
+    bash: "python3 run_report.py --output Failed_Startups_Manufacturing_Revival_Report.md"
+    description: "Generate the markdown report from collected data"
+
+  - id: verify-report
+    depends_on: [generate]
+    bash: |
+      python3 -c "
+      from pathlib import Path
+      report = Path('Failed_Startups_Manufacturing_Revival_Report.md')
+      lines = report.read_text().strip().split('\n')
+      print(f'Report: {len(lines)} lines')
+      headings = [l for l in lines if l.startswith('#')]
+      for h in headings:
+          print(f'  {h}')
+      "
+
+  - id: review
+    depends_on: [verify-report]
+    prompt: |
+      Review the full pipeline output. The project is at /Users/kodurigokul/Desktop/Startup_Research_Report.
+
+      1. Check the database: data/startup_research.db — verify all 11 tables have data
+      2. Check the report: Failed_Startups_Manufacturing_Revival_Report.md — verify all sections present
+      3. Summarize: total records collected, report line count, any data quality issues
+
+      Provide a concise pipeline summary.

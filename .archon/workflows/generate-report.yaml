@@ -1,0 +1,58 @@
+# .archon/workflows/generate-report.yaml
+# Generate the markdown report from the SQLite database
+#
+# Usage: Use archon to generate the startup research report
+
+nodes:
+  - id: check-database
+    bash: |
+      python3 -c "
+      import sqlite3, os
+      db_path = 'data/startup_research.db'
+      if not os.path.exists(db_path):
+          print('ERROR: Database not found. Run collect-data workflow first.')
+          exit(1)
+      conn = sqlite3.connect(db_path)
+      count = conn.execute('SELECT COUNT(*) FROM failed_startups').fetchone()[0]
+      if count == 0:
+          print('ERROR: Database is empty. Run collect-data workflow first.')
+          exit(1)
+      print(f'Database ready with {count} startup records')
+      conn.close()
+      "
+
+  - id: generate-report
+    depends_on: [check-database]
+    bash: "python3 run_report.py --output Failed_Startups_Manufacturing_Revival_Report.md"
+    description: "Generate full markdown report from SQLite database"
+
+  - id: verify-report
+    depends_on: [generate-report]
+    bash: |
+      python3 -c "
+      from pathlib import Path
+      report = Path('Failed_Startups_Manufacturing_Revival_Report.md')
+      if not report.exists():
+          print('ERROR: Report file was not generated')
+          exit(1)
+      lines = report.read_text().strip().split('\n')
+      headings = [l for l in lines if l.startswith('#')]
+      print(f'Report generated: {len(lines)} lines, {len(headings)} headings')
+      for h in headings[:15]:
+          print(f'  {h}')
+      if len(headings) > 15:
+          print(f'  ... and {len(headings) - 15} more headings')
+      "
+
+  - id: review
+    depends_on: [verify-report]
+    prompt: |
+      Review the generated report at /Users/kodurigokul/Desktop/Startup_Research_Report/Failed_Startups_Manufacturing_Revival_Report.md
+
+      Check for:
+      1. All major sections are present (Part 1A-1F, Part 2, Part 3, Part 4, Methodology, Sources)
+      2. Data tables are properly formatted
+      3. No broken markdown formatting
+      4. Footer includes generation timestamp and data sources
+
+      Report any issues found. If everything looks good, confirm the report is complete.

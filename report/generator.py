@@ -248,9 +248,14 @@ def _render_regional_section(conn, region_name: str, region_id: str) -> str:
     if not startups:
         return ""
 
+    _part_labels = ['', 'B', 'C', 'D', 'E']
+    _region_ids = ['India', 'China', 'Europe', 'Africa']
+    _idx = _region_ids.index(region_id) + 1 if region_id in _region_ids else 0
+    _label = _part_labels[_idx] if _idx < len(_part_labels) else ''
+
     lines = [
-        f"### Part 1{['', 'B', 'C', 'D', 'E'].get(['India', 'China', 'Europe', 'Africa'].index(region_id) + 1, '')}: "
-        f"{region_name} — Startup Failures {{#part-1{['', 'b', 'c', 'd', 'e'].get(['India', 'China', 'Europe', 'Africa'].index(region_id) + 1, '')}}}",
+        f"### Part 1{_label}: "
+        f"{region_name} — Startup Failures {{#part-1{_label.lower()}}}",
         "",
         f"| # | Startup | Sector | Funding Raised | Year Shutdown | Primary Failure Reason |",
         "|---|---------|--------|---------------|---------------|----------------------|",

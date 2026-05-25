@@ -1,7 +1,9 @@
-# .archon/workflows/add-failed-startup.yaml
-# Add a new failed startup to the database and regenerate the report
-#
-# Usage: Use archon to add [startup name] as a failed startup
+name: archon-add-failed-startup
+description: "Research, classify, and add a new failed startup to the database, then regenerate the report"
+triggers:
+  - "add startup"
+  - "add failed startup"
+  - "new failed startup"
 
 nodes:
   - id: research

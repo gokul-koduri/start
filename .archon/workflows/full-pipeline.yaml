@@ -1,7 +1,10 @@
-# .archon/workflows/full-pipeline.yaml
-# Full pipeline: collect data → generate report → review
-#
-# Usage: Use archon to run the full startup research pipeline
+name: archon-full-pipeline
+description: "Run the full pipeline: collect data from all sources, verify, generate report, and review"
+triggers:
+  - "full pipeline"
+  - "run pipeline"
+  - "update everything"
+  - "refresh report"
 
 nodes:
   - id: collect

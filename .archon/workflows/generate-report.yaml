@@ -1,7 +1,10 @@
-# .archon/workflows/generate-report.yaml
-# Generate the markdown report from the SQLite database
-#
-# Usage: Use archon to generate the startup research report
+name: archon-generate-report
+description: "Generate the markdown report from the SQLite database"
+triggers:
+  - "generate report"
+  - "build report"
+  - "create report"
+  - "update report"
 
 nodes:
   - id: check-database

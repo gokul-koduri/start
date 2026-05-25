@@ -2,13 +2,12 @@
 
 import sqlite3
 import logging
+from contextlib import contextmanager
 from pathlib import Path
 
 from config import get_project_root
 
 _logger = logging.getLogger(__name__)
-
-_connection_cache = None
 
 
 def get_db_path() -> Path:
@@ -27,8 +26,9 @@ def get_connection(db_path: str | None = None) -> sqlite3.Connection:
     Returns a connection with WAL mode, foreign keys enabled, and
     a 5-second busy timeout. The caller is responsible for closing.
 
-    For context manager usage:
-        with get_connection() as conn:
+    For context manager usage, use closing():
+        from contextlib import closing
+        with closing(get_connection()) as conn:
             conn.execute(...)
     """
     if db_path is None:
@@ -42,18 +42,5 @@ def get_connection(db_path: str | None = None) -> sqlite3.Connection:
     conn.execute("PRAGMA foreign_keys = ON;")
     conn.execute("PRAGMA busy_timeout = 5000;")
     conn.row_factory = sqlite3.Row
-
-    # Monkey-patch __exit__ for context manager support
-    _original_exit = type(conn).__exit__
-
-    def _exit(self, exc_type, exc_val, exc_tb):
-        if exc_type is None:
-            self.commit()
-        else:
-            self.rollback()
-        self.close()
-        return False
-
-    type(conn).__exit__ = _exit
 
     return conn

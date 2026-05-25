@@ -1,7 +1,11 @@
-# .archon/workflows/collect-data.yaml
-# Run all data collectors and seed the SQLite database
-#
-# Usage: Use archon to collect data for the startup research report
+name: archon-collect-data
+description: "Seed the SQLite database and run all data collectors (BLS, Google News, TechCrunch, Failory, Reshoring PDF)"
+triggers:
+  - "collect data"
+  - "run collectors"
+  - "update database"
+  - "refresh data"
+  - "collect startup data"
 
 nodes:
   - id: check-dependencies

@@ -14,6 +14,7 @@
 2. [Part 2: Closed Manufacturing Units with Revival Potential](#part-2)
 3. [Cross-Reference: Where Failed Startup Ideas Meet Manufacturing Revival](#part-3)
 4. [Actionable Opportunities](#part-4)
+4a. [News Monitoring: Manufacturing & Startup Failures](#news)
 5. [Methodology](#methodology)
 6. [Sources](#sources)
 
@@ -186,7 +187,7 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 - **22 million people needed** for new U.S. factories but only **7.2 million unemployed** — automation is essential
 
 ### Latest Reshoring Data
-- **244,000 jobs announced/created**; **69% success rate**; **CHIPS Act ($52B); IRA ($369B)** (2024)
+- **244,940 jobs announced/created**; **69% success rate**; **CHIPS Act ($52B); IRA ($369B)** (2024)
 
 ### Industries With Revival Potential
 #### Semiconductor Fabrication
@@ -276,6 +277,122 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 ### Data-Driven Opportunities (from collected data)
 - **29 manufacturing startup failures** in database suggest clear patterns to avoid
 - **166 recent news articles** about manufacturing startup failures signal active market churn
+
+## News Monitoring: Manufacturing & Startup Failures {#news}
+
+### Coverage Summary
+- **579** articles collected from Google News and TechCrunch RSS feeds
+- **318** mention manufacturing (54.9%)
+- **324** mention startup failures (56.0%)
+- **166** are in the intersection (manufacturing + failure)
+
+### Articles by Source
+| Source | Articles |
+|--------|----------|
+| google_news | 559 |
+| techcrunch | 20 |
+
+### Recent Manufacturing Startup Failures (News)
+
+**[] I'm 40 and $300,000 in debt after my startup failed. I'm living on $10 a day in South Korea. - Business Insider**
+- *Business Insider* — <a href="https://news.google.com/rss/articles/CBMihgFBVV95cUxPZGlaN1pZbTA4X0FvNGtibUdEa1ZLMlgyVk5xY3UzUTVwVTdVZVlidS1aT2.
+- [Read more](https://news.google.com/rss/articles/CBMihgFBVV95cUxPZGlaN1pZbTA4X0FvNGtibUdEa1ZLMlgyVk5xY3UzUTVwVTdVZVlidS1aT213LTlYQ0xFTlJ2RENEVDduOTJQRFlFR3cydmZPNHppdVR0VHVLLVRYR0ttN1ZRaXJXamZZMUgwOXUwNWxmUVVJaEtNMWZlRE1fNGEyVzJFdkhmdw?oc=5)
+
+**[] The Startup Where You Worked Failed. Your Career Should Be Fine. - WSJ**
+- *WSJ* — <a href="https://news.google.com/rss/articles/CBMihAFBVV95cUxPVHRONzQzck5lMnA4T3FUY1lTMUNMUmJwRVVDUHdzalFVOGoyZGhaUDU3SH.
+- [Read more](https://news.google.com/rss/articles/CBMihAFBVV95cUxPVHRONzQzck5lMnA4T3FUY1lTMUNMUmJwRVVDUHdzalFVOGoyZGhaUDU3SHJyWVR5dUgxUHZOREVHVS1qNmhTU1NPZFpnUTJ4M1dYRnFfbnBzRjdQamNUWTltMjBzLXk2YlNwTElfdmFYaUFOX0RqZ2U4S25WRF9XSkVxbUQ?oc=5)
+
+**[] 10 years after Richmond super startup failed, creditors recoup $100 million - Richmond Times-Dispatch**
+- *Richmond Times-Dispatch* — <a href="https://news.google.com/rss/articles/CBMilAFBVV95cUxQM3FCdThLc3VEcWxkVHNiajU3V1RkSFR4TkJEaUlkanV4Rnh6bTdMb3EzMk.
+- [Read more](https://news.google.com/rss/articles/CBMilAFBVV95cUxQM3FCdThLc3VEcWxkVHNiajU3V1RkSFR4TkJEaUlkanV4Rnh6bTdMb3EzMkhZNGdhQnpReVZEa0k0T2ZtTjF5N29GdXJTQ3dzM1BCdDQ2WmlUOEVPS1Q5TmlxTzM5X1Y4bmt1Yzd5ck1HZnRlbE84cjd1RW9pczh3Mk92N3ZMakR1ejNSaEFIak5vR3ZS?oc=5)
+
+**[] Bollinger Is Selling Off Its Last 20 Trucks As EV Startup Failed - AUTOJOSH**
+- *AUTOJOSH* — <a href="https://news.google.com/rss/articles/CBMijwFBVV95cUxPWW5EOGRfdHJmdTFNTGptUndHSmRzNF9kMEt4Z2xBeXAzeXRoUGZoMFJYeF.
+- [Read more](https://news.google.com/rss/articles/CBMijwFBVV95cUxPWW5EOGRfdHJmdTFNTGptUndHSmRzNF9kMEt4Z2xBeXAzeXRoUGZoMFJYeFltMWI3ZTVLX09xWVVNS3ZFRFpxZUQtZ1MxdmRKMXdfRUd0WWlVMFIwNnZBdllLSmtPbXVvUl9VandxenRKbGswbEpNQ1FtVDhIa0Y3SklkTnAxSVIzalFkMXVWbw?oc=5)
+
+**[] AI startup founded by U of T alumni to revive failed drug candidates: The Globe and Mail - University of Toronto**
+- *University of Toronto* — <a href="https://news.google.com/rss/articles/CBMipgFBVV95cUxNYm1Xd1U5aGRQNDhkTWE1U3pPSDNVWWNiXzBsN1lvRjNVRkZXMVBMUUEwdn.
+- [Read more](https://news.google.com/rss/articles/CBMipgFBVV95cUxNYm1Xd1U5aGRQNDhkTWE1U3pPSDNVWWNiXzBsN1lvRjNVRkZXMVBMUUEwdnlSRFhrdVBvdUxHRmlpT3VPaVJVa2xldjJTZ2dsM0FjVW9BcGtyUnc2cjJ6VWUzc0lYQ0t4N1NmXzEwNng2RW9SallHSWtrOEpOUkI1UWxVMGxrNkdkbDhZQUxvM3ViX2ZOS2hraUhpanh1bEJ0N25GUzhR?oc=5)
+
+**[] He quit GTBank, his startup failed: This founder reinvented himself to an exit and venture scale in the diaspora - Techpoint Africa**
+- *Techpoint Africa* — <a href="https://news.google.com/rss/articles/CBMickFVX3lxTE90ODJxS0xKeVYzSGkxT1pGNVd2U2xRaW9kcXRZeG5nRzY3YlN1NWJQQTlEcF.
+- [Read more](https://news.google.com/rss/articles/CBMickFVX3lxTE90ODJxS0xKeVYzSGkxT1pGNVd2U2xRaW9kcXRZeG5nRzY3YlN1NWJQQTlEcFVTTDJZVkIyRHRpTDNnajdhc0NFVHZqZ2l6NjNtZ1dBbHp0c0lvZk40SnZfX0FSQzk4S0owajViZUR2MVNXdw?oc=5)
+
+**[] Guess Which Failed EV Startup’s Prototype Is Now On Facebook Marketplace - The Autopian**
+- *The Autopian* — <a href="https://news.google.com/rss/articles/CBMiogFBVV95cUxObV9XYjNrT0RrbWlfbklVV1gwbnpYUVRBcWctRHFvOWN0cXVnam9ybEtFc3.
+- [Read more](https://news.google.com/rss/articles/CBMiogFBVV95cUxObV9XYjNrT0RrbWlfbklVV1gwbnpYUVRBcWctRHFvOWN0cXVnam9ybEtFc3RFcVh1Z2htaVRDS3ZMWjRMZHBZLVp1eXp4ZzJvT2tRbnRSZGExc3JZTDgxejBZQ09RSHdlQ3pjYkxnLWRxZWV1b05fbVBlNlZoVm1XbWxNWk0yWmRZY3pyMFp1NEVtLVd0RWxucFhvUDdXVnF4MUE?oc=5)
+
+**[] My First Startup Failed. It Was an Important Step in Discovering My Real Passion. - inc.com**
+- *inc.com* — <a href="https://news.google.com/rss/articles/CBMiywFBVV95cUxQTWphVkF5Q3JOTm85WEtwQ0ExNFRmQUYyV1llRzhxcVJSMncyRDVvV3NWQT.
+- [Read more](https://news.google.com/rss/articles/CBMiywFBVV95cUxQTWphVkF5Q3JOTm85WEtwQ0ExNFRmQUYyV1llRzhxcVJSMncyRDVvV3NWQTRaVmFkS1l3QmFnd0pUWWxYUWJYcTZqS0pxWEZXR2t6blRqMmhxbE13U09xN2NTSVVoUFBKeVFWcVMtRTdtM2hXeldHZm1iVTJURFRQXzRENUtSMk1DUzljRW1iOUhSNlNybzcyMFVub3lNTVpRQ3BheUg3em10blR3SzNrd1o3ZUxFbGs0SzF0eDNKbDdSRjZpZGEzMHhqZw?oc=5)
+
+**[] Couple lost Rs 21 lakh when their startup failed. 6 years later, they sold it for Rs 209 crore - Moneycontrol.com**
+- *Moneycontrol.com* — <a href="https://news.google.com/rss/articles/CBMi4AFBVV95cUxQaGVfSGt4ZUhmU2h1bmRueW9oTGZJNVZoODg0bEZyTWc1MF93S1ZsckRuSz.
+- [Read more](https://news.google.com/rss/articles/CBMi4AFBVV95cUxQaGVfSGt4ZUhmU2h1bmRueW9oTGZJNVZoODg0bEZyTWc1MF93S1ZsckRuSzBqQkFSdTVqY3FTQTNLblVidU9rZ2xyZmtZTi1ra0tUMGNDQllFNnh4a2VzeTFTcEZqZC1Tel9hUTNZMkQzMmlWdWVqZGo0b2JFQ0RvVklJaXJPdTltN05SODhGcTFZeWtRdG9nNV9hWklDS2x6cFdjNVA1eThST0NQaWRFUVNGdW9CNGF5cVkyWEdxTnR4d0Z0b3ZwS05OTTBpVk9fR0R0ZldJUUEyQThXNVdBVNIB5gFBVV95cUxPc1ZTYktleEhISnBwQ3RFTXdKR0NiYVRUblhEeURSUWJLb0FDX05SalNfa0pYWFBfWFZlNlozbHNKTTh4ZUNSWFZodDYtTS11X2Jqb2thOW84enJtMFU4b2lhbkVsYnZzbFF0V0RWTzFtN19TbGYzZEN6dlU4bzhTVUxnRjM3cTVTbXNxMkh5eVE4QTlneVVYVFJKb2d1bXBndDFjN3dCdERmbHVsNVh5LUhaeUE3akQyV1l1SHp0N1UwYURaY1dpN1JTWXdZcGNaV205ZG1jMmdmVEZoUURlQlExMlFfZw?oc=5)
+
+**[] 5 Critical Lessons I Learned From My Failed Startup - inc.com**
+- *inc.com* — <a href="https://news.google.com/rss/articles/CBMilAFBVV95cUxOZ2ZEVlVvS0lsWkpjYWhmRTAtdHdNZmQ4WHJ3bEFPTnAtZy1zcDhEZDlaST.
+- [Read more](https://news.google.com/rss/articles/CBMilAFBVV95cUxOZ2ZEVlVvS0lsWkpjYWhmRTAtdHdNZmQ4WHJ3bEFPTnAtZy1zcDhEZDlaSTRZbDVJeWF3N2Foc2FhUmE0WFNpNm1nRlBTTWN0OEExaGN2V0Mwdmp3enN1MUd5aVdnbElZSmt4M1MzRUI0cTY4aVRObGg2SUZYcEs5V2JkRldMZDhnU3VZcDR3Q3RMS3ht?oc=5)
+
+**[] EV Truck Startups That Failed - CarBuzz**
+- *CarBuzz* — <a href="https://news.google.com/rss/articles/CBMiWEFVX3lxTE92T2hGOGtWZk1wTG5TVzIzMlZNSndfWTRUT1hreS1mMHNyajZHTGR5WkhuLT.
+- [Read more](https://news.google.com/rss/articles/CBMiWEFVX3lxTE92T2hGOGtWZk1wTG5TVzIzMlZNSndfWTRUT1hreS1mMHNyajZHTGR5WkhuLTNSazVSVTB1T0FWTTJXTUs1bzg2T0JRSWZXVXBIZGhtMlE5S0s?oc=5)
+
+**[] 2025 will likely be another brutal year of failed startups, data suggests - TechCrunch**
+- *TechCrunch* — <a href="https://news.google.com/rss/articles/CBMiqwFBVV95cUxOemgycWU1dldwd3VBYm9ZRjdYWDBfZDRZQTZzTHNRWGVZODkwdGFpM0dmT0.
+- [Read more](https://news.google.com/rss/articles/CBMiqwFBVV95cUxOemgycWU1dldwd3VBYm9ZRjdYWDBfZDRZQTZzTHNRWGVZODkwdGFpM0dmT0VyNHBoRVQzNUJtdmliYXpVQTlSeHlEVzlOaGk5UnAxTzV6NV9NRGtjS2lSUlhfWU9udWZHd2k2UVFDS0ZyU3VuM1pxU1NOVzRycU5Rd3dsTUlQOUFkNzlEcWxLbDlfVFpjcExnbHB4eDVpbHdyZkk4NUxZdW1nVEk?oc=5)
+
+**[] Nobody is shocked that this Kenyan food delivery startup failed after one year - qz.com**
+- *qz.com* — <a href="https://news.google.com/rss/articles/CBMijwFBVV95cUxPMUpDN2hFUFI2UU9rQm9qLWJ6VmlhM3lhSUtWVjZSM1ZCN0UzVDZLOGNpVn.
+- [Read more](https://news.google.com/rss/articles/CBMijwFBVV95cUxPMUpDN2hFUFI2UU9rQm9qLWJ6VmlhM3lhSUtWVjZSM1ZCN0UzVDZLOGNpVnRCWGNTVlpiTGt5TDJXcEVpQngzekdvQ25ZVnEwekw2d18taTNaSmo5Q0NlZDhEX3UzbmJrZkRScmJKaEVhXzJ1X2UwZ20zNkw2WlBmSzRyYkNrVGxoNU4xT0drbw?oc=5)
+
+**[] 19 Failed Startups with Legal Challenges - Failory**
+- *Failory* — <a href="https://news.google.com/rss/articles/CBMiakFVX3lxTFA3TlR0TGFWQzd6ZnVQei1ubndFdk85ZVV6eGR2a3FXVEVmMnlZNDNxR0kyQi.
+- [Read more](https://news.google.com/rss/articles/CBMiakFVX3lxTFA3TlR0TGFWQzd6ZnVQei1ubndFdk85ZVV6eGR2a3FXVEVmMnlZNDNxR0kyQi1KV0Y3bmpxUmZDREVfOF9hZFpzdk1YbXQ5Z1lnU0Fqc3Nxd1JyRjFLZFhJQXE2blBuMmlHbWc?oc=5)
+
+**[] The Bright Side to a Failed Startup - LatamList**
+- *LatamList* — <a href="https://news.google.com/rss/articles/CBMiakFVX3lxTE16alZUenRVRE5ZcVNjOTVVRGpmTTV2RG5kQjhfVFYxNWp4bXkyUDM2QUc4Sz.
+- [Read more](https://news.google.com/rss/articles/CBMiakFVX3lxTE16alZUenRVRE5ZcVNjOTVVRGpmTTV2RG5kQjhfVFYxNWp4bXkyUDM2QUc4SzdxZlBUQm9DNE1HWUE1TUhpWmlaN3YxWXBtUGNaUUNpMDZlSUxFRm9lNVUtVDZiTnlrd3Fsb0HSAW9BVV95cUxQdGhZWWZ0SHhUSVRjWHVNUlFlSlFic0dzbUVwN3o3aDFwY0VfSEFSRmxHOVpXR3M4eU5yZzNzc1hDUFQ3UmZYRWJJOTVjNlRIWEVwM0ZYRjhFR3VsLUo1XzFyV2p2ZFF4b043Z0pScTA?oc=5)
+
+**[] I helped launch an 'Uber for lawn care' startup that failed miserably. This is exactly how I knew when to give up — and how we were able to pivot to launching a multimillion-dollar company within the same year. - Business Insider**
+- *Business Insider* — <a href="https://news.google.com/rss/articles/CBMiogFBVV95cUxQVDFDX0Z5YThsUWQtdm9vZVR3MFU3MFprcmhnS1dFMDFrVjlBY05keVRkV0.
+- [Read more](https://news.google.com/rss/articles/CBMiogFBVV95cUxQVDFDX0Z5YThsUWQtdm9vZVR3MFU3MFprcmhnS1dFMDFrVjlBY05keVRkV0pvcXdNZVo5VEZoN2UyRm9Xbk9vcDJUcGVaNmNyWVI5eE44YlZuNVIzUlNhdFVOVFRTRzVNTDVDcmtkQ01paDdtZjJnUUpwaUh1V1ZyY2hlUnZPZ0puTXhENTZQQVU5ZmhYNDJ3bF9hZjFWOFZ4SEE?oc=5)
+
+**[] Two of his startups failed. Now, this 30-year-old just bagged $32 million for his company - CNBC**
+- *CNBC* — <a href="https://news.google.com/rss/articles/CBMirAFBVV95cUxPTXAtV0RhRnlldU9INFhRWkhBSUR0OFY3S3NmUkVQVF83dlRhemdpWHRLbm.
+- [Read more](https://news.google.com/rss/articles/CBMirAFBVV95cUxPTXAtV0RhRnlldU9INFhRWkhBSUR0OFY3S3NmUkVQVF83dlRhemdpWHRLbmxFTkc0QTZVMnBUS0FMM0IwVmdnTmZheTcxSkg3eEVndTNFQ0NpNDFxcHpXWHBNOFdHaUJHVG5wdlBldVotZHMzdFVPOW9MMGxCWkpiX21vck5CX0ozaW56WWR5ODZlSzJDaTN1MXJwZnM0SDNpYlZYVG82Yk9TbG5M0gGyAUFVX3lxTE9NTUZObV9FUHN3cEdsSGRzSFkwTll1RVRsWVlCUUZqSklWTWhsUXJJZHl6TTk1UW81ZFp5S0ZSZGJlUklmNkVhUGtaaUtfRHA5ZzJGWjd0Z3ZiTFpyaTd4TWhDdUFEbEZBZXNicmpZV3RqNGFiRFc3bjBzWUNSZlVFQmR6X0tKaG5zRFZ6U05WRGtsc2xYdzN2WFNkRHBodkFtNlFkblZSeDAyczlKbXlaLWc?oc=5)
+
+**[] Morrow Batteries Bankruptcy & Why Battery Startups Are Failing - Battery Technology**
+- *Battery Technology* — <a href="https://news.google.com/rss/articles/CBMivwFBVV95cUxQemw5VkxpRXBNU01qRGx4dlVlb0JsQ3ozSnc5dlRGVFMwLXQxaFJRcHRneX.
+- [Read more](https://news.google.com/rss/articles/CBMivwFBVV95cUxQemw5VkxpRXBNU01qRGx4dlVlb0JsQ3ozSnc5dlRGVFMwLXQxaFJRcHRneXZUWG1DY3NXYTdsUV9PQkFRdGQ4dkRwMjRYSllkdFMtY1ZJVjZoMFVrdjg3eDA4MmJDdDNmODVFR0NESHByMVJUekFmM0ItbzNaelloMUxOTkNPa1JFV2ZrY2VVbzhFSzJtMU1od1gyS3BwZ3pqeVJkcm5HY25GVHVZV091cW5iend2cDl5VkdDT1AtSQ?oc=5)
+
+**[] Window coating startup buys failed Tesla supplier's Michigan plant for new HQ - Crain's Detroit Business**
+- *Crain's Detroit Business* — <a href="https://news.google.com/rss/articles/CBMiowFBVV95cUxOMkR0XzhabEJGUXNrR2szZlFLbEpnLWtzWEtFSlUzSkVOQ2ZHLTd2dXo2M1.
+- [Read more](https://news.google.com/rss/articles/CBMiowFBVV95cUxOMkR0XzhabEJGUXNrR2szZlFLbEpnLWtzWEtFSlUzSkVOQ2ZHLTd2dXo2M1FDS2JvVkhmYVNUTnFWck9YazIyWFBsRGdtV1o0dlZYYkNHM1drOGo3S2IySmdIM09ieDFZVVhXaHpuUVVXWk54VlY3MWt1bGZ4dUZnSEhQSUlLWV9ZMi1RdjNySWg3M2Z4N0V4LUFrZl9QczNsZU4w?oc=5)
+
+**[] Fisker files for U.S. bankruptcy after cash burn, quality issues with Ocean crossover - Automotive News**
+- *Automotive News* — <a href="https://news.google.com/rss/articles/CBMimAFBVV95cUxQTjdGcXFsUDFjR0NlWnlQUWljYWlhMklaeUNYQmlkdHBSNUs4NlVNZVB0bU.
+- [Read more](https://news.google.com/rss/articles/CBMimAFBVV95cUxQTjdGcXFsUDFjR0NlWnlQUWljYWlhMklaeUNYQmlkdHBSNUs4NlVNZVB0bUhuUzc0a0FMa0IzZkQzRm9jdzdNWHRBWElGUW55bTBQMWZoVHJ3T1gyTFg1UTBMWGpaUXZIZVhCTS1QcXhHUGpnZmJMa0QzYUptOW9MbXgtanFKNnpjU1VYbU9qSWs5QU5ubDJ3Xw?oc=5)
+
+### Identified Startup Names in News
+
+| Startup | Article | Source | Date |
+|---------|---------|--------|------|
+| Tesla tried and failed to buy a lithium startup for $325 million - Electrek | [Tesla tried and failed to buy a lithium startup fo...](None) | Tesla tried and |  |
+| Australian firm completes purchase of failed car battery startup - Times of Malta | [Australian firm completes purchase of failed car b...](None) | firm completes purchase of |  |
+| Northvolt files for bankruptcy in Sweden after failing to secure funding - Sharecafe | [Northvolt files for bankruptcy in Sweden after fai...](None) | bankruptcy in Sweden after |  |
+| Australia's Recharge Industries buys failed battery firm Britishvolt - Reuters | [Australia's Recharge Industries buys failed batter...](None) | Recharge Industries buys |  |
+| How Northvolt’s Gigafactory Gamble Failed Spectacularly | by Michael Barnard | The Future is Electric - Medium | [How Northvolt’s Gigafactory Gamble Failed Spectacu...](None) | Gigafactory Gamble |  |
+| EV battery maker Northvolt failed after blowing through $15 billion. This US rival thinks it won't suffer the same fate. - Business Insider | [EV battery maker Northvolt failed after blowing th...](None) | EV battery maker Northvolt |  |
+| Tiny California Startup Buys Up Assets of Failed European Battery Giant - The Information | [Tiny California Startup Buys Up Assets of Failed E...](None) | Buys Up Assets of |  |
+| TechShop Faces Bankruptcy and Closes All 14 Shops - All3DP | [TechShop Faces Bankruptcy and Closes All 14 Shops ...](None) | TechShop Faces Bankruptcy and |  |
+| After Failed Sale, voxeljet Turns to Germany’s Rescue Law—Now Fully Owned by Anzu - 3DPrint.com | [After Failed Sale, voxeljet Turns to Germany’s Res...](None) | After |  |
+| Burlington 3-D printer company goes bankrupt after being acquired - The Boston Globe | [Burlington 3-D printer company goes bankrupt after...](None) | printer company |  |
+| 43-Billion-Yuan Market-Value Once-Star Company Goes Bankrupt - eu.36kr.com | [43-Billion-Yuan Market-Value Once-Star Company Goe...](None) | Company |  |
+| iRobot stock price collapses as Roomba maker files for Chapter 11 bankruptcy: Here's what happens next - Fast Company | [iRobot stock price collapses as Roomba maker files...](None) | iRobot stock price |  |
+| The maker of the Roomba is running out of cash and options. After its failed Amazon deal, iRobot could face bankruptcy. - Business Insider | [The maker of the Roomba is running out of cash and...](None) | After its |  |
+| Nikola Goes Bankrupt As Startup Once Valued Higher Than Ford Runs Out Of Cash - Carscoops | [Nikola Goes Bankrupt As Startup Once Valued Higher...](None) | Nikola |  |
+| Fisker failed because it wasn’t ready to be a car company - TechCrunch | [Fisker failed because it wasn’t ready to be a car ...](None) | Fisker |  |
 
 ## Methodology {#methodology}
 
@@ -373,7 +490,7 @@ This report was compiled using a **two-pronged research approach**:
 
 ---
 
-*Report generated on 2026-05-25 20:06 UTC from the Startup Research automated data collection system.*
+*Report generated on 2026-05-25 21:55 UTC from the Startup Research automated data collection system.*
 
 *Database contains: 97 startups, 579 news articles, 0 BLS data points.*
 

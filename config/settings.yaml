@@ -44,16 +44,76 @@ scraping:
     failures_path: "/failures"
     cemetery_path: "/cemetery"
     category_pages:
-      - "/startups/india-failures"
-      - "/startups/no-market-need-failures"
+      # Manufacturing & Hardware (highest relevance)
+      - "/startups/robot-failures"
+      - "/startups/software-hardware-failures"
+      - "/startups/transportation-failures"
+      # Finance & Fintech
+      - "/startups/fintech-failures"
+      - "/startups/crypto-failures"
+      - "/startups/lack-of-funds-failures"
+      - "/startups/mismanagement-of-funds-failures"
+      # Technology
+      - "/startups/artificial-intelligence-failures"
+      - "/startups/saas-failures"
+      - "/startups/analytics-failures"
+      - "/startups/app-failures"
+      - "/startups/web-app-failures"
+      - "/startups/no-code-failures"
+      # E-commerce & Marketplaces
+      - "/startups/e-commerce-failures"
+      - "/startups/marketplace-failures"
+      - "/startups/fashion-failures"
+      # Health & Education
+      - "/startups/health-failures"
+      - "/startups/edtech-failures"
       - "/startups/education-failures"
-      - "/startups/subscription-failures"
       - "/startups/food-beverage-failures"
-      - "/startups/blockchain-failures"
+      - "/startups/foodtech-failures"
+      # Failure reasons
+      - "/startups/no-market-need-failures"
+      - "/startups/bad-business-model-failures"
+      - "/startups/bad-management-failures"
+      - "/startups/competition-failures"
+      - "/startups/legal-challenges-failures"
+      - "/startups/poor-product-failures"
+      - "/startups/bad-timing-failures"
+      - "/startups/lack-of-focus-failures"
+      - "/startups/no-pivoting-failures"
+      # Business models
+      - "/startups/subscription-failures"
+      - "/startups/b2b-failures"
+      - "/startups/b2c-failures"
+      - "/startups/community-failures"
+      # Geography
+      - "/startups/india-failures"
+      - "/startups/united-states-failures"
+      - "/startups/united-kingdom-failures"
+      - "/startups/germany-failures"
+      - "/startups/canada-failures"
+      - "/startups/australia-failures"
+      - "/startups/mexico-failures"
       - "/startups/new-york-failures"
+      - "/startups/san-francisco-failures"
+      - "/startups/london-failures"
+      - "/startups/berlin-failures"
+      - "/startups/silicon-valley-failures"
+      - "/startups/los-angeles-failures"
+      - "/startups/toronto-failures"
+      - "/startups/sydney-failures"
+      # Other
+      - "/startups/blockchain-failures"
       - "/startups/music-failures"
+      - "/startups/entertainment-failures"
+      - "/startups/travel-failures"
+      - "/startups/sports-failures"
+      - "/startups/social-media-failures"
+      - "/startups/design-failures"
+      - "/startups/courses-failures"
+      - "/startups/blog-failures"
+      - "/startups/streaming-failures"
     max_pages: 20
-    max_profiles: 100
+    max_profiles: 500
     request_delay_seconds: 3
     user_agent: "StartupResearchBot/1.0 (educational research project; contact if issues)"
 

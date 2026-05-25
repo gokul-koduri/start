@@ -48,6 +48,9 @@ def generate_report(
     if section is None or section == "part4":
         parts.append(_render_part4(conn))
 
+    if section is None or section == "news":
+        parts.append(_render_news_monitoring(conn))
+
     if section is None or section == "methodology":
         parts.append(_render_methodology(conn))
 
@@ -97,6 +100,7 @@ def _render_header(conn) -> str:
 2. [Part 2: Closed Manufacturing Units with Revival Potential](#part-2)
 3. [Cross-Reference: Where Failed Startup Ideas Meet Manufacturing Revival](#part-3)
 4. [Actionable Opportunities](#part-4)
+4a. [News Monitoring: Manufacturing & Startup Failures](#news)
 5. [Methodology](#methodology)
 6. [Sources](#sources)
 
@@ -517,6 +521,86 @@ def _render_sources(conn) -> str:
             lines.append(f"- [{s['source_url']}]({s['source_url']}) ({s['cnt']} records)")
 
     lines.append("")
+    return "\n".join(lines)
+
+
+def _render_news_monitoring(conn) -> str:
+    """Render a news monitoring section from collected articles."""
+    lines = [
+        "## News Monitoring: Manufacturing & Startup Failures {#news}",
+        "",
+    ]
+
+    # Summary stats
+    total = conn.execute("SELECT COUNT(*) FROM news_articles").fetchone()[0]
+    mfg = conn.execute("SELECT COUNT(*) FROM news_articles WHERE is_manufacturing = 1").fetchone()[0]
+    fail = conn.execute("SELECT COUNT(*) FROM news_articles WHERE mentions_failure = 1").fetchone()[0]
+    both = conn.execute("SELECT COUNT(*) FROM news_articles WHERE is_manufacturing = 1 AND mentions_failure = 1").fetchone()[0]
+
+    lines.append("### Coverage Summary")
+    lines.append(f"- **{total}** articles collected from Google News and TechCrunch RSS feeds")
+    lines.append(f"- **{mfg}** mention manufacturing ({round(mfg/total*100, 1)}%)")
+    lines.append(f"- **{fail}** mention startup failures ({round(fail/total*100, 1)}%)")
+    lines.append(f"- **{both}** are in the intersection (manufacturing + failure)")
+    lines.append("")
+
+    # By source
+    by_source = conn.execute("""
+        SELECT source_feed, COUNT(*) as cnt
+        FROM news_articles
+        GROUP BY source_feed ORDER BY cnt DESC
+    """).fetchall()
+    if by_source:
+        lines.append("### Articles by Source")
+        lines.append("| Source | Articles |")
+        lines.append("|--------|----------|")
+        for s in by_source:
+            lines.append(f"| {s[0]} | {s[1]} |")
+        lines.append("")
+
+    # Top manufacturing + failure articles (most relevant)
+    mfg_fail_articles = conn.execute("""
+        SELECT title, url, source_name, published_at, summary
+        FROM news_articles
+        WHERE is_manufacturing = 1 AND mentions_failure = 1
+        ORDER BY published_at DESC
+        LIMIT 20
+    """).fetchall()
+
+    if mfg_fail_articles:
+        lines.append("### Recent Manufacturing Startup Failures (News)")
+        lines.append("")
+        for a in mfg_fail_articles:
+            pub = a["published_at"][:10] if a["published_at"] else ""
+            source = a["source_name"] or ""
+            summary = (a["summary"] or "")[:120].strip()
+            if summary:
+                summary = summary.rstrip(".") + "."
+            lines.append(f"**[{pub}] {a['title']}**")
+            lines.append(f"- *{source}* — {summary}")
+            lines.append(f"- [Read more]({a['url']})")
+            lines.append("")
+
+    # Articles with extracted startup names
+    named = conn.execute("""
+        SELECT title, startup_name_extracted, source_name, published_at, url
+        FROM news_articles
+        WHERE startup_name_extracted IS NOT NULL AND startup_name_extracted != ''
+        ORDER BY published_at DESC
+        LIMIT 15
+    """).fetchall()
+
+    if named:
+        lines.append("### Identified Startup Names in News")
+        lines.append("")
+        lines.append("| Startup | Article | Source | Date |")
+        lines.append("|---------|---------|--------|------|")
+        for n in named:
+            pub = n["published_at"][:10] if n["published_at"] else ""
+            title = n["title"][:50] + "..." if len(n["title"]) > 50 else n["title"]
+            lines.append(f"| {n[0]} | [{title}]({n[3]}) | {n[1]} | {pub} |")
+        lines.append("")
+
     return "\n".join(lines)
 
 

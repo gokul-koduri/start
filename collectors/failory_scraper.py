@@ -30,16 +30,19 @@ class FailoryScraper(BaseCollector):
         result = CollectionResult(collector_name=self.name)
 
         scrape_config = self.config.get("scraping", {}).get("failory", {})
-        base_url = scrape_config.get("base_url", "https://failory.com")
+        base_url = scrape_config.get("base_url", "https://www.failory.com")
         failures_path = scrape_config.get("failures_path", "/failures")
-        max_pages = scrape_config.get("max_pages", 20)
+        max_profiles = scrape_config.get("max_profiles", 100)
         delay = scrape_config.get("request_delay_seconds", 3)
         user_agent = scrape_config.get("user_agent", "StartupResearchBot/1.0")
+        category_pages = scrape_config.get("category_pages", [])
 
         session = get_http_session(user_agent=user_agent)
 
-        # Step 1: Get list of failure profile URLs
-        profile_urls = self._get_profile_urls(session, base_url, failures_path, max_pages, result)
+        # Step 1: Get list of profile URLs from category pages
+        profile_urls = self._get_profile_urls(
+            session, base_url, failures_path, category_pages, max_profiles, result
+        )
 
         if not profile_urls:
             result.errors.append("No profile URLs found on Failory")
@@ -131,43 +134,57 @@ class FailoryScraper(BaseCollector):
 
         return result
 
-    def _get_profile_urls(self, session, base_url, failures_path, max_pages, result):
-        """Scrape the failures list page to get individual profile URLs."""
-        urls = []
-        url = f"{base_url}{failures_path}"
+    def _get_profile_urls(self, session, base_url, failures_path,
+                          category_pages, max_profiles, result):
+        """Discover profile URLs from Failory's category pages.
 
-        for page in range(1, max_pages + 1):
-            if page > 1:
-                page_url = f"{url}?page={page}"
-            else:
-                page_url = url
+        Failory uses /startups/[category]-failures as list pages with
+        /cemetery/[name] links to individual startup profiles.
+        """
+        urls = []
+        seen = set()
+
+        # Pages to crawl: configured category pages + main failures page
+        pages_to_crawl = []
+        if category_pages:
+            pages_to_crawl.extend(category_pages)
+        pages_to_crawl.append(failures_path)
+
+        for page_path in pages_to_crawl:
+            page_url = urljoin(base_url, page_path)
+            _logger.info("Discovering profiles from: %s", page_url)
 
             try:
                 resp = session.get(page_url, timeout=15)
                 if resp.status_code == 429:
-                    result.errors.append("Rate limited on list page")
+                    result.errors.append(f"Rate limited on {page_url}")
                     break
                 resp.raise_for_status()
             except Exception as e:
-                result.errors.append(f"Failed to fetch list page {page}: {e}")
-                break
+                result.errors.append(f"Failed to fetch {page_url}: {e}")
+                continue
 
             soup = BeautifulSoup(resp.text, "lxml")
 
-            # Find profile links
-            links = soup.select("a[href*='/company/']")
-            found_on_page = 0
+            # Find /cemetery/ links — these are individual startup profiles
+            links = soup.select("a[href*='/cemetery/']")
+            found = 0
             for link in links:
                 href = link.get("href", "")
+                if href in seen:
+                    continue
                 full_url = urljoin(base_url, href)
-                if full_url not in urls and "/company/" in full_url:
+                if full_url not in urls:
                     urls.append(full_url)
-                    found_on_page += 1
+                    seen.add(href)
+                    found += 1
+                    if len(urls) >= max_profiles:
+                        break
 
-            _logger.debug("Page %d: found %d profile links", page, found_on_page)
+            _logger.info("  Found %d profiles on %s (total: %d)",
+                         found, page_path, len(urls))
 
-            if found_on_page == 0:
-                _logger.info("No more profiles found on page %d, stopping", page)
+            if len(urls) >= max_profiles:
                 break
 
             time.sleep(2)
@@ -175,79 +192,95 @@ class FailoryScraper(BaseCollector):
         return urls
 
     def _parse_profile(self, soup, url):
-        """Parse a Failory company profile page."""
+        """Parse a Failory /cemetery/ profile page.
+
+        Failory profiles have labeled fields like:
+          Category: Finances
+          Country: India
+          Started: 2017
+          Cause: Legal Challenges
+          Closed: 2019
+          Total Funding Amount: -
+        """
         profile = {}
 
-        # Company name from title or h1
+        # Company name: h1 tag contains the name
         h1 = soup.find("h1")
         if h1:
             profile["name"] = h1.get_text(strip=True)
         else:
             title = soup.find("title")
             if title:
-                name = title.get_text(strip=True).split(" - ")[0].split(" | ")[0]
-                profile["name"] = name
+                # Title format: "What Happened to [Name]?"
+                text = title.get_text(strip=True)
+                for prefix in ["What Happened to ", "What happened to "]:
+                    if text.startswith(prefix):
+                        name = text[len(prefix):].split(",")[0].split("?")[0].strip()
+                        if name:
+                            profile["name"] = name
+                            break
+                if not profile.get("name"):
+                    profile["name"] = text.split(" - ")[0].split("|")[0].strip()
 
-        # Try to extract structured data from info sections
-        # Failory uses labeled fields in their profiles
-        info_section = soup.find("div", class_="company-info") or soup
+        if not profile.get("name"):
+            return None
 
-        # Extract all text content for keyword searching
+        # Extract all text for field searching
         all_text = soup.get_text(separator="\n")
 
-        # Look for industry
+        # Category / Industry
         profile["industry"] = self._extract_field(all_text, [
-            "Industry:", "Sector:", "Category:",
+            "Category:", "Industry:", "Sector:",
         ])
 
-        # Look for failure cause
+        # Country
+        profile["country"] = self._extract_field(all_text, [
+            "Country:", "Location:", "HQ:",
+        ])
+
+        # Failure cause
         failure_reason = self._extract_field(all_text, [
-            "Failure Cause:", "Reason for failure:", "Why it failed:",
-            "Cause of Failure:", "Main Reason:",
+            "Cause:", "Failure Cause:", "Reason for failure:",
+            "Why it failed:", "Cause of Failure:",
         ])
         profile["failure_reason"] = failure_reason
         profile["failure_category"] = normalize_failure_category(failure_reason)
 
-        # Look for funding
+        # Funding
         funding_text = self._extract_field(all_text, [
-            "Funding:", "Total Funding:", "Raised:", "Investment:",
+            "Total Funding Amount:", "Total Funding:", "Funding:",
+            "Raised:", "Investment:",
         ])
-        profile["funding_description"] = funding_text
-        profile["funding_usd"] = normalize_funding(funding_text)
+        if funding_text and funding_text not in ("-", "N/A", "Unknown", ""):
+            profile["funding_description"] = funding_text
+            profile["funding_usd"] = normalize_funding(funding_text)
+        else:
+            profile["funding_description"] = None
+            profile["funding_usd"] = None
 
-        # Look for founded year
+        # Year founded
         year_text = self._extract_field(all_text, [
-            "Founded:", "Year Founded:", "Started:",
+            "Started:", "Founded:", "Year Founded:",
         ])
         if year_text:
-            import re
             match = re.search(r"\d{4}", year_text)
             if match:
                 profile["year_founded"] = int(match.group())
 
-        # Look for failure year
+        # Year failed/closed
         fail_text = self._extract_field(all_text, [
-            "Failed:", "Year Failed:", "Closed:", "Shut Down:",
+            "Closed:", "Failed:", "Shut Down:", "Outcome:",
         ])
         if fail_text:
             match = re.search(r"\d{4}", fail_text)
             if match:
                 profile["year_failed"] = int(match.group())
 
-        # Look for country
-        profile["country"] = self._extract_field(all_text, [
-            "Country:", "Location:", "HQ:",
-        ])
-
-        # Look for business model
-        profile["business_model"] = self._extract_field(all_text, [
-            "Business Model:", "Model:",
-        ])
-
-        # Check if manufacturing
+        # Check for manufacturing connection
         all_text_lower = all_text.lower()
-        mfg_terms = ["manufacturing", "factory", "production", "hardware", "3d printing",
-                     "robotics", "battery", "semiconductor", "fabrication", "assembly"]
+        mfg_terms = ["manufacturing", "factory", "production", "hardware",
+                     "3d printing", "robotics", "battery", "semiconductor",
+                     "fabrication", "assembly", "automotive", "ev "]
         if any(t in all_text_lower for t in mfg_terms):
             profile["manufacturing_sub_sector"] = profile.get("industry", "Manufacturing")
 

@@ -23,8 +23,8 @@
 ### Part 1A: United States & Global {#part-1a}
 
 ### The Big Picture
-- **15 tracked US/Global tech startups in the database**
-- **9 are manufacturing-specific** (60.0%)
+- **53 tracked US/Global tech startups in the database**
+- **15 are manufacturing-specific** (28.3%)
 - **2025 is the most recent shutdown year with data**
 
 ### Notable Failed Startups (2023–2025) With Funding
@@ -96,11 +96,20 @@ Manufacturing startups face uniquely brutal economics: long R&D cycles, massive 
 | 13 | **Rad Power Bikes** | E-bike Manufacturing | ~$300M+ | 2024 | Supply chain, cash flow issues |
 | 14 | **54gene** | Biomanufacturing | ~$45M | 2024 | Business model issues; board disputes |
 | 15 | **RoboTire** | Robotics / Automotive Service | $30M+ | 2024 | Automated tire changing economics did not work at scale |
-| 16 | **Hengchi** | EV Manufacturing | Tens of billions (Evergrande) | 2024 | Evergrande debt crisis consumed subsidiary |
-| 17 | **Neta Auto** | EV Manufacturing | Top-seller status | 2024 | Bankruptcy restructuring |
-| 18 | **HiPhi / Human Horizons** | EV Manufacturing | Hundreds of millions | 2024 | Production halt; bankruptcy restructuring |
-| 19 | **Dextrous Robotics** | Robotics / Material Handling | Well-funded | 2024 | Robotics pilot could not scale to commercial deployment |
-| 20 | **WM Motor** | EV Manufacturing | ¥30B+ (~$4B+) | 2023 | Collapsed under debt |
+| 16 | **Vreal** | Entertainment | $15M | 2024 | Bad Timing |
+| 17 | **Hengchi** | EV Manufacturing | Tens of billions (Evergrande) | 2024 | Evergrande debt crisis consumed subsidiary |
+| 18 | **Neta Auto** | EV Manufacturing | Top-seller status | 2024 | Bankruptcy restructuring |
+| 19 | **HiPhi / Human Horizons** | EV Manufacturing | Hundreds of millions | 2024 | Production halt; bankruptcy restructuring |
+| 20 | **Dextrous Robotics** | Robotics / Material Handling | Well-funded | 2024 | Robotics pilot could not scale to commercial deployment |
+| 21 | **WM Motor** | EV Manufacturing | ¥30B+ (~$4B+) | 2023 | Collapsed under debt |
+| 22 | **Quibi** | Entertainment | $1.8B | 2020 | Multiple Reasons |
+| 23 | **Munchery** | Food & Beverage | $125.4M | 2019 | Multiple Reasons |
+| 24 | **Aria Insights** | Software & Hardware | $39M | 2019 | Multiple Reasons |
+| 25 | **DotCloud** | Software & Hardware | $13.7M | 2016 | Mismanagement of Funds |
+| 26 | **Wattage** | Software & Hardware | $200K | 2015 | No Market Need |
+| 27 | **Lumos** | Software & Hardware | No Data | 2015 | Lack of Experience |
+| 28 | **Berg** | Design | $1.3M | 2014 | No Market Need |
+| 29 | **SchoolGennie** | Education | N/A | 2014 | Lack of Experience |
 
 **Common manufacturing failure patterns:** Capital intensity and long cash conversion cycles make manufacturing startups highly vulnerable to funding downturns. The SPAC era (2020-2021) was particularly damaging. The "pilot-to-scale" chasm is another recurring theme.
 
@@ -234,14 +243,19 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 | Failed Startup Category | Manufacturing Revival Match | Opportunity |
 |------------------------|---------------------------|-------------|
 | **EV Manufacturing** (Fisker, BluSmart, WM Motor, HiPhi / Human Horizons, Byton, Neta Auto, Hengchi) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Software & Hardware** (Lumos, Aria Insights, Wattage, DotCloud) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Battery Cell Manufacturing** (Northvolt, Northvolt) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Entertainment** (Quibi, Vreal) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Modular Construction** (Veev, Katerra) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **3D Printing** (BCN3D) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **3D Printing / Additive Mfg** (Desktop Metal) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Biomanufacturing** (54gene) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Construction 3D Printing** (Black Buffalo 3D) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Design** (Berg) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Display Manufacturing** (Royole Technology) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **E-bike Manufacturing** (Rad Power Bikes) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Education** (SchoolGennie) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Food & Beverage** (Munchery) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Robotics / Automotive Service** (RoboTire) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Robotics / Material Handling** (Dextrous Robotics) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Semiconductor Manufacturing** (Wusheng Semiconductor) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
@@ -260,8 +274,8 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 8. **Turn former chemical plants into rare earth processing facilities** — DOE grants available; strategic necessity
 
 ### Data-Driven Opportunities (from collected data)
-- **20 manufacturing startup failures** in database suggest clear patterns to avoid
-- **0 recent news articles** about manufacturing startup failures signal active market churn
+- **29 manufacturing startup failures** in database suggest clear patterns to avoid
+- **166 recent news articles** about manufacturing startup failures signal active market churn
 
 ## Methodology {#methodology}
 
@@ -279,18 +293,88 @@ This report was compiled using a **two-pronged research approach**:
 
 ### Data Freshness
 
+| Collector | Last Run | Status | Records |
+|-----------|----------|--------|---------|
+| failory_scraper | 2026-05-25T20:02:33 | success | 57 |
+| google_news_rss | 2026-05-25T20:02:02 | success | 559 |
+| techcrunch_rss | 2026-05-25T20:01:51 | success | 20 |
+| reshoring_pdf | 2026-05-25T19:59:54 | success | 1 |
+| failory_scraper | 2026-05-25T19:59:54 | partial | 0 |
+| techcrunch_rss | 2026-05-25T19:59:53 | failed | 0 |
+| google_news_rss | 2026-05-25T19:59:43 | success | 575 |
+| bls_survival_rates | 2026-05-25T19:59:43 | partial | 0 |
+
 ### Data Sources
 | Source | Records |
 |--------|---------|
+| failory | 57 |
 | manual | 40 |
 
 ## Sources {#sources}
 
+### Failory
+- [https://www.failory.com/cemetery/zoomo](https://www.failory.com/cemetery/zoomo) (1 records)
+- [https://www.failory.com/cemetery/wattage](https://www.failory.com/cemetery/wattage) (1 records)
+- [https://www.failory.com/cemetery/wantful](https://www.failory.com/cemetery/wantful) (1 records)
+- [https://www.failory.com/cemetery/vreal](https://www.failory.com/cemetery/vreal) (1 records)
+- [https://www.failory.com/cemetery/vine](https://www.failory.com/cemetery/vine) (1 records)
+- [https://www.failory.com/cemetery/tutorspree](https://www.failory.com/cemetery/tutorspree) (1 records)
+- [https://www.failory.com/cemetery/turntable-fm](https://www.failory.com/cemetery/turntable-fm) (1 records)
+- [https://www.failory.com/cemetery/transpose](https://www.failory.com/cemetery/transpose) (1 records)
+- [https://www.failory.com/cemetery/totsy](https://www.failory.com/cemetery/totsy) (1 records)
+- [https://www.failory.com/cemetery/teforia](https://www.failory.com/cemetery/teforia) (1 records)
+- [https://www.failory.com/cemetery/teebeedee](https://www.failory.com/cemetery/teebeedee) (1 records)
+- [https://www.failory.com/cemetery/take-eat-easy](https://www.failory.com/cemetery/take-eat-easy) (1 records)
+- [https://www.failory.com/cemetery/stereomood](https://www.failory.com/cemetery/stereomood) (1 records)
+- [https://www.failory.com/cemetery/stayzilla](https://www.failory.com/cemetery/stayzilla) (1 records)
+- [https://www.failory.com/cemetery/sprig](https://www.failory.com/cemetery/sprig) (1 records)
+- [https://www.failory.com/cemetery/spoonrocket](https://www.failory.com/cemetery/spoonrocket) (1 records)
+- [https://www.failory.com/cemetery/sip](https://www.failory.com/cemetery/sip) (1 records)
+- [https://www.failory.com/cemetery/shuddle](https://www.failory.com/cemetery/shuddle) (1 records)
+- [https://www.failory.com/cemetery/shipitwise](https://www.failory.com/cemetery/shipitwise) (1 records)
+- [https://www.failory.com/cemetery/sharingear](https://www.failory.com/cemetery/sharingear) (1 records)
+- [https://www.failory.com/cemetery/schoolgennie](https://www.failory.com/cemetery/schoolgennie) (1 records)
+- [https://www.failory.com/cemetery/scalefactor](https://www.failory.com/cemetery/scalefactor) (1 records)
+- [https://www.failory.com/cemetery/roomstonite](https://www.failory.com/cemetery/roomstonite) (1 records)
+- [https://www.failory.com/cemetery/rdio](https://www.failory.com/cemetery/rdio) (1 records)
+- [https://www.failory.com/cemetery/rafter](https://www.failory.com/cemetery/rafter) (1 records)
+- [https://www.failory.com/cemetery/radar-radio](https://www.failory.com/cemetery/radar-radio) (1 records)
+- [https://www.failory.com/cemetery/quibi](https://www.failory.com/cemetery/quibi) (1 records)
+- [https://www.failory.com/cemetery/polimobile](https://www.failory.com/cemetery/polimobile) (1 records)
+- [https://www.failory.com/cemetery/peppertap](https://www.failory.com/cemetery/peppertap) (1 records)
+- [https://www.failory.com/cemetery/optier](https://www.failory.com/cemetery/optier) (1 records)
+- [https://www.failory.com/cemetery/munchery](https://www.failory.com/cemetery/munchery) (1 records)
+- [https://www.failory.com/cemetery/moped](https://www.failory.com/cemetery/moped) (1 records)
+- [https://www.failory.com/cemetery/monitor110](https://www.failory.com/cemetery/monitor110) (1 records)
+- [https://www.failory.com/cemetery/maple](https://www.failory.com/cemetery/maple) (1 records)
+- [https://www.failory.com/cemetery/mailbox](https://www.failory.com/cemetery/mailbox) (1 records)
+- [https://www.failory.com/cemetery/lumos](https://www.failory.com/cemetery/lumos) (1 records)
+- [https://www.failory.com/cemetery/layervault](https://www.failory.com/cemetery/layervault) (1 records)
+- [https://www.failory.com/cemetery/koinex](https://www.failory.com/cemetery/koinex) (1 records)
+- [https://www.failory.com/cemetery/kno](https://www.failory.com/cemetery/kno) (1 records)
+- [https://www.failory.com/cemetery/kitchit](https://www.failory.com/cemetery/kitchit) (1 records)
+- [https://www.failory.com/cemetery/juicero](https://www.failory.com/cemetery/juicero) (1 records)
+- [https://www.failory.com/cemetery/hotelsaroundyou](https://www.failory.com/cemetery/hotelsaroundyou) (1 records)
+- [https://www.failory.com/cemetery/grooveshark](https://www.failory.com/cemetery/grooveshark) (1 records)
+- [https://www.failory.com/cemetery/frankly](https://www.failory.com/cemetery/frankly) (1 records)
+- [https://www.failory.com/cemetery/flowtab](https://www.failory.com/cemetery/flowtab) (1 records)
+- [https://www.failory.com/cemetery/fab](https://www.failory.com/cemetery/fab) (1 records)
+- [https://www.failory.com/cemetery/eventvue](https://www.failory.com/cemetery/eventvue) (1 records)
+- [https://www.failory.com/cemetery/dotcloud](https://www.failory.com/cemetery/dotcloud) (1 records)
+- [https://www.failory.com/cemetery/dinnr](https://www.failory.com/cemetery/dinnr) (1 records)
+- [https://www.failory.com/cemetery/dinner-lab](https://www.failory.com/cemetery/dinner-lab) (1 records)
+- [https://www.failory.com/cemetery/digg](https://www.failory.com/cemetery/digg) (1 records)
+- [https://www.failory.com/cemetery/dazo](https://www.failory.com/cemetery/dazo) (1 records)
+- [https://www.failory.com/cemetery/crowdmix](https://www.failory.com/cemetery/crowdmix) (1 records)
+- [https://www.failory.com/cemetery/call9](https://www.failory.com/cemetery/call9) (1 records)
+- [https://www.failory.com/cemetery/berg](https://www.failory.com/cemetery/berg) (1 records)
+- [https://www.failory.com/cemetery/aria-insights](https://www.failory.com/cemetery/aria-insights) (1 records)
+- [https://www.failory.com/cemetery/37coins](https://www.failory.com/cemetery/37coins) (1 records)
 
 ---
 
-*Report generated on 2026-05-25 19:58 UTC from the Startup Research automated data collection system.*
+*Report generated on 2026-05-25 20:06 UTC from the Startup Research automated data collection system.*
 
-*Database contains: 40 startups, 0 news articles, 0 BLS data points.*
+*Database contains: 97 startups, 579 news articles, 0 BLS data points.*
 
 *This report uses a two-pronged research approach: **Prong A** (Failed Manufacturing Startups 2024-2025) and **Prong B** (Manufacturing Revival & Reshoring). See [Methodology](#methodology) section for full details.*

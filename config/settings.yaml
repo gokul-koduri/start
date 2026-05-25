@@ -36,13 +36,24 @@ rss:
       - query: "battery manufacturing startup failed"
         params: "hl=en-US&gl=US&ceid=US:en"
   techcrunch:
-    url: "https://techcrunch.com/startups/feed/"
+    url: "https://techcrunch.com/feed/"
 
 scraping:
   failory:
-    base_url: "https://failory.com"
+    base_url: "https://www.failory.com"
     failures_path: "/failures"
+    cemetery_path: "/cemetery"
+    category_pages:
+      - "/startups/india-failures"
+      - "/startups/no-market-need-failures"
+      - "/startups/education-failures"
+      - "/startups/subscription-failures"
+      - "/startups/food-beverage-failures"
+      - "/startups/blockchain-failures"
+      - "/startups/new-york-failures"
+      - "/startups/music-failures"
     max_pages: 20
+    max_profiles: 100
     request_delay_seconds: 3
     user_agent: "StartupResearchBot/1.0 (educational research project; contact if issues)"
 

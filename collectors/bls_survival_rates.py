@@ -11,7 +11,6 @@ Example file URL: https://www.bls.gov/bdm/us_age_naics_31_table7.txt
 """
 
 import re
-import sqlite3
 import logging
 
 from collectors.base import BaseCollector, CollectionResult
@@ -38,7 +37,7 @@ class BLSSurvivalRateCollector(BaseCollector):
     def name(self) -> str:
         return "bls_survival_rates"
 
-    def collect(self, conn: sqlite3.Connection) -> CollectionResult:
+    def collect(self, conn) -> CollectionResult:
         result = CollectionResult(collector_name=self.name)
 
         bed_config = self.config.get("bls_bed", {})
@@ -139,7 +138,7 @@ class BLSSurvivalRateCollector(BaseCollector):
 
     def _insert_cohorts(
         self,
-        conn: sqlite3.Connection,
+        conn,
         cohorts: list[dict],
         naics_code: str,
         industry_name: str,
@@ -173,16 +172,18 @@ class BLSSurvivalRateCollector(BaseCollector):
                 result.records_skipped += 1
                 continue
 
-            conn.execute(
+            cursor = conn.cursor()
+            cursor.execute(
                 """INSERT INTO bls_survival_rates
                    (naics_code, industry_name, year, quarter,
                     age_1_yr_survival, age_2_yr_survival, age_3_yr_survival, age_5_yr_survival,
                     establishment_count, source_url, collected_at)
-                   VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, datetime('now'))""",
+                   VALUES (%s, %s, %s, NULL, %s, %s, %s, %s, %s, %s, NOW())""",
                 (naics_code, industry_name, birth_year,
                  age_1, age_2, age_3, age_5,
                  est_count, source_url),
             )
+            cursor.close()
             result.records_collected += 1
             result.records_inserted += 1
             inserted += 1
@@ -190,11 +191,14 @@ class BLSSurvivalRateCollector(BaseCollector):
         conn.commit()
         return inserted
 
-    def _get_max_year(self, conn: sqlite3.Connection) -> int | None:
+    def _get_max_year(self, conn) -> int | None:
         """Get the maximum birth year currently in the database."""
-        row = conn.execute(
+        cursor = conn.cursor()
+        cursor.execute(
             "SELECT MAX(year) as max_year FROM bls_survival_rates"
-        ).fetchone()
+        )
+        row = cursor.fetchone()
+        cursor.close()
         if row and row["max_year"]:
             return int(row["max_year"])
         return None

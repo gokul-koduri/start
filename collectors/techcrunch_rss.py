@@ -1,6 +1,5 @@
 """TechCrunch RSS collector for startup news."""
 
-import sqlite3
 import logging
 import re
 from datetime import datetime, timezone
@@ -24,7 +23,7 @@ class TechCrunchRSSCollector(BaseCollector):
     def name(self) -> str:
         return "techcrunch_rss"
 
-    def collect(self, conn: sqlite3.Connection) -> CollectionResult:
+    def collect(self, conn) -> CollectionResult:
         result = CollectionResult(collector_name=self.name)
 
         rss_config = self.config.get("rss", {}).get("techcrunch", {})
@@ -102,15 +101,17 @@ class TechCrunchRSSCollector(BaseCollector):
                 display_summary = f"[Funding: ${funding_match.group(1)}{funding_match.group(2)}] {display_summary}"
 
             if not self.dry_run:
-                conn.execute(
+                cursor = conn.cursor()
+                cursor.execute(
                     """INSERT INTO news_articles
                        (title, url, source_name, source_feed, published_at, summary,
                         is_manufacturing, mentions_failure, startup_name_extracted)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                     (title, article_url, source_name, "techcrunch",
                      pub_at, display_summary,
                      is_mfg, mentions_fail, startup_name),
                 )
+                cursor.close()
                 conn.commit()
 
             result.records_collected += 1

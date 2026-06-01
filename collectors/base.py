@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import json
-import sqlite3
 import logging
 import traceback
 
@@ -50,14 +49,14 @@ class BaseCollector(ABC):
         ...
 
     @abstractmethod
-    def collect(self, conn: sqlite3.Connection) -> CollectionResult:
+    def collect(self, conn) -> CollectionResult:
         """Collect data and return results.
 
         This is the main method subclasses implement. The base class
         wraps it with error handling, logging, and run tracking.
 
         Args:
-            conn: Active SQLite connection.
+            conn: Active database connection.
 
         Returns:
             CollectionResult with counts and status.
@@ -88,10 +87,13 @@ class BaseCollector(ABC):
 
         try:
             # Insert running record
-            self._run_id = conn.execute(
-                "INSERT INTO collection_runs (collector_name, started_at, status, parameters) VALUES (?, ?, 'running', ?)",
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO collection_runs (collector_name, started_at, status, parameters) VALUES (%s, %s, 'running', %s)",
                 (self.name, datetime.now(timezone.utc).isoformat(), json.dumps({})),
-            ).lastrowid
+            )
+            self._run_id = cursor.lastrowid
+            cursor.close()
             conn.commit()
 
             # Run the actual collection
@@ -99,12 +101,13 @@ class BaseCollector(ABC):
 
             # Update run record
             status = result.status
-            conn.execute(
+            cursor = conn.cursor()
+            cursor.execute(
                 """UPDATE collection_runs
-                   SET completed_at = ?, status = ?,
-                       records_collected = ?, records_deduped = ?,
-                       error_message = ?
-                   WHERE id = ?""",
+                   SET completed_at = %s, status = %s,
+                       records_collected = %s, records_deduped = %s,
+                       error_message = %s
+                   WHERE id = %s""",
                 (
                     datetime.now(timezone.utc).isoformat(),
                     status,
@@ -114,6 +117,7 @@ class BaseCollector(ABC):
                     self._run_id,
                 ),
             )
+            cursor.close()
             conn.commit()
 
             _logger.info(
@@ -130,12 +134,14 @@ class BaseCollector(ABC):
             # Update run record as failed
             if self._run_id:
                 try:
-                    conn.execute(
+                    cursor = conn.cursor()
+                    cursor.execute(
                         """UPDATE collection_runs
-                           SET completed_at = ?, status = 'failed', error_message = ?
-                           WHERE id = ?""",
+                           SET completed_at = %s, status = 'failed', error_message = %s
+                           WHERE id = %s""",
                         (datetime.now(timezone.utc).isoformat(), f"{e}\n{tb}", self._run_id),
                     )
+                    cursor.close()
                     conn.commit()
                 except Exception:
                     pass
@@ -148,12 +154,15 @@ class BaseCollector(ABC):
         finally:
             conn.close()
 
-    def get_last_run_time(self, conn: sqlite3.Connection) -> datetime | None:
+    def get_last_run_time(self, conn) -> datetime | None:
         """Get the timestamp of the last successful run for this collector."""
-        row = conn.execute(
-            "SELECT started_at FROM collection_runs WHERE collector_name = ? AND status IN ('success', 'partial') ORDER BY started_at DESC LIMIT 1",
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT started_at FROM collection_runs WHERE collector_name = %s AND status IN ('success', 'partial') ORDER BY started_at DESC LIMIT 1",
             (self.name,),
-        ).fetchone()
+        )
+        row = cursor.fetchone()
+        cursor.close()
         if row:
             try:
                 return datetime.fromisoformat(row["started_at"])

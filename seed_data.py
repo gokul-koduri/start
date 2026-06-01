@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Seed script: imports existing report data into SQLite.
+"""Seed script: imports existing report data into MySQL.
 
 Run once after initial setup to populate the database with data
 from the manually-compiled report.
@@ -51,13 +51,15 @@ def seed():
     ]
 
     for row in us_global + mfg_failures:
-        conn.execute("""
-            INSERT OR IGNORE INTO failed_startups
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT IGNORE INTO failed_startups
             (name, sector, manufacturing_sub_sector, country, region, funding_raised_usd,
              funding_description, year_founded, year_shutdown, failure_reason, failure_category,
              notable, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, row)
+        cursor.close()
 
     _logger.info("Seeded %d US/Global startups", len(us_global) + len(mfg_failures))
 
@@ -75,13 +77,15 @@ def seed():
     ]
 
     for row in india:
-        conn.execute("""
-            INSERT OR IGNORE INTO failed_startups
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT IGNORE INTO failed_startups
             (name, sector, manufacturing_sub_sector, country, region, funding_raised_usd,
              funding_description, year_founded, year_shutdown, failure_reason, failure_category,
              notable, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, row)
+        cursor.close()
 
     _logger.info("Seeded %d India startups", len(india))
 
@@ -97,13 +101,15 @@ def seed():
     ]
 
     for row in china:
-        conn.execute("""
-            INSERT OR IGNORE INTO failed_startups
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT IGNORE INTO failed_startups
             (name, sector, manufacturing_sub_sector, country, region, funding_raised_usd,
              funding_description, year_founded, year_shutdown, failure_reason, failure_category,
              notable, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, row)
+        cursor.close()
 
     _logger.info("Seeded %d China startups", len(china))
 
@@ -116,13 +122,15 @@ def seed():
     ]
 
     for row in europe:
-        conn.execute("""
-            INSERT OR IGNORE INTO failed_startups
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT IGNORE INTO failed_startups
             (name, sector, manufacturing_sub_sector, country, region, funding_raised_usd,
              funding_description, year_founded, year_shutdown, failure_reason, failure_category,
              notable, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, row)
+        cursor.close()
 
     _logger.info("Seeded %d Europe startups", len(europe))
 
@@ -135,13 +143,15 @@ def seed():
     ]
 
     for row in africa:
-        conn.execute("""
-            INSERT OR IGNORE INTO failed_startups
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT IGNORE INTO failed_startups
             (name, sector, manufacturing_sub_sector, country, region, funding_raised_usd,
              funding_description, year_founded, year_shutdown, failure_reason, failure_category,
              notable, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, row)
+        cursor.close()
 
     _logger.info("Seeded %d Africa startups", len(africa))
 
@@ -158,10 +168,12 @@ def seed():
         ("Ignored customer needs", 14, 9),
     ]
     for reason, pct, rank in reasons:
-        conn.execute(
-            "INSERT OR IGNORE INTO failure_reasons_taxonomy (reason, percentage, rank_order) VALUES (?, ?, ?)",
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT IGNORE INTO failure_reasons_taxonomy (reason, percentage, rank_order) VALUES (%s, %s, %s)",
             (reason, pct, rank),
         )
+        cursor.close()
 
     _logger.info("Seeded %d failure reasons", len(reasons))
 
@@ -174,10 +186,12 @@ def seed():
         ("Market Timing", "Correct thesis but too early", 10, "Black Buffalo 3D (construction 3D printing)"),
     ]
     for cat, desc, pct, examples in mfg_cats:
-        conn.execute(
-            "INSERT OR IGNORE INTO manufacturing_failure_categories (failure_category, description, estimated_pct, example_startups) VALUES (?, ?, ?, ?)",
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT IGNORE INTO manufacturing_failure_categories (failure_category, description, estimated_pct, example_startups) VALUES (%s, %s, %s, %s)",
             (cat, desc, pct, examples),
         )
+        cursor.close()
 
     _logger.info("Seeded %d manufacturing failure categories", len(mfg_cats))
 
@@ -191,10 +205,12 @@ def seed():
         ("Micro-mobility sharing", "Bird, Lime (near-death)", "Unit economics never worked", "E-scooters as a service is structurally flawed"),
     ]
     for cat, examples, why, reality in patterns:
-        conn.execute(
-            "INSERT OR IGNORE INTO failure_idea_patterns (idea_category, example_startups, why_failed, market_reality) VALUES (?, ?, ?, ?)",
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT IGNORE INTO failure_idea_patterns (idea_category, example_startups, why_failed, market_reality) VALUES (%s, %s, %s, %s)",
             (cat, examples, why, reality),
         )
+        cursor.close()
 
     _logger.info("Seeded %d failure idea patterns", len(patterns))
 
@@ -208,10 +224,12 @@ def seed():
         ("Steel & Primary Metals", "1980s-2000s", "Infrastructure spending, tariff protections, green steel", "Former steel mills in Rust Belt", "Infrastructure + reshoring = sustained demand", "Various steelmakers"),
     ]
     for ind, died, why, sites, market, investors in industries:
-        conn.execute(
-            "INSERT OR IGNORE INTO revival_industries (industry, died_period, why_returning, closed_site_types, market_fit, key_investors) VALUES (?, ?, ?, ?, ?, ?)",
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT IGNORE INTO revival_industries (industry, died_period, why_returning, closed_site_types, market_fit, key_investors) VALUES (%s, %s, %s, %s, %s, %s)",
             (ind, died, why, sites, market, investors),
         )
+        cursor.close()
 
     _logger.info("Seeded %d revival industries", len(industries))
 
@@ -225,29 +243,36 @@ def seed():
         ("Puerto Rico", "Pharma manufacturing", "Biomanufacturing, medical devices"),
     ]
     for region, facilities, potential in hotspots:
-        conn.execute(
-            "INSERT OR IGNORE INTO geographic_hotspots (region, closed_facility_types, revival_potential) VALUES (?, ?, ?)",
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT IGNORE INTO geographic_hotspots (region, closed_facility_types, revival_potential) VALUES (%s, %s, %s)",
             (region, facilities, potential),
         )
+        cursor.close()
 
     _logger.info("Seeded %d geographic hotspots", len(hotspots))
 
     # ── Reshoring Summary Stats ──
-    conn.execute(
-        """INSERT OR REPLACE INTO reshoring_summary_stats
+    cursor = conn.cursor()
+    cursor.execute(
+        """REPLACE INTO reshoring_summary_stats
            (stat_year, total_jobs, success_rate_pct, key_policy, headline, source)
-           VALUES (?, ?, ?, ?, ?, ?)""",
+           VALUES (%s, %s, %s, %s, %s, %s)""",
         (2024, 244000, 69.0, "CHIPS Act ($52B); IRA ($369B)",
          "244,000 jobs announced/created; 69% success rate",
          "Reshoring Initiative 2024 Annual Report"),
     )
+    cursor.close()
 
     _logger.info("Seeded reshoring summary stats")
 
     conn.commit()
 
     # Verify
-    startup_count = conn.execute("SELECT COUNT(*) FROM failed_startups").fetchone()[0]
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as cnt FROM failed_startups")
+    startup_count = cursor.fetchone()["cnt"]
+    cursor.close()
     _logger.info("Database now contains %d startup records", startup_count)
     conn.close()
 

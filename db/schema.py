@@ -1,293 +1,298 @@
-"""SQLite schema definitions for the Startup Research database."""
+"""MySQL schema definitions for the Startup Research database."""
 
-import sqlite3
 import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 3
+_SCHEMA_VERSION = 5
 
 _TABLES = [
     """
     CREATE TABLE IF NOT EXISTS failed_startups (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        name                TEXT NOT NULL,
-        sector              TEXT,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        name                VARCHAR(255) NOT NULL,
+        sector              VARCHAR(255),
         manufacturing_sub_sector TEXT,
-        country             TEXT,
-        region              TEXT,
-        funding_raised_usd  REAL,
+        country             VARCHAR(100),
+        region              VARCHAR(100),
+        funding_raised_usd  DOUBLE,
         funding_description TEXT,
-        peak_valuation_usd  REAL,
-        year_founded        INTEGER,
-        year_shutdown       INTEGER NOT NULL,
-        shutdown_date       TEXT,
+        peak_valuation_usd  DOUBLE,
+        year_founded        INT,
+        year_shutdown       INT NOT NULL,
+        shutdown_date       VARCHAR(50),
         failure_reason      TEXT NOT NULL,
-        failure_category    TEXT,
-        notable             INTEGER DEFAULT 0,
-        source              TEXT NOT NULL,
+        failure_category    VARCHAR(100),
+        notable             INT DEFAULT 0,
+        source              VARCHAR(100) NOT NULL,
         source_url          TEXT,
-        collected_at        TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at          TEXT NOT NULL DEFAULT (datetime('now')),
-        UNIQUE(name, region)
-    );
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_name_region (name, region)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS failure_reasons_taxonomy (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        reason              TEXT NOT NULL UNIQUE,
-        percentage          REAL,
-        rank_order          INTEGER,
-        source              TEXT DEFAULT 'cb_insights',
-        collected_at        TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        reason              VARCHAR(255) NOT NULL UNIQUE,
+        percentage          DOUBLE,
+        rank_order          INT,
+        source              VARCHAR(100) DEFAULT 'cb_insights',
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS failure_idea_patterns (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        idea_category       TEXT NOT NULL,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        idea_category       VARCHAR(255) NOT NULL,
         example_startups    TEXT,
         why_failed          TEXT NOT NULL,
         market_reality      TEXT NOT NULL,
-        source              TEXT,
-        collected_at        TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+        source              VARCHAR(255),
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS manufacturing_failure_categories (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        failure_category    TEXT NOT NULL,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        failure_category    VARCHAR(255) NOT NULL,
         description         TEXT NOT NULL,
-        estimated_pct       REAL,
+        estimated_pct       DOUBLE,
         example_startups    TEXT,
-        source              TEXT,
-        collected_at        TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+        source              VARCHAR(255),
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS bls_survival_rates (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        naics_code          TEXT NOT NULL,
-        industry_name       TEXT NOT NULL,
-        year                INTEGER NOT NULL,
-        quarter             INTEGER CHECK (quarter IS NULL OR quarter BETWEEN 1 AND 4),
-        quarter_key         INTEGER GENERATED ALWAYS AS (COALESCE(quarter, -1)) STORED,
-        age_1_yr_survival   REAL,
-        age_2_yr_survival   REAL,
-        age_3_yr_survival   REAL,
-        age_5_yr_survival   REAL,
-        establishment_count INTEGER,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        naics_code          VARCHAR(20) NOT NULL,
+        industry_name       VARCHAR(255) NOT NULL,
+        year                INT NOT NULL,
+        quarter             INT,
+        quarter_key         INT GENERATED ALWAYS AS (COALESCE(quarter, -1)) STORED,
+        age_1_yr_survival   DOUBLE,
+        age_2_yr_survival   DOUBLE,
+        age_3_yr_survival   DOUBLE,
+        age_5_yr_survival   DOUBLE,
+        establishment_count INT,
         source_url          TEXT,
-        collected_at        TEXT NOT NULL DEFAULT (datetime('now')),
-        UNIQUE(naics_code, year, quarter_key)
-    );
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_bls_naics_year_quarter (naics_code, year, quarter_key),
+        CHECK (quarter IS NULL OR quarter BETWEEN 1 AND 4)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS news_articles (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
         title               TEXT NOT NULL,
-        url                 TEXT NOT NULL UNIQUE,
-        source_name         TEXT NOT NULL,
-        source_feed         TEXT NOT NULL,
+        url                 VARCHAR(2048) NOT NULL,
+        source_name         VARCHAR(255) NOT NULL,
+        source_feed         VARCHAR(100) NOT NULL,
         published_at        TEXT,
         summary             TEXT,
-        is_manufacturing    INTEGER DEFAULT 0,
-        mentions_failure    INTEGER DEFAULT 0,
+        is_manufacturing    INT DEFAULT 0,
+        mentions_failure    INT DEFAULT 0,
         startup_name_extracted TEXT,
-        collected_at        TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_news_url (url(767))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS reshoring_data (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        report_year         INTEGER NOT NULL,
-        data_year           INTEGER NOT NULL,
-        industry            TEXT,
-        jobs_created        INTEGER,
-        jobs_announced      INTEGER,
-        project_count       INTEGER,
-        success_rate_pct    REAL,
-        cost_reduction_pct  REAL,
-        country_of_origin   TEXT,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        report_year         INT NOT NULL,
+        data_year           INT NOT NULL,
+        industry            VARCHAR(255),
+        jobs_created        INT,
+        jobs_announced      INT,
+        project_count       INT,
+        success_rate_pct    DOUBLE,
+        cost_reduction_pct  DOUBLE,
+        country_of_origin   VARCHAR(100),
         notes               TEXT,
-        source_report       TEXT,
+        source_report       VARCHAR(255),
         source_url          TEXT,
-        collected_at        TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS reshoring_summary_stats (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        stat_year           INTEGER NOT NULL,
-        total_jobs          INTEGER,
-        total_reshoring_jobs  INTEGER,
-        total_fdi_jobs       INTEGER,
-        success_rate_pct     REAL,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        stat_year           INT NOT NULL,
+        total_jobs          INT,
+        total_reshoring_jobs  INT,
+        total_fdi_jobs       INT,
+        success_rate_pct     DOUBLE,
         key_policy TEXT,
         headline              TEXT,
-        source                TEXT,
-        collected_at          TEXT NOT NULL DEFAULT (datetime('now')),
-        UNIQUE(stat_year)
-    );
+        source                VARCHAR(255),
+        collected_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_stat_year (stat_year)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS revival_industries (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        industry            TEXT NOT NULL UNIQUE,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        industry            VARCHAR(255) NOT NULL UNIQUE,
         died_period         TEXT,
         why_returning       TEXT NOT NULL,
         closed_site_types   TEXT,
         market_fit          TEXT NOT NULL,
         key_investors       TEXT,
         market_size_2030    TEXT,
-        collected_at        TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS geographic_hotspots (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        region              TEXT NOT NULL,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        region              VARCHAR(255) NOT NULL,
         closed_facility_types TEXT NOT NULL,
         revival_potential   TEXT NOT NULL,
-        collected_at        TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS collection_runs (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        collector_name      TEXT NOT NULL,
-        started_at          TEXT NOT NULL,
-        completed_at        TEXT,
-        status              TEXT NOT NULL CHECK (status IN ('running', 'success', 'partial', 'failed')),
-        records_collected   INTEGER DEFAULT 0,
-        records_deduped     INTEGER DEFAULT 0,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        collector_name      VARCHAR(255) NOT NULL,
+        started_at          VARCHAR(50) NOT NULL,
+        completed_at        VARCHAR(50),
+        status              ENUM('running','success','partial','failed') NOT NULL,
+        records_collected   INT DEFAULT 0,
+        records_deduped     INT DEFAULT 0,
         error_message       TEXT,
         parameters          TEXT
-    );
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS agent_runs (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        pipeline_name       TEXT NOT NULL,
-        agent_name          TEXT NOT NULL,
-        started_at          TEXT NOT NULL,
-        completed_at        TEXT,
-        status              TEXT NOT NULL CHECK (status IN ('running', 'success', 'partial', 'failed')),
-        records_affected    INTEGER DEFAULT 0,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        pipeline_name       VARCHAR(255) NOT NULL,
+        agent_name          VARCHAR(255) NOT NULL,
+        started_at          VARCHAR(50) NOT NULL,
+        completed_at        VARCHAR(50),
+        status              ENUM('running','success','partial','failed') NOT NULL,
+        records_affected    INT DEFAULT 0,
         error_message       TEXT,
         result_data         TEXT,
-        trigger             TEXT DEFAULT 'manual'
-    );
+        trigger_type        VARCHAR(50) DEFAULT 'manual'
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
     CREATE TABLE IF NOT EXISTS discovered_sources (
-        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-        url                 TEXT NOT NULL UNIQUE,
-        source_type         TEXT,
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        url                 VARCHAR(2048) NOT NULL,
+        source_type         VARCHAR(100),
         description         TEXT,
-        relevance_score     REAL DEFAULT 0.0,
+        relevance_score     DOUBLE DEFAULT 0.0,
         content_sample      TEXT,
-        validation_status   TEXT DEFAULT 'pending',
+        validation_status   VARCHAR(50) DEFAULT 'pending',
         last_validated_at   TEXT,
-        discovered_at       TEXT NOT NULL DEFAULT (datetime('now')),
+        discovered_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         search_query        TEXT,
-        metadata            TEXT
-    );
+        metadata            TEXT,
+        UNIQUE KEY uq_discovered_url (url(767))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS analysis_failure_patterns (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        analysis_type       VARCHAR(255) NOT NULL,
+        insights_json       TEXT NOT NULL,
+        analyzed_at         VARCHAR(50) NOT NULL,
+        record_count        INT DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS analysis_survival_trends (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        analysis_type       VARCHAR(255) NOT NULL,
+        insights_json       TEXT NOT NULL,
+        analyzed_at         VARCHAR(50) NOT NULL,
+        record_count        INT DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS analysis_revival_opportunities (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        analysis_type       VARCHAR(255) NOT NULL,
+        insights_json       TEXT NOT NULL,
+        analyzed_at         VARCHAR(50) NOT NULL,
+        record_count        INT DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS analysis_geographic_strategy (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        analysis_type       VARCHAR(255) NOT NULL,
+        insights_json       TEXT NOT NULL,
+        analyzed_at         VARCHAR(50) NOT NULL,
+        record_count        INT DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS analysis_news_intelligence (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        analysis_type       VARCHAR(255) NOT NULL,
+        insights_json       TEXT NOT NULL,
+        analyzed_at         VARCHAR(50) NOT NULL,
+        record_count        INT DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS analysis_opportunity_pipeline (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        analysis_type       VARCHAR(255) NOT NULL,
+        insights_json       TEXT NOT NULL,
+        analyzed_at         VARCHAR(50) NOT NULL,
+        record_count        INT DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS analysis_whale_investors (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        analysis_type       VARCHAR(255) NOT NULL,
+        insights_json       TEXT NOT NULL,
+        analyzed_at         VARCHAR(50) NOT NULL,
+        record_count        INT DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
 ]
 
 _INDEXES = [
-    "CREATE INDEX IF NOT EXISTS idx_startups_region ON failed_startups(region);",
-    "CREATE INDEX IF NOT EXISTS idx_startups_sector ON failed_startups(sector);",
-    "CREATE INDEX IF NOT EXISTS idx_startups_manufacturing ON failed_startups(manufacturing_sub_sector) WHERE manufacturing_sub_sector IS NOT NULL;",
-    "CREATE INDEX IF NOT EXISTS idx_startups_shutdown_year ON failed_startups(year_shutdown);",
-    "CREATE INDEX IF NOT EXISTS idx_startups_failure_category ON failed_startups(failure_category);",
-    "CREATE INDEX IF NOT EXISTS idx_startups_source ON failed_startups(source);",
-    "CREATE INDEX IF NOT EXISTS idx_news_manufacturing ON news_articles(is_manufacturing) WHERE is_manufacturing = 1;",
-    "CREATE INDEX IF NOT EXISTS idx_news_failure ON news_articles(mentions_failure) WHERE mentions_failure = 1;",
-    "CREATE INDEX IF NOT EXISTS idx_news_published ON news_articles(published_at);",
-    "CREATE INDEX IF NOT EXISTS idx_bls_industry_year ON bls_survival_rates(naics_code, year);",
-    "CREATE INDEX IF NOT EXISTS idx_reshoring_year ON reshoring_data(data_year);",
-    "CREATE INDEX IF NOT EXISTS idx_collection_runs_collector ON collection_runs(collector_name, started_at DESC);",
-    "CREATE INDEX IF NOT EXISTS idx_agent_runs_pipeline ON agent_runs(pipeline_name, started_at DESC);",
-    "CREATE INDEX IF NOT EXISTS idx_discovered_sources_status ON discovered_sources(validation_status);",
+    "CREATE INDEX idx_startups_region ON failed_startups(region);",
+    "CREATE INDEX idx_startups_sector ON failed_startups(sector);",
+    "CREATE INDEX idx_startups_manufacturing ON failed_startups(manufacturing_sub_sector);",
+    "CREATE INDEX idx_startups_shutdown_year ON failed_startups(year_shutdown);",
+    "CREATE INDEX idx_startups_failure_category ON failed_startups(failure_category);",
+    "CREATE INDEX idx_startups_source ON failed_startups(source);",
+    "CREATE INDEX idx_news_manufacturing ON news_articles(is_manufacturing);",
+    "CREATE INDEX idx_news_failure ON news_articles(mentions_failure);",
+    "CREATE INDEX idx_news_published ON news_articles(published_at);",
+    "CREATE INDEX idx_bls_industry_year ON bls_survival_rates(naics_code, year);",
+    "CREATE INDEX idx_reshoring_year ON reshoring_data(data_year);",
+    "CREATE INDEX idx_collection_runs_collector ON collection_runs(collector_name, started_at DESC);",
+    "CREATE INDEX idx_agent_runs_pipeline ON agent_runs(pipeline_name, started_at DESC);",
+    "CREATE INDEX idx_discovered_sources_status ON discovered_sources(validation_status);",
+    "CREATE INDEX idx_whale_investors_type ON analysis_whale_investors(analysis_type);",
 ]
 
 
-def init_schema(conn: sqlite3.Connection) -> None:
+def init_schema(conn) -> None:
     """Create all tables and indexes if they don't exist."""
-    # Check current version via a pragma-less approach: see if bls_survival_rates
-    # has the old NOT NULL quarter constraint.
-    _migrate_v1_to_v2(conn)
-
+    cursor = conn.cursor()
     for table_sql in _TABLES:
-        conn.execute(table_sql)
+        cursor.execute(table_sql)
     for index_sql in _INDEXES:
-        conn.execute(index_sql)
+        try:
+            cursor.execute(index_sql)
+        except Exception as e:
+            _logger.debug("Index creation note: %s", e)
     conn.commit()
+    cursor.close()
     _logger.info("Database schema initialized (version %d)", _SCHEMA_VERSION)
-
-
-def _migrate_v1_to_v2(conn: sqlite3.Connection) -> None:
-    """Migrate bls_survival_rates from v1 (quarter NOT NULL) to v2 (quarter nullable).
-
-    BLS BED data is annual (no quarter). The v1 schema had quarter NOT NULL with
-    CHECK constraint, which would reject annual data. SQLite cannot DROP constraints,
-    so we recreate the table.
-    """
-    # Check if migration is needed by trying to insert a row with quarter=NULL
-    # into the existing table (without actually inserting). If the table has
-    # NOT NULL on quarter, we need to migrate.
-    cols = conn.execute("PRAGMA table_info(bls_survival_rates)").fetchall()
-    if not cols:
-        return  # Table doesn't exist yet, no migration needed
-
-    col_info = {c["name"]: c for c in cols}
-    quarter_info = col_info.get("quarter")
-
-    # If there's no notnull constraint on quarter, we're already migrated
-    if quarter_info and not quarter_info["notnull"]:
-        return
-
-    _logger.info("Migrating bls_survival_rates from v1 to v2 (quarter nullable)")
-    conn.execute("DROP TABLE IF EXISTS bls_survival_rates_v1_backup")
-    conn.execute("ALTER TABLE bls_survival_rates RENAME TO bls_survival_rates_v1_backup")
-
-    # The new table definition will be created by the _TABLES loop below
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS bls_survival_rates (
-            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-            naics_code          TEXT NOT NULL,
-            industry_name       TEXT NOT NULL,
-            year                INTEGER NOT NULL,
-            quarter             INTEGER CHECK (quarter IS NULL OR quarter BETWEEN 1 AND 4),
-            quarter_key         INTEGER GENERATED ALWAYS AS (COALESCE(quarter, -1)) STORED,
-            age_1_yr_survival   REAL,
-            age_2_yr_survival   REAL,
-            age_3_yr_survival   REAL,
-            age_5_yr_survival   REAL,
-            establishment_count INTEGER,
-            source_url          TEXT,
-            collected_at        TEXT NOT NULL DEFAULT (datetime('now')),
-            UNIQUE(naics_code, year, quarter_key)
-        )
-    """)
-
-    # Copy any existing data
-    conn.execute("""
-        INSERT OR IGNORE INTO bls_survival_rates
-            (naics_code, industry_name, year, quarter, age_1_yr_survival,
-             age_2_yr_survival, age_3_yr_survival, age_5_yr_survival,
-             establishment_count, source_url, collected_at)
-        SELECT naics_code, industry_name, year, quarter, age_1_yr_survival,
-               age_2_yr_survival, age_3_yr_survival, age_5_yr_survival,
-               establishment_count, source_url, collected_at
-        FROM bls_survival_rates_v1_backup
-    """)
-
-    conn.execute("DROP TABLE IF EXISTS bls_survival_rates_v1_backup")
-    conn.commit()
-    _logger.info("Migration to v2 complete")
 
 
 def get_schema_version() -> int:

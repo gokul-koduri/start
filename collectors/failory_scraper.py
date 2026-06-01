@@ -1,6 +1,5 @@
 """Failory.com scraper for structured startup failure profiles."""
 
-import sqlite3
 import logging
 import re
 import time
@@ -26,7 +25,7 @@ class FailoryScraper(BaseCollector):
     def name(self) -> str:
         return "failory_scraper"
 
-    def collect(self, conn: sqlite3.Connection) -> CollectionResult:
+    def collect(self, conn) -> CollectionResult:
         result = CollectionResult(collector_name=self.name)
 
         scrape_config = self.config.get("scraping", {}).get("failory", {})
@@ -54,9 +53,12 @@ class FailoryScraper(BaseCollector):
         # Step 2: Filter out already-visited
         new_urls = []
         for url in profile_urls:
-            existing = conn.execute(
-                "SELECT 1 FROM failed_startups WHERE source_url = ?", (url,)
-            ).fetchone()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT 1 FROM failed_startups WHERE source_url = %s", (url,)
+            )
+            existing = cursor.fetchone()
+            cursor.close()
             if not existing:
                 new_urls.append(url)
             else:
@@ -98,13 +100,14 @@ class FailoryScraper(BaseCollector):
                 continue
 
             if not self.dry_run:
-                conn.execute(
-                    """INSERT OR IGNORE INTO failed_startups
+                cursor = conn.cursor()
+                cursor.execute(
+                    """INSERT IGNORE INTO failed_startups
                        (name, sector, manufacturing_sub_sector, country, region,
                         funding_raised_usd, funding_description, year_founded,
                         year_shutdown, failure_reason, failure_category,
                         notable, source, source_url)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                     (
                         profile["name"],
                         profile.get("industry"),
@@ -122,6 +125,7 @@ class FailoryScraper(BaseCollector):
                         url,
                     ),
                 )
+                cursor.close()
                 conn.commit()
 
             result.records_collected += 1

@@ -287,18 +287,25 @@ def _fetch_stats():
         conn = get_connection()
         schema.init_schema(conn)
 
-        total_startups = conn.execute("SELECT COUNT(*) FROM failed_startups").fetchone()[0]
-        mfg_startups = conn.execute(
-            "SELECT COUNT(*) FROM failed_startups WHERE manufacturing_sub_sector IS NOT NULL"
-        ).fetchone()[0]
-        total_articles = conn.execute("SELECT COUNT(*) FROM news_articles").fetchone()[0]
-        mfg_articles = conn.execute(
-            "SELECT COUNT(*) FROM news_articles WHERE is_manufacturing = 1"
-        ).fetchone()[0]
-        recent = conn.execute(
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) as cnt FROM failed_startups")
+        total_startups = cursor.fetchone()["cnt"]
+        cursor.execute(
+            "SELECT COUNT(*) as cnt FROM failed_startups WHERE manufacturing_sub_sector IS NOT NULL"
+        )
+        mfg_startups = cursor.fetchone()["cnt"]
+        cursor.execute("SELECT COUNT(*) as cnt FROM news_articles")
+        total_articles = cursor.fetchone()["cnt"]
+        cursor.execute(
+            "SELECT COUNT(*) as cnt FROM news_articles WHERE is_manufacturing = 1"
+        )
+        mfg_articles = cursor.fetchone()["cnt"]
+        cursor.execute(
             """SELECT name, sector, year_shutdown FROM failed_startups
                ORDER BY collected_at DESC LIMIT 5"""
-        ).fetchall()
+        )
+        recent = cursor.fetchall()
+        cursor.close()
 
         stats_json = {
             "last_updated": datetime.now(timezone.utc).isoformat(),
@@ -339,10 +346,13 @@ def _build_charts():
         schema.init_schema(conn)
 
         # Chart 1: Failure by category (pie chart)
-        categories = conn.execute(
+        cursor = conn.cursor()
+        cursor.execute(
             """SELECT COALESCE(failure_category, 'Unknown') as cat, COUNT(*) as cnt
                FROM failed_startups GROUP BY failure_category ORDER BY cnt DESC LIMIT 8"""
-        ).fetchall()
+        )
+        categories = cursor.fetchall()
+        cursor.close()
 
         if categories:
             charts_html += '<div class="charts-grid">'
@@ -364,10 +374,13 @@ def _build_charts():
             """
 
         # Chart 2: Failures by year (bar chart)
-        by_year = conn.execute(
+        cursor = conn.cursor()
+        cursor.execute(
             """SELECT year_shutdown, COUNT(*) as cnt FROM failed_startups
                WHERE year_shutdown > 2015 GROUP BY year_shutdown ORDER BY year_shutdown"""
-        ).fetchall()
+        )
+        by_year = cursor.fetchall()
+        cursor.close()
 
         if by_year:
             charts_html += '<div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div>'
@@ -389,10 +402,13 @@ def _build_charts():
             """
 
         # Chart 3: BLS survival rates (line chart)
-        survival = conn.execute(
+        cursor = conn.cursor()
+        cursor.execute(
             """SELECT year, age_1_yr_survival, age_2_yr_survival, age_3_yr_survival, age_5_yr_survival
                FROM bls_survival_rates WHERE quarter IS NULL ORDER BY year"""
-        ).fetchall()
+        )
+        survival = cursor.fetchall()
+        cursor.close()
 
         if survival:
             charts_html += '<div class="charts-grid">'
@@ -421,10 +437,13 @@ def _build_charts():
             """
 
         # Chart 4: Regional breakdown
-        regions = conn.execute(
+        cursor = conn.cursor()
+        cursor.execute(
             """SELECT COALESCE(region, country, 'Unknown') as reg, COUNT(*) as cnt
                FROM failed_startups GROUP BY reg ORDER BY cnt DESC LIMIT 10"""
-        ).fetchall()
+        )
+        regions = cursor.fetchall()
+        cursor.close()
 
         if regions:
             charts_html += '<div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div>'

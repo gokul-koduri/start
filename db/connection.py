@@ -1,46 +1,48 @@
-"""SQLite connection management with WAL mode and context manager."""
+"""MySQL connection management with PyMySQL and DictCursor."""
 
-import sqlite3
+import os
 import logging
-from contextlib import contextmanager
-from pathlib import Path
 
-from config import get_project_root
+import pymysql
+from pymysql.cursors import DictCursor
 
 _logger = logging.getLogger(__name__)
 
-
-def get_db_path() -> Path:
-    """Return the path to the SQLite database file."""
-    import os
-    db_path = os.environ.get("DATABASE_PATH", "data/startup_research.db")
-    path = Path(db_path)
-    if not path.is_absolute():
-        path = get_project_root() / path
-    return path
+_connection_params = None
 
 
-def get_connection(db_path: str | None = None) -> sqlite3.Connection:
-    """Get a SQLite connection with optimized settings.
+def _get_mysql_params() -> dict:
+    """Load MySQL connection parameters from environment variables."""
+    global _connection_params
+    if _connection_params is not None:
+        return _connection_params
 
-    Returns a connection with WAL mode, foreign keys enabled, and
-    a 5-second busy timeout. The caller is responsible for closing.
+    _connection_params = {
+        "host": os.environ.get("MYSQL_HOST", "localhost"),
+        "port": int(os.environ.get("MYSQL_PORT", "3306")),
+        "user": os.environ.get("MYSQL_USER", "root"),
+        "password": os.environ.get("MYSQL_PASSWORD", ""),
+        "database": os.environ.get("MYSQL_DATABASE", "startup_research"),
+        "charset": os.environ.get("MYSQL_CHARSET", "utf8mb4"),
+        "cursorclass": DictCursor,
+        "connect_timeout": 5,
+        "autocommit": False,
+    }
+    return _connection_params
+
+
+def get_connection(**overrides) -> pymysql.Connection:
+    """Get a MySQL connection with DictCursor.
+
+    Returns a PyMySQL connection with InnoDB settings and DictCursor for
+    row["column"] access. The caller is responsible for closing.
 
     For context manager usage, use closing():
         from contextlib import closing
         with closing(get_connection()) as conn:
-            conn.execute(...)
+            cursor = conn.cursor()
+            cursor.execute(...)
     """
-    if db_path is None:
-        db_path = str(get_db_path())
-
-    # Ensure parent directory exists
-    Path(db_path).parent.mkdir(parents=True, exist_ok=True)
-
-    conn = sqlite3.connect(db_path)
-    conn.execute("PRAGMA journal_mode = WAL;")
-    conn.execute("PRAGMA foreign_keys = ON;")
-    conn.execute("PRAGMA busy_timeout = 5000;")
-    conn.row_factory = sqlite3.Row
-
+    params = {**_get_mysql_params(), **overrides}
+    conn = pymysql.connect(**params)
     return conn

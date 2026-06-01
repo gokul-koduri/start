@@ -1,6 +1,5 @@
 """Google News RSS collector for startup failure articles."""
 
-import sqlite3
 import logging
 import re
 from datetime import datetime, timezone
@@ -29,7 +28,7 @@ class GoogleNewsRSSCollector(BaseCollector):
     def name(self) -> str:
         return "google_news_rss"
 
-    def collect(self, conn: sqlite3.Connection) -> CollectionResult:
+    def collect(self, conn) -> CollectionResult:
         result = CollectionResult(collector_name=self.name)
 
         rss_config = self.config.get("rss", {}).get("google_news", {})
@@ -114,15 +113,17 @@ class GoogleNewsRSSCollector(BaseCollector):
                         pub_at = published[:19] if len(published) >= 19 else published
 
                 if not self.dry_run:
-                    conn.execute(
+                    cursor = conn.cursor()
+                    cursor.execute(
                         """INSERT INTO news_articles
                            (title, url, source_name, source_feed, published_at, summary,
                             is_manufacturing, mentions_failure, startup_name_extracted)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                         (title, article_url, source_name, "google_news",
                          pub_at, summary[:500] if summary else None,
                          is_mfg, mentions_fail, startup_name),
                     )
+                    cursor.close()
                     conn.commit()
 
                 result.records_collected += 1
@@ -135,11 +136,14 @@ class GoogleNewsRSSCollector(BaseCollector):
         result.status = "partial" if result.errors else "success"
         return result
 
-    def _get_last_published(self, conn: sqlite3.Connection) -> datetime | None:
+    def _get_last_published(self, conn) -> datetime | None:
         """Get the most recent published_at from news_articles."""
-        row = conn.execute(
+        cursor = conn.cursor()
+        cursor.execute(
             "SELECT MAX(published_at) as latest FROM news_articles WHERE source_feed = 'google_news'"
-        ).fetchone()
+        )
+        row = cursor.fetchone()
+        cursor.close()
         if row and row["latest"]:
             try:
                 return datetime.strptime(row["latest"][:19], "%Y-%m-%d %H:%M:%S")

@@ -36,22 +36,33 @@ nodes:
   - id: insert
     depends_on: [classify]
     prompt: |
-      Insert the classified startup record into the SQLite database.
+      Insert the classified startup record into the MySQL database.
 
-      Database: /Users/kodurigokul/Desktop/Startup_Research_Report/data/startup_research.db
+      Database: startup_research (MySQL)
       Table: failed_startups
 
       Run the INSERT using Python:
       ```python
-      import sqlite3
-      conn = sqlite3.connect('data/startup_research.db')
-      # INSERT OR IGNORE to prevent duplicates
-      conn.execute("""INSERT OR IGNORE INTO failed_startups
+      import pymysql
+      from pymysql.cursors import DictCursor
+      import os
+      conn = pymysql.connect(
+          host='localhost',
+          user=os.environ.get('MYSQL_USER', 'root'),
+          password=os.environ.get('MYSQL_PASSWORD', ''),
+          database=os.environ.get('MYSQL_DATABASE', 'startup_research'),
+          charset='utf8mb4',
+          cursorclass=DictCursor
+      )
+      cursor = conn.cursor()
+      # INSERT IGNORE to prevent duplicates
+      cursor.execute("""INSERT IGNORE INTO failed_startups
           (name, sector, manufacturing_sub_sector, country, region, funding_raised_usd,
            funding_description, year_founded, year_shutdown, failure_reason, failure_category,
            notable, source)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (...))
+          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", (...))
       conn.commit()
+      cursor.close()
       conn.close()
       ```
 

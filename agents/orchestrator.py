@@ -35,6 +35,34 @@ def _get_agent_class(name: str):
         from agents.internet_research import InternetResearchAgent
         AGENT_REGISTRY["internet_research"] = InternetResearchAgent
         return InternetResearchAgent
+    elif name == "failure_pattern":
+        from agents.failure_pattern_agent import FailurePatternAgent
+        AGENT_REGISTRY["failure_pattern"] = FailurePatternAgent
+        return FailurePatternAgent
+    elif name == "survival_analysis":
+        from agents.survival_analysis_agent import SurvivalAnalysisAgent
+        AGENT_REGISTRY["survival_analysis"] = SurvivalAnalysisAgent
+        return SurvivalAnalysisAgent
+    elif name == "revival_opportunity":
+        from agents.revival_opportunity_agent import RevivalOpportunityAgent
+        AGENT_REGISTRY["revival_opportunity"] = RevivalOpportunityAgent
+        return RevivalOpportunityAgent
+    elif name == "geographic_strategy":
+        from agents.geographic_strategy_agent import GeographicStrategyAgent
+        AGENT_REGISTRY["geographic_strategy"] = GeographicStrategyAgent
+        return GeographicStrategyAgent
+    elif name == "news_intelligence":
+        from agents.news_intelligence_agent import NewsIntelligenceAgent
+        AGENT_REGISTRY["news_intelligence"] = NewsIntelligenceAgent
+        return NewsIntelligenceAgent
+    elif name == "opportunity_pipeline":
+        from agents.opportunity_pipeline_agent import OpportunityPipelineAgent
+        AGENT_REGISTRY["opportunity_pipeline"] = OpportunityPipelineAgent
+        return OpportunityPipelineAgent
+    elif name == "whale_investor":
+        from agents.whale_investor_agent import WhaleInvestorAgent
+        AGENT_REGISTRY["whale_investor"] = WhaleInvestorAgent
+        return WhaleInvestorAgent
 
     raise ValueError(f"Unknown agent: {name}")
 

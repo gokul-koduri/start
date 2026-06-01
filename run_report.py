@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Entry point to generate the markdown report from the SQLite database.
+"""Entry point to generate the markdown report from the MySQL database.
 
 Usage:
     python run_report.py                                 # Generate full report

@@ -90,9 +90,12 @@ class InternetResearchAgent(BaseAgent):
                             continue
 
                         # Check if already discovered
-                        existing = conn.execute(
-                            "SELECT id FROM discovered_sources WHERE url = ?", (url,)
-                        ).fetchone()
+                        cursor = conn.cursor()
+                        cursor.execute(
+                            "SELECT id FROM discovered_sources WHERE url = %s", (url,)
+                        )
+                        existing = cursor.fetchone()
+                        cursor.close()
                         if existing:
                             continue
 
@@ -109,11 +112,12 @@ class InternetResearchAgent(BaseAgent):
                             high_quality += 1
 
                         # Store in database
-                        conn.execute(
-                            """INSERT OR IGNORE INTO discovered_sources
+                        cursor = conn.cursor()
+                        cursor.execute(
+                            """INSERT IGNORE INTO discovered_sources
                                (url, source_type, content_sample, relevance_score,
                                 validation_status, last_validated_at, discovered_at, search_query)
-                               VALUES (?, ?, ?, ?, 'validated', ?, ?, ?)""",
+                               VALUES (%s, %s, %s, %s, 'validated', %s, %s, %s)""",
                             (
                                 url,
                                 source_type,
@@ -125,6 +129,7 @@ class InternetResearchAgent(BaseAgent):
                             ),
                         )
                         conn.commit()
+                        cursor.close()
 
                 except Exception as e:
                     _logger.warning("InternetResearchAgent: query '%s' failed: %s", query[:30], e)

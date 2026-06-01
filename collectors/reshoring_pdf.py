@@ -1,6 +1,5 @@
 """Reshoring Initiative PDF parser for reshoring/job statistics."""
 
-import sqlite3
 import logging
 import re
 import hashlib
@@ -32,7 +31,7 @@ class ReshoringPDFCollector(BaseCollector):
     def name(self) -> str:
         return "reshoring_pdf"
 
-    def collect(self, conn: sqlite3.Connection) -> CollectionResult:
+    def collect(self, conn) -> CollectionResult:
         result = CollectionResult(collector_name=self.name)
 
         pdf_config = self.config.get("pdf", {}).get("reshoring_initiative", {})
@@ -77,27 +76,31 @@ class ReshoringPDFCollector(BaseCollector):
             for rec in records:
                 if rec["type"] == "summary":
                     if not self.dry_run:
-                        conn.execute(
-                            """INSERT OR REPLACE INTO reshoring_summary_stats
+                        cursor = conn.cursor()
+                        cursor.execute(
+                            """REPLACE INTO reshoring_summary_stats
                                (stat_year, total_jobs, success_rate_pct, key_policy, headline, source, collected_at)
-                               VALUES (?, ?, ?, ?, ?, ?, datetime('now'))""",
+                               VALUES (%s, %s, %s, %s, %s, %s, NOW())""",
                             (rec["data_year"], rec.get("total_jobs"),
                              rec.get("success_rate"), rec.get("key_policy"),
                              rec.get("headline"), rec.get("source")),
                         )
+                        cursor.close()
                 elif rec["type"] == "industry":
                     if not self.dry_run:
-                        conn.execute(
+                        cursor = conn.cursor()
+                        cursor.execute(
                             """INSERT INTO reshoring_data
                                (report_year, data_year, industry, jobs_created, jobs_announced,
                                 success_rate_pct, cost_reduction_pct, notes,
                                 source_report, source_url, collected_at)
-                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))""",
+                               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())""",
                             (report_year, rec["data_year"], rec.get("industry"),
                              rec.get("jobs_created"), rec.get("jobs_announced"),
                              rec.get("success_rate"), rec.get("cost_reduction"),
                              rec.get("notes"), rec.get("source"), pdf_url),
                         )
+                        cursor.close()
                 result.records_collected += 1
                 result.records_inserted += 1
 

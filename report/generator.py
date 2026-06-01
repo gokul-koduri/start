@@ -1,10 +1,9 @@
-"""Report generator: SQLite -> Markdown.
+"""Report generator: MySQL -> Markdown.
 
-Reads data from the SQLite database and produces the full markdown report,
+Reads data from the MySQL database and produces the full markdown report,
 mirroring the structure of Failed_Startups_Manufacturing_Revival_Report.md.
 """
 
-import sqlite3
 import logging
 import tempfile
 import shutil
@@ -15,7 +14,7 @@ _logger = logging.getLogger(__name__)
 
 
 def generate_report(
-    conn: sqlite3.Connection,
+    conn,
     config: dict,
     output_path: str,
     section: str | None = None,
@@ -23,7 +22,7 @@ def generate_report(
     """Generate the full markdown report from database data.
 
     Args:
-        conn: Active SQLite connection (read-only is fine).
+        conn: Active MySQL connection (read-only is fine).
         config: Application configuration dict.
         output_path: Where to write the .md file.
         section: If set, only generate that section (e.g., "part1").
@@ -145,12 +144,15 @@ def _render_part1a(conn) -> str:
     lines.append("")
 
     # Notable failed startups table
-    startups = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT name, sector, funding_description, year_shutdown, failure_reason
         FROM failed_startups
         WHERE region = 'US & Global' AND notable = 1
         ORDER BY year_shutdown DESC, funding_raised_usd DESC
-    """).fetchall()
+    """)
+    startups = cursor.fetchall()
+    cursor.close()
 
     lines.append("### Notable Failed Startups (2023–2025) With Funding")
     lines.append("")
@@ -162,11 +164,14 @@ def _render_part1a(conn) -> str:
         lines.append(f"| {i} | {name} | {s['sector'] or 'N/A'} | {funding} | {s['year_shutdown']} | {s['failure_reason']} |")
 
     # CB Insights failure reasons
-    reasons = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT reason, percentage, rank_order
         FROM failure_reasons_taxonomy
         ORDER BY rank_order
-    """).fetchall()
+    """)
+    reasons = cursor.fetchall()
+    cursor.close()
 
     if reasons:
         lines.append("")
@@ -178,10 +183,13 @@ def _render_part1a(conn) -> str:
             lines.append(f"| {r['rank_order']} | {r['reason']} | {r['percentage']}% |")
 
     # Failure idea patterns
-    patterns = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT idea_category, example_startups, why_failed, market_reality
         FROM failure_idea_patterns
-    """).fetchall()
+    """)
+    patterns = cursor.fetchall()
+    cursor.close()
 
     if patterns:
         lines.append("")
@@ -205,12 +213,15 @@ def _render_part1a(conn) -> str:
 
 
 def _render_manufacturing_failures(conn) -> str:
-    startups = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT name, manufacturing_sub_sector, funding_description, year_shutdown, failure_reason
         FROM failed_startups
         WHERE manufacturing_sub_sector IS NOT NULL
         ORDER BY year_shutdown DESC, funding_raised_usd DESC
-    """).fetchall()
+    """)
+    startups = cursor.fetchall()
+    cursor.close()
 
     if not startups:
         return ""
@@ -242,12 +253,15 @@ def _render_manufacturing_failures(conn) -> str:
 
 
 def _render_regional_section(conn, region_name: str, region_id: str) -> str:
-    startups = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT name, sector, funding_description, year_shutdown, failure_reason
         FROM failed_startups
-        WHERE region = ? AND notable = 1
+        WHERE region = %s AND notable = 1
         ORDER BY year_shutdown DESC, funding_raised_usd DESC
-    """, (region_id,)).fetchall()
+    """, (region_id,))
+    startups = cursor.fetchall()
+    cursor.close()
 
     if not startups:
         return ""
@@ -281,13 +295,16 @@ def _render_failure_statistics(conn) -> str:
     ]
 
     # BLS data — BLS BED uses NAICS 31 for Manufacturing (aggregate of 31-33)
-    bls_rows = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT year, quarter, age_5_yr_survival
         FROM bls_survival_rates
         WHERE naics_code IN ('31', '31-33') AND age_5_yr_survival IS NOT NULL
         ORDER BY year DESC, quarter DESC
         LIMIT 10
-    """).fetchall()
+    """)
+    bls_rows = cursor.fetchall()
+    cursor.close()
 
     if bls_rows:
         avg_survival = sum(r["age_5_yr_survival"] for r in bls_rows if r["age_5_yr_survival"]) / len([r for r in bls_rows if r["age_5_yr_survival"]])
@@ -297,11 +314,14 @@ def _render_failure_statistics(conn) -> str:
     lines.append("- **2 out of 3 digital manufacturing pilots fail to scale** beyond pilot stage (McKinsey / Industry 4.0 survey data)")
 
     # Failure categories
-    cats = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT failure_category, description, estimated_pct, example_startups
         FROM manufacturing_failure_categories
         ORDER BY estimated_pct DESC
-    """).fetchall()
+    """)
+    cats = cursor.fetchall()
+    cursor.close()
 
     if cats:
         lines.append("")
@@ -336,11 +356,14 @@ def _render_part2(conn) -> str:
     ]
 
     # Reshoring summary stats
-    stats = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT stat_year, total_jobs, success_rate_pct, key_policy, headline
         FROM reshoring_summary_stats
         ORDER BY stat_year DESC
-    """).fetchall()
+    """)
+    stats = cursor.fetchall()
+    cursor.close()
 
     if stats:
         lines.append("### Latest Reshoring Data")
@@ -356,10 +379,13 @@ def _render_part2(conn) -> str:
                 lines.append("- " + "; ".join(parts) + f" ({s['stat_year']})")
 
     # Revival industries
-    industries = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT industry, died_period, why_returning, closed_site_types, market_fit, key_investors, market_size_2030
         FROM revival_industries
-    """).fetchall()
+    """)
+    industries = cursor.fetchall()
+    cursor.close()
 
     if industries:
         lines.append("")
@@ -375,10 +401,13 @@ def _render_part2(conn) -> str:
             lines.append("")
 
     # Geographic hotspots
-    hotspots = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT region, closed_facility_types, revival_potential
         FROM geographic_hotspots
-    """).fetchall()
+    """)
+    hotspots = cursor.fetchall()
+    cursor.close()
 
     if hotspots:
         lines.append("### Geographic Hotspots for Revival")
@@ -403,13 +432,16 @@ def _render_part3(conn) -> str:
     ]
 
     # Get manufacturing failures grouped by sub-sector
-    mfg_failures = conn.execute("""
-        SELECT manufacturing_sub_sector, GROUP_CONCAT(name, ', ') as names
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT manufacturing_sub_sector, GROUP_CONCAT(name SEPARATOR ', ') as names
         FROM failed_startups
         WHERE manufacturing_sub_sector IS NOT NULL
         GROUP BY manufacturing_sub_sector
         ORDER BY COUNT(*) DESC
-    """).fetchall()
+    """)
+    mfg_failures = cursor.fetchall()
+    cursor.close()
 
     for f in mfg_failures:
         sub = f["manufacturing_sub_sector"]
@@ -438,8 +470,14 @@ def _render_part4(conn) -> str:
     ]
 
     # Data-driven opportunities based on recent failures
-    mfg_count = conn.execute("SELECT COUNT(*) as c FROM failed_startups WHERE manufacturing_sub_sector IS NOT NULL").fetchone()
-    news_count = conn.execute("SELECT COUNT(*) as c FROM news_articles WHERE is_manufacturing = 1 AND mentions_failure = 1").fetchone()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as c FROM failed_startups WHERE manufacturing_sub_sector IS NOT NULL")
+    mfg_count = cursor.fetchone()
+    cursor.close()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as c FROM news_articles WHERE is_manufacturing = 1 AND mentions_failure = 1")
+    news_count = cursor.fetchone()
+    cursor.close()
 
     lines.append("### Data-Driven Opportunities (from collected data)")
     lines.append(f"- **{mfg_count['c']} manufacturing startup failures** in database suggest clear patterns to avoid")
@@ -469,11 +507,14 @@ def _render_methodology(conn) -> str:
     ]
 
     # Show last collection runs
-    runs = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT collector_name, started_at, status, records_collected
         FROM collection_runs
         ORDER BY started_at DESC
-    """).fetchall()
+    """)
+    runs = cursor.fetchall()
+    cursor.close()
 
     if runs:
         lines.append("")
@@ -484,9 +525,12 @@ def _render_methodology(conn) -> str:
             lines.append(f"| {r['collector_name']} | {started} | {r['status']} | {r['records_collected']} |")
 
     # Data source counts
-    src_counts = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT source, COUNT(*) as cnt FROM failed_startups GROUP BY source ORDER BY cnt DESC
-    """).fetchall()
+    """)
+    src_counts = cursor.fetchall()
+    cursor.close()
 
     if src_counts:
         lines.append("")
@@ -504,13 +548,16 @@ def _render_sources(conn) -> str:
     lines = ["## Sources {#sources}", ""]
 
     # Group sources by feed/type
-    sources = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT source, source_url, COUNT(*) as cnt
         FROM failed_startups
         WHERE source_url IS NOT NULL
         GROUP BY source, source_url
         ORDER BY source, cnt DESC
-    """).fetchall()
+    """)
+    sources = cursor.fetchall()
+    cursor.close()
 
     if sources:
         current_source = None
@@ -532,10 +579,22 @@ def _render_news_monitoring(conn) -> str:
     ]
 
     # Summary stats
-    total = conn.execute("SELECT COUNT(*) FROM news_articles").fetchone()[0]
-    mfg = conn.execute("SELECT COUNT(*) FROM news_articles WHERE is_manufacturing = 1").fetchone()[0]
-    fail = conn.execute("SELECT COUNT(*) FROM news_articles WHERE mentions_failure = 1").fetchone()[0]
-    both = conn.execute("SELECT COUNT(*) FROM news_articles WHERE is_manufacturing = 1 AND mentions_failure = 1").fetchone()[0]
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as cnt FROM news_articles")
+    total = cursor.fetchone()["cnt"]
+    cursor.close()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as cnt FROM news_articles WHERE is_manufacturing = 1")
+    mfg = cursor.fetchone()["cnt"]
+    cursor.close()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as cnt FROM news_articles WHERE mentions_failure = 1")
+    fail = cursor.fetchone()["cnt"]
+    cursor.close()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as cnt FROM news_articles WHERE is_manufacturing = 1 AND mentions_failure = 1")
+    both = cursor.fetchone()["cnt"]
+    cursor.close()
 
     lines.append("### Coverage Summary")
     lines.append(f"- **{total}** articles collected from Google News and TechCrunch RSS feeds")
@@ -545,27 +604,33 @@ def _render_news_monitoring(conn) -> str:
     lines.append("")
 
     # By source
-    by_source = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT source_feed, COUNT(*) as cnt
         FROM news_articles
         GROUP BY source_feed ORDER BY cnt DESC
-    """).fetchall()
+    """)
+    by_source = cursor.fetchall()
+    cursor.close()
     if by_source:
         lines.append("### Articles by Source")
         lines.append("| Source | Articles |")
         lines.append("|--------|----------|")
         for s in by_source:
-            lines.append(f"| {s[0]} | {s[1]} |")
+            lines.append(f"| {s['source_feed']} | {s['cnt']} |")
         lines.append("")
 
     # Top manufacturing + failure articles (most relevant)
-    mfg_fail_articles = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT title, url, source_name, published_at, summary
         FROM news_articles
         WHERE is_manufacturing = 1 AND mentions_failure = 1
         ORDER BY published_at DESC
         LIMIT 20
-    """).fetchall()
+    """)
+    mfg_fail_articles = cursor.fetchall()
+    cursor.close()
 
     if mfg_fail_articles:
         lines.append("### Recent Manufacturing Startup Failures (News)")
@@ -582,13 +647,16 @@ def _render_news_monitoring(conn) -> str:
             lines.append("")
 
     # Articles with extracted startup names
-    named = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT title, startup_name_extracted, source_name, published_at, url
         FROM news_articles
         WHERE startup_name_extracted IS NOT NULL AND startup_name_extracted != ''
         ORDER BY published_at DESC
         LIMIT 15
-    """).fetchall()
+    """)
+    named = cursor.fetchall()
+    cursor.close()
 
     if named:
         lines.append("### Identified Startup Names in News")
@@ -598,7 +666,7 @@ def _render_news_monitoring(conn) -> str:
         for n in named:
             pub = n["published_at"][:10] if n["published_at"] else ""
             title = n["title"][:50] + "..." if len(n["title"]) > 50 else n["title"]
-            lines.append(f"| {n[0]} | [{title}]({n[3]}) | {n[1]} | {pub} |")
+            lines.append(f"| {n['startup_name_extracted']} | [{title}]({n['url']}) | {n['source_name']} | {pub} |")
         lines.append("")
 
     return "\n".join(lines)
@@ -608,9 +676,18 @@ def _render_footer(conn) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     # Count total data points
-    startup_count = conn.execute("SELECT COUNT(*) FROM failed_startups").fetchone()[0]
-    news_count = conn.execute("SELECT COUNT(*) FROM news_articles").fetchone()[0]
-    bls_count = conn.execute("SELECT COUNT(*) FROM bls_survival_rates").fetchone()[0]
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as cnt FROM failed_startups")
+    startup_count = cursor.fetchone()["cnt"]
+    cursor.close()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as cnt FROM news_articles")
+    news_count = cursor.fetchone()["cnt"]
+    cursor.close()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as cnt FROM bls_survival_rates")
+    bls_count = cursor.fetchone()["cnt"]
+    cursor.close()
 
     return f"""---
 
@@ -628,14 +705,17 @@ def _bold(text: str) -> str:
 
 
 def _query_startup_stats(conn, region: str) -> dict | None:
-    row = conn.execute("""
+    cursor = conn.cursor()
+    cursor.execute("""
         SELECT
             COUNT(*) as total_startups,
             SUM(CASE WHEN manufacturing_sub_sector IS NOT NULL THEN 1 ELSE 0 END) as manufacturing_count,
             MAX(year_shutdown) as latest_year
         FROM failed_startups
-        WHERE region = ?
-    """, (region,)).fetchone()
+        WHERE region = %s
+    """, (region,))
+    row = cursor.fetchone()
+    cursor.close()
 
     if not row or row["total_startups"] == 0:
         return None

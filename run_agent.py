@@ -4,6 +4,8 @@
 Usage:
     python run_agent.py --pipeline daily          # Daily: fast collectors + report + publish
     python run_agent.py --pipeline weekly         # Weekly: all collectors + research + publish
+    python run_agent.py --pipeline analysis       # Run all 6 analysis agents
+    python run_agent.py --pipeline full           # Collection + analysis + dashboard + publish
     python run_agent.py --pipeline collect-only   # Only run data collection
     python run_agent.py --pipeline report-only    # Only generate report
     python run_agent.py --pipeline publish-only   # Only publish (dashboard + git)
@@ -57,7 +59,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run startup research agent pipeline")
     parser.add_argument(
         "--pipeline",
-        choices=["daily", "weekly", "collect-only", "report-only", "publish-only"],
+        choices=["daily", "weekly", "analysis", "full", "collect-only", "report-only", "publish-only"],
         default="daily",
         help="Which pipeline to run (default: daily)",
     )
@@ -86,7 +88,10 @@ def main():
         orchestrator_config["dry_run"] = args.dry_run
 
         # Merge in agent-specific configs
-        for key in ["collection", "report", "dashboard", "git_publisher", "internet_research"]:
+        for key in ["collection", "report", "dashboard", "git_publisher", "internet_research",
+                     "failure_pattern", "survival_analysis", "revival_opportunity",
+                     "geographic_strategy", "news_intelligence", "opportunity_pipeline",
+                     "whale_investor"]:
             if key in agents_config:
                 orchestrator_config[key] = agents_config[key]
 

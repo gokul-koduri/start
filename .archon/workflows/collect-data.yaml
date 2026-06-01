@@ -1,5 +1,5 @@
 name: archon-collect-data
-description: "Seed the SQLite database and run all data collectors (BLS, Google News, TechCrunch, Failory, Reshoring PDF)"
+description: "Seed the MySQL database and run all data collectors (BLS, Google News, TechCrunch, Failory, Reshoring PDF)"
 triggers:
   - "collect data"
   - "run collectors"
@@ -14,7 +14,7 @@ nodes:
   - id: seed-database
     depends_on: [check-dependencies]
     bash: "python3 seed_data.py"
-    description: "Populate SQLite with existing report data"
+    description: "Populate MySQL with existing report data"
 
   - id: run-collectors
     depends_on: [seed-database]
@@ -25,15 +25,28 @@ nodes:
     depends_on: [run-collectors]
     bash: |
       python3 -c "
-      import sqlite3
-      conn = sqlite3.connect('data/startup_research.db')
+      import pymysql
+      from pymysql.cursors import DictCursor
+      import os
+      conn = pymysql.connect(
+          host='localhost',
+          user=os.environ.get('MYSQL_USER', 'root'),
+          password=os.environ.get('MYSQL_PASSWORD', ''),
+          database=os.environ.get('MYSQL_DATABASE', 'startup_research'),
+          charset='utf8mb4',
+          cursorclass=DictCursor
+      )
+      cursor = conn.cursor()
       tables = ['failed_startups', 'failure_reasons_taxonomy', 'failure_idea_patterns',
                 'manufacturing_failure_categories', 'bls_survival_rates', 'news_articles',
                 'reshoring_data', 'reshoring_summary_stats', 'revival_industries',
                 'geographic_hotspots', 'collection_runs']
       for t in tables:
-          count = conn.execute(f'SELECT COUNT(*) FROM {t}').fetchone()[0]
+          cursor.execute(f'SELECT COUNT(*) as count FROM {t}')
+          result = cursor.fetchone()
+          count = result['count'] if result else 0
           print(f'  {t}: {count} records')
+      cursor.close()
       conn.close()
       "
     description: "Print record counts from all database tables"
@@ -48,4 +61,4 @@ nodes:
       - Any data quality concerns
 
       The project is at /Users/kodurigokul/Desktop/Startup_Research_Report
-      The database is at data/startup_research.db
+      The database is MySQL startup_research

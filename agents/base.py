@@ -96,18 +96,21 @@ class BaseAgent(ABC):
         try:
             conn = get_connection()
             schema.init_schema(conn)
-            run_id = conn.execute(
+            cursor = conn.cursor()
+            cursor.execute(
                 """INSERT INTO agent_runs
-                   (pipeline_name, agent_name, started_at, status, trigger)
-                   VALUES (?, ?, ?, 'running', ?)""",
+                   (pipeline_name, agent_name, started_at, status, trigger_type)
+                   VALUES (%s, %s, %s, 'running', %s)""",
                 (
                     self.config.get("_pipeline_name", "manual"),
                     self.name,
                     result.started_at,
                     "manual" if not self.config.get("_scheduled") else "scheduled",
                 ),
-            ).lastrowid
+            )
+            run_id = cursor.lastrowid
             conn.commit()
+            cursor.close()
         except Exception:
             run_id = None
             conn = None
@@ -133,12 +136,13 @@ class BaseAgent(ABC):
             # Update agent_runs record
             if run_id and conn:
                 try:
-                    conn.execute(
+                    cursor = conn.cursor()
+                    cursor.execute(
                         """UPDATE agent_runs
-                           SET completed_at = ?, status = ?,
-                               records_affected = ?, error_message = ?,
-                               result_data = ?
-                           WHERE id = ?""",
+                           SET completed_at = %s, status = %s,
+                               records_affected = %s, error_message = %s,
+                               result_data = %s
+                           WHERE id = %s""",
                         (
                             result.completed_at,
                             result.status,
@@ -149,6 +153,7 @@ class BaseAgent(ABC):
                         ),
                     )
                     conn.commit()
+                    cursor.close()
                 except Exception:
                     pass
                 finally:

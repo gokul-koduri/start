@@ -220,6 +220,26 @@ agents:
       publish-only:
         - dashboard
         - git_publisher
+      analysis:
+        - failure_pattern
+        - survival_analysis
+        - revival_opportunity
+        - geographic_strategy
+        - news_intelligence
+        - opportunity_pipeline
+        - whale_investor
+      full:
+        - collection
+        - report
+        - failure_pattern
+        - survival_analysis
+        - revival_opportunity
+        - geographic_strategy
+        - news_intelligence
+        - opportunity_pipeline
+        - whale_investor
+        - dashboard
+        - git_publisher
 
   collection:
     enabled: true
@@ -253,6 +273,27 @@ agents:
       - "startup cemetery graveyard list"
       - "manufacturing startup failure rate data"
     max_results_per_query: 20
+    validation:
+      timeout_seconds: 10
+      min_content_length: 500
+      relevance_threshold: 0.3
+
+  whale_investor:
+    enabled: true
+    queries:
+      # Greenfield-capacity queries (where 62.6% of mega investment actually flows)
+      - "semiconductor fab greenfield investment 2025 funding"
+      - "battery gigafactory new construction investment 2025"
+      - "CHIPS Act funded projects greenfield construction 2025"
+      - "EV factory new plant investment venture capital 2025"
+      - "manufacturing greenfield mega project private equity 2025"
+      # Strategic investor / sovereign wealth activity
+      - "sovereign wealth fund semiconductor manufacturing investment"
+      - "IRA Inflation Reduction Act manufacturing investment 2024 2025"
+      # Some distressed acquisition coverage (smaller share of activity)
+      - "private equity acquisition distressed manufacturing assets"
+      - "failed manufacturing startup acquired PE firm"
+    max_results_per_query: 15
     validation:
       timeout_seconds: 10
       min_content_length: 500

@@ -15,18 +15,31 @@ nodes:
     depends_on: [collect]
     bash: |
       python3 -c "
-      import sqlite3
-      conn = sqlite3.connect('data/startup_research.db')
+      import pymysql
+      from pymysql.cursors import DictCursor
+      import os
+      conn = pymysql.connect(
+          host='localhost',
+          user=os.environ.get('MYSQL_USER', 'root'),
+          password=os.environ.get('MYSQL_PASSWORD', ''),
+          database=os.environ.get('MYSQL_DATABASE', 'startup_research'),
+          charset='utf8mb4',
+          cursorclass=DictCursor
+      )
+      cursor = conn.cursor()
       tables = ['failed_startups', 'failure_reasons_taxonomy', 'failure_idea_patterns',
                 'manufacturing_failure_categories', 'bls_survival_rates', 'news_articles',
                 'reshoring_data', 'reshoring_summary_stats', 'revival_industries',
                 'geographic_hotspots', 'collection_runs']
       total = 0
       for t in tables:
-          count = conn.execute(f'SELECT COUNT(*) FROM {t}').fetchone()[0]
+          cursor.execute(f'SELECT COUNT(*) as count FROM {t}')
+          result = cursor.fetchone()
+          count = result['count'] if result else 0
           total += count
           print(f'  {t}: {count}')
       print(f'  TOTAL: {total} records across {len(tables)} tables')
+      cursor.close()
       conn.close()
       "
 
@@ -53,7 +66,7 @@ nodes:
     prompt: |
       Review the full pipeline output. The project is at /Users/kodurigokul/Desktop/Startup_Research_Report.
 
-      1. Check the database: data/startup_research.db — verify all 11 tables have data
+      1. Check the MySQL database: startup_research — verify all 11 tables have data
       2. Check the report: Failed_Startups_Manufacturing_Revival_Report.md — verify all sections present
       3. Summarize: total records collected, report line count, any data quality issues
 

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Startup Research Report — Live Dashboard</title>
 <style>
+/* ── Base theme ── */
 :root {
   --bg: #ffffff;
   --bg-secondary: #f8f9fa;
@@ -19,8 +20,22 @@
   --sidebar-width: 280px;
   --header-height: 60px;
 }
+/* ── Dark theme (manual toggle) ── */
+[data-theme="dark"] {
+  --bg: #1a1a2e;
+  --bg-secondary: #16213e;
+  --text: #e8e8e8;
+  --text-secondary: #a0a0a0;
+  --border: #2a2a4a;
+  --accent: #4dabf7;
+  --accent-light: #1a2a4a;
+  --success: #51cf66;
+  --danger: #ff6b6b;
+  --warning: #ffd43b;
+}
+/* ── Dark theme (auto-detect fallback) ── */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --bg: #1a1a2e;
     --bg-secondary: #16213e;
     --text: #e8e8e8;
@@ -33,6 +48,8 @@
     --warning: #ffd43b;
   }
 }
+/* ── Smooth scroll + header offset ── */
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + 16px); }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -40,21 +57,69 @@ body {
   color: var(--text);
   line-height: 1.6;
 }
-/* Header */
+/* ── Header ── */
 .header {
   position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
   background: var(--bg-secondary); border-bottom: 1px solid var(--border);
   display: flex; align-items: center; padding: 0 24px; z-index: 100;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px); gap: 8px;
 }
-.header h1 { font-size: 18px; font-weight: 600; }
-.header .meta { margin-left: auto; font-size: 13px; color: var(--text-secondary); }
-/* Sidebar */
+.header h1 { font-size: 18px; font-weight: 600; white-space: nowrap; }
+.header .meta { margin-left: auto; font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
+/* ── Hamburger (mobile) ── */
+.hamburger {
+  display: none; background: none; border: none; cursor: pointer;
+  padding: 8px; flex-direction: column; gap: 4px;
+}
+.hamburger span {
+  display: block; width: 20px; height: 2px;
+  background: var(--text); transition: all 0.3s;
+}
+.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
+/* ── Sidebar overlay (mobile) ── */
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 90;
+}
+.sidebar-overlay.active { display: block; }
+/* ── Search ── */
+.search-container {
+  position: relative; margin-left: 16px;
+  display: flex; align-items: center;
+}
+.search-container input {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 28px 6px 12px;
+  color: var(--text); font-size: 13px; width: 180px;
+  outline: none; transition: width 0.3s, border-color 0.2s;
+}
+.search-container input:focus { border-color: var(--accent); width: 260px; }
+.search-clear {
+  position: absolute; right: 8px; cursor: pointer;
+  color: var(--text-secondary); font-size: 16px;
+  display: none; line-height: 1;
+}
+.search-clear.visible { display: block; }
+.search-dimmed { opacity: 0.25; transition: opacity 0.2s; }
+/* ── Theme toggle ── */
+.theme-toggle {
+  background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 8px; cursor: pointer;
+  color: var(--text); font-size: 18px; margin-left: 8px;
+  transition: background 0.2s;
+}
+.theme-toggle:hover { background: var(--accent-light); }
+[data-theme="dark"] .theme-icon { transform: rotate(180deg); }
+.theme-icon { display: inline-block; transition: transform 0.3s; }
+/* ── Sidebar ── */
 .sidebar {
   position: fixed; top: var(--header-height); left: 0;
   width: var(--sidebar-width); height: calc(100vh - var(--header-height));
   background: var(--bg-secondary); border-right: 1px solid var(--border);
   overflow-y: auto; padding: 16px 0;
+  transition: transform 0.3s ease;
 }
 .sidebar a {
   display: block; padding: 8px 20px; color: var(--text-secondary);
@@ -64,12 +129,12 @@ body {
 .sidebar a:hover { color: var(--accent); background: var(--accent-light); }
 .sidebar a.h2 { padding-left: 32px; font-weight: 600; color: var(--text); }
 .sidebar a.h3 { padding-left: 48px; }
-/* Main */
+/* ── Main ── */
 .main {
   margin-left: var(--sidebar-width); margin-top: var(--header-height);
   padding: 32px 40px; max-width: 960px;
 }
-/* Stats cards */
+/* ── Stats cards ── */
 .stats-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px; margin-bottom: 32px;
@@ -77,10 +142,28 @@ body {
 .stat-card {
   background: var(--bg-secondary); border: 1px solid var(--border);
   border-radius: 8px; padding: 20px; text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative; overflow: hidden;
 }
-.stat-card .value { font-size: 32px; font-weight: 700; color: var(--accent); }
-.stat-card .label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-/* Charts */
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.stat-card .icon { font-size: 24px; margin-bottom: 6px; display: block; }
+.stat-card .value { font-size: 32px; font-weight: 700; }
+.stat-card .label {
+  font-size: 12px; color: var(--text-secondary); margin-top: 4px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.stat-card.accent-blue .value { color: #0d6efd; }
+.stat-card.accent-blue::before { background: #0d6efd; }
+.stat-card.accent-red .value { color: #dc3545; }
+.stat-card.accent-red::before { background: #dc3545; }
+.stat-card.accent-green .value { color: #198754; }
+.stat-card.accent-green::before { background: #198754; }
+.stat-card.accent-amber .value { color: #fd7e14; }
+.stat-card.accent-amber::before { background: #fd7e14; }
+/* ── Charts ── */
 .chart-container {
   background: var(--bg-secondary); border: 1px solid var(--border);
   border-radius: 8px; padding: 20px; margin-bottom: 24px;
@@ -90,7 +173,7 @@ body {
   display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px;
 }
 @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
-/* Content */
+/* ── Content ── */
 h1 { font-size: 28px; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
 h2 { font-size: 22px; margin: 28px 0 12px; color: var(--accent); }
 h3 { font-size: 18px; margin: 20px 0 8px; }
@@ -120,32 +203,125 @@ blockquote {
   background: var(--accent-light); border-radius: 0 8px 8px 0;
 }
 hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
-/* Print */
+/* ── Collapsible sections ── */
+h2.collapsible {
+  cursor: pointer; user-select: none;
+  position: relative; padding-right: 30px;
+}
+h2.collapsible::after {
+  content: ''; position: absolute; right: 4px; top: 50%;
+  border: solid var(--accent); border-width: 0 2px 2px 0;
+  padding: 4px; display: inline-block;
+  transform: translateY(-65%) rotate(-135deg);
+  transition: transform 0.2s;
+}
+h2.collapsible.collapsed::after {
+  transform: translateY(-35%) rotate(45deg);
+}
+.section-content { transition: max-height 0.3s ease, opacity 0.2s; overflow: hidden; }
+.section-content.collapsed { max-height: 0 !important; opacity: 0; }
+/* ── Styled TOC ── */
+h2#table-of-contents + ol {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 8px; padding: 20px 20px 20px 40px;
+  margin: 16px 0; column-count: 2; column-gap: 24px;
+}
+h2#table-of-contents + ol li { margin: 6px 0; break-inside: avoid; }
+h2#table-of-contents + ol a { color: var(--accent); text-decoration: none; }
+h2#table-of-contents + ol a:hover { text-decoration: underline; }
+/* ── Back to top ── */
+.back-to-top {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--accent); color: white; border: none;
+  cursor: pointer; font-size: 18px; z-index: 80;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.3s, transform 0.3s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.back-to-top.visible { opacity: 1; transform: translateY(0); }
+.back-to-top:hover { opacity: 0.9; transform: translateY(-2px); }
+/* ── Print ── */
 @media print {
-  .sidebar, .header { display: none; }
+  .sidebar, .header, .back-to-top { display: none; }
   .main { margin: 0; padding: 0; }
 }
-/* Mobile */
+/* ── Mobile ── */
 @media (max-width: 768px) {
-  .sidebar { display: none; }
+  .hamburger { display: flex; }
+  .sidebar {
+    transform: translateX(-100%); z-index: 95;
+  }
+  .sidebar.open { transform: translateX(0); }
   .main { margin-left: 0; padding: 20px; }
+  .search-container input { width: 120px; }
+  .search-container input:focus { width: 160px; }
+  h2#table-of-contents + ol { column-count: 1; }
 }
 </style>
 </head>
 <body>
 <div class="header">
+  <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
   <h1>Startup Research Report — Live Dashboard</h1>
-  <span class="meta">Last updated: June 01, 2026 at 16:17 UTC</span>
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search report..." autocomplete="off" />
+    <span class="search-clear" id="searchClear">&times;</span>
+  </div>
+  <span class="meta">Updated: June 01, 2026 at 19:39 UTC</span>
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+    <span class="theme-icon" id="themeIcon">&#9788;</span>
+  </button>
 </div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 <nav class="sidebar">
-
+<a href="#table-of-contents" class="h2">TABLE OF CONTENTS</a>
+<a href="#part-1-failed-startups-that-got-seed-funding-part-1" class="h2">Part 1: Failed Startups That Got Seed Funding</a>
+<a href="#part-1a-united-states-global-part-1a" class="h3">Part 1A: United States &amp; Global</a>
+<a href="#the-big-picture" class="h3">The Big Picture</a>
+<a href="#notable-failed-startups-20232025-with-funding" class="h3">Notable Failed Startups (2023–2025) With Funding</a>
+<a href="#top-reasons-startups-fail-cb-insights-data" class="h3">Top Reasons Startups Fail (CB Insights Data)</a>
+<a href="#failed-ideas-that-got-funding-patterns-to-learn-from" class="h3">Failed Ideas That Got Funding — Patterns to Learn From</a>
+<a href="#key-lessons-for-new-founders" class="h3">Key Lessons for New Founders</a>
+<a href="#manufacturing-specific-startup-failures-2024-2025-manufacturing-specific-failures" class="h3">Manufacturing-Specific Startup Failures (2024-2025)</a>
+<a href="#part-1b-india-startup-failures-part-1b" class="h3">Part 1B: India — Startup Failures</a>
+<a href="#part-1c-china-startup-failures-part-1c" class="h3">Part 1C: China — Startup Failures</a>
+<a href="#part-1d-europe-startup-failures-part-1d" class="h3">Part 1D: Europe — Startup Failures</a>
+<a href="#part-1e-africa-startup-failures-part-1e" class="h3">Part 1E: Africa — Startup Failures</a>
+<a href="#part-1f-manufacturing-specific-failure-rate-statistics-patterns-part-1f" class="h2">Part 1F: Manufacturing-Specific Failure Rate Statistics &amp; Patterns</a>
+<a href="#the-scale-of-manufacturing-startup-failures" class="h3">The Scale of Manufacturing Startup Failures</a>
+<a href="#why-manufacturing-startups-fail-root-cause-analysis" class="h3">Why Manufacturing Startups Fail: Root Cause Analysis</a>
+<a href="#key-insight-the-pilot-to-scale-chasm" class="h3">Key Insight: The &ldquo;Pilot-to-Scale&rdquo; Chasm</a>
+<a href="#part-2-closed-manufacturing-units-5-years-with-revival-potential-part-2" class="h2">Part 2: Closed Manufacturing Units (5+ Years) With Revival Potential</a>
+<a href="#the-reshoring-mega-trend" class="h3">The Reshoring Mega-Trend</a>
+<a href="#latest-reshoring-data" class="h3">Latest Reshoring Data</a>
+<a href="#industries-with-revival-potential" class="h3">Industries With Revival Potential</a>
+<a href="#geographic-hotspots-for-revival" class="h3">Geographic Hotspots for Revival</a>
+<a href="#part-3-where-failed-startup-ideas-meet-manufacturing-revival-part-3" class="h2">Part 3: Where Failed Startup Ideas Meet Manufacturing Revival</a>
+<a href="#high-potential-intersections" class="h3">High-Potential Intersections</a>
+<a href="#part-4-actionable-opportunities-part-4" class="h2">Part 4: Actionable Opportunities</a>
+<a href="#ideas-worth-exploring-based-on-research" class="h3">Ideas Worth Exploring (Based on Research)</a>
+<a href="#data-driven-opportunities-from-collected-data" class="h3">Data-Driven Opportunities (from collected data)</a>
+<a href="#news-monitoring-manufacturing-startup-failures-news" class="h2">News Monitoring: Manufacturing &amp; Startup Failures</a>
+<a href="#coverage-summary" class="h3">Coverage Summary</a>
+<a href="#articles-by-source" class="h3">Articles by Source</a>
+<a href="#recent-manufacturing-startup-failures-news" class="h3">Recent Manufacturing Startup Failures (News)</a>
+<a href="#identified-startup-names-in-news" class="h3">Identified Startup Names in News</a>
+<a href="#methodology-methodology" class="h2">Methodology</a>
+<a href="#research-approach" class="h3">Research Approach</a>
+<a href="#data-freshness" class="h3">Data Freshness</a>
+<a href="#data-sources" class="h3">Data Sources</a>
+<a href="#sources-sources" class="h2">Sources</a>
+<a href="#failory" class="h3">Failory</a>
 </nav>
 <div class="main">
 <div class="stats-grid">
-<div class="stat-card"><div class="value">163</div><div class="label">Total Startups Tracked</div></div>
-<div class="stat-card"><div class="value">44</div><div class="label">Manufacturing Failures</div></div>
-<div class="stat-card"><div class="value">599</div><div class="label">News Articles</div></div>
-<div class="stat-card"><div class="value">330</div><div class="label">Mfg-Related News</div></div>
+<div class="stat-card accent-blue"><span class="icon">&#128640;</span><div class="value">163</div><div class="label">Total Startups Tracked</div></div>
+<div class="stat-card accent-red"><span class="icon">&#9888;</span><div class="value">44</div><div class="label">Manufacturing Failures</div></div>
+<div class="stat-card accent-green"><span class="icon">&#128240;</span><div class="value">723</div><div class="label">News Articles</div></div>
+<div class="stat-card accent-amber"><span class="icon">&#128202;</span><div class="value">387</div><div class="label">Mfg-Related News</div></div>
 </div>
 <div class="charts-grid"><div class="chart-container"><h3>Failure by Category</h3><canvas id="categoryChart"></canvas></div><div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div><div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div></div>
 <h1 id="research-report-failed-startups-revival-ready-manufacturing-industries">Research Report: Failed Startups &amp; Revival-Ready Manufacturing Industries</h1>
@@ -168,8 +344,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 <li><a href="#sources">Sources</a></li>
 </ol>
 <hr />
-<h2 id="part-1-failed-startups-that-got-seed-funding-part-1">Part 1: Failed Startups That Got Seed Funding {#part-1}</h2>
-<h3 id="part-1a-united-states-global-part-1a">Part 1A: United States &amp; Global {#part-1a}</h3>
+<h2 id="part-1-failed-startups-that-got-seed-funding-part-1">Part 1: Failed Startups That Got Seed Funding </h2>
+<h3 id="part-1a-united-states-global-part-1a">Part 1A: United States &amp; Global </h3>
 <h3 id="the-big-picture">The Big Picture</h3>
 <ul>
 <li><strong>104 tracked US/Global tech startups in the database</strong></li>
@@ -458,7 +634,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 <li><strong>Have a clear shutdown plan</strong> — know what happens to IP, employees, obligations</li>
 <li><strong>Don&rsquo;t compete with platforms that can ship your feature for free</strong> (critical for AI startups)</li>
 </ol>
-<h3 id="manufacturing-specific-startup-failures-2024-2025-manufacturing-specific-failures">Manufacturing-Specific Startup Failures (2024-2025) {#manufacturing-specific-failures}</h3>
+<h3 id="manufacturing-specific-startup-failures-2024-2025-manufacturing-specific-failures">Manufacturing-Specific Startup Failures (2024-2025) </h3>
 <p>Manufacturing startups face uniquely brutal economics: long R&amp;D cycles, massive capital requirements, hardware reliability challenges, and the &ldquo;pilot-to-scale&rdquo; gap.</p>
 <table>
 <thead>
@@ -827,7 +1003,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 </tbody>
 </table>
 <p><strong>Common manufacturing failure patterns:</strong> Capital intensity and long cash conversion cycles make manufacturing startups highly vulnerable to funding downturns. The SPAC era (2020-2021) was particularly damaging. The &ldquo;pilot-to-scale&rdquo; chasm is another recurring theme.</p>
-<h3 id="part-1b-india-startup-failures-part-1b">Part 1B: India — Startup Failures {#part-1b}</h3>
+<h3 id="part-1b-india-startup-failures-part-1b">Part 1B: India — Startup Failures </h3>
 <table>
 <thead>
 <tr>
@@ -914,7 +1090,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 </tr>
 </tbody>
 </table>
-<h3 id="part-1c-china-startup-failures-part-1c">Part 1C: China — Startup Failures {#part-1c}</h3>
+<h3 id="part-1c-china-startup-failures-part-1c">Part 1C: China — Startup Failures </h3>
 <table>
 <thead>
 <tr>
@@ -985,7 +1161,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 </tr>
 </tbody>
 </table>
-<h3 id="part-1d-europe-startup-failures-part-1d">Part 1D: Europe — Startup Failures {#part-1d}</h3>
+<h3 id="part-1d-europe-startup-failures-part-1d">Part 1D: Europe — Startup Failures </h3>
 <table>
 <thead>
 <tr>
@@ -1032,7 +1208,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 </tr>
 </tbody>
 </table>
-<h3 id="part-1e-africa-startup-failures-part-1e">Part 1E: Africa — Startup Failures {#part-1e}</h3>
+<h3 id="part-1e-africa-startup-failures-part-1e">Part 1E: Africa — Startup Failures </h3>
 <table>
 <thead>
 <tr>
@@ -1079,7 +1255,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 </tr>
 </tbody>
 </table>
-<h2 id="part-1f-manufacturing-specific-failure-rate-statistics-patterns-part-1f">Part 1F: Manufacturing-Specific Failure Rate Statistics &amp; Patterns {#part-1f}</h2>
+<h2 id="part-1f-manufacturing-specific-failure-rate-statistics-patterns-part-1f">Part 1F: Manufacturing-Specific Failure Rate Statistics &amp; Patterns </h2>
 <h3 id="the-scale-of-manufacturing-startup-failures">The Scale of Manufacturing Startup Failures</h3>
 <ul>
 <li><strong>~41.2% of manufacturing startups fail</strong> within 5 years (BLS Business Employment Dynamics data)</li>
@@ -1190,7 +1366,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 </table>
 <h3 id="key-insight-the-pilot-to-scale-chasm">Key Insight: The &ldquo;Pilot-to-Scale&rdquo; Chasm</h3>
 <p>The single most distinctive pattern in manufacturing startup failures is the gap between successful pilot/prototype and commercial-scale deployment. Software startups can iterate after launch; manufacturing startups must get it right <em>before</em> scale because physical production is unforgiving.</p>
-<h2 id="part-2-closed-manufacturing-units-5-years-with-revival-potential-part-2">Part 2: Closed Manufacturing Units (5+ Years) With Revival Potential {#part-2}</h2>
+<h2 id="part-2-closed-manufacturing-units-5-years-with-revival-potential-part-2">Part 2: Closed Manufacturing Units (5+ Years) With Revival Potential </h2>
 <h3 id="the-reshoring-mega-trend">The Reshoring Mega-Trend</h3>
 <ul>
 <li>Tariffs, supply chain fragility, and geopolitical risk are driving <strong>manufacturing back to the U.S. and allied nations</strong></li>
@@ -1284,69 +1460,9 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 <td>Pharma manufacturing</td>
 <td>Biomanufacturing, medical devices</td>
 </tr>
-<tr>
-<td>Rust Belt (OH, PA, IN, MI)</td>
-<td>Steel mills, auto plants, heavy manufacturing</td>
-<td>EV, battery, green steel</td>
-</tr>
-<tr>
-<td>Southeast (NC, SC, GA, AL)</td>
-<td>Textile mills, furniture factories</td>
-<td>Advanced textiles, EV supply chain</td>
-</tr>
-<tr>
-<td>Sun Belt (AZ, TX, NV)</td>
-<td>Electronics assembly, aerospace</td>
-<td>Semiconductors, data centers, solar</td>
-</tr>
-<tr>
-<td>Northeast (NJ, NY, PA)</td>
-<td>Pharma, chemical plants</td>
-<td>Biomanufacturing, pharma API</td>
-</tr>
-<tr>
-<td>Pacific Northwest (WA, OR)</td>
-<td>Paper mills, aluminum smelters</td>
-<td>Green manufacturing, bio-products</td>
-</tr>
-<tr>
-<td>Puerto Rico</td>
-<td>Pharma manufacturing</td>
-<td>Biomanufacturing, medical devices</td>
-</tr>
-<tr>
-<td>Rust Belt (OH, PA, IN, MI)</td>
-<td>Steel mills, auto plants, heavy manufacturing</td>
-<td>EV, battery, green steel</td>
-</tr>
-<tr>
-<td>Southeast (NC, SC, GA, AL)</td>
-<td>Textile mills, furniture factories</td>
-<td>Advanced textiles, EV supply chain</td>
-</tr>
-<tr>
-<td>Sun Belt (AZ, TX, NV)</td>
-<td>Electronics assembly, aerospace</td>
-<td>Semiconductors, data centers, solar</td>
-</tr>
-<tr>
-<td>Northeast (NJ, NY, PA)</td>
-<td>Pharma, chemical plants</td>
-<td>Biomanufacturing, pharma API</td>
-</tr>
-<tr>
-<td>Pacific Northwest (WA, OR)</td>
-<td>Paper mills, aluminum smelters</td>
-<td>Green manufacturing, bio-products</td>
-</tr>
-<tr>
-<td>Puerto Rico</td>
-<td>Pharma manufacturing</td>
-<td>Biomanufacturing, medical devices</td>
-</tr>
 </tbody>
 </table>
-<h2 id="part-3-where-failed-startup-ideas-meet-manufacturing-revival-part-3">Part 3: Where Failed Startup Ideas Meet Manufacturing Revival {#part-3}</h2>
+<h2 id="part-3-where-failed-startup-ideas-meet-manufacturing-revival-part-3">Part 3: Where Failed Startup Ideas Meet Manufacturing Revival </h2>
 <h3 id="high-potential-intersections">High-Potential Intersections</h3>
 <table>
 <thead>
@@ -1454,7 +1570,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 </tr>
 </tbody>
 </table>
-<h2 id="part-4-actionable-opportunities-part-4">Part 4: Actionable Opportunities {#part-4}</h2>
+<h2 id="part-4-actionable-opportunities-part-4">Part 4: Actionable Opportunities </h2>
 <h3 id="ideas-worth-exploring-based-on-research">Ideas Worth Exploring (Based on Research)</h3>
 <ol>
 <li><strong>Convert closed textile mills into advanced materials manufacturing</strong> — carbon fiber, technical textiles for EVs and aerospace</li>
@@ -1469,15 +1585,15 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 <h3 id="data-driven-opportunities-from-collected-data">Data-Driven Opportunities (from collected data)</h3>
 <ul>
 <li><strong>44 manufacturing startup failures</strong> in database suggest clear patterns to avoid</li>
-<li><strong>172 recent news articles</strong> about manufacturing startup failures signal active market churn</li>
+<li><strong>194 recent news articles</strong> about manufacturing startup failures signal active market churn</li>
 </ul>
-<h2 id="news-monitoring-manufacturing-startup-failures-news">News Monitoring: Manufacturing &amp; Startup Failures {#news}</h2>
+<h2 id="news-monitoring-manufacturing-startup-failures-news">News Monitoring: Manufacturing &amp; Startup Failures </h2>
 <h3 id="coverage-summary">Coverage Summary</h3>
 <ul>
-<li><strong>599</strong> articles collected from Google News and TechCrunch RSS feeds</li>
-<li><strong>330</strong> mention manufacturing (55.1%)</li>
-<li><strong>333</strong> mention startup failures (55.6%)</li>
-<li><strong>172</strong> are in the intersection (manufacturing + failure)</li>
+<li><strong>723</strong> articles collected from Google News and TechCrunch RSS feeds</li>
+<li><strong>387</strong> mention manufacturing (53.5%)</li>
+<li><strong>383</strong> mention startup failures (53.0%)</li>
+<li><strong>194</strong> are in the intersection (manufacturing + failure)</li>
 </ul>
 <h3 id="articles-by-source">Articles by Source</h3>
 <table>
@@ -1490,11 +1606,11 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 <tbody>
 <tr>
 <td>google_news</td>
-<td>579</td>
+<td>683</td>
 </tr>
 <tr>
 <td>techcrunch</td>
-<td>20</td>
+<td>40</td>
 </tr>
 </tbody>
 </table>
@@ -1662,7 +1778,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 </tr>
 </tbody>
 </table>
-<h2 id="methodology-methodology">Methodology {#methodology}</h2>
+<h2 id="methodology-methodology">Methodology </h2>
 <h3 id="research-approach">Research Approach</h3>
 <p>This report was compiled using a <strong>two-pronged research approach</strong>:</p>
 <p><strong>Prong A: Failed Manufacturing Startups (2024-2025)</strong>
@@ -1685,63 +1801,63 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 <tbody>
 <tr>
 <td>techcrunch_rss</td>
-<td>2026-06-01T00:30:38</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>techcrunch_rss</td>
-<td>2026-06-01T00:30:38</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>techcrunch_rss</td>
-<td>2026-06-01T00:30:38</td>
-<td>failed</td>
-<td>0</td>
+<td>2026-06-01T17:13:48</td>
+<td>success</td>
+<td>20</td>
 </tr>
 <tr>
 <td>google_news_rss</td>
-<td>2026-06-01T00:30:38</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>google_news_rss</td>
-<td>2026-06-01T00:30:38</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>google_news_rss</td>
-<td>2026-06-01T00:30:38</td>
-<td>failed</td>
-<td>0</td>
+<td>2026-06-01T17:13:26</td>
+<td>success</td>
+<td>104</td>
 </tr>
 <tr>
 <td>bls_survival_rates</td>
-<td>2026-05-26T00:13:10</td>
+<td>2026-06-01T17:13:14</td>
 <td>success</td>
-<td>31</td>
+<td>0</td>
 </tr>
 <tr>
-<td>bls_survival_rates</td>
-<td>2026-05-26T00:13:10</td>
+<td>reshoring_pdf</td>
+<td>2026-06-01T16:15:31</td>
 <td>success</td>
-<td>31</td>
-</tr>
-<tr>
-<td>bls_survival_rates</td>
-<td>2026-05-26T00:13:10</td>
-<td>success</td>
-<td>31</td>
+<td>0</td>
 </tr>
 <tr>
 <td>failory_scraper</td>
-<td>2026-05-25T22:17:10</td>
-<td>success</td>
-<td>66</td>
+<td>2026-06-01T16:15:29</td>
+<td>partial</td>
+<td>0</td>
+</tr>
+<tr>
+<td>techcrunch_rss</td>
+<td>2026-06-01T16:15:28</td>
+<td>failed</td>
+<td>0</td>
+</tr>
+<tr>
+<td>google_news_rss</td>
+<td>2026-06-01T16:15:28</td>
+<td>failed</td>
+<td>0</td>
+</tr>
+<tr>
+<td>bls_survival_rates</td>
+<td>2026-06-01T16:15:28</td>
+<td>failed</td>
+<td>0</td>
+</tr>
+<tr>
+<td>techcrunch_rss</td>
+<td>2026-06-01T00:30:38</td>
+<td>failed</td>
+<td>0</td>
+</tr>
+<tr>
+<td>techcrunch_rss</td>
+<td>2026-06-01T00:30:38</td>
+<td>failed</td>
+<td>0</td>
 </tr>
 </tbody>
 </table>
@@ -1764,7 +1880,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 </tr>
 </tbody>
 </table>
-<h2 id="sources-sources">Sources {#sources}</h2>
+<h2 id="sources-sources">Sources </h2>
 <h3 id="failory">Failory</h3>
 <ul>
 <li><a href="https://www.failory.com/cemetery/dazo">https://www.failory.com/cemetery/dazo</a> (1 records)</li>
@@ -1892,22 +2008,169 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 <li><a href="https://www.failory.com/cemetery/zulily">https://www.failory.com/cemetery/zulily</a> (1 records)</li>
 </ul>
 <hr />
-<p><em>Report generated on 2026-06-01 04:50 UTC from the Startup Research automated data collection system.</em></p>
-<p><em>Database contains: 163 startups, 599 news articles, 31 BLS data points.</em></p>
+<p><em>Report generated on 2026-06-01 17:14 UTC from the Startup Research automated data collection system.</em></p>
+<p><em>Database contains: 163 startups, 723 news articles, 31 BLS data points.</em></p>
 <p><em>This report uses a two-pronged research approach: </em><em>Prong A</em><em> (Failed Manufacturing Startups 2024-2025) and </em><em>Prong B</em><em> (Manufacturing Revival &amp; Reshoring). See <a href="#methodology">Methodology</a> section for full details.</em></p>
 </div>
+<button class="back-to-top" id="backToTop" aria-label="Back to top">&#9650;</button>
+<script>
+// ── Hamburger menu (mobile) ──
+(function() {
+  var btn = document.getElementById('hamburgerBtn');
+  var sidebar = document.querySelector('.sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  function toggleMenu() {
+    btn.classList.toggle('active');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  }
+  btn.addEventListener('click', toggleMenu);
+  overlay.addEventListener('click', toggleMenu);
+  sidebar.querySelectorAll('a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      if (sidebar.classList.contains('open')) toggleMenu();
+    });
+  });
+})();
+
+// ── Dark mode toggle ──
+(function() {
+  var toggle = document.getElementById('themeToggle');
+  var icon = document.getElementById('themeIcon');
+  var html = document.documentElement;
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      html.setAttribute('data-theme', 'dark');
+      icon.innerHTML = '&#9790;';
+    } else {
+      html.removeAttribute('data-theme');
+      icon.innerHTML = '&#9788;';
+    }
+  }
+  var saved = localStorage.getItem('dashboard-theme');
+  if (saved) applyTheme(saved);
+  toggle.addEventListener('click', function() {
+    var isDark = html.getAttribute('data-theme') === 'dark';
+    var next = isDark ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem('dashboard-theme', next);
+  });
+})();
+
+// ── Client-side search ──
+(function() {
+  var input = document.getElementById('searchInput');
+  var clear = document.getElementById('searchClear');
+  var main = document.querySelector('.main');
+  var sections = [];
+  var debounceTimer;
+  function buildSections() {
+    var headings = main.querySelectorAll('h2, h3');
+    sections = [];
+    headings.forEach(function(h) {
+      var content = [];
+      var sibling = h.nextElementSibling;
+      while (sibling && sibling.tagName !== 'H2' && sibling.tagName !== 'H3') {
+        content.push(sibling);
+        sibling = sibling.nextElementSibling;
+      }
+      sections.push({ heading: h, content: content });
+    });
+  }
+  function doSearch(query) {
+    if (!sections.length) buildSections();
+    var q = query.toLowerCase().trim();
+    if (!q) {
+      main.querySelectorAll('.search-dimmed').forEach(function(el) {
+        el.classList.remove('search-dimmed');
+      });
+      return;
+    }
+    sections.forEach(function(sec) {
+      var text = sec.heading.textContent.toLowerCase();
+      var contentText = sec.content.map(function(el) {
+        return el.textContent.toLowerCase();
+      }).join(' ');
+      var matches = (text + ' ' + contentText).indexOf(q) !== -1;
+      sec.heading.classList.toggle('search-dimmed', !matches);
+      sec.content.forEach(function(el) {
+        el.classList.toggle('search-dimmed', !matches);
+      });
+    });
+  }
+  input.addEventListener('input', function() {
+    clear.classList.toggle('visible', input.value.length > 0);
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function() { doSearch(input.value); }, 200);
+  });
+  clear.addEventListener('click', function() {
+    input.value = '';
+    clear.classList.remove('visible');
+    doSearch('');
+    input.focus();
+  });
+})();
+
+// ── Collapsible sections ──
+(function() {
+  var main = document.querySelector('.main');
+  var h2s = main.querySelectorAll('h2');
+  h2s.forEach(function(h2) {
+    if (h2.id === 'table-of-contents') return;
+    h2.classList.add('collapsible');
+    var wrapper = document.createElement('div');
+    wrapper.className = 'section-content';
+    var sibling = h2.nextElementSibling;
+    while (sibling && sibling.tagName !== 'H2') {
+      var next = sibling.nextElementSibling;
+      wrapper.appendChild(sibling);
+      sibling = next;
+    }
+    h2.parentNode.insertBefore(wrapper, h2.nextSibling);
+    h2.addEventListener('click', function() {
+      h2.classList.toggle('collapsed');
+      wrapper.classList.toggle('collapsed');
+    });
+  });
+})();
+
+// ── Back to top button ──
+(function() {
+  var btn = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() {
+    btn.classList.toggle('visible', window.scrollY > 400);
+  });
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
 
+        Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim();
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0,0,0,0.85)';
+        Chart.defaults.plugins.tooltip.padding = 12;
+        Chart.defaults.plugins.tooltip.cornerRadius = 8;
+        Chart.defaults.animation.duration = 800;
+        Chart.defaults.animation.easing = 'easeOutQuart';
+        
             new Chart(document.getElementById('categoryChart'), {
                 type: 'doughnut',
                 data: {
                     labels: ["Unknown", "no_market_need", "ran_out_of_cash", "poor_product", "capital_intensity", "no_business_model", "pilot_to_scale_gap", "governance"],
                     datasets: [{ data: [108, 10, 10, 7, 5, 5, 5, 4],
-                        backgroundColor: ['#0d6efd','#dc3545','#198754','#ffc107','#6f42c1','#fd7e14','#20c997','#e83e8c']
+                        backgroundColor: ['#3B82F6','#EF4444','#10B981','#F59E0B','#8B5CF6','#F97316','#14B8A6','#EC4899']
                     }]
                 },
-                options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16 } },
+                        tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }
+                    }
+                }
             });
             
             new Chart(document.getElementById('yearChart'), {
@@ -1915,10 +2178,17 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
                 data: {
                     labels: ["2016", "2017", "2018", "2019", "2020", "2023", "2024", "2025"],
                     datasets: [{ label: 'Startups Failed', data: [24, 13, 4, 12, 3, 3, 37, 6],
-                        backgroundColor: '#0d6efd', borderRadius: 4
+                        backgroundColor: '#3B82F6', borderRadius: 4, maxBarThickness: 40
                     }]
                 },
-                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }
+                    },
+                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(128,128,128,0.1)' } } }
+                }
             });
             
             new Chart(document.getElementById('survivalChart'), {
@@ -1926,11 +2196,21 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
                 data: {
                     labels: ["1994", "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"],
                     datasets: [
-                        { label: '1-Year Survival %', data: [82.8, 82.4, 80.8, 81.4, 82.2, 82.6, 81.8, 77.8, 79.4, 80.4, 82.1, 83.8, 82.8, 82.1, 77.4, 76.6, 80.7, 81.3, 82.1, 82.6, 87.4, 89.8, 88.6, 91.1, 84.2, 82.3, 86.2, 83.2, 83.0, 82.0, 80.1], borderColor: '#0d6efd', tension: 0.3 },
-                        { label: '5-Year Survival %', data: [53.0, 52.4, 50.9, 49.7, 48.4, 48.3, 47.3, 49.5, 51.1, 52.3, 51.6, 51.2, 49.4, 48.8, 48.1, 50.5, 54.0, 55.2, 57.4, 57.7, 60.4, 61.0, 61.3, 61.7, 57.6, 57.4, 58.4], borderColor: '#dc3545', tension: 0.3 }
+                        { label: '1-Year Survival %', data: [82.8, 82.4, 80.8, 81.4, 82.2, 82.6, 81.8, 77.8, 79.4, 80.4, 82.1, 83.8, 82.8, 82.1, 77.4, 76.6, 80.7, 81.3, 82.1, 82.6, 87.4, 89.8, 88.6, 91.1, 84.2, 82.3, 86.2, 83.2, 83.0, 82.0, 80.1], borderColor: '#3B82F6',
+                           backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3, pointRadius: 3 },
+                        { label: '5-Year Survival %', data: [53.0, 52.4, 50.9, 49.7, 48.4, 48.3, 47.3, 49.5, 51.1, 52.3, 51.6, 51.2, 49.4, 48.8, 48.1, 50.5, 54.0, 55.2, 57.4, 57.7, 60.4, 61.0, 61.3, 61.7, 57.6, 57.4, 58.4], borderColor: '#EF4444',
+                           backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3, pointRadius: 3 }
                     ]
                 },
-                options: { responsive: true, scales: { y: { beginAtZero: false } } }
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }
+                    },
+                    scales: {
+                        y: { beginAtZero: false, grid: { color: 'rgba(128,128,128,0.1)' } }
+                    }
+                }
             });
             
             new Chart(document.getElementById('regionChart'), {
@@ -1938,10 +2218,18 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
                 data: {
                     labels: ["US & Global", "Europe", "India", "China", "Africa", "Other", "Asia-Pacific"],
                     datasets: [{ label: 'Startups', data: [104, 22, 19, 7, 4, 4, 3],
-                        backgroundColor: '#198754', borderRadius: 4
+                        backgroundColor: '#10B981', borderRadius: 4, maxBarThickness: 24
                     }]
                 },
-                options: { responsive: true, indexAxis: 'y', scales: { x: { beginAtZero: true } } }
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }
+                    },
+                    scales: { x: { beginAtZero: true, grid: { color: 'rgba(128,128,128,0.1)' } } }
+                }
             });
             
 </script>

@@ -20,6 +20,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{title}</title>
 <style>
+/* ── Base theme ── */
 :root {{
   --bg: #ffffff;
   --bg-secondary: #f8f9fa;
@@ -34,8 +35,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   --sidebar-width: 280px;
   --header-height: 60px;
 }}
+/* ── Dark theme (manual toggle) ── */
+[data-theme="dark"] {{
+  --bg: #1a1a2e;
+  --bg-secondary: #16213e;
+  --text: #e8e8e8;
+  --text-secondary: #a0a0a0;
+  --border: #2a2a4a;
+  --accent: #4dabf7;
+  --accent-light: #1a2a4a;
+  --success: #51cf66;
+  --danger: #ff6b6b;
+  --warning: #ffd43b;
+}}
+/* ── Dark theme (auto-detect fallback) ── */
 @media (prefers-color-scheme: dark) {{
-  :root {{
+  :root:not([data-theme]) {{
     --bg: #1a1a2e;
     --bg-secondary: #16213e;
     --text: #e8e8e8;
@@ -48,6 +63,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     --warning: #ffd43b;
   }}
 }}
+/* ── Smooth scroll + header offset ── */
+html {{ scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + 16px); }}
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 body {{
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -55,21 +72,69 @@ body {{
   color: var(--text);
   line-height: 1.6;
 }}
-/* Header */
+/* ── Header ── */
 .header {{
   position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
   background: var(--bg-secondary); border-bottom: 1px solid var(--border);
   display: flex; align-items: center; padding: 0 24px; z-index: 100;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px); gap: 8px;
 }}
-.header h1 {{ font-size: 18px; font-weight: 600; }}
-.header .meta {{ margin-left: auto; font-size: 13px; color: var(--text-secondary); }}
-/* Sidebar */
+.header h1 {{ font-size: 18px; font-weight: 600; white-space: nowrap; }}
+.header .meta {{ margin-left: auto; font-size: 13px; color: var(--text-secondary); white-space: nowrap; }}
+/* ── Hamburger (mobile) ── */
+.hamburger {{
+  display: none; background: none; border: none; cursor: pointer;
+  padding: 8px; flex-direction: column; gap: 4px;
+}}
+.hamburger span {{
+  display: block; width: 20px; height: 2px;
+  background: var(--text); transition: all 0.3s;
+}}
+.hamburger.active span:nth-child(1) {{ transform: rotate(45deg) translate(4px, 4px); }}
+.hamburger.active span:nth-child(2) {{ opacity: 0; }}
+.hamburger.active span:nth-child(3) {{ transform: rotate(-45deg) translate(4px, -4px); }}
+/* ── Sidebar overlay (mobile) ── */
+.sidebar-overlay {{
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 90;
+}}
+.sidebar-overlay.active {{ display: block; }}
+/* ── Search ── */
+.search-container {{
+  position: relative; margin-left: 16px;
+  display: flex; align-items: center;
+}}
+.search-container input {{
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 28px 6px 12px;
+  color: var(--text); font-size: 13px; width: 180px;
+  outline: none; transition: width 0.3s, border-color 0.2s;
+}}
+.search-container input:focus {{ border-color: var(--accent); width: 260px; }}
+.search-clear {{
+  position: absolute; right: 8px; cursor: pointer;
+  color: var(--text-secondary); font-size: 16px;
+  display: none; line-height: 1;
+}}
+.search-clear.visible {{ display: block; }}
+.search-dimmed {{ opacity: 0.25; transition: opacity 0.2s; }}
+/* ── Theme toggle ── */
+.theme-toggle {{
+  background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 8px; cursor: pointer;
+  color: var(--text); font-size: 18px; margin-left: 8px;
+  transition: background 0.2s;
+}}
+.theme-toggle:hover {{ background: var(--accent-light); }}
+[data-theme="dark"] .theme-icon {{ transform: rotate(180deg); }}
+.theme-icon {{ display: inline-block; transition: transform 0.3s; }}
+/* ── Sidebar ── */
 .sidebar {{
   position: fixed; top: var(--header-height); left: 0;
   width: var(--sidebar-width); height: calc(100vh - var(--header-height));
   background: var(--bg-secondary); border-right: 1px solid var(--border);
   overflow-y: auto; padding: 16px 0;
+  transition: transform 0.3s ease;
 }}
 .sidebar a {{
   display: block; padding: 8px 20px; color: var(--text-secondary);
@@ -79,12 +144,12 @@ body {{
 .sidebar a:hover {{ color: var(--accent); background: var(--accent-light); }}
 .sidebar a.h2 {{ padding-left: 32px; font-weight: 600; color: var(--text); }}
 .sidebar a.h3 {{ padding-left: 48px; }}
-/* Main */
+/* ── Main ── */
 .main {{
   margin-left: var(--sidebar-width); margin-top: var(--header-height);
   padding: 32px 40px; max-width: 960px;
 }}
-/* Stats cards */
+/* ── Stats cards ── */
 .stats-grid {{
   display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px; margin-bottom: 32px;
@@ -92,10 +157,28 @@ body {{
 .stat-card {{
   background: var(--bg-secondary); border: 1px solid var(--border);
   border-radius: 8px; padding: 20px; text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative; overflow: hidden;
 }}
-.stat-card .value {{ font-size: 32px; font-weight: 700; color: var(--accent); }}
-.stat-card .label {{ font-size: 12px; color: var(--text-secondary); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }}
-/* Charts */
+.stat-card:hover {{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }}
+.stat-card .icon {{ font-size: 24px; margin-bottom: 6px; display: block; }}
+.stat-card .value {{ font-size: 32px; font-weight: 700; }}
+.stat-card .label {{
+  font-size: 12px; color: var(--text-secondary); margin-top: 4px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}}
+.stat-card::before {{
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}}
+.stat-card.accent-blue .value {{ color: #0d6efd; }}
+.stat-card.accent-blue::before {{ background: #0d6efd; }}
+.stat-card.accent-red .value {{ color: #dc3545; }}
+.stat-card.accent-red::before {{ background: #dc3545; }}
+.stat-card.accent-green .value {{ color: #198754; }}
+.stat-card.accent-green::before {{ background: #198754; }}
+.stat-card.accent-amber .value {{ color: #fd7e14; }}
+.stat-card.accent-amber::before {{ background: #fd7e14; }}
+/* ── Charts ── */
 .chart-container {{
   background: var(--bg-secondary); border: 1px solid var(--border);
   border-radius: 8px; padding: 20px; margin-bottom: 24px;
@@ -105,7 +188,7 @@ body {{
   display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px;
 }}
 @media (max-width: 900px) {{ .charts-grid {{ grid-template-columns: 1fr; }} }}
-/* Content */
+/* ── Content ── */
 h1 {{ font-size: 28px; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }}
 h2 {{ font-size: 22px; margin: 28px 0 12px; color: var(--accent); }}
 h3 {{ font-size: 18px; margin: 20px 0 8px; }}
@@ -135,23 +218,79 @@ blockquote {{
   background: var(--accent-light); border-radius: 0 8px 8px 0;
 }}
 hr {{ border: none; border-top: 1px solid var(--border); margin: 24px 0; }}
-/* Print */
+/* ── Collapsible sections ── */
+h2.collapsible {{
+  cursor: pointer; user-select: none;
+  position: relative; padding-right: 30px;
+}}
+h2.collapsible::after {{
+  content: ''; position: absolute; right: 4px; top: 50%;
+  border: solid var(--accent); border-width: 0 2px 2px 0;
+  padding: 4px; display: inline-block;
+  transform: translateY(-65%) rotate(-135deg);
+  transition: transform 0.2s;
+}}
+h2.collapsible.collapsed::after {{
+  transform: translateY(-35%) rotate(45deg);
+}}
+.section-content {{ transition: max-height 0.3s ease, opacity 0.2s; overflow: hidden; }}
+.section-content.collapsed {{ max-height: 0 !important; opacity: 0; }}
+/* ── Styled TOC ── */
+h2#table-of-contents + ol {{
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 8px; padding: 20px 20px 20px 40px;
+  margin: 16px 0; column-count: 2; column-gap: 24px;
+}}
+h2#table-of-contents + ol li {{ margin: 6px 0; break-inside: avoid; }}
+h2#table-of-contents + ol a {{ color: var(--accent); text-decoration: none; }}
+h2#table-of-contents + ol a:hover {{ text-decoration: underline; }}
+/* ── Back to top ── */
+.back-to-top {{
+  position: fixed; bottom: 24px; right: 24px;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--accent); color: white; border: none;
+  cursor: pointer; font-size: 18px; z-index: 80;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.3s, transform 0.3s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}}
+.back-to-top.visible {{ opacity: 1; transform: translateY(0); }}
+.back-to-top:hover {{ opacity: 0.9; transform: translateY(-2px); }}
+/* ── Print ── */
 @media print {{
-  .sidebar, .header {{ display: none; }}
+  .sidebar, .header, .back-to-top {{ display: none; }}
   .main {{ margin: 0; padding: 0; }}
 }}
-/* Mobile */
+/* ── Mobile ── */
 @media (max-width: 768px) {{
-  .sidebar {{ display: none; }}
+  .hamburger {{ display: flex; }}
+  .sidebar {{
+    transform: translateX(-100%); z-index: 95;
+  }}
+  .sidebar.open {{ transform: translateX(0); }}
   .main {{ margin-left: 0; padding: 20px; }}
+  .search-container input {{ width: 120px; }}
+  .search-container input:focus {{ width: 160px; }}
+  h2#table-of-contents + ol {{ column-count: 1; }}
 }}
 </style>
 </head>
 <body>
 <div class="header">
+  <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
   <h1>{title}</h1>
-  <span class="meta">Last updated: {generated}</span>
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search report..." autocomplete="off" />
+    <span class="search-clear" id="searchClear">&times;</span>
+  </div>
+  <span class="meta">Updated: {generated}</span>
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+    <span class="theme-icon" id="themeIcon">&#9788;</span>
+  </button>
 </div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 <nav class="sidebar">
 {nav}
 </nav>
@@ -160,6 +299,139 @@ hr {{ border: none; border-top: 1px solid var(--border); margin: 24px 0; }}
 {charts}
 {body}
 </div>
+<button class="back-to-top" id="backToTop" aria-label="Back to top">&#9650;</button>
+<script>
+// ── Hamburger menu (mobile) ──
+(function() {{
+  var btn = document.getElementById('hamburgerBtn');
+  var sidebar = document.querySelector('.sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  function toggleMenu() {{
+    btn.classList.toggle('active');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  }}
+  btn.addEventListener('click', toggleMenu);
+  overlay.addEventListener('click', toggleMenu);
+  sidebar.querySelectorAll('a').forEach(function(link) {{
+    link.addEventListener('click', function() {{
+      if (sidebar.classList.contains('open')) toggleMenu();
+    }});
+  }});
+}})();
+
+// ── Dark mode toggle ──
+(function() {{
+  var toggle = document.getElementById('themeToggle');
+  var icon = document.getElementById('themeIcon');
+  var html = document.documentElement;
+  function applyTheme(theme) {{
+    if (theme === 'dark') {{
+      html.setAttribute('data-theme', 'dark');
+      icon.innerHTML = '&#9790;';
+    }} else {{
+      html.removeAttribute('data-theme');
+      icon.innerHTML = '&#9788;';
+    }}
+  }}
+  var saved = localStorage.getItem('dashboard-theme');
+  if (saved) applyTheme(saved);
+  toggle.addEventListener('click', function() {{
+    var isDark = html.getAttribute('data-theme') === 'dark';
+    var next = isDark ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem('dashboard-theme', next);
+  }});
+}})();
+
+// ── Client-side search ──
+(function() {{
+  var input = document.getElementById('searchInput');
+  var clear = document.getElementById('searchClear');
+  var main = document.querySelector('.main');
+  var sections = [];
+  var debounceTimer;
+  function buildSections() {{
+    var headings = main.querySelectorAll('h2, h3');
+    sections = [];
+    headings.forEach(function(h) {{
+      var content = [];
+      var sibling = h.nextElementSibling;
+      while (sibling && sibling.tagName !== 'H2' && sibling.tagName !== 'H3') {{
+        content.push(sibling);
+        sibling = sibling.nextElementSibling;
+      }}
+      sections.push({{ heading: h, content: content }});
+    }});
+  }}
+  function doSearch(query) {{
+    if (!sections.length) buildSections();
+    var q = query.toLowerCase().trim();
+    if (!q) {{
+      main.querySelectorAll('.search-dimmed').forEach(function(el) {{
+        el.classList.remove('search-dimmed');
+      }});
+      return;
+    }}
+    sections.forEach(function(sec) {{
+      var text = sec.heading.textContent.toLowerCase();
+      var contentText = sec.content.map(function(el) {{
+        return el.textContent.toLowerCase();
+      }}).join(' ');
+      var matches = (text + ' ' + contentText).indexOf(q) !== -1;
+      sec.heading.classList.toggle('search-dimmed', !matches);
+      sec.content.forEach(function(el) {{
+        el.classList.toggle('search-dimmed', !matches);
+      }});
+    }});
+  }}
+  input.addEventListener('input', function() {{
+    clear.classList.toggle('visible', input.value.length > 0);
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function() {{ doSearch(input.value); }}, 200);
+  }});
+  clear.addEventListener('click', function() {{
+    input.value = '';
+    clear.classList.remove('visible');
+    doSearch('');
+    input.focus();
+  }});
+}})();
+
+// ── Collapsible sections ──
+(function() {{
+  var main = document.querySelector('.main');
+  var h2s = main.querySelectorAll('h2');
+  h2s.forEach(function(h2) {{
+    if (h2.id === 'table-of-contents') return;
+    h2.classList.add('collapsible');
+    var wrapper = document.createElement('div');
+    wrapper.className = 'section-content';
+    var sibling = h2.nextElementSibling;
+    while (sibling && sibling.tagName !== 'H2') {{
+      var next = sibling.nextElementSibling;
+      wrapper.appendChild(sibling);
+      sibling = next;
+    }}
+    h2.parentNode.insertBefore(wrapper, h2.nextSibling);
+    h2.addEventListener('click', function() {{
+      h2.classList.toggle('collapsed');
+      wrapper.classList.toggle('collapsed');
+    }});
+  }});
+}})();
+
+// ── Back to top button ──
+(function() {{
+  var btn = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() {{
+    btn.classList.toggle('visible', window.scrollY > 400);
+  }});
+  btn.addEventListener('click', function() {{
+    window.scrollTo({{ top: 0, behavior: 'smooth' }});
+  }});
+}})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
 {chart_script}
@@ -216,6 +488,13 @@ class DashboardAgent(BaseAgent):
             extensions=["tables", "fenced_code", "toc", "smarty"],
         )
 
+        # Strip {#id} syntax from visible heading text
+        html_body = re.sub(
+            r"(<h[1-6][^>]*>)((?:(?!</h[1-6]>).*)?)\s*\{#[^}]+\}\s*(</h[1-6]>)",
+            r"\1\2\3",
+            html_body,
+        )
+
         # Build navigation from headings
         nav_html = _generate_nav(html_body)
 
@@ -267,17 +546,37 @@ class DashboardAgent(BaseAgent):
 def _generate_nav(html_body: str) -> str:
     """Extract headings and build sidebar navigation."""
     nav_items = []
-    for match in re.finditer(r"<(h[23])>(.*?)</\1>", html_body):
-        tag, text = match.group(1), match.group(2)
-        # Clean HTML from heading text
-        clean = re.sub(r"<[^>]+>", "", text)
-        anchor = re.sub(r"[^a-z0-9]+", "-", clean.lower()).strip("-")
-        css_class = "h2" if tag == "h2" else "h3"
-        nav_items.append(f'<a href="#{anchor}" class="{css_class}">{clean}</a>')
 
-    # Add anchors to the html body for navigation
-    # (This modifies the headings in the body to include id attributes)
-    return "\n".join(nav_items[:50])  # Limit nav items
+    # Match headings WITH id attributes (primary path — what markdown library produces)
+    for match in re.finditer(
+        r'<(h[23])\s+id="([^"]*)">(.*?)</\1>', html_body
+    ):
+        tag, heading_id, text = match.group(1), match.group(2), match.group(3)
+        clean = re.sub(r"<[^>]+>", "", text)  # Strip HTML tags
+        clean = re.sub(r"\s*\{#[^}]+\}", "", clean)  # Strip {#id} syntax
+        clean = clean.strip()
+        if not clean:
+            continue
+        css_class = "h2" if tag == "h2" else "h3"
+        nav_items.append(
+            f'<a href="#{heading_id}" class="{css_class}">{clean}</a>'
+        )
+
+    # Fallback: headings WITHOUT id attributes
+    if not nav_items:
+        for match in re.finditer(r"<(h[23])>(.*?)</\1>", html_body):
+            tag, text = match.group(1), match.group(2)
+            clean = re.sub(r"<[^>]+>", "", text)
+            clean = re.sub(r"\s*\{#[^}]+\}", "", clean)
+            anchor = re.sub(r"[^a-z0-9]+", "-", clean.lower()).strip("-")
+            if not anchor:
+                continue
+            css_class = "h2" if tag == "h2" else "h3"
+            nav_items.append(
+                f'<a href="#{anchor}" class="{css_class}">{clean}</a>'
+            )
+
+    return "\n".join(nav_items[:50])
 
 
 def _fetch_stats():
@@ -323,14 +622,27 @@ def _fetch_stats():
 
     # Build stat cards HTML
     cards = [
-        ("total_startups", "Total Startups Tracked", stats_json.get("total_startups", 0)),
-        ("mfg_startups", "Manufacturing Failures", stats_json.get("manufacturing_startups", 0)),
-        ("total_articles", "News Articles", stats_json.get("total_articles", 0)),
-        ("mfg_articles", "Mfg-Related News", stats_json.get("manufacturing_articles", 0)),
+        ("total_startups", "Total Startups Tracked", "&#128640;", "accent-blue"),
+        ("mfg_startups", "Manufacturing Failures", "&#9888;", "accent-red"),
+        ("total_articles", "News Articles", "&#128240;", "accent-green"),
+        ("mfg_articles", "Mfg-Related News", "&#128202;", "accent-amber"),
     ]
+    value_keys = {
+        "total_startups": "total_startups",
+        "mfg_startups": "manufacturing_startups",
+        "total_articles": "total_articles",
+        "mfg_articles": "manufacturing_articles",
+    }
     stats_html = '<div class="stats-grid">\n'
-    for _, label, value in cards:
-        stats_html += f'<div class="stat-card"><div class="value">{value}</div><div class="label">{label}</div></div>\n'
+    for key, label, icon, accent in cards:
+        value = stats_json.get(value_keys[key], 0)
+        stats_html += (
+            f'<div class="stat-card {accent}">'
+            f'<span class="icon">{icon}</span>'
+            f'<div class="value">{value}</div>'
+            f'<div class="label">{label}</div>'
+            f'</div>\n'
+        )
     stats_html += "</div>"
 
     return stats_html, stats_json
@@ -345,7 +657,18 @@ def _build_charts():
         conn = get_connection()
         schema.init_schema(conn)
 
-        # Chart 1: Failure by category (pie chart)
+        # Chart.js global defaults for better styling
+        chart_script += """
+        Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim();
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0,0,0,0.85)';
+        Chart.defaults.plugins.tooltip.padding = 12;
+        Chart.defaults.plugins.tooltip.cornerRadius = 8;
+        Chart.defaults.animation.duration = 800;
+        Chart.defaults.animation.easing = 'easeOutQuart';
+        """
+
+        # Chart 1: Failure by category (doughnut)
         cursor = conn.cursor()
         cursor.execute(
             """SELECT COALESCE(failure_category, 'Unknown') as cat, COUNT(*) as cnt
@@ -366,10 +689,16 @@ def _build_charts():
                 data: {{
                     labels: {cat_labels},
                     datasets: [{{ data: {cat_data},
-                        backgroundColor: ['#0d6efd','#dc3545','#198754','#ffc107','#6f42c1','#fd7e14','#20c997','#e83e8c']
+                        backgroundColor: ['#3B82F6','#EF4444','#10B981','#F59E0B','#8B5CF6','#F97316','#14B8A6','#EC4899']
                     }}]
                 }},
-                options: {{ responsive: true, plugins: {{ legend: {{ position: 'bottom', labels: {{ boxWidth: 12 }} }} }} }}
+                options: {{
+                    responsive: true,
+                    plugins: {{
+                        legend: {{ position: 'bottom', labels: {{ boxWidth: 12, padding: 16 }} }},
+                        tooltip: {{ backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }}
+                    }}
+                }}
             }});
             """
 
@@ -394,10 +723,17 @@ def _build_charts():
                 data: {{
                     labels: {year_labels},
                     datasets: [{{ label: 'Startups Failed', data: {year_data},
-                        backgroundColor: '#0d6efd', borderRadius: 4
+                        backgroundColor: '#3B82F6', borderRadius: 4, maxBarThickness: 40
                     }}]
                 }},
-                options: {{ responsive: true, scales: {{ y: {{ beginAtZero: true }} }} }}
+                options: {{
+                    responsive: true,
+                    plugins: {{
+                        legend: {{ display: false }},
+                        tooltip: {{ backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }}
+                    }},
+                    scales: {{ y: {{ beginAtZero: true, grid: {{ color: 'rgba(128,128,128,0.1)' }} }} }}
+                }}
             }});
             """
 
@@ -414,13 +750,9 @@ def _build_charts():
             charts_html += '<div class="charts-grid">'
             charts_html += '<div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div>'
 
-            s_labels = json.dumps([str(r["year"]) for r in survival])
             s_1yr = json.dumps([r["age_1_yr_survival"] for r in survival if r["age_1_yr_survival"]])
-            s_2yr = json.dumps([r["age_2_yr_survival"] for r in survival if r["age_2_yr_survival"]])
             s_5yr = json.dumps([r["age_5_yr_survival"] for r in survival if r["age_5_yr_survival"]])
-            # Use years that have corresponding data
             s_years_1 = json.dumps([str(r["year"]) for r in survival if r["age_1_yr_survival"]])
-            s_years_5 = json.dumps([str(r["year"]) for r in survival if r["age_5_yr_survival"]])
 
             chart_script += f"""
             new Chart(document.getElementById('survivalChart'), {{
@@ -428,11 +760,21 @@ def _build_charts():
                 data: {{
                     labels: {s_years_1},
                     datasets: [
-                        {{ label: '1-Year Survival %', data: {s_1yr}, borderColor: '#0d6efd', tension: 0.3 }},
-                        {{ label: '5-Year Survival %', data: {s_5yr}, borderColor: '#dc3545', tension: 0.3 }}
+                        {{ label: '1-Year Survival %', data: {s_1yr}, borderColor: '#3B82F6',
+                           backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3, pointRadius: 3 }},
+                        {{ label: '5-Year Survival %', data: {s_5yr}, borderColor: '#EF4444',
+                           backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3, pointRadius: 3 }}
                     ]
                 }},
-                options: {{ responsive: true, scales: {{ y: {{ beginAtZero: false }} }} }}
+                options: {{
+                    responsive: true,
+                    plugins: {{
+                        tooltip: {{ backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }}
+                    }},
+                    scales: {{
+                        y: {{ beginAtZero: false, grid: {{ color: 'rgba(128,128,128,0.1)' }} }}
+                    }}
+                }}
             }});
             """
 
@@ -457,10 +799,18 @@ def _build_charts():
                 data: {{
                     labels: {reg_labels},
                     datasets: [{{ label: 'Startups', data: {reg_data},
-                        backgroundColor: '#198754', borderRadius: 4
+                        backgroundColor: '#10B981', borderRadius: 4, maxBarThickness: 24
                     }}]
                 }},
-                options: {{ responsive: true, indexAxis: 'y', scales: {{ x: {{ beginAtZero: true }} }} }}
+                options: {{
+                    responsive: true,
+                    indexAxis: 'y',
+                    plugins: {{
+                        legend: {{ display: false }},
+                        tooltip: {{ backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }}
+                    }},
+                    scales: {{ x: {{ beginAtZero: true, grid: {{ color: 'rgba(128,128,128,0.1)' }} }} }}
+                }}
             }});
             """
 

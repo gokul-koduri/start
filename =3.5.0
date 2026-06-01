@@ -1,0 +1,4 @@
+Requirement already satisfied: markdown in /opt/anaconda3/lib/python3.12/site-packages (3.4.1)
+
+[notice] A new release of pip is available: 25.0 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip

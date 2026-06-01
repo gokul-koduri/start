@@ -127,29 +127,25 @@ pdf:
         data_year: 2024
 
 bls:
+  # Legacy BLS API series (no longer used — BDS is Census data, not BLS).
+  # Retained for reference. The collector now uses BLS BED Table 7 downloads.
   series:
     - id: "BD110021000000000000003"
       label: "Manufacturing establishment births"
       naics: "31-33"
       metric: "births"
-    - id: "BD110022000000000000003"
-      label: "Manufacturing establishment deaths"
-      naics: "31-33"
-      metric: "deaths"
-    - id: "BD110090000000000000003"
-      label: "Manufacturing 1-year survival rate"
-      naics: "31-33"
-      metric: "survival_1yr"
-    - id: "BD110091000000000000003"
-      label: "Manufacturing 2-year survival rate"
-      naics: "31-33"
-      metric: "survival_2yr"
-    - id: "BD110093000000000000003"
-      label: "Manufacturing 5-year survival rate"
-      naics: "31-33"
-      metric: "survival_5yr"
   start_year: 2020
   end_year: 2025
+
+bls_bed:
+  # BLS Business Employment Dynamics — Table 7: Survival of private sector
+  # establishments by opening year. Downloaded as fixed-width text files.
+  # No API key required. Updated annually (~2 year lag).
+  # Source: https://www.bls.gov/bdm/bdmage.htm
+  naics_codes:
+    - code: "31"
+      label: "Manufacturing"
+      store_as: "31-33"
 
 classification:
   manufacturing_keywords:
@@ -199,3 +195,65 @@ report:
   include_methodology_section: true
   min_startups_for_region_section: 3
   manufacturing_highlight_threshold: 5
+
+# Agent pipeline configuration
+agents:
+  orchestrator:
+    enabled: true
+    continue_on_failure: true
+    pipelines:
+      daily:
+        - collection
+        - report
+        - dashboard
+        - git_publisher
+      weekly:
+        - internet_research
+        - collection
+        - report
+        - dashboard
+        - git_publisher
+      collect-only:
+        - collection
+      report-only:
+        - report
+      publish-only:
+        - dashboard
+        - git_publisher
+
+  collection:
+    enabled: true
+    daily_collectors:
+      - google_news_rss
+      - techcrunch_rss
+
+  report:
+    enabled: true
+    only_on_new_data: true
+
+  dashboard:
+    enabled: true
+    include_charts: true
+    site_dir: "site"
+
+  git_publisher:
+    enabled: true
+    repo_url: "${GITHUB_REPO}"
+    branch: main
+    pages_branch: gh-pages
+    commit_message_template: "Automated report update - {timestamp}"
+
+  internet_research:
+    enabled: true
+    queries:
+      - "startup failure database open data"
+      - "failed startups API data source"
+      - "manufacturing bankruptcy statistics data"
+      - "reshoring statistics open data"
+      - "startup cemetery graveyard list"
+      - "manufacturing startup failure rate data"
+    max_results_per_query: 20
+    validation:
+      timeout_seconds: 10
+      min_content_length: 500
+      relevance_threshold: 0.3

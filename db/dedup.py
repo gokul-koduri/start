@@ -29,15 +29,21 @@ def dedup_news_article(conn: sqlite3.Connection, url: str) -> bool:
     return row is not None
 
 
-def dedup_bls_rate(conn: sqlite3.Connection, naics_code: str, year: int, quarter: int) -> bool:
+def dedup_bls_rate(conn: sqlite3.Connection, naics_code: str, year: int, quarter: int | None = None) -> bool:
     """Check if a BLS rate record already exists.
 
     Returns True if the record exists.
     """
-    row = conn.execute(
-        "SELECT 1 FROM bls_survival_rates WHERE naics_code = ? AND year = ? AND quarter = ?",
-        (naics_code, year, quarter),
-    ).fetchone()
+    if quarter is not None:
+        row = conn.execute(
+            "SELECT 1 FROM bls_survival_rates WHERE naics_code = ? AND year = ? AND quarter = ?",
+            (naics_code, year, quarter),
+        ).fetchone()
+    else:
+        row = conn.execute(
+            "SELECT 1 FROM bls_survival_rates WHERE naics_code = ? AND year = ? AND quarter IS NULL",
+            (naics_code, year),
+        ).fetchone()
     return row is not None
 
 

@@ -280,11 +280,11 @@ def _render_failure_statistics(conn) -> str:
         "",
     ]
 
-    # BLS data
+    # BLS data — BLS BED uses NAICS 31 for Manufacturing (aggregate of 31-33)
     bls_rows = conn.execute("""
         SELECT year, quarter, age_5_yr_survival
         FROM bls_survival_rates
-        WHERE naics_code = '31-33' AND age_5_yr_survival IS NOT NULL
+        WHERE naics_code IN ('31', '31-33') AND age_5_yr_survival IS NOT NULL
         ORDER BY year DESC, quarter DESC
         LIMIT 10
     """).fetchall()

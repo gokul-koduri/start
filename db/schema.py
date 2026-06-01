@@ -5,7 +5,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 1
+_SCHEMA_VERSION = 3
 
 _TABLES = [
     """
@@ -70,7 +70,8 @@ _TABLES = [
         naics_code          TEXT NOT NULL,
         industry_name       TEXT NOT NULL,
         year                INTEGER NOT NULL,
-        quarter             INTEGER NOT NULL CHECK (quarter BETWEEN 1 AND 4),
+        quarter             INTEGER CHECK (quarter IS NULL OR quarter BETWEEN 1 AND 4),
+        quarter_key         INTEGER GENERATED ALWAYS AS (COALESCE(quarter, -1)) STORED,
         age_1_yr_survival   REAL,
         age_2_yr_survival   REAL,
         age_3_yr_survival   REAL,
@@ -78,7 +79,7 @@ _TABLES = [
         establishment_count INTEGER,
         source_url          TEXT,
         collected_at        TEXT NOT NULL DEFAULT (datetime('now')),
-        UNIQUE(naics_code, year, quarter)
+        UNIQUE(naics_code, year, quarter_key)
     );
     """,
     """
@@ -164,6 +165,35 @@ _TABLES = [
         parameters          TEXT
     );
     """,
+    """
+    CREATE TABLE IF NOT EXISTS agent_runs (
+        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+        pipeline_name       TEXT NOT NULL,
+        agent_name          TEXT NOT NULL,
+        started_at          TEXT NOT NULL,
+        completed_at        TEXT,
+        status              TEXT NOT NULL CHECK (status IN ('running', 'success', 'partial', 'failed')),
+        records_affected    INTEGER DEFAULT 0,
+        error_message       TEXT,
+        result_data         TEXT,
+        trigger             TEXT DEFAULT 'manual'
+    );
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS discovered_sources (
+        id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+        url                 TEXT NOT NULL UNIQUE,
+        source_type         TEXT,
+        description         TEXT,
+        relevance_score     REAL DEFAULT 0.0,
+        content_sample      TEXT,
+        validation_status   TEXT DEFAULT 'pending',
+        last_validated_at   TEXT,
+        discovered_at       TEXT NOT NULL DEFAULT (datetime('now')),
+        search_query        TEXT,
+        metadata            TEXT
+    );
+    """,
 ]
 
 _INDEXES = [
@@ -179,17 +209,85 @@ _INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_bls_industry_year ON bls_survival_rates(naics_code, year);",
     "CREATE INDEX IF NOT EXISTS idx_reshoring_year ON reshoring_data(data_year);",
     "CREATE INDEX IF NOT EXISTS idx_collection_runs_collector ON collection_runs(collector_name, started_at DESC);",
+    "CREATE INDEX IF NOT EXISTS idx_agent_runs_pipeline ON agent_runs(pipeline_name, started_at DESC);",
+    "CREATE INDEX IF NOT EXISTS idx_discovered_sources_status ON discovered_sources(validation_status);",
 ]
 
 
 def init_schema(conn: sqlite3.Connection) -> None:
     """Create all tables and indexes if they don't exist."""
+    # Check current version via a pragma-less approach: see if bls_survival_rates
+    # has the old NOT NULL quarter constraint.
+    _migrate_v1_to_v2(conn)
+
     for table_sql in _TABLES:
         conn.execute(table_sql)
     for index_sql in _INDEXES:
         conn.execute(index_sql)
     conn.commit()
     _logger.info("Database schema initialized (version %d)", _SCHEMA_VERSION)
+
+
+def _migrate_v1_to_v2(conn: sqlite3.Connection) -> None:
+    """Migrate bls_survival_rates from v1 (quarter NOT NULL) to v2 (quarter nullable).
+
+    BLS BED data is annual (no quarter). The v1 schema had quarter NOT NULL with
+    CHECK constraint, which would reject annual data. SQLite cannot DROP constraints,
+    so we recreate the table.
+    """
+    # Check if migration is needed by trying to insert a row with quarter=NULL
+    # into the existing table (without actually inserting). If the table has
+    # NOT NULL on quarter, we need to migrate.
+    cols = conn.execute("PRAGMA table_info(bls_survival_rates)").fetchall()
+    if not cols:
+        return  # Table doesn't exist yet, no migration needed
+
+    col_info = {c["name"]: c for c in cols}
+    quarter_info = col_info.get("quarter")
+
+    # If there's no notnull constraint on quarter, we're already migrated
+    if quarter_info and not quarter_info["notnull"]:
+        return
+
+    _logger.info("Migrating bls_survival_rates from v1 to v2 (quarter nullable)")
+    conn.execute("DROP TABLE IF EXISTS bls_survival_rates_v1_backup")
+    conn.execute("ALTER TABLE bls_survival_rates RENAME TO bls_survival_rates_v1_backup")
+
+    # The new table definition will be created by the _TABLES loop below
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS bls_survival_rates (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            naics_code          TEXT NOT NULL,
+            industry_name       TEXT NOT NULL,
+            year                INTEGER NOT NULL,
+            quarter             INTEGER CHECK (quarter IS NULL OR quarter BETWEEN 1 AND 4),
+            quarter_key         INTEGER GENERATED ALWAYS AS (COALESCE(quarter, -1)) STORED,
+            age_1_yr_survival   REAL,
+            age_2_yr_survival   REAL,
+            age_3_yr_survival   REAL,
+            age_5_yr_survival   REAL,
+            establishment_count INTEGER,
+            source_url          TEXT,
+            collected_at        TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE(naics_code, year, quarter_key)
+        )
+    """)
+
+    # Copy any existing data
+    conn.execute("""
+        INSERT OR IGNORE INTO bls_survival_rates
+            (naics_code, industry_name, year, quarter, age_1_yr_survival,
+             age_2_yr_survival, age_3_yr_survival, age_5_yr_survival,
+             establishment_count, source_url, collected_at)
+        SELECT naics_code, industry_name, year, quarter, age_1_yr_survival,
+               age_2_yr_survival, age_3_yr_survival, age_5_yr_survival,
+               establishment_count, source_url, collected_at
+        FROM bls_survival_rates_v1_backup
+    """)
+
+    conn.execute("DROP TABLE IF EXISTS bls_survival_rates_v1_backup")
+    conn.commit()
+    _logger.info("Migration to v2 complete")
 
 
 def get_schema_version() -> int:

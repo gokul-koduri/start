@@ -430,6 +430,8 @@ This report was compiled using a **two-pronged research approach**:
 
 | Collector | Last Run | Status | Records |
 |-----------|----------|--------|---------|
+| techcrunch_rss | 2026-06-01T00:30:38 | failed | 0 |
+| google_news_rss | 2026-06-01T00:30:38 | failed | 0 |
 | bls_survival_rates | 2026-05-26T00:13:10 | success | 31 |
 | failory_scraper | 2026-05-25T22:17:10 | success | 66 |
 | techcrunch_rss | 2026-05-25T22:12:34 | success | 0 |
@@ -438,8 +440,6 @@ This report was compiled using a **two-pronged research approach**:
 | google_news_rss | 2026-05-25T20:02:02 | success | 559 |
 | techcrunch_rss | 2026-05-25T20:01:51 | success | 20 |
 | reshoring_pdf | 2026-05-25T19:59:54 | success | 1 |
-| failory_scraper | 2026-05-25T19:59:54 | partial | 0 |
-| techcrunch_rss | 2026-05-25T19:59:53 | failed | 0 |
 
 ### Data Sources
 | Source | Records |
@@ -576,7 +576,7 @@ This report was compiled using a **two-pronged research approach**:
 
 ---
 
-*Report generated on 2026-06-01 00:19 UTC from the Startup Research automated data collection system.*
+*Report generated on 2026-06-01 00:30 UTC from the Startup Research automated data collection system.*
 
 *Database contains: 163 startups, 599 news articles, 31 BLS data points.*
 

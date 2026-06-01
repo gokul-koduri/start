@@ -1,0 +1,34 @@
+{
+  "last_updated": "2026-06-01T00:30:39.110435+00:00",
+  "total_startups": 163,
+  "manufacturing_startups": 44,
+  "total_articles": 599,
+  "manufacturing_articles": 330,
+  "recent_failures": [
+    {
+      "name": "Zulily",
+      "sector": "e-Commerce",
+      "year_shutdown": 2024
+    },
+    {
+      "name": "Move Loot",
+      "sector": "e-Commerce",
+      "year_shutdown": 2016
+    },
+    {
+      "name": "Laurel & Wolf",
+      "sector": "e-Commerce",
+      "year_shutdown": 2024
+    },
+    {
+      "name": "Formspring",
+      "sector": "Social Media",
+      "year_shutdown": 2013
+    },
+    {
+      "name": "Dopplr",
+      "sector": "Travel",
+      "year_shutdown": 2024
+    }
+  ]
+}

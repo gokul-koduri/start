@@ -67,6 +67,18 @@
 | B2B SaaS for Niche Markets | Many seed-stage startups | Market too small for venture returns | Not every vertical needs venture-scale SaaS |
 | Consumer Social Apps | Numerous post-TikTok clones | User retention near-zero | Social is winner-take-all |
 | Micro-mobility sharing | Bird, Lime (near-death) | Unit economics never worked | E-scooters as a service is structurally flawed |
+| AI Wrapper Apps | Numerous seed-stage AI startups (2023-24) | Made obsolete by OpenAI/Google free features | AI commoditization kills thin wrappers |
+| Ultra-fast grocery delivery | Gorillas, Getir, Jokr (~$3B+ combined) | Unit economics impossible at 10-min delivery | Customers tolerate 30-min delivery |
+| Web3/Crypto Infrastructure | Hundreds of seed-funded projects (2021-22) | Market crashed, no real demand | Crypto utility remains niche |
+| B2B SaaS for Niche Markets | Many seed-stage startups | Market too small for venture returns | Not every vertical needs venture-scale SaaS |
+| Consumer Social Apps | Numerous post-TikTok clones | User retention near-zero | Social is winner-take-all |
+| Micro-mobility sharing | Bird, Lime (near-death) | Unit economics never worked | E-scooters as a service is structurally flawed |
+| AI Wrapper Apps | Numerous seed-stage AI startups (2023-24) | Made obsolete by OpenAI/Google free features | AI commoditization kills thin wrappers |
+| Ultra-fast grocery delivery | Gorillas, Getir, Jokr (~$3B+ combined) | Unit economics impossible at 10-min delivery | Customers tolerate 30-min delivery |
+| Web3/Crypto Infrastructure | Hundreds of seed-funded projects (2021-22) | Market crashed, no real demand | Crypto utility remains niche |
+| B2B SaaS for Niche Markets | Many seed-stage startups | Market too small for venture returns | Not every vertical needs venture-scale SaaS |
+| Consumer Social Apps | Numerous post-TikTok clones | User retention near-zero | Social is winner-take-all |
+| Micro-mobility sharing | Bird, Lime (near-death) | Unit economics never worked | E-scooters as a service is structurally flawed |
 
 ### Key Lessons for New Founders
 1. **Validate demand BEFORE building** — 42% fail because nobody wants the product
@@ -84,13 +96,13 @@ Manufacturing startups face uniquely brutal economics: long R&D cycles, massive 
 |---|---------|------------------------|---------|---------------|----------------------|
 | 1 | **Wusheng Semiconductor** | Semiconductor Manufacturing | Registered ¥10B ($1.4B) | 2025 | Chip investment bubble burst |
 | 2 | **BluSmart** | EV Manufacturing | ~$100M+ | 2025 | Ran out of funds |
-| 3 | **Black Buffalo 3D** | Construction 3D Printing | Significant funding | 2025 | Chapter 11 bankruptcy; market failed to materialize |
-| 4 | **BCN3D** | 3D Printing | ~€50M+ raised | 2025 | Voluntary bankruptcy; market oversaturation |
-| 5 | **Northvolt** | Battery Cell Manufacturing | $14B+ | 2024 | Production delays, cost overruns, cancelled BMW/VW |
-| 6 | **Northvolt** | Battery Cell Manufacturing | $14B+ | 2024 | Production delays, cost overruns, cancelled orders |
+| 3 | **BCN3D** | 3D Printing | ~€50M+ raised | 2025 | Voluntary bankruptcy; market oversaturation |
+| 4 | **Black Buffalo 3D** | Construction 3D Printing | Significant funding | 2025 | Chapter 11 bankruptcy; market failed to materialize |
+| 5 | **Northvolt** | Battery Cell Manufacturing | $14B+ | 2024 | Production delays, cost overruns, cancelled orders |
+| 6 | **Northvolt** | Battery Cell Manufacturing | $14B+ | 2024 | Production delays, cost overruns, cancelled BMW/VW |
 | 7 | **Desktop Metal** | 3D Printing / Additive Mfg | ~$6B (SPAC valuation) | 2024 | SPAC overvaluation, inability to achieve profitability |
-| 8 | **Royole Technology** | Display Manufacturing | ~$2B+ | 2024 | Could not mass-produce flexible displays |
-| 9 | **Katerra** | Modular Construction | $2B+ | 2024 | Overambitious vertical integration |
+| 8 | **Katerra** | Modular Construction | $2B+ | 2024 | Overambitious vertical integration |
+| 9 | **Royole Technology** | Display Manufacturing | ~$2B+ | 2024 | Could not mass-produce flexible displays |
 | 10 | **Byton** | EV Manufacturing | ¥8.4B (~$1.2B+) | 2024 | Burned cash without delivering mass-market car |
 | 11 | **Fisker** | EV Manufacturing | ~$1B+ | 2024 | Poor product quality, failed to compete with Tesla |
 | 12 | **Veev** | Modular Construction | ~$600M+ | 2024 | Supply chain costs, market downturn in real estate |
@@ -98,9 +110,9 @@ Manufacturing startups face uniquely brutal economics: long R&D cycles, massive 
 | 14 | **54gene** | Biomanufacturing | ~$45M | 2024 | Business model issues; board disputes |
 | 15 | **RoboTire** | Robotics / Automotive Service | $30M+ | 2024 | Automated tire changing economics did not work at scale |
 | 16 | **Vreal** | Entertainment | $15M | 2024 | Bad Timing |
-| 17 | **Hengchi** | EV Manufacturing | Tens of billions (Evergrande) | 2024 | Evergrande debt crisis consumed subsidiary |
-| 18 | **Neta Auto** | EV Manufacturing | Top-seller status | 2024 | Bankruptcy restructuring |
-| 19 | **HiPhi / Human Horizons** | EV Manufacturing | Hundreds of millions | 2024 | Production halt; bankruptcy restructuring |
+| 17 | **HiPhi / Human Horizons** | EV Manufacturing | Hundreds of millions | 2024 | Production halt; bankruptcy restructuring |
+| 18 | **Hengchi** | EV Manufacturing | Tens of billions (Evergrande) | 2024 | Evergrande debt crisis consumed subsidiary |
+| 19 | **Neta Auto** | EV Manufacturing | Top-seller status | 2024 | Bankruptcy restructuring |
 | 20 | **Dextrous Robotics** | Robotics / Material Handling | Well-funded | 2024 | Robotics pilot could not scale to commercial deployment |
 | 21 | **WM Motor** | EV Manufacturing | ¥30B+ (~$4B+) | 2023 | Collapsed under debt |
 | 22 | **Quibi** | Entertainment | $1.8B | 2020 | Multiple Reasons |
@@ -122,8 +134,8 @@ Manufacturing startups face uniquely brutal economics: long R&D cycles, massive 
 | 38 | **Zirtual** | Software & Hardware | $5.5M | 2015 | Mismanagement of Funds |
 | 39 | **Circa** | Entertainment | $4.7M | 2015 | Lack of Funds |
 | 40 | **Wattage** | Software & Hardware | $200K | 2015 | No Market Need |
-| 41 | **Selltag** | e-Commerce | €325K | 2015 | Failure to Pivot |
-| 42 | **Lumos** | Software & Hardware | No Data | 2015 | Lack of Experience |
+| 41 | **Lumos** | Software & Hardware | No Data | 2015 | Lack of Experience |
+| 42 | **Selltag** | e-Commerce | €325K | 2015 | Failure to Pivot |
 | 43 | **Berg** | Design | $1.3M | 2014 | No Market Need |
 | 44 | **SchoolGennie** | Education | N/A | 2014 | Lack of Experience |
 
@@ -186,9 +198,19 @@ Manufacturing startups face uniquely brutal economics: long R&D cycles, massive 
 | Failure Category | Description | % of Mfg Failures (est.) | Examples |
 |------------------|-------------|------------------------|----------|
 | Capital Intensity | Hardware requires 5-10x more capital than software; runway evaporates | ~35% | Northvolt ($14B), Katerra ($2B) |
+| Capital Intensity | Hardware requires 5-10x more capital than software; runway evaporates | ~35% | Northvolt ($14B), Katerra ($2B) |
+| Capital Intensity | Hardware requires 5-10x more capital than software; runway evaporates | ~35% | Northvolt ($14B), Katerra ($2B) |
+| Pilot-to-Scale Gap | Technology works in lab/pilot but fails at commercial volume | ~25% | Dextrous Robotics, RoboTire, 10+ robotics cos |
+| Pilot-to-Scale Gap | Technology works in lab/pilot but fails at commercial volume | ~25% | Dextrous Robotics, RoboTire, 10+ robotics cos |
 | Pilot-to-Scale Gap | Technology works in lab/pilot but fails at commercial volume | ~25% | Dextrous Robotics, RoboTire, 10+ robotics cos |
 | Supply Chain Disruption | COVID-era supply shocks, tariff uncertainty, single-source dependency | ~20% | Veev, Rad Power Bikes |
+| Supply Chain Disruption | COVID-era supply shocks, tariff uncertainty, single-source dependency | ~20% | Veev, Rad Power Bikes |
+| Supply Chain Disruption | COVID-era supply shocks, tariff uncertainty, single-source dependency | ~20% | Veev, Rad Power Bikes |
 | SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
+| SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
+| SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
+| Market Timing | Correct thesis but too early | ~10% | Black Buffalo 3D (construction 3D printing) |
+| Market Timing | Correct thesis but too early | ~10% | Black Buffalo 3D (construction 3D printing) |
 | Market Timing | Correct thesis but too early | ~10% | Black Buffalo 3D (construction 3D printing) |
 
 ### Key Insight: The "Pilot-to-Scale" Chasm
@@ -252,6 +274,18 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 | Northeast (NJ, NY, PA) | Pharma, chemical plants | Biomanufacturing, pharma API |
 | Pacific Northwest (WA, OR) | Paper mills, aluminum smelters | Green manufacturing, bio-products |
 | Puerto Rico | Pharma manufacturing | Biomanufacturing, medical devices |
+| Rust Belt (OH, PA, IN, MI) | Steel mills, auto plants, heavy manufacturing | EV, battery, green steel |
+| Southeast (NC, SC, GA, AL) | Textile mills, furniture factories | Advanced textiles, EV supply chain |
+| Sun Belt (AZ, TX, NV) | Electronics assembly, aerospace | Semiconductors, data centers, solar |
+| Northeast (NJ, NY, PA) | Pharma, chemical plants | Biomanufacturing, pharma API |
+| Pacific Northwest (WA, OR) | Paper mills, aluminum smelters | Green manufacturing, bio-products |
+| Puerto Rico | Pharma manufacturing | Biomanufacturing, medical devices |
+| Rust Belt (OH, PA, IN, MI) | Steel mills, auto plants, heavy manufacturing | EV, battery, green steel |
+| Southeast (NC, SC, GA, AL) | Textile mills, furniture factories | Advanced textiles, EV supply chain |
+| Sun Belt (AZ, TX, NV) | Electronics assembly, aerospace | Semiconductors, data centers, solar |
+| Northeast (NJ, NY, PA) | Pharma, chemical plants | Biomanufacturing, pharma API |
+| Pacific Northwest (WA, OR) | Paper mills, aluminum smelters | Green manufacturing, bio-products |
+| Puerto Rico | Pharma manufacturing | Biomanufacturing, medical devices |
 
 ## Part 3: Where Failed Startup Ideas Meet Manufacturing Revival {#part-3}
 
@@ -259,11 +293,11 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 
 | Failed Startup Category | Manufacturing Revival Match | Opportunity |
 |------------------------|---------------------------|-------------|
-| **Software & Hardware** (Lumos, Aria Insights, Wattage, DotCloud, Anki, QBotix, Seven Dreamers Laboratori...) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
-| **EV Manufacturing** (Fisker, BluSmart, WM Motor, HiPhi / Human Horizons, Byton, Neta Auto, Hengchi) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
-| **Entertainment** (Quibi, Vreal, Circa) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Software & Hardware** (Aria Insights, DotCloud, Anki, QBotix, Seven Dreamers Laboratories, ChaCha, Foun...) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **EV Manufacturing** (HiPhi / Human Horizons, Neta Auto, Hengchi, Byton, WM Motor, BluSmart, Fisker) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Entertainment** (Vreal, Quibi, Circa) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Battery Cell Manufacturing** (Northvolt, Northvolt) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
-| **Modular Construction** (Veev, Katerra) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Modular Construction** (Katerra, Veev) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Transportation** (Navdy, Skully) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **3D Printing** (BCN3D) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **3D Printing / Additive Mfg** (Desktop Metal) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
@@ -272,12 +306,12 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 | **Design** (Berg) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Display Manufacturing** (Royole Technology) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **E-bike Manufacturing** (Rad Power Bikes) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **e-Commerce** (Selltag) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Education** (SchoolGennie) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Food & Beverage** (Munchery) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Robotics / Automotive Service** (RoboTire) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Robotics / Material Handling** (Dextrous Robotics) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Semiconductor Manufacturing** (Wusheng Semiconductor) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
-| **e-Commerce** (Selltag) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 
 ## Part 4: Actionable Opportunities {#part-4}
 
@@ -396,21 +430,21 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 
 | Startup | Article | Source | Date |
 |---------|---------|--------|------|
-| Tracking Startup Failures in Africa: From Millions in Funding to Silent Shutdowns - Launch Base Africa | [Tracking Startup Failures in Africa: From Millions...](None) | Tracking Startup |  |
-| Tesla tried and failed to buy a lithium startup for $325 million - Electrek | [Tesla tried and failed to buy a lithium startup fo...](None) | Tesla tried and |  |
-| Australian firm completes purchase of failed car battery startup - Times of Malta | [Australian firm completes purchase of failed car b...](None) | firm completes purchase of |  |
-| Northvolt files for bankruptcy in Sweden after failing to secure funding - Sharecafe | [Northvolt files for bankruptcy in Sweden after fai...](None) | bankruptcy in Sweden after |  |
-| Australia's Recharge Industries buys failed battery firm Britishvolt - Reuters | [Australia's Recharge Industries buys failed batter...](None) | Recharge Industries buys |  |
-| How Northvolt’s Gigafactory Gamble Failed Spectacularly | by Michael Barnard | The Future is Electric - Medium | [How Northvolt’s Gigafactory Gamble Failed Spectacu...](None) | Gigafactory Gamble |  |
-| EV battery maker Northvolt failed after blowing through $15 billion. This US rival thinks it won't suffer the same fate. - Business Insider | [EV battery maker Northvolt failed after blowing th...](None) | EV battery maker Northvolt |  |
-| Tiny California Startup Buys Up Assets of Failed European Battery Giant - The Information | [Tiny California Startup Buys Up Assets of Failed E...](None) | Buys Up Assets of |  |
-| TechShop Faces Bankruptcy and Closes All 14 Shops - All3DP | [TechShop Faces Bankruptcy and Closes All 14 Shops ...](None) | TechShop Faces Bankruptcy and |  |
-| After Failed Sale, voxeljet Turns to Germany’s Rescue Law—Now Fully Owned by Anzu - 3DPrint.com | [After Failed Sale, voxeljet Turns to Germany’s Res...](None) | After |  |
-| Burlington 3-D printer company goes bankrupt after being acquired - The Boston Globe | [Burlington 3-D printer company goes bankrupt after...](None) | printer company |  |
-| 43-Billion-Yuan Market-Value Once-Star Company Goes Bankrupt - eu.36kr.com | [43-Billion-Yuan Market-Value Once-Star Company Goe...](None) | Company |  |
-| iRobot stock price collapses as Roomba maker files for Chapter 11 bankruptcy: Here's what happens next - Fast Company | [iRobot stock price collapses as Roomba maker files...](None) | iRobot stock price |  |
-| The maker of the Roomba is running out of cash and options. After its failed Amazon deal, iRobot could face bankruptcy. - Business Insider | [The maker of the Roomba is running out of cash and...](None) | After its |  |
-| Nikola Goes Bankrupt As Startup Once Valued Higher Than Ford Runs Out Of Cash - Carscoops | [Nikola Goes Bankrupt As Startup Once Valued Higher...](None) | Nikola |  |
+| debt after my startup | [I'm 40 and $300,000 in debt after my startup faile...](https://news.google.com/rss/articles/CBMihgFBVV95cUxPZGlaN1pZbTA4X0FvNGtibUdEa1ZLMlgyVk5xY3UzUTVwVTdVZVlidS1aT213LTlYQ0xFTlJ2RENEVDduOTJQRFlFR3cydmZPNHppdVR0VHVLLVRYR0ttN1ZRaXJXamZZMUgwOXUwNWxmUVVJaEtNMWZlRE1fNGEyVzJFdkhmdw?oc=5) | Business Insider |  |
+| Analyses on Why they | [17 Failed Indian Startups & Analyses on Why they F...](https://news.google.com/rss/articles/CBMiW0FVX3lxTE50Q3dMMkJSRFRZa2ktS3lKWVRuRnNRYnd4ckUyWUcwY0x2YXdud3lraFpoWFM1bUtybFN5X1RqX3RlR2N1VFVDU2Y0RnBSV3p3Mm5CeG11NmpxSDQ?oc=5) | Failory |  |
+| Startup Where You Worked | [The Startup Where You Worked Failed. Your Career S...](https://news.google.com/rss/articles/CBMihAFBVV95cUxPVHRONzQzck5lMnA4T3FUY1lTMUNMUmJwRVVDUHdzalFVOGoyZGhaUDU3SHJyWVR5dUgxUHZOREVHVS1qNmhTU1NPZFpnUTJ4M1dYRnFfbnBzRjdQamNUWTltMjBzLXk2YlNwTElfdmFYaUFOX0RqZ2U4S25WRF9XSkVxbUQ?oc=5) | WSJ |  |
+| after Richmond super startup | [10 years after Richmond super startup failed, cred...](https://news.google.com/rss/articles/CBMilAFBVV95cUxQM3FCdThLc3VEcWxkVHNiajU3V1RkSFR4TkJEaUlkanV4Rnh6bTdMb3EzMkhZNGdhQnpReVZEa0k0T2ZtTjF5N29GdXJTQ3dzM1BCdDQ2WmlUOEVPS1Q5TmlxTzM5X1Y4bmt1Yzd5ck1HZnRlbE84cjd1RW9pczh3Mk92N3ZMakR1ejNSaEFIak5vR3ZS?oc=5) | Richmond Times-Dispatch |  |
+| Trucks As EV Startup | [Bollinger Is Selling Off Its Last 20 Trucks As EV ...](https://news.google.com/rss/articles/CBMijwFBVV95cUxPWW5EOGRfdHJmdTFNTGptUndHSmRzNF9kMEt4Z2xBeXAzeXRoUGZoMFJYeFltMWI3ZTVLX09xWVVNS3ZFRFpxZUQtZ1MxdmRKMXdfRUd0WWlVMFIwNnZBdllLSmtPbXVvUl9VandxenRKbGswbEpNQ1FtVDhIa0Y3SklkTnAxSVIzalFkMXVWbw?oc=5) | AUTOJOSH |  |
+| startup that | [The all-AI startup that failed: A cautionary case ...](https://news.google.com/rss/articles/CBMijgFBVV95cUxQMVJLSjF6SHItR2dZTGoxbWRRQ2lNMWh4X1lBdHRvdlZaWGtxN0t1XzYwQW1FamppZlkyWmZ2N1hVanR2emstWGNfcjJuSHJ6OVJyX016cmhrWkthUGt5RGJLUV9Qa0QyNVFHM01iNUZvOS00ckphVXgxTlplNm9ad3cxT1ZxUUVUQ01wdnpB?oc=5) | The American Genius |  |
+| Famous Entrepreneurs Who | [Famous Entrepreneurs Who Failed Before They Succee...](https://news.google.com/rss/articles/CBMirAFBVV95cUxNVmdxNDBsTFBIaEpvcTFDTkFIcXc2TWZvYVgtWWlkSW1qa0dsSTNXT3JKUmpPU2xfc1dFa3QxNHNBZk05M2FibGpxMmdTUjNVVWhReGpuUWN0MXBhSmtWTVZ4WkVfbTV4UFdiUmNpRERXdEpEanJmUVJocWZacWFzM2Y3RzhqV01SNXFiZHZDaTRVUWQyR1U5WC1iOVAtakY4REJzaVJMOTZFVy1f?oc=5) | Business.com |  |
+| alumni to revive | [AI startup founded by U of T alumni to revive fail...](https://news.google.com/rss/articles/CBMipgFBVV95cUxNYm1Xd1U5aGRQNDhkTWE1U3pPSDNVWWNiXzBsN1lvRjNVRkZXMVBMUUEwdnlSRFhrdVBvdUxHRmlpT3VPaVJVa2xldjJTZ2dsM0FjVW9BcGtyUnc2cjJ6VWUzc0lYQ0t4N1NmXzEwNng2RW9SallHSWtrOEpOUkI1UWxVMGxrNkdkbDhZQUxvM3ViX2ZOS2hraUhpanh1bEJ0N25GUzhR?oc=5) | University of Toronto |  |
+| Famous Founders Who | [5 Famous Founders Who Failed—Then Built Billion-Do...](https://news.google.com/rss/articles/CBMiqgFBVV95cUxQQUlnZDFpSzgyZDVBdmtUTXV3SWczLUxJcG9mMzVkNWRzUUtDMWhDUmZMYjJSYXJ0VlhpQ2VlTnMtdE1KVU8tQlhGM29vM2N5aHF5elZfU09nX2IyMTdSUTVnUW1sbkRuQm1HMW10eENOZUhFUkRDOGM2OVllQXhwWW1DZ2RITElVeU1ySVREeFE0MndUUEZrRmpEWDF4NVNRRVRWYmNLeTBCdw?oc=5) | inc.com |  |
+| his startup | [He quit GTBank, his startup failed: This founder r...](https://news.google.com/rss/articles/CBMickFVX3lxTE90ODJxS0xKeVYzSGkxT1pGNVd2U2xRaW9kcXRZeG5nRzY3YlN1NWJQQTlEcFVTTDJZVkIyRHRpTDNnajdhc0NFVHZqZ2l6NjNtZ1dBbHp0c0lvZk40SnZfX0FSQzk4S0owajViZUR2MVNXdw?oc=5) | Techpoint Africa |  |
+| Guess Which | [Guess Which Failed EV Startup’s Prototype Is Now O...](https://news.google.com/rss/articles/CBMiogFBVV95cUxObV9XYjNrT0RrbWlfbklVV1gwbnpYUVRBcWctRHFvOWN0cXVnam9ybEtFc3RFcVh1Z2htaVRDS3ZMWjRMZHBZLVp1eXp4ZzJvT2tRbnRSZGExc3JZTDgxejBZQ09RSHdlQ3pjYkxnLWRxZWV1b05fbVBlNlZoVm1XbWxNWk0yWmRZY3pyMFp1NEVtLVd0RWxucFhvUDdXVnF4MUE?oc=5) | The Autopian |  |
+| Tech startups that | [Tech startups that closed down in 2025 - The Times...](https://news.google.com/rss/articles/CBMivgFBVV95cUxOR1hZbzJJVUpkN0o5eDlQMXJEZ0xNSjFiNzY0VzFJd04tQWRFQ2duTnQ4bVVKWFJCUzAzZXRzNnZfaF80WjhhcWh5YmhlVjIyMTltWU4zd1owUmJZQ2VSal9ZNUtqSDNBb0U5Y2RzQ1RIUVpVU2ZialZaVXRyaC11dzViejg5a21EcWh6SEZNVThlOUxncVFxQlc4Y1dlQ0VFQWxWYWNlU0tHN09CSkNpOWlQYlBvd3hIYjBXd2530gHDAUFVX3lxTFBlaUNjQVU0dUtvY3FJOXUxYzRpUjFWeGdfekFxWTFoYWhDbFo0a0kzdWRHLTNacWVDdXBuN2paWUNndEF1UV9udXUzOE9vZzZXN210UDBRUmt5aTRWaHNIamhReEw5OUtMYWwtNXFMVTBQM3ZyWjJNZ3JlRDViZHVPVmlXdHY4V254Y2EtUFktNUJkXzZQZFd6TWFTbmxhbWF5TVRCcHhObFdKRG84eERsbzdLc2dpc0ZNbEtVWFh2eGVxUQ?oc=5) | The Times of India |  |
+| Startups That | [From Burn To Breakdown: 25 Startups That Shut Down...](https://news.google.com/rss/articles/CBMickFVX3lxTE1sVUs4NlpzdGpnTU9Ib1dHOEloM2NRMkVCSl9lQkhFaDRmWEl3enB1eC1RX29BMHRsVTNaM0Y1NTNuRnJPLXR0VThpRXZIeFR6YzM0U3k3UGp0X0xDWVJaMC1jUllLZk01X2QwbTJHQzJuUQ?oc=5) | Inc42 |  |
+| Where Redfin And Zillow | [Can This Viral Real Estate Startup Succeed Where R...](https://news.google.com/rss/articles/CBMi0AFBVV95cUxONWpvWXNiQjJ4b3RDdmR6X213akpMdXktYVRiYk9YNVhmSFJwZXNRMlRKcVN2Z0F5MTJCNHpNVEZjOWYyRzZEUi1qdElWX2czcnBGb0s4ZmZ4VWRQcXEwZUE4dFJta3A1Q2NoZTU3VGxwb3ZDeS0teE1ZUmlWYkJLMHRuWGRWdnFWSFo0Z3lPMDNoTDhBSm9ldkVRVE5oMFRNRmowQW9vRjM4S18tT3hQV1F5MG1zUjFzbkZESFF1RTRxNy1FOEs3OHNLZ1NhZWJR?oc=5) | Forbes |  |
+| Your Startup | [Your Startup Failed And Now You’re Looking For A J...](https://news.google.com/rss/articles/CBMigwFBVV95cUxPdjVJUDdCc3JSMEYxc2NPR0l5YTNKWXZzTlpfT1hWSEQ4Q09HakZJZGdSZTJ1dGZGcmh6WFZ0Rl9mc2NiSGwtMHVUVG00U0tUVTJzSEk2RzZLcWtCREd2UTV0Y2p3bVdvbXo1OUtFaUd0el9Wa05XeUdzZUNSRXktRnlsUQ?oc=5) | Crunchbase News |  |
 
 ## Methodology {#methodology}
 
@@ -431,15 +465,15 @@ This report was compiled using a **two-pronged research approach**:
 | Collector | Last Run | Status | Records |
 |-----------|----------|--------|---------|
 | techcrunch_rss | 2026-06-01T00:30:38 | failed | 0 |
+| techcrunch_rss | 2026-06-01T00:30:38 | failed | 0 |
+| techcrunch_rss | 2026-06-01T00:30:38 | failed | 0 |
+| google_news_rss | 2026-06-01T00:30:38 | failed | 0 |
+| google_news_rss | 2026-06-01T00:30:38 | failed | 0 |
 | google_news_rss | 2026-06-01T00:30:38 | failed | 0 |
 | bls_survival_rates | 2026-05-26T00:13:10 | success | 31 |
+| bls_survival_rates | 2026-05-26T00:13:10 | success | 31 |
+| bls_survival_rates | 2026-05-26T00:13:10 | success | 31 |
 | failory_scraper | 2026-05-25T22:17:10 | success | 66 |
-| techcrunch_rss | 2026-05-25T22:12:34 | success | 0 |
-| google_news_rss | 2026-05-25T22:12:24 | success | 20 |
-| failory_scraper | 2026-05-25T20:02:33 | success | 57 |
-| google_news_rss | 2026-05-25T20:02:02 | success | 559 |
-| techcrunch_rss | 2026-05-25T20:01:51 | success | 20 |
-| reshoring_pdf | 2026-05-25T19:59:54 | success | 1 |
 
 ### Data Sources
 | Source | Records |
@@ -450,133 +484,133 @@ This report was compiled using a **two-pronged research approach**:
 ## Sources {#sources}
 
 ### Failory
-- [https://www.failory.com/cemetery/zulily](https://www.failory.com/cemetery/zulily) (1 records)
-- [https://www.failory.com/cemetery/zoomo](https://www.failory.com/cemetery/zoomo) (1 records)
-- [https://www.failory.com/cemetery/zirtual](https://www.failory.com/cemetery/zirtual) (1 records)
-- [https://www.failory.com/cemetery/yik-yak](https://www.failory.com/cemetery/yik-yak) (1 records)
-- [https://www.failory.com/cemetery/wow-air](https://www.failory.com/cemetery/wow-air) (1 records)
-- [https://www.failory.com/cemetery/wesabe](https://www.failory.com/cemetery/wesabe) (1 records)
-- [https://www.failory.com/cemetery/wattage](https://www.failory.com/cemetery/wattage) (1 records)
-- [https://www.failory.com/cemetery/wantful](https://www.failory.com/cemetery/wantful) (1 records)
-- [https://www.failory.com/cemetery/vreal](https://www.failory.com/cemetery/vreal) (1 records)
-- [https://www.failory.com/cemetery/vine](https://www.failory.com/cemetery/vine) (1 records)
-- [https://www.failory.com/cemetery/verelo](https://www.failory.com/cemetery/verelo) (1 records)
-- [https://www.failory.com/cemetery/utrip](https://www.failory.com/cemetery/utrip) (1 records)
-- [https://www.failory.com/cemetery/tutorspree](https://www.failory.com/cemetery/tutorspree) (1 records)
-- [https://www.failory.com/cemetery/turntable-fm](https://www.failory.com/cemetery/turntable-fm) (1 records)
-- [https://www.failory.com/cemetery/transpose](https://www.failory.com/cemetery/transpose) (1 records)
-- [https://www.failory.com/cemetery/totsy](https://www.failory.com/cemetery/totsy) (1 records)
-- [https://www.failory.com/cemetery/tilt](https://www.failory.com/cemetery/tilt) (1 records)
-- [https://www.failory.com/cemetery/theranos](https://www.failory.com/cemetery/theranos) (1 records)
-- [https://www.failory.com/cemetery/teforia](https://www.failory.com/cemetery/teforia) (1 records)
-- [https://www.failory.com/cemetery/teebeedee](https://www.failory.com/cemetery/teebeedee) (1 records)
-- [https://www.failory.com/cemetery/take-eat-easy](https://www.failory.com/cemetery/take-eat-easy) (1 records)
-- [https://www.failory.com/cemetery/sunrise](https://www.failory.com/cemetery/sunrise) (1 records)
-- [https://www.failory.com/cemetery/stratolaunch](https://www.failory.com/cemetery/stratolaunch) (1 records)
-- [https://www.failory.com/cemetery/stereomood](https://www.failory.com/cemetery/stereomood) (1 records)
-- [https://www.failory.com/cemetery/stayzilla](https://www.failory.com/cemetery/stayzilla) (1 records)
-- [https://www.failory.com/cemetery/springpad](https://www.failory.com/cemetery/springpad) (1 records)
-- [https://www.failory.com/cemetery/sprig](https://www.failory.com/cemetery/sprig) (1 records)
-- [https://www.failory.com/cemetery/spoonrocket](https://www.failory.com/cemetery/spoonrocket) (1 records)
-- [https://www.failory.com/cemetery/skully](https://www.failory.com/cemetery/skully) (1 records)
-- [https://www.failory.com/cemetery/sip](https://www.failory.com/cemetery/sip) (1 records)
-- [https://www.failory.com/cemetery/sidecar](https://www.failory.com/cemetery/sidecar) (1 records)
-- [https://www.failory.com/cemetery/shyp](https://www.failory.com/cemetery/shyp) (1 records)
-- [https://www.failory.com/cemetery/shuddle](https://www.failory.com/cemetery/shuddle) (1 records)
-- [https://www.failory.com/cemetery/shipitwise](https://www.failory.com/cemetery/shipitwise) (1 records)
-- [https://www.failory.com/cemetery/shipbeat](https://www.failory.com/cemetery/shipbeat) (1 records)
-- [https://www.failory.com/cemetery/sharingear](https://www.failory.com/cemetery/sharingear) (1 records)
-- [https://www.failory.com/cemetery/seven-dreamers-laboratories](https://www.failory.com/cemetery/seven-dreamers-laboratories) (1 records)
-- [https://www.failory.com/cemetery/selltag](https://www.failory.com/cemetery/selltag) (1 records)
-- [https://www.failory.com/cemetery/sellanapp](https://www.failory.com/cemetery/sellanapp) (1 records)
-- [https://www.failory.com/cemetery/secret](https://www.failory.com/cemetery/secret) (1 records)
-- [https://www.failory.com/cemetery/schoolgennie](https://www.failory.com/cemetery/schoolgennie) (1 records)
-- [https://www.failory.com/cemetery/scalefactor](https://www.failory.com/cemetery/scalefactor) (1 records)
-- [https://www.failory.com/cemetery/salorix](https://www.failory.com/cemetery/salorix) (1 records)
-- [https://www.failory.com/cemetery/roomstonite](https://www.failory.com/cemetery/roomstonite) (1 records)
-- [https://www.failory.com/cemetery/rewardme](https://www.failory.com/cemetery/rewardme) (1 records)
-- [https://www.failory.com/cemetery/rethinkdb](https://www.failory.com/cemetery/rethinkdb) (1 records)
-- [https://www.failory.com/cemetery/reach-ly](https://www.failory.com/cemetery/reach-ly) (1 records)
-- [https://www.failory.com/cemetery/rdio](https://www.failory.com/cemetery/rdio) (1 records)
-- [https://www.failory.com/cemetery/rafter](https://www.failory.com/cemetery/rafter) (1 records)
-- [https://www.failory.com/cemetery/radar-radio](https://www.failory.com/cemetery/radar-radio) (1 records)
-- [https://www.failory.com/cemetery/quibi](https://www.failory.com/cemetery/quibi) (1 records)
-- [https://www.failory.com/cemetery/qbotix](https://www.failory.com/cemetery/qbotix) (1 records)
-- [https://www.failory.com/cemetery/postrocket](https://www.failory.com/cemetery/postrocket) (1 records)
-- [https://www.failory.com/cemetery/polimobile](https://www.failory.com/cemetery/polimobile) (1 records)
-- [https://www.failory.com/cemetery/poliana](https://www.failory.com/cemetery/poliana) (1 records)
-- [https://www.failory.com/cemetery/pixate](https://www.failory.com/cemetery/pixate) (1 records)
-- [https://www.failory.com/cemetery/peppertap](https://www.failory.com/cemetery/peppertap) (1 records)
-- [https://www.failory.com/cemetery/parse](https://www.failory.com/cemetery/parse) (1 records)
-- [https://www.failory.com/cemetery/optier](https://www.failory.com/cemetery/optier) (1 records)
-- [https://www.failory.com/cemetery/netscape](https://www.failory.com/cemetery/netscape) (1 records)
-- [https://www.failory.com/cemetery/navdy](https://www.failory.com/cemetery/navdy) (1 records)
-- [https://www.failory.com/cemetery/myspace](https://www.failory.com/cemetery/myspace) (1 records)
-- [https://www.failory.com/cemetery/munchery](https://www.failory.com/cemetery/munchery) (1 records)
-- [https://www.failory.com/cemetery/move-loot](https://www.failory.com/cemetery/move-loot) (1 records)
-- [https://www.failory.com/cemetery/moped](https://www.failory.com/cemetery/moped) (1 records)
-- [https://www.failory.com/cemetery/monitor110](https://www.failory.com/cemetery/monitor110) (1 records)
-- [https://www.failory.com/cemetery/matterfab](https://www.failory.com/cemetery/matterfab) (1 records)
-- [https://www.failory.com/cemetery/maple](https://www.failory.com/cemetery/maple) (1 records)
-- [https://www.failory.com/cemetery/mailbox](https://www.failory.com/cemetery/mailbox) (1 records)
-- [https://www.failory.com/cemetery/lumos](https://www.failory.com/cemetery/lumos) (1 records)
-- [https://www.failory.com/cemetery/lookery](https://www.failory.com/cemetery/lookery) (1 records)
-- [https://www.failory.com/cemetery/leap-transit](https://www.failory.com/cemetery/leap-transit) (1 records)
-- [https://www.failory.com/cemetery/layervault](https://www.failory.com/cemetery/layervault) (1 records)
-- [https://www.failory.com/cemetery/laurel-wolf](https://www.failory.com/cemetery/laurel-wolf) (1 records)
-- [https://www.failory.com/cemetery/koinex](https://www.failory.com/cemetery/koinex) (1 records)
-- [https://www.failory.com/cemetery/kno](https://www.failory.com/cemetery/kno) (1 records)
-- [https://www.failory.com/cemetery/kitchit](https://www.failory.com/cemetery/kitchit) (1 records)
-- [https://www.failory.com/cemetery/kiko](https://www.failory.com/cemetery/kiko) (1 records)
-- [https://www.failory.com/cemetery/karhoo](https://www.failory.com/cemetery/karhoo) (1 records)
-- [https://www.failory.com/cemetery/juicero](https://www.failory.com/cemetery/juicero) (1 records)
-- [https://www.failory.com/cemetery/hubhaus](https://www.failory.com/cemetery/hubhaus) (1 records)
-- [https://www.failory.com/cemetery/hotelsaroundyou](https://www.failory.com/cemetery/hotelsaroundyou) (1 records)
-- [https://www.failory.com/cemetery/hitmeup](https://www.failory.com/cemetery/hitmeup) (1 records)
-- [https://www.failory.com/cemetery/higear](https://www.failory.com/cemetery/higear) (1 records)
-- [https://www.failory.com/cemetery/grooveshark](https://www.failory.com/cemetery/grooveshark) (1 records)
-- [https://www.failory.com/cemetery/gowalla](https://www.failory.com/cemetery/gowalla) (1 records)
-- [https://www.failory.com/cemetery/fuhu](https://www.failory.com/cemetery/fuhu) (1 records)
-- [https://www.failory.com/cemetery/friendster](https://www.failory.com/cemetery/friendster) (1 records)
-- [https://www.failory.com/cemetery/frankly](https://www.failory.com/cemetery/frankly) (1 records)
-- [https://www.failory.com/cemetery/foundationdb](https://www.failory.com/cemetery/foundationdb) (1 records)
-- [https://www.failory.com/cemetery/formspring](https://www.failory.com/cemetery/formspring) (1 records)
-- [https://www.failory.com/cemetery/flud](https://www.failory.com/cemetery/flud) (1 records)
-- [https://www.failory.com/cemetery/flowtab](https://www.failory.com/cemetery/flowtab) (1 records)
-- [https://www.failory.com/cemetery/fab](https://www.failory.com/cemetery/fab) (1 records)
-- [https://www.failory.com/cemetery/eventvue](https://www.failory.com/cemetery/eventvue) (1 records)
-- [https://www.failory.com/cemetery/dotcloud](https://www.failory.com/cemetery/dotcloud) (1 records)
-- [https://www.failory.com/cemetery/dopplr](https://www.failory.com/cemetery/dopplr) (1 records)
-- [https://www.failory.com/cemetery/dinnr](https://www.failory.com/cemetery/dinnr) (1 records)
-- [https://www.failory.com/cemetery/dinner-lab](https://www.failory.com/cemetery/dinner-lab) (1 records)
-- [https://www.failory.com/cemetery/digg](https://www.failory.com/cemetery/digg) (1 records)
-- [https://www.failory.com/cemetery/desti](https://www.failory.com/cemetery/desti) (1 records)
-- [https://www.failory.com/cemetery/design-inc](https://www.failory.com/cemetery/design-inc) (1 records)
-- [https://www.failory.com/cemetery/delicious](https://www.failory.com/cemetery/delicious) (1 records)
 - [https://www.failory.com/cemetery/dazo](https://www.failory.com/cemetery/dazo) (1 records)
-- [https://www.failory.com/cemetery/crowdmix](https://www.failory.com/cemetery/crowdmix) (1 records)
-- [https://www.failory.com/cemetery/circleback-lending](https://www.failory.com/cemetery/circleback-lending) (1 records)
-- [https://www.failory.com/cemetery/circa](https://www.failory.com/cemetery/circa) (1 records)
-- [https://www.failory.com/cemetery/chacha](https://www.failory.com/cemetery/chacha) (1 records)
-- [https://www.failory.com/cemetery/call9](https://www.failory.com/cemetery/call9) (1 records)
-- [https://www.failory.com/cemetery/brisk](https://www.failory.com/cemetery/brisk) (1 records)
-- [https://www.failory.com/cemetery/bitpass](https://www.failory.com/cemetery/bitpass) (1 records)
-- [https://www.failory.com/cemetery/berg](https://www.failory.com/cemetery/berg) (1 records)
-- [https://www.failory.com/cemetery/beepi](https://www.failory.com/cemetery/beepi) (1 records)
-- [https://www.failory.com/cemetery/auctionata](https://www.failory.com/cemetery/auctionata) (1 records)
-- [https://www.failory.com/cemetery/arsdigita](https://www.failory.com/cemetery/arsdigita) (1 records)
+- [https://www.failory.com/cemetery/frankly](https://www.failory.com/cemetery/frankly) (1 records)
+- [https://www.failory.com/cemetery/hotelsaroundyou](https://www.failory.com/cemetery/hotelsaroundyou) (1 records)
+- [https://www.failory.com/cemetery/koinex](https://www.failory.com/cemetery/koinex) (1 records)
+- [https://www.failory.com/cemetery/lumos](https://www.failory.com/cemetery/lumos) (1 records)
+- [https://www.failory.com/cemetery/peppertap](https://www.failory.com/cemetery/peppertap) (1 records)
+- [https://www.failory.com/cemetery/roomstonite](https://www.failory.com/cemetery/roomstonite) (1 records)
+- [https://www.failory.com/cemetery/schoolgennie](https://www.failory.com/cemetery/schoolgennie) (1 records)
+- [https://www.failory.com/cemetery/stayzilla](https://www.failory.com/cemetery/stayzilla) (1 records)
+- [https://www.failory.com/cemetery/zoomo](https://www.failory.com/cemetery/zoomo) (1 records)
 - [https://www.failory.com/cemetery/aria-insights](https://www.failory.com/cemetery/aria-insights) (1 records)
-- [https://www.failory.com/cemetery/argyle-social](https://www.failory.com/cemetery/argyle-social) (1 records)
-- [https://www.failory.com/cemetery/appiterate](https://www.failory.com/cemetery/appiterate) (1 records)
-- [https://www.failory.com/cemetery/anki](https://www.failory.com/cemetery/anki) (1 records)
-- [https://www.failory.com/cemetery/alikolo](https://www.failory.com/cemetery/alikolo) (1 records)
-- [https://www.failory.com/cemetery/admazely](https://www.failory.com/cemetery/admazely) (1 records)
-- [https://www.failory.com/cemetery/99dresses](https://www.failory.com/cemetery/99dresses) (1 records)
+- [https://www.failory.com/cemetery/berg](https://www.failory.com/cemetery/berg) (1 records)
+- [https://www.failory.com/cemetery/dinnr](https://www.failory.com/cemetery/dinnr) (1 records)
+- [https://www.failory.com/cemetery/eventvue](https://www.failory.com/cemetery/eventvue) (1 records)
+- [https://www.failory.com/cemetery/moped](https://www.failory.com/cemetery/moped) (1 records)
+- [https://www.failory.com/cemetery/polimobile](https://www.failory.com/cemetery/polimobile) (1 records)
+- [https://www.failory.com/cemetery/quibi](https://www.failory.com/cemetery/quibi) (1 records)
+- [https://www.failory.com/cemetery/shipitwise](https://www.failory.com/cemetery/shipitwise) (1 records)
+- [https://www.failory.com/cemetery/sip](https://www.failory.com/cemetery/sip) (1 records)
+- [https://www.failory.com/cemetery/teebeedee](https://www.failory.com/cemetery/teebeedee) (1 records)
+- [https://www.failory.com/cemetery/teforia](https://www.failory.com/cemetery/teforia) (1 records)
+- [https://www.failory.com/cemetery/vreal](https://www.failory.com/cemetery/vreal) (1 records)
+- [https://www.failory.com/cemetery/wattage](https://www.failory.com/cemetery/wattage) (1 records)
+- [https://www.failory.com/cemetery/kno](https://www.failory.com/cemetery/kno) (1 records)
+- [https://www.failory.com/cemetery/rafter](https://www.failory.com/cemetery/rafter) (1 records)
+- [https://www.failory.com/cemetery/tutorspree](https://www.failory.com/cemetery/tutorspree) (1 records)
+- [https://www.failory.com/cemetery/dinner-lab](https://www.failory.com/cemetery/dinner-lab) (1 records)
+- [https://www.failory.com/cemetery/dotcloud](https://www.failory.com/cemetery/dotcloud) (1 records)
+- [https://www.failory.com/cemetery/mailbox](https://www.failory.com/cemetery/mailbox) (1 records)
+- [https://www.failory.com/cemetery/scalefactor](https://www.failory.com/cemetery/scalefactor) (1 records)
+- [https://www.failory.com/cemetery/shuddle](https://www.failory.com/cemetery/shuddle) (1 records)
+- [https://www.failory.com/cemetery/transpose](https://www.failory.com/cemetery/transpose) (1 records)
+- [https://www.failory.com/cemetery/flowtab](https://www.failory.com/cemetery/flowtab) (1 records)
+- [https://www.failory.com/cemetery/juicero](https://www.failory.com/cemetery/juicero) (1 records)
+- [https://www.failory.com/cemetery/kitchit](https://www.failory.com/cemetery/kitchit) (1 records)
+- [https://www.failory.com/cemetery/maple](https://www.failory.com/cemetery/maple) (1 records)
+- [https://www.failory.com/cemetery/munchery](https://www.failory.com/cemetery/munchery) (1 records)
+- [https://www.failory.com/cemetery/spoonrocket](https://www.failory.com/cemetery/spoonrocket) (1 records)
+- [https://www.failory.com/cemetery/sprig](https://www.failory.com/cemetery/sprig) (1 records)
+- [https://www.failory.com/cemetery/take-eat-easy](https://www.failory.com/cemetery/take-eat-easy) (1 records)
 - [https://www.failory.com/cemetery/37coins](https://www.failory.com/cemetery/37coins) (1 records)
+- [https://www.failory.com/cemetery/call9](https://www.failory.com/cemetery/call9) (1 records)
+- [https://www.failory.com/cemetery/digg](https://www.failory.com/cemetery/digg) (1 records)
+- [https://www.failory.com/cemetery/fab](https://www.failory.com/cemetery/fab) (1 records)
+- [https://www.failory.com/cemetery/layervault](https://www.failory.com/cemetery/layervault) (1 records)
+- [https://www.failory.com/cemetery/monitor110](https://www.failory.com/cemetery/monitor110) (1 records)
+- [https://www.failory.com/cemetery/optier](https://www.failory.com/cemetery/optier) (1 records)
+- [https://www.failory.com/cemetery/totsy](https://www.failory.com/cemetery/totsy) (1 records)
+- [https://www.failory.com/cemetery/turntable-fm](https://www.failory.com/cemetery/turntable-fm) (1 records)
+- [https://www.failory.com/cemetery/vine](https://www.failory.com/cemetery/vine) (1 records)
+- [https://www.failory.com/cemetery/wantful](https://www.failory.com/cemetery/wantful) (1 records)
+- [https://www.failory.com/cemetery/crowdmix](https://www.failory.com/cemetery/crowdmix) (1 records)
+- [https://www.failory.com/cemetery/grooveshark](https://www.failory.com/cemetery/grooveshark) (1 records)
+- [https://www.failory.com/cemetery/radar-radio](https://www.failory.com/cemetery/radar-radio) (1 records)
+- [https://www.failory.com/cemetery/rdio](https://www.failory.com/cemetery/rdio) (1 records)
+- [https://www.failory.com/cemetery/sharingear](https://www.failory.com/cemetery/sharingear) (1 records)
+- [https://www.failory.com/cemetery/stereomood](https://www.failory.com/cemetery/stereomood) (1 records)
+- [https://www.failory.com/cemetery/anki](https://www.failory.com/cemetery/anki) (1 records)
+- [https://www.failory.com/cemetery/qbotix](https://www.failory.com/cemetery/qbotix) (1 records)
+- [https://www.failory.com/cemetery/seven-dreamers-laboratories](https://www.failory.com/cemetery/seven-dreamers-laboratories) (1 records)
+- [https://www.failory.com/cemetery/admazely](https://www.failory.com/cemetery/admazely) (1 records)
+- [https://www.failory.com/cemetery/appiterate](https://www.failory.com/cemetery/appiterate) (1 records)
+- [https://www.failory.com/cemetery/argyle-social](https://www.failory.com/cemetery/argyle-social) (1 records)
+- [https://www.failory.com/cemetery/arsdigita](https://www.failory.com/cemetery/arsdigita) (1 records)
+- [https://www.failory.com/cemetery/beepi](https://www.failory.com/cemetery/beepi) (1 records)
+- [https://www.failory.com/cemetery/bitpass](https://www.failory.com/cemetery/bitpass) (1 records)
+- [https://www.failory.com/cemetery/brisk](https://www.failory.com/cemetery/brisk) (1 records)
+- [https://www.failory.com/cemetery/chacha](https://www.failory.com/cemetery/chacha) (1 records)
+- [https://www.failory.com/cemetery/delicious](https://www.failory.com/cemetery/delicious) (1 records)
+- [https://www.failory.com/cemetery/flud](https://www.failory.com/cemetery/flud) (1 records)
+- [https://www.failory.com/cemetery/foundationdb](https://www.failory.com/cemetery/foundationdb) (1 records)
+- [https://www.failory.com/cemetery/friendster](https://www.failory.com/cemetery/friendster) (1 records)
+- [https://www.failory.com/cemetery/fuhu](https://www.failory.com/cemetery/fuhu) (1 records)
+- [https://www.failory.com/cemetery/hubhaus](https://www.failory.com/cemetery/hubhaus) (1 records)
+- [https://www.failory.com/cemetery/kiko](https://www.failory.com/cemetery/kiko) (1 records)
+- [https://www.failory.com/cemetery/matterfab](https://www.failory.com/cemetery/matterfab) (1 records)
+- [https://www.failory.com/cemetery/myspace](https://www.failory.com/cemetery/myspace) (1 records)
+- [https://www.failory.com/cemetery/navdy](https://www.failory.com/cemetery/navdy) (1 records)
+- [https://www.failory.com/cemetery/netscape](https://www.failory.com/cemetery/netscape) (1 records)
+- [https://www.failory.com/cemetery/parse](https://www.failory.com/cemetery/parse) (1 records)
+- [https://www.failory.com/cemetery/pixate](https://www.failory.com/cemetery/pixate) (1 records)
+- [https://www.failory.com/cemetery/poliana](https://www.failory.com/cemetery/poliana) (1 records)
+- [https://www.failory.com/cemetery/postrocket](https://www.failory.com/cemetery/postrocket) (1 records)
+- [https://www.failory.com/cemetery/reach-ly](https://www.failory.com/cemetery/reach-ly) (1 records)
+- [https://www.failory.com/cemetery/rethinkdb](https://www.failory.com/cemetery/rethinkdb) (1 records)
+- [https://www.failory.com/cemetery/rewardme](https://www.failory.com/cemetery/rewardme) (1 records)
+- [https://www.failory.com/cemetery/salorix](https://www.failory.com/cemetery/salorix) (1 records)
+- [https://www.failory.com/cemetery/selltag](https://www.failory.com/cemetery/selltag) (1 records)
+- [https://www.failory.com/cemetery/shipbeat](https://www.failory.com/cemetery/shipbeat) (1 records)
+- [https://www.failory.com/cemetery/sidecar](https://www.failory.com/cemetery/sidecar) (1 records)
+- [https://www.failory.com/cemetery/skully](https://www.failory.com/cemetery/skully) (1 records)
+- [https://www.failory.com/cemetery/springpad](https://www.failory.com/cemetery/springpad) (1 records)
+- [https://www.failory.com/cemetery/sunrise](https://www.failory.com/cemetery/sunrise) (1 records)
+- [https://www.failory.com/cemetery/theranos](https://www.failory.com/cemetery/theranos) (1 records)
+- [https://www.failory.com/cemetery/verelo](https://www.failory.com/cemetery/verelo) (1 records)
+- [https://www.failory.com/cemetery/higear](https://www.failory.com/cemetery/higear) (1 records)
+- [https://www.failory.com/cemetery/karhoo](https://www.failory.com/cemetery/karhoo) (1 records)
+- [https://www.failory.com/cemetery/leap-transit](https://www.failory.com/cemetery/leap-transit) (1 records)
+- [https://www.failory.com/cemetery/shyp](https://www.failory.com/cemetery/shyp) (1 records)
+- [https://www.failory.com/cemetery/stratolaunch](https://www.failory.com/cemetery/stratolaunch) (1 records)
+- [https://www.failory.com/cemetery/wow-air](https://www.failory.com/cemetery/wow-air) (1 records)
+- [https://www.failory.com/cemetery/circleback-lending](https://www.failory.com/cemetery/circleback-lending) (1 records)
+- [https://www.failory.com/cemetery/sellanapp](https://www.failory.com/cemetery/sellanapp) (1 records)
+- [https://www.failory.com/cemetery/tilt](https://www.failory.com/cemetery/tilt) (1 records)
+- [https://www.failory.com/cemetery/wesabe](https://www.failory.com/cemetery/wesabe) (1 records)
+- [https://www.failory.com/cemetery/99dresses](https://www.failory.com/cemetery/99dresses) (1 records)
+- [https://www.failory.com/cemetery/circa](https://www.failory.com/cemetery/circa) (1 records)
+- [https://www.failory.com/cemetery/desti](https://www.failory.com/cemetery/desti) (1 records)
+- [https://www.failory.com/cemetery/utrip](https://www.failory.com/cemetery/utrip) (1 records)
+- [https://www.failory.com/cemetery/zirtual](https://www.failory.com/cemetery/zirtual) (1 records)
+- [https://www.failory.com/cemetery/auctionata](https://www.failory.com/cemetery/auctionata) (1 records)
+- [https://www.failory.com/cemetery/lookery](https://www.failory.com/cemetery/lookery) (1 records)
+- [https://www.failory.com/cemetery/gowalla](https://www.failory.com/cemetery/gowalla) (1 records)
+- [https://www.failory.com/cemetery/hitmeup](https://www.failory.com/cemetery/hitmeup) (1 records)
+- [https://www.failory.com/cemetery/secret](https://www.failory.com/cemetery/secret) (1 records)
+- [https://www.failory.com/cemetery/yik-yak](https://www.failory.com/cemetery/yik-yak) (1 records)
+- [https://www.failory.com/cemetery/alikolo](https://www.failory.com/cemetery/alikolo) (1 records)
+- [https://www.failory.com/cemetery/design-inc](https://www.failory.com/cemetery/design-inc) (1 records)
+- [https://www.failory.com/cemetery/dopplr](https://www.failory.com/cemetery/dopplr) (1 records)
+- [https://www.failory.com/cemetery/formspring](https://www.failory.com/cemetery/formspring) (1 records)
+- [https://www.failory.com/cemetery/laurel-wolf](https://www.failory.com/cemetery/laurel-wolf) (1 records)
+- [https://www.failory.com/cemetery/move-loot](https://www.failory.com/cemetery/move-loot) (1 records)
+- [https://www.failory.com/cemetery/zulily](https://www.failory.com/cemetery/zulily) (1 records)
 
 ---
 
-*Report generated on 2026-06-01 00:30 UTC from the Startup Research automated data collection system.*
+*Report generated on 2026-06-01 04:50 UTC from the Startup Research automated data collection system.*
 
 *Database contains: 163 startups, 599 news articles, 31 BLS data points.*
 

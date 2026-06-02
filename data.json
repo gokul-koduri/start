@@ -1,9 +1,9 @@
 {
-  "last_updated": "2026-06-01T00:30:39.110435+00:00",
+  "last_updated": "2026-06-02T22:48:43.145801+00:00",
   "total_startups": 163,
   "manufacturing_startups": 44,
-  "total_articles": 599,
-  "manufacturing_articles": 330,
+  "total_articles": 723,
+  "manufacturing_articles": 387,
   "recent_failures": [
     {
       "name": "Zulily",
@@ -30,5 +30,144 @@
       "sector": "Travel",
       "year_shutdown": 2024
     }
-  ]
+  ],
+  "gmv_monitoring": {
+    "evaluations_done": 420,
+    "total_expected": 420,
+    "deep_dives_done": 45,
+    "avg_viability": 6.8,
+    "top_opportunity": "E-commerce in China",
+    "top_score": 8,
+    "progress_pct": 100.0,
+    "sectors_done": [
+      "Fintech",
+      "Food & Beverage",
+      "E-commerce",
+      "Software & Hardware",
+      "Entertainment",
+      "Mobility/EV",
+      "Transportation",
+      "Productivity",
+      "Proptech",
+      "Travel",
+      "Healthtech",
+      "Construction",
+      "Social Media",
+      "3D Printing",
+      "Finances",
+      "EdTech",
+      "BNPL/Fintech",
+      "Logistics",
+      "Biotech/Genomics",
+      "Healthtech/Genomics",
+      "Health",
+      "Education",
+      "EV Ride-Hailing",
+      "PropTech/Construction",
+      "Quick Commerce",
+      "Fintech/Payments",
+      "Robotics",
+      "Design",
+      "Analytics",
+      "Fashion-tech",
+      "Marketing",
+      "Social/Chat",
+      "Semiconductors",
+      "Content/Social Commerce",
+      "EV/Automotive",
+      "Premium EV",
+      "Beauty/D2C",
+      "Micro-mobility",
+      "EV",
+      "Battery Manufacturing",
+      "Flexible Display",
+      "Music"
+    ],
+    "country_scores": {
+      "US": {
+        "name": "United States",
+        "avg": 6.8,
+        "count": 42
+      },
+      "UK": {
+        "name": "United Kingdom",
+        "avg": 7.4,
+        "count": 42
+      },
+      "Germany": {
+        "name": "Germany",
+        "avg": 7.1,
+        "count": 42
+      },
+      "India": {
+        "name": "India",
+        "avg": 7.0,
+        "count": 42
+      },
+      "China": {
+        "name": "China",
+        "avg": 6.8,
+        "count": 41
+      },
+      "Japan": {
+        "name": "Japan",
+        "avg": 6.9,
+        "count": 41
+      },
+      "Brazil": {
+        "name": "Brazil",
+        "avg": 6.7,
+        "count": 42
+      },
+      "Southeast_Asia": {
+        "name": "Southeast Asia (Indonesia, Vietnam, Thailand, Philippines)",
+        "avg": 7.1,
+        "count": 42
+      },
+      "Middle_East": {
+        "name": "Middle East (UAE, Saudi Arabia, Qatar)",
+        "avg": 6.7,
+        "count": 42
+      },
+      "Africa": {
+        "name": "Africa (Nigeria, Kenya, South Africa, Egypt)",
+        "avg": 6.2,
+        "count": 42
+      }
+    },
+    "status": "complete",
+    "last_evaluated": "2026-06-02T21:47:17.387938+00:00",
+    "deep_dive_go": 3,
+    "deep_dive_cautious": 41,
+    "deep_dive_nogo": 0
+  },
+  "llm_infrastructure": {
+    "status": "online",
+    "endpoint": "http://localhost:11434",
+    "models": [
+      {
+        "name": "llama3:latest",
+        "size_bytes": 4661224676
+      }
+    ],
+    "loaded_models": [
+      {
+        "name": "llama3:latest",
+        "size_bytes": 5587662273,
+        "vram_bytes": 0
+      }
+    ],
+    "total_vram_mb": 0,
+    "test_latency_s": 0.23,
+    "test_tokens": 3,
+    "model_details": {
+      "name": "llama3:latest",
+      "family": "llama",
+      "format": "gguf",
+      "quantization_level": "Q4_0",
+      "parameter_count": 8030261248,
+      "quantization_version": 2,
+      "license": "META LLAMA 3 COMMUNITY LICENSE AGREEMENT\n\nMeta Llama 3 Version Release Date: April 18, 2024\n\u201cAgreement\u201d means the terms "
+    }
+  }
 }

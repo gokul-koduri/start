@@ -270,7 +270,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
     <input type="text" id="searchInput" placeholder="Search report..." autocomplete="off" />
     <span class="search-clear" id="searchClear">&times;</span>
   </div>
-  <span class="meta">Updated: June 02, 2026 at 02:51 UTC</span>
+  <span class="meta">Updated: June 02, 2026 at 19:13 UTC</span>
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
     <span class="theme-icon" id="themeIcon">&#9788;</span>
   </button>
@@ -323,7 +323,45 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <div class="stat-card accent-green"><span class="icon">&#128240;</span><div class="value">723</div><div class="label">News Articles</div></div>
 <div class="stat-card accent-amber"><span class="icon">&#128202;</span><div class="value">387</div><div class="label">Mfg-Related News</div></div>
 </div>
-<div class="charts-grid"><div class="chart-container"><h3>Failure by Category</h3><canvas id="categoryChart"></canvas></div><div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div><div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div></div>
+    <div class="stats-grid" style="margin-top: 24px; border-top: 2px solid var(--border); padding-top: 24px;">
+      <div class="stat-card accent-blue">
+        <span class="icon">&#127760;</span>
+        <div class="value">1/10</div>
+        <div class="label">Evaluations Done</div>
+      </div>
+      <div class="stat-card accent-green">
+        <span class="icon">&#128200;</span>
+        <div class="value">6/10</div>
+        <div class="label">Avg Viability Score</div>
+      </div>
+      <div class="stat-card accent-amber">
+        <span class="icon">&#127919;</span>
+        <div class="value">6/10</div>
+        <div class="label">Top Opportunity</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">EV/Automotive in United States</div>
+      </div>
+      <div class="stat-card accent-red">
+        <span class="icon">&#128269;</span>
+        <div class="value">1</div>
+        <div class="label">Company Deep-Dives</div>
+      </div>
+    </div>
+    <div style="margin-bottom: 24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:14px;font-weight:600;">Global Market Viability Analysis</span>
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#F59E0B;color:white;">IN PROGRESS</span>
+      </div>
+      <div style="background:var(--border);border-radius:8px;height:12px;overflow:hidden;">
+        <div style="height:100%;width:10.0%;background:#F59E0B;border-radius:8px;transition:width 0.5s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-top:4px;">
+        <span>1 sectors analyzed</span>
+        <span>10.0%</span>
+        <span>Last: 2026-06-02T18:47</span>
+      </div>
+    </div>
+    
+<div class="charts-grid"><div class="chart-container"><h3>Failure by Category</h3><canvas id="categoryChart"></canvas></div><div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div><div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div><div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div></div>
 <h1 id="research-report-failed-startups-revival-ready-manufacturing-industries">Research Report: Failed Startups &amp; Revival-Ready Manufacturing Industries</h1>
 <hr />
 <h2 id="table-of-contents">TABLE OF CONTENTS</h2>
@@ -2232,6 +2270,62 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
                 }
             });
             
+        new Chart(document.getElementById('gmvCountryChart'), {
+            type: 'bar',
+            data: {
+                labels: ["United States"],
+                datasets: [{
+                    label: 'Avg Viability /10',
+                    data: [6.0],
+                    backgroundColor: function(ctx) {
+                        var v = ctx.raw;
+                        if (v >= 7) return '#10B981';
+                        if (v >= 5) return '#F59E0B';
+                        return '#EF4444';
+                    },
+                    borderRadius: 4,
+                    maxBarThickness: 30
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function(ctx) {
+                                var cnts = [1];
+                                return cnts[ctx.dataIndex] + ' evaluations';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true, max: 10,
+                        title: { display: true, text: 'Viability Score' },
+                        grid: { color: 'rgba(128,128,128,0.1)' }
+                    }
+                }
+            }
+        });
+        
+        new Chart(document.getElementById('gmvGoNoGo'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Go', 'Cautious', 'No-Go'],
+                datasets: [{ data: [0, 1, 0],
+                    backgroundColor: ['#10B981', '#F59E0B', '#EF4444']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16 } }
+                }
+            }
+        });
+        
 </script>
 </body>
 </html>

@@ -508,22 +508,27 @@ class DashboardAgent(BaseAgent):
         if include_charts:
             charts_html, chart_script = _build_charts()
 
+        # Global Market Viability monitoring
+        gmv_stats = _fetch_gmv_status()
+        gmv_monitor_html = _build_gmv_monitor_html(gmv_stats)
+        gmv_charts_html, gmv_chart_script = _build_gmv_charts(gmv_stats) if include_charts else ("", "")
+
         # Assemble final HTML
         full_html = HTML_TEMPLATE.format(
             title="Startup Research Report — Live Dashboard",
             generated=datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M UTC"),
             nav=nav_html,
-            stats=stats_html,
-            charts=charts_html,
+            stats=stats_html + gmv_monitor_html,
+            charts=charts_html + gmv_charts_html,
             body=html_body,
-            chart_script=chart_script,
+            chart_script=chart_script + gmv_chart_script,
         )
 
         # Write output files
         site_dir.mkdir(parents=True, exist_ok=True)
         (site_dir / "index.html").write_text(full_html, encoding="utf-8")
         (site_dir / "data.json").write_text(
-            json.dumps(stats_json, indent=2, default=str),
+            json.dumps({**stats_json, "gmv_monitoring": gmv_stats}, indent=2, default=str),
             encoding="utf-8",
         )
         (site_dir / ".nojekyll").touch()
@@ -646,6 +651,285 @@ def _fetch_stats():
     stats_html += "</div>"
 
     return stats_html, stats_json
+
+
+def _fetch_gmv_status():
+    """Fetch Global Market Viability analysis status from cache + database."""
+    GMV_CACHE_FILE = get_project_root() / "data" / "cache" / "ollama_market_viability_cache.json"
+    GMV_TARGET_COUNTRIES_COUNT = 10  # 10 target markets
+
+    stats = {
+        "evaluations_done": 0,
+        "total_expected": 0,
+        "deep_dives_done": 0,
+        "avg_viability": 0,
+        "top_opportunity": "",
+        "top_score": 0,
+        "progress_pct": 0,
+        "sectors_done": [],
+        "country_scores": {},
+        "status": "not_started",
+        "last_evaluated": "",
+        "deep_dive_go": 0,
+        "deep_dive_cautious": 0,
+        "deep_dive_nogo": 0,
+    }
+
+    # Read from database for stored results (primary source)
+    try:
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT insights_json, analyzed_at, record_count "
+            "FROM analysis_global_market_viability "
+            "WHERE analysis_type = 'global_market_viability_full' "
+            "ORDER BY id DESC LIMIT 1"
+        )
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if row:
+            data = json.loads(row["insights_json"])
+            sector_results = data.get("sector_results", [])
+            deep_dives = data.get("deep_dive_results", [])
+
+            stats["evaluations_done"] = len(sector_results)
+            stats["deep_dives_done"] = len(deep_dives)
+            num_sectors = len(set(r["sector"] for r in sector_results)) if sector_results else 42
+            stats["total_expected"] = num_sectors * GMV_TARGET_COUNTRIES_COUNT
+            stats["avg_viability"] = data.get("avg_viability_score", 0)
+            stats["last_evaluated"] = row["analyzed_at"]
+            stats["status"] = (
+                "complete"
+                if stats["evaluations_done"] >= stats["total_expected"] and stats["total_expected"] > 0
+                else "in_progress"
+            )
+
+            top = data.get("top_combinations", [])
+            if top:
+                t = top[0]
+                stats["top_opportunity"] = f"{t['sector']} in {t['country']}"
+                stats["top_score"] = t["score"]
+
+            # Country scores
+            country_scores = {}
+            for r in sector_results:
+                cc = r.get("country_code", "")
+                cn = r.get("country_name", cc)
+                score = r.get("overall_viability_score", 0)
+                if cc not in country_scores:
+                    country_scores[cc] = {"name": cn, "scores": []}
+                country_scores[cc]["scores"].append(score)
+
+            for cc, v in country_scores.items():
+                valid = [s for s in v["scores"] if s > 0]
+                stats["country_scores"][cc] = {
+                    "name": v["name"],
+                    "avg": round(sum(valid) / len(valid), 1) if valid else 0,
+                    "count": len(valid),
+                }
+
+            stats["sectors_done"] = list(set(r["sector"] for r in sector_results))
+
+            go_count = sum(1 for d in deep_dives if str(d.get("go_no_go", "")).lower() == "go")
+            cautious_count = sum(1 for d in deep_dives if str(d.get("go_no_go", "")).lower() == "cautious")
+            nogo_count = sum(1 for d in deep_dives if str(d.get("go_no_go", "")).lower() == "no-go")
+            stats["deep_dive_go"] = go_count
+            stats["deep_dive_cautious"] = cautious_count
+            stats["deep_dive_nogo"] = nogo_count
+
+    except Exception as e:
+        _logger.warning("DashboardAgent: Could not fetch GMV status from DB: %s", e)
+
+    # If DB empty but cache has data, use cache count as fallback
+    if stats["evaluations_done"] == 0:
+        try:
+            if GMV_CACHE_FILE.exists():
+                cache_data = json.loads(GMV_CACHE_FILE.read_text(encoding="utf-8"))
+                stats["evaluations_done"] = len(cache_data)
+                stats["status"] = "in_progress"
+                stats["total_expected"] = 420
+                stats["progress_pct"] = min(99, round(len(cache_data) / 420 * 100, 1))
+                return stats
+        except Exception as e:
+            _logger.warning("DashboardAgent: Could not read GMV cache: %s", e)
+
+    if stats["total_expected"] > 0:
+        stats["progress_pct"] = round(
+            stats["evaluations_done"] / stats["total_expected"] * 100, 1
+        )
+
+    return stats
+
+
+def _build_gmv_monitor_html(gmv_stats: dict) -> str:
+    """Build HTML for the Global Market Viability monitoring section."""
+    if not gmv_stats or gmv_stats.get("status") == "not_started":
+        return ""
+
+    status = gmv_stats["status"]
+    pct = gmv_stats.get("progress_pct", 0)
+    done = gmv_stats["evaluations_done"]
+    total = gmv_stats.get("total_expected", 0)
+    avg = gmv_stats.get("avg_viability", 0)
+    top_opp = gmv_stats.get("top_opportunity", "N/A")
+    top_score = gmv_stats.get("top_score", 0)
+    deep_dives = gmv_stats.get("deep_dives_done", 0)
+    sectors = len(gmv_stats.get("sectors_done", []))
+    last_eval = gmv_stats.get("last_evaluated", "")
+
+    # Status badge color
+    if status == "complete":
+        status_color = "#10B981"
+        status_label = "COMPLETE"
+    elif pct > 0:
+        status_color = "#F59E0B"
+        status_label = "IN PROGRESS"
+    else:
+        status_color = "#6c757d"
+        status_label = "PENDING"
+
+    # Progress bar color
+    if pct >= 100:
+        bar_color = "#10B981"
+    elif pct >= 50:
+        bar_color = "#3B82F6"
+    else:
+        bar_color = "#F59E0B"
+
+    html = f"""
+    <div class="stats-grid" style="margin-top: 24px; border-top: 2px solid var(--border); padding-top: 24px;">
+      <div class="stat-card accent-blue">
+        <span class="icon">&#127760;</span>
+        <div class="value">{done}/{total}</div>
+        <div class="label">Evaluations Done</div>
+      </div>
+      <div class="stat-card accent-green">
+        <span class="icon">&#128200;</span>
+        <div class="value">{avg}/10</div>
+        <div class="label">Avg Viability Score</div>
+      </div>
+      <div class="stat-card accent-amber">
+        <span class="icon">&#127919;</span>
+        <div class="value">{top_score}/10</div>
+        <div class="label">Top Opportunity</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{top_opp}</div>
+      </div>
+      <div class="stat-card accent-red">
+        <span class="icon">&#128269;</span>
+        <div class="value">{deep_dives}</div>
+        <div class="label">Company Deep-Dives</div>
+      </div>
+    </div>
+    <div style="margin-bottom: 24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:14px;font-weight:600;">Global Market Viability Analysis</span>
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:{status_color};color:white;">{status_label}</span>
+      </div>
+      <div style="background:var(--border);border-radius:8px;height:12px;overflow:hidden;">
+        <div style="height:100%;width:{pct}%;background:{bar_color};border-radius:8px;transition:width 0.5s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-top:4px;">
+        <span>{sectors} sectors analyzed</span>
+        <span>{pct}%</span>
+        {f'<span>Last: {last_eval[:16]}</span>' if last_eval else '<span></span>'}
+      </div>
+    </div>
+    """
+    return html
+
+
+def _build_gmv_charts(gmv_stats: dict):
+    """Build Global Market Viability monitoring charts."""
+    charts_html = ""
+    chart_script = ""
+
+    if not gmv_stats or gmv_stats.get("evaluations_done", 0) == 0:
+        return charts_html, chart_script
+
+    # Chart 1: Viability by Country (bar chart)
+    country_scores = gmv_stats.get("country_scores", {})
+    if country_scores:
+        charts_html += '<div class="charts-grid">'
+        charts_html += '<div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div>'
+
+        sorted_countries = sorted(country_scores.items(), key=lambda x: x[1]["avg"], reverse=True)
+        labels = json.dumps([v["name"][:20] for _, v in sorted_countries])
+        data = json.dumps([v["avg"] for _, v in sorted_countries])
+        counts = json.dumps([v["count"] for _, v in sorted_countries])
+
+        chart_script += f"""
+        new Chart(document.getElementById('gmvCountryChart'), {{
+            type: 'bar',
+            data: {{
+                labels: {labels},
+                datasets: [{{
+                    label: 'Avg Viability /10',
+                    data: {data},
+                    backgroundColor: function(ctx) {{
+                        var v = ctx.raw;
+                        if (v >= 7) return '#10B981';
+                        if (v >= 5) return '#F59E0B';
+                        return '#EF4444';
+                    }},
+                    borderRadius: 4,
+                    maxBarThickness: 30
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                plugins: {{
+                    legend: {{ display: false }},
+                    tooltip: {{
+                        callbacks: {{
+                            afterLabel: function(ctx) {{
+                                var cnts = {counts};
+                                return cnts[ctx.dataIndex] + ' evaluations';
+                            }}
+                        }}
+                    }}
+                }},
+                scales: {{
+                    y: {{
+                        beginAtZero: true, max: 10,
+                        title: {{ display: true, text: 'Viability Score' }},
+                        grid: {{ color: 'rgba(128,128,128,0.1)' }}
+                    }}
+                }}
+            }}
+        }});
+        """
+
+    # Chart 2: Deep-dive Go/No-Go (doughnut)
+    if gmv_stats.get("deep_dives_done", 0) > 0:
+        go = gmv_stats.get("deep_dive_go", 0)
+        cautious = gmv_stats.get("deep_dive_cautious", 0)
+        nogo = gmv_stats.get("deep_dive_nogo", 0)
+
+        charts_html += '<div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div>'
+        charts_html += '</div>'
+
+        chart_script += f"""
+        new Chart(document.getElementById('gmvGoNoGo'), {{
+            type: 'doughnut',
+            data: {{
+                labels: ['Go', 'Cautious', 'No-Go'],
+                datasets: [{{ data: [{go}, {cautious}, {nogo}],
+                    backgroundColor: ['#10B981', '#F59E0B', '#EF4444']
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                plugins: {{
+                    legend: {{ position: 'bottom', labels: {{ boxWidth: 12, padding: 16 }} }}
+                }}
+            }}
+        }});
+        """
+
+    return charts_html, chart_script
 
 
 def _build_charts():

@@ -63,6 +63,14 @@ def _get_agent_class(name: str):
         from agents.whale_investor_agent import WhaleInvestorAgent
         AGENT_REGISTRY["whale_investor"] = WhaleInvestorAgent
         return WhaleInvestorAgent
+    elif name == "correlation":
+        from agents.correlation_agent import CorrelationAgent
+        AGENT_REGISTRY["correlation"] = CorrelationAgent
+        return CorrelationAgent
+    elif name == "global_market_viability":
+        from agents.global_market_viability_agent import GlobalMarketViabilityAgent
+        AGENT_REGISTRY["global_market_viability"] = GlobalMarketViabilityAgent
+        return GlobalMarketViabilityAgent
 
     raise ValueError(f"Unknown agent: {name}")
 

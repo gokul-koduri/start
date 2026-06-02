@@ -91,7 +91,7 @@ def main():
         for key in ["collection", "report", "dashboard", "git_publisher", "internet_research",
                      "failure_pattern", "survival_analysis", "revival_opportunity",
                      "geographic_strategy", "news_intelligence", "opportunity_pipeline",
-                     "whale_investor"]:
+                     "whale_investor", "correlation", "global_market_viability"]:
             if key in agents_config:
                 orchestrator_config[key] = agents_config[key]
 

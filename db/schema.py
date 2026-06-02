@@ -259,6 +259,15 @@ _TABLES = [
         record_count        INT DEFAULT 0
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
+    """
+    CREATE TABLE IF NOT EXISTS analysis_global_market_viability (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        analysis_type       VARCHAR(255) NOT NULL,
+        insights_json       LONGTEXT NOT NULL,
+        analyzed_at         VARCHAR(50) NOT NULL,
+        record_count        INT DEFAULT 0
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
 ]
 
 _INDEXES = [
@@ -277,6 +286,7 @@ _INDEXES = [
     "CREATE INDEX idx_agent_runs_pipeline ON agent_runs(pipeline_name, started_at DESC);",
     "CREATE INDEX idx_discovered_sources_status ON discovered_sources(validation_status);",
     "CREATE INDEX idx_whale_investors_type ON analysis_whale_investors(analysis_type);",
+    "CREATE INDEX idx_gmv_type ON analysis_global_market_viability(analysis_type);",
 ]
 
 

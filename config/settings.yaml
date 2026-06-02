@@ -226,8 +226,10 @@ agents:
         - revival_opportunity
         - geographic_strategy
         - news_intelligence
-        - opportunity_pipeline
         - whale_investor
+        - opportunity_pipeline
+        - correlation
+        - global_market_viability
       full:
         - collection
         - report
@@ -236,8 +238,10 @@ agents:
         - revival_opportunity
         - geographic_strategy
         - news_intelligence
-        - opportunity_pipeline
         - whale_investor
+        - opportunity_pipeline
+        - correlation
+        - global_market_viability
         - dashboard
         - git_publisher
 
@@ -298,3 +302,11 @@ agents:
       timeout_seconds: 10
       min_content_length: 500
       relevance_threshold: 0.3
+
+  global_market_viability:
+    enabled: true
+    ollama_url: "http://localhost:11434/api/chat"
+    ollama_model: "llama3"
+    delay_seconds: 3.0
+    top_combinations: 15
+    output_filename: "Global_Market_Viability.md"

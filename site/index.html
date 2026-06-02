@@ -270,13 +270,15 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
     <input type="text" id="searchInput" placeholder="Search report..." autocomplete="off" />
     <span class="search-clear" id="searchClear">&times;</span>
   </div>
-  <span class="meta">Updated: June 02, 2026 at 22:34 UTC</span>
+  <span class="meta">Updated: June 02, 2026 at 22:48 UTC</span>
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
     <span class="theme-icon" id="themeIcon">&#9788;</span>
   </button>
 </div>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <nav class="sidebar">
+<a href="#gmv-monitoring" class="h2">Global Market Viability Analysis</a>
+<a href="#gmv-charts" class="h2">Market Viability Charts</a>
 <a href="#table-of-contents" class="h2">TABLE OF CONTENTS</a>
 <a href="#part-1-failed-startups-that-got-seed-funding-part-1" class="h2">Part 1: Failed Startups That Got Seed Funding</a>
 <a href="#part-1a-united-states-global-part-1a" class="h3">Part 1A: United States &amp; Global</a>
@@ -315,6 +317,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <a href="#data-sources" class="h3">Data Sources</a>
 <a href="#sources-sources" class="h2">Sources</a>
 <a href="#failory" class="h3">Failory</a>
+<a href="#llm-infrastructure" class="h2">LLM Infrastructure</a>
 </nav>
 <div class="main">
 <div class="stats-grid">
@@ -348,7 +351,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
     </div>
     <div style="margin-bottom: 24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <span style="font-size:14px;font-weight:600;">Global Market Viability Analysis</span>
+        <h2 id="gmv-monitoring" style="margin:0;font-size:14px;font-weight:600;">Global Market Viability Analysis</h2>
         <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">COMPLETE</span>
       </div>
       <div style="background:var(--border);border-radius:8px;height:12px;overflow:hidden;">
@@ -361,7 +364,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
       </div>
     </div>
     
-<div class="charts-grid"><div class="chart-container"><h3>Failure by Category</h3><canvas id="categoryChart"></canvas></div><div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div><div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div><div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div></div>
+<div class="charts-grid"><div class="chart-container"><h3>Failure by Category</h3><canvas id="categoryChart"></canvas></div><div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div><div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div></div><h2 id="gmv-charts" style="font-size:16px;font-weight:700;margin:0 0 12px 0;color:var(--text);">Market Viability Charts</h2><div class="charts-grid"><div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div><div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div></div>
 <h1 id="research-report-failed-startups-revival-ready-manufacturing-industries">Research Report: Failed Startups &amp; Revival-Ready Manufacturing Industries</h1>
 <hr />
 <h2 id="table-of-contents">TABLE OF CONTENTS</h2>
@@ -2051,10 +2054,10 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <p><em>This report uses a two-pronged research approach: </em><em>Prong A</em><em> (Failed Manufacturing Startups 2024-2025) and </em><em>Prong B</em><em> (Manufacturing Revival &amp; Reshoring). See <a href="#methodology">Methodology</a> section for full details.</em></p>
     <div style="margin-top: 32px; border-top: 2px solid var(--border); padding-top: 24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h2 style="margin:0;font-size:20px;font-weight:700;color:var(--text);">LLM Infrastructure</h2>
+        <h2 id="llm-infrastructure" style="margin:0;font-size:20px;font-weight:700;color:var(--text);">LLM Infrastructure</h2>
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">ONLINE</span>
-          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#F59E0B;color:white;">MODERATE &middot; 7.7 tok/s</span>
+          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#F59E0B;color:white;">MODERATE &middot; 13.0 tok/s</span>
         </div>
       </div>
 
@@ -2076,9 +2079,9 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
         </div>
         <div class="stat-card accent-red">
           <span class="icon">&#9201;</span>
-          <div class="value">0.26s</div>
+          <div class="value">0.23s</div>
           <div class="label">Inference Latency</div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">2 tokens generated</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">3 tokens generated</div>
         </div>
       </div>
 
@@ -2130,7 +2133,7 @@ Meta Llama 3 Version Release Date: April 18, 2024
         <tr>
           <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500;">llama3:latest</td>
           <td style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary);">4.3 GB</td>
-          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);font-size:12px;">Available</span></td>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;background:#10B981;color:white;margin-left:6px;">LOADED</span></td>
         </tr>
           </tbody>
         </table>

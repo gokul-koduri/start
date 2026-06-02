@@ -497,8 +497,7 @@ class DashboardAgent(BaseAgent):
             html_body,
         )
 
-        # Build navigation from headings
-        nav_html = _generate_nav(html_body)
+        # Build navigation from headings (deferred — must include gmv/llm sections)
 
         # Fetch stats from database
         stats_html, stats_json = _fetch_stats()
@@ -518,6 +517,9 @@ class DashboardAgent(BaseAgent):
         # LLM Infrastructure status
         llm_status = _fetch_ollama_status()
         llm_infra_html = _build_llm_infrastructure_html(llm_status)
+
+        # Build navigation from headings (after all sections are generated)
+        nav_html = _generate_nav(gmv_monitor_html + gmv_charts_html + html_body + llm_infra_html)
 
         # Assemble final HTML
         full_html = HTML_TEMPLATE.format(
@@ -560,7 +562,7 @@ def _generate_nav(html_body: str) -> str:
 
     # Match headings WITH id attributes (primary path — what markdown library produces)
     for match in re.finditer(
-        r'<(h[23])\s+id="([^"]*)">(.*?)</\1>', html_body
+        r'<(h[23])\s+id="([^"]*)"[^>]*>(.*?)</\1>', html_body
     ):
         tag, heading_id, text = match.group(1), match.group(2), match.group(3)
         clean = re.sub(r"<[^>]+>", "", text)  # Strip HTML tags
@@ -789,7 +791,7 @@ def _build_llm_infrastructure_html(llm: dict) -> str:
     html = f"""
     <div style="margin-top: 32px; border-top: 2px solid var(--border); padding-top: 24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h2 style="margin:0;font-size:20px;font-weight:700;color:var(--text);">LLM Infrastructure</h2>
+        <h2 id="llm-infrastructure" style="margin:0;font-size:20px;font-weight:700;color:var(--text);">LLM Infrastructure</h2>
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:{status_color};color:white;">{status_label}</span>
           <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:{latency_color};color:white;">{latency_label} &middot; {tokens_per_sec} tok/s</span>
@@ -1042,7 +1044,7 @@ def _build_gmv_monitor_html(gmv_stats: dict) -> str:
     </div>
     <div style="margin-bottom: 24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <span style="font-size:14px;font-weight:600;">Global Market Viability Analysis</span>
+        <h2 id="gmv-monitoring" style="margin:0;font-size:14px;font-weight:600;">Global Market Viability Analysis</h2>
         <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:{status_color};color:white;">{status_label}</span>
       </div>
       <div style="background:var(--border);border-radius:8px;height:12px;overflow:hidden;">
@@ -1069,6 +1071,7 @@ def _build_gmv_charts(gmv_stats: dict):
     # Chart 1: Viability by Country (bar chart)
     country_scores = gmv_stats.get("country_scores", {})
     if country_scores:
+        charts_html += '<h2 id="gmv-charts" style="font-size:16px;font-weight:700;margin:0 0 12px 0;color:var(--text);">Market Viability Charts</h2>'
         charts_html += '<div class="charts-grid">'
         charts_html += '<div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div>'
 

@@ -3,6 +3,8 @@
 import json
 import logging
 import re
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -513,6 +515,10 @@ class DashboardAgent(BaseAgent):
         gmv_monitor_html = _build_gmv_monitor_html(gmv_stats)
         gmv_charts_html, gmv_chart_script = _build_gmv_charts(gmv_stats) if include_charts else ("", "")
 
+        # LLM Infrastructure status
+        llm_status = _fetch_ollama_status()
+        llm_infra_html = _build_llm_infrastructure_html(llm_status)
+
         # Assemble final HTML
         full_html = HTML_TEMPLATE.format(
             title="Startup Research Report — Live Dashboard",
@@ -520,7 +526,7 @@ class DashboardAgent(BaseAgent):
             nav=nav_html,
             stats=stats_html + gmv_monitor_html,
             charts=charts_html + gmv_charts_html,
-            body=html_body,
+            body=html_body + llm_infra_html,
             chart_script=chart_script + gmv_chart_script,
         )
 
@@ -528,7 +534,7 @@ class DashboardAgent(BaseAgent):
         site_dir.mkdir(parents=True, exist_ok=True)
         (site_dir / "index.html").write_text(full_html, encoding="utf-8")
         (site_dir / "data.json").write_text(
-            json.dumps({**stats_json, "gmv_monitoring": gmv_stats}, indent=2, default=str),
+            json.dumps({**stats_json, "gmv_monitoring": gmv_stats, "llm_infrastructure": llm_status}, indent=2, default=str),
             encoding="utf-8",
         )
         (site_dir / ".nojekyll").touch()
@@ -651,6 +657,217 @@ def _fetch_stats():
     stats_html += "</div>"
 
     return stats_html, stats_json
+
+
+def _ollama_api(endpoint: str, payload: dict | None = None, timeout: float = 5) -> dict | None:
+    """Make a request to the Ollama API and return parsed JSON, or None on failure."""
+    url = f"http://localhost:11434{endpoint}"
+    try:
+        data = json.dumps(payload).encode() if payload else None
+        req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode())
+    except Exception:
+        return None
+
+
+def _fetch_ollama_status() -> dict:
+    """Query Ollama for detailed LLM infrastructure status at build time."""
+    info = {
+        "status": "offline",
+        "endpoint": "http://localhost:11434",
+        "models": [],
+        "loaded_models": [],
+        "total_vram_mb": 0,
+        "test_latency_s": 0,
+        "test_tokens": 0,
+        "model_details": {},
+    }
+
+    # 1) Check connectivity via /api/tags
+    tags = _ollama_api("/api/tags")
+    if tags is None:
+        return info
+    info["status"] = "online"
+    info["models"] = [
+        {"name": m["name"], "size_bytes": m.get("size", 0)}
+        for m in tags.get("models", [])
+    ]
+
+    # 2) Check what's currently loaded in VRAM via /api/ps
+    ps = _ollama_api("/api/ps")
+    if ps:
+        info["loaded_models"] = [
+            {"name": m["name"], "size_bytes": m.get("size", 0), "vram_bytes": m.get("vram", 0)}
+            for m in ps.get("models", [])
+        ]
+        info["total_vram_mb"] = round(sum(m.get("vram", 0) for m in ps.get("models", [])) / (1024 * 1024))
+
+    # 3) Get detailed model info for first loaded model (or first available)
+    primary_model = None
+    if info["loaded_models"]:
+        primary_model = info["loaded_models"][0]["name"]
+    elif info["models"]:
+        primary_model = info["models"][0]["name"]
+
+    if primary_model:
+        show = _ollama_api("/api/show", {"name": primary_model})
+        if show:
+            details = show.get("details", {})
+            model_info = show.get("model_info", {})
+            info["model_details"] = {
+                "name": primary_model,
+                "family": details.get("family", ""),
+                "format": details.get("format", ""),
+                "quantization_level": details.get("quantization_level", ""),
+                "parameter_count": model_info.get("general.parameter_count", 0),
+                "quantization_version": model_info.get("general.quantization_version", ""),
+                "license": show.get("license", "")[:120],
+            }
+
+    # 4) Run a quick inference latency test
+    test_result = _ollama_api(
+        "/api/chat",
+        {
+            "model": primary_model or "llama3",
+            "messages": [
+                {"role": "system", "content": "Reply with one word."},
+                {"role": "user", "content": "Hi"},
+            ],
+            "stream": False,
+        },
+        timeout=30,
+    )
+    if test_result:
+        info["test_latency_s"] = round(test_result.get("eval_duration", 0) / 1e9, 2)
+        info["test_tokens"] = test_result.get("eval_count", 0)
+
+    return info
+
+
+def _build_llm_infrastructure_html(llm: dict) -> str:
+    """Build a detailed LLM Infrastructure monitoring section for the dashboard."""
+    if not llm or llm.get("status") == "offline":
+        return ""
+
+    status_color = "#10B981" if llm["status"] == "online" else "#EF4444"
+    status_label = "ONLINE" if llm["status"] == "online" else "OFFLINE"
+
+    details = llm.get("model_details", {})
+    params = details.get("parameter_count", 0)
+    params_str = f"{params / 1e9:.1f}B" if params >= 1e9 else f"{params / 1e6:.0f}M" if params else "N/A"
+    vram = llm.get("total_vram_mb", 0)
+    vram_str = f"{vram / 1024:.1f} GB" if vram >= 1024 else f"{vram} MB"
+    latency = llm.get("test_latency_s", 0)
+    tokens = llm.get("test_tokens", 0)
+    tokens_per_sec = round(tokens / latency, 1) if latency > 0 and tokens > 0 else 0
+
+    # Latency color coding
+    if tokens_per_sec >= 15:
+        latency_color = "#10B981"
+        latency_label = "FAST"
+    elif tokens_per_sec >= 5:
+        latency_color = "#F59E0B"
+        latency_label = "MODERATE"
+    else:
+        latency_color = "#EF4444"
+        latency_label = "SLOW"
+
+    # Available models list
+    models_list = ""
+    for m in llm.get("models", []):
+        size_gb = m.get("size_bytes", 0) / (1024**3)
+        is_loaded = any(lm["name"] == m["name"] for lm in llm.get("loaded_models", []))
+        loaded_badge = '<span style="display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;background:#10B981;color:white;margin-left:6px;">LOADED</span>' if is_loaded else ""
+        models_list += f"""
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500;">{m['name']}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary);">{size_gb:.1f} GB</td>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);">{loaded_badge if loaded_badge else '<span style="color:var(--text-secondary);font-size:12px;">Available</span>'}</td>
+        </tr>"""
+
+    html = f"""
+    <div style="margin-top: 32px; border-top: 2px solid var(--border); padding-top: 24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="margin:0;font-size:20px;font-weight:700;color:var(--text);">LLM Infrastructure</h2>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:{status_color};color:white;">{status_label}</span>
+          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:{latency_color};color:white;">{latency_label} &middot; {tokens_per_sec} tok/s</span>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card accent-blue">
+          <span class="icon">&#129302;</span>
+          <div class="value">{details.get('name', 'N/A').split(':')[0]}</div>
+          <div class="label">Active Model</div>
+        </div>
+        <div class="stat-card accent-green">
+          <span class="icon">&#128202;</span>
+          <div class="value">{params_str}</div>
+          <div class="label">Parameters</div>
+        </div>
+        <div class="stat-card accent-amber">
+          <span class="icon">&#128451;</span>
+          <div class="value">{vram_str}</div>
+          <div class="label">VRAM Usage</div>
+        </div>
+        <div class="stat-card accent-red">
+          <span class="icon">&#9201;</span>
+          <div class="value">{latency}s</div>
+          <div class="label">Inference Latency</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">{tokens} tokens generated</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border);overflow:hidden;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;color:var(--text);">
+          Model Specifications
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <tr>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);width:35%;">Family</td>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;">{details.get('family', 'N/A').title()}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);">Format</td>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;">{details.get('format', 'N/A').upper()}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);">Quantization</td>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;">{details.get('quantization_level', 'N/A')}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);">API Endpoint</td>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;font-family:monospace;font-size:12px;">{llm.get('endpoint', 'N/A')}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 16px;color:var(--text-secondary);">License</td>
+            <td style="padding:8px 16px;font-weight:500;font-size:12px;">{details.get('license', 'N/A')}</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="margin-top:16px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border);overflow:hidden;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;color:var(--text);">
+          Available Models
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;">
+              <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Model</th>
+              <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Size</th>
+              <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {models_list}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    """
+    return html
 
 
 def _fetch_gmv_status():

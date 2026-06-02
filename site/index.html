@@ -270,7 +270,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
     <input type="text" id="searchInput" placeholder="Search report..." autocomplete="off" />
     <span class="search-clear" id="searchClear">&times;</span>
   </div>
-  <span class="meta">Updated: June 02, 2026 at 21:49 UTC</span>
+  <span class="meta">Updated: June 02, 2026 at 22:34 UTC</span>
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
     <span class="theme-icon" id="themeIcon">&#9788;</span>
   </button>
@@ -2049,6 +2049,94 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <p><em>Report generated on 2026-06-01 17:14 UTC from the Startup Research automated data collection system.</em></p>
 <p><em>Database contains: 163 startups, 723 news articles, 31 BLS data points.</em></p>
 <p><em>This report uses a two-pronged research approach: </em><em>Prong A</em><em> (Failed Manufacturing Startups 2024-2025) and </em><em>Prong B</em><em> (Manufacturing Revival &amp; Reshoring). See <a href="#methodology">Methodology</a> section for full details.</em></p>
+    <div style="margin-top: 32px; border-top: 2px solid var(--border); padding-top: 24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="margin:0;font-size:20px;font-weight:700;color:var(--text);">LLM Infrastructure</h2>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">ONLINE</span>
+          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#F59E0B;color:white;">MODERATE &middot; 7.7 tok/s</span>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card accent-blue">
+          <span class="icon">&#129302;</span>
+          <div class="value">llama3</div>
+          <div class="label">Active Model</div>
+        </div>
+        <div class="stat-card accent-green">
+          <span class="icon">&#128202;</span>
+          <div class="value">8.0B</div>
+          <div class="label">Parameters</div>
+        </div>
+        <div class="stat-card accent-amber">
+          <span class="icon">&#128451;</span>
+          <div class="value">0 MB</div>
+          <div class="label">VRAM Usage</div>
+        </div>
+        <div class="stat-card accent-red">
+          <span class="icon">&#9201;</span>
+          <div class="value">0.26s</div>
+          <div class="label">Inference Latency</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">2 tokens generated</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border);overflow:hidden;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;color:var(--text);">
+          Model Specifications
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <tr>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);width:35%;">Family</td>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;">Llama</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);">Format</td>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;">GGUF</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);">Quantization</td>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;">Q4_0</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);">API Endpoint</td>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;font-family:monospace;font-size:12px;">http://localhost:11434</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 16px;color:var(--text-secondary);">License</td>
+            <td style="padding:8px 16px;font-weight:500;font-size:12px;">META LLAMA 3 COMMUNITY LICENSE AGREEMENT
+
+Meta Llama 3 Version Release Date: April 18, 2024
+“Agreement” means the terms </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="margin-top:16px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border);overflow:hidden;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;color:var(--text);">
+          Available Models
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;">
+              <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Model</th>
+              <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Size</th>
+              <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500;">llama3:latest</td>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary);">4.3 GB</td>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);font-size:12px;">Available</span></td>
+        </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
 </div>
 <button class="back-to-top" id="backToTop" aria-label="Back to top">&#9650;</button>
 <script>

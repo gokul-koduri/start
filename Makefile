@@ -29,6 +29,14 @@ api:
 chat:
 	@read -p "Ask: " q && python run_agent.py --chat "$$q"
 
+# ── Streamlit Dashboard ─────────────────────────────────
+streamlit: ## Launch the interactive Streamlit dashboard
+	streamlit run streamlit_app.py --server.port 8501
+
+# ── API Server ──────────────────────────────────────────
+api: ## Start the FastAPI REST API server
+	/opt/anaconda3/bin/python api_server.py --host 127.0.0.1 --port 8000 --reload
+
 # ── Testing ─────────────────────────────────────────────
 test:
 	python -m pytest tests/ -v --tb=short

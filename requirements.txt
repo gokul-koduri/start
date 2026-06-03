@@ -13,5 +13,10 @@ pymysql>=1.1.0
 fastapi>=0.110.0
 uvicorn>=0.29.0
 
+# Streamlit dashboard (optional — for interactive web dashboard)
+streamlit>=1.35.0
+plotly>=5.22.0
+pandas>=2.2.0
+
 # Testing (optional — for running the test suite)
 pytest>=7.4.0

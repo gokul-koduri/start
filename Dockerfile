@@ -14,12 +14,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir fastapi uvicorn
+    && pip install --no-cache-dir fastapi uvicorn streamlit plotly pandas
 
 # Copy project
 COPY . .
 
 # Default: run API server
-EXPOSE 8000
+EXPOSE 8000 8501
 
 CMD ["python", "api_server.py", "--host", "0.0.0.0", "--port", "8000"]

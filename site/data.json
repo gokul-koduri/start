@@ -1,9 +1,9 @@
 {
-  "last_updated": "2026-06-02T22:48:43.145801+00:00",
+  "last_updated": "2026-06-03T04:43:04.391448+00:00",
   "total_startups": 163,
   "manufacturing_startups": 44,
-  "total_articles": 723,
-  "manufacturing_articles": 387,
+  "total_articles": 884,
+  "manufacturing_articles": 456,
   "recent_failures": [
     {
       "name": "Zulily",
@@ -40,48 +40,48 @@
     "top_score": 8,
     "progress_pct": 100.0,
     "sectors_done": [
-      "Fintech",
-      "Food & Beverage",
-      "E-commerce",
-      "Software & Hardware",
-      "Entertainment",
-      "Mobility/EV",
-      "Transportation",
-      "Productivity",
-      "Proptech",
-      "Travel",
-      "Healthtech",
-      "Construction",
-      "Social Media",
-      "3D Printing",
-      "Finances",
-      "EdTech",
-      "BNPL/Fintech",
-      "Logistics",
-      "Biotech/Genomics",
       "Healthtech/Genomics",
-      "Health",
-      "Education",
-      "EV Ride-Hailing",
+      "Biotech/Genomics",
+      "EdTech",
       "PropTech/Construction",
-      "Quick Commerce",
-      "Fintech/Payments",
-      "Robotics",
-      "Design",
-      "Analytics",
+      "Music",
       "Fashion-tech",
-      "Marketing",
-      "Social/Chat",
-      "Semiconductors",
-      "Content/Social Commerce",
-      "EV/Automotive",
-      "Premium EV",
-      "Beauty/D2C",
-      "Micro-mobility",
-      "EV",
+      "BNPL/Fintech",
+      "Fintech/Payments",
       "Battery Manufacturing",
+      "Proptech",
+      "Content/Social Commerce",
+      "Design",
+      "Health",
+      "Micro-mobility",
+      "Mobility/EV",
       "Flexible Display",
-      "Music"
+      "Marketing",
+      "Transportation",
+      "Semiconductors",
+      "EV",
+      "Finances",
+      "3D Printing",
+      "Travel",
+      "Entertainment",
+      "Education",
+      "Healthtech",
+      "EV/Automotive",
+      "Software & Hardware",
+      "Premium EV",
+      "EV Ride-Hailing",
+      "Food & Beverage",
+      "Quick Commerce",
+      "Analytics",
+      "Robotics",
+      "E-commerce",
+      "Fintech",
+      "Social/Chat",
+      "Beauty/D2C",
+      "Social Media",
+      "Construction",
+      "Logistics",
+      "Productivity"
     ],
     "country_scores": {
       "US": {
@@ -150,16 +150,10 @@
         "size_bytes": 4661224676
       }
     ],
-    "loaded_models": [
-      {
-        "name": "llama3:latest",
-        "size_bytes": 5587662273,
-        "vram_bytes": 0
-      }
-    ],
+    "loaded_models": [],
     "total_vram_mb": 0,
-    "test_latency_s": 0.23,
-    "test_tokens": 3,
+    "test_latency_s": 0,
+    "test_tokens": 0,
     "model_details": {
       "name": "llama3:latest",
       "family": "llama",
@@ -169,5 +163,48 @@
       "quantization_version": 2,
       "license": "META LLAMA 3 COMMUNITY LICENSE AGREEMENT\n\nMeta Llama 3 Version Release Date: April 18, 2024\n\u201cAgreement\u201d means the terms "
     }
+  },
+  "llm_pricing": {
+    "providers": [],
+    "models": [],
+    "last_updated": "",
+    "model_count": 0,
+    "cheapest_input": {},
+    "cheapest_output": {}
+  },
+  "ollama_usage": {
+    "total_prompt_tokens": 0,
+    "total_completion_tokens": 0,
+    "total_tokens": 0,
+    "inference_count": 0,
+    "cost_equivalence": {},
+    "snapshots": [],
+    "status": "no_data"
+  },
+  "llm_portfolio": {
+    "categories": {},
+    "total_recommendations": 0,
+    "estimated_savings_pct": 0,
+    "last_recommended": ""
+  },
+  "llm_benchmarks": {
+    "models": [],
+    "categories": {},
+    "total_benchmarks": 0,
+    "top_models": []
+  },
+  "llm_optimizer": {
+    "alerts": [],
+    "price_changes": [],
+    "total_savings_pct": 0,
+    "active_alerts": 0
+  },
+  "knowledge_graph": {
+    "total_entities": 0,
+    "total_relationships": 0,
+    "entity_types": [],
+    "top_entities": [],
+    "relationship_types": [],
+    "status": "no_data"
   }
 }

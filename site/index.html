@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Startup Research Report — Live Dashboard</title>
+<title>Opportunity Intelligence Platform — Live Dashboard</title>
 <style>
 /* ── Base theme ── */
 :root {
@@ -258,6 +258,112 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
   .search-container input:focus { width: 160px; }
   h2#table-of-contents + ol { column-count: 1; }
 }
+/* ── Tier badge ── */
+.tier-badge {
+  display: inline-block; padding: 2px 10px; border-radius: 12px;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.tier-badge.free { background: var(--border); color: var(--text-secondary); }
+.tier-badge.pro { background: var(--accent); color: white; }
+.tier-badge.enterprise { background: #6f42c1; color: white; }
+/* ── Gated content ── */
+.gated-content { display: none; }
+.gated-content.unlocked { display: block; }
+/* ── Pro lock overlay ── */
+.pro-lock-overlay {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 200px; padding: 40px 20px; text-align: center;
+  background: var(--bg-secondary); border: 2px dashed var(--border);
+  border-radius: 12px; margin: 16px 0;
+}
+.pro-lock-overlay .lock-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+.pro-lock-overlay h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+.pro-lock-overlay p { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; max-width: 400px; }
+.pro-lock-overlay .upgrade-btn {
+  display: inline-block; padding: 8px 20px; border-radius: 8px;
+  background: var(--accent); color: white; font-weight: 600; font-size: 14px;
+  text-decoration: none; transition: background 0.2s; border: none; cursor: pointer;
+}
+.pro-lock-overlay .upgrade-btn:hover { opacity: 0.9; }
+/* ── Pricing cards ── */
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px; margin: 32px 0;
+}
+.pricing-card {
+  background: var(--bg-secondary); border: 2px solid var(--border);
+  border-radius: 12px; padding: 32px 24px; text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s; position: relative;
+}
+.pricing-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+.pricing-card.featured { border-color: var(--accent); }
+.pricing-card.featured::before {
+  content: 'MOST POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--accent); color: white; padding: 2px 12px; border-radius: 10px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+}
+.pricing-card .price { font-size: 48px; font-weight: 800; margin: 16px 0 4px; }
+.pricing-card .price small { font-size: 16px; font-weight: 400; color: var(--text-secondary); }
+.pricing-card .tier-name { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 8px; }
+.pricing-card .features { text-align: left; margin: 24px 0; }
+.pricing-card .features li {
+  padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  list-style: none; padding-left: 20px; position: relative;
+}
+.pricing-card .features li::before {
+  content: '\2713'; position: absolute; left: 0; color: var(--success); font-weight: bold;
+}
+.pricing-card .cta-btn {
+  display: block; padding: 12px 24px; border-radius: 8px;
+  font-weight: 600; font-size: 15px; text-decoration: none;
+  cursor: pointer; transition: all 0.2s; border: 2px solid;
+}
+.pricing-card .cta-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.pricing-card .cta-btn.primary:hover { opacity: 0.9; }
+.pricing-card .cta-btn.secondary { background: transparent; color: var(--accent); border-color: var(--accent); }
+.pricing-card .cta-btn.secondary:hover { background: var(--accent-light); }
+.pricing-card .cta-btn.current { background: var(--border); color: var(--text-secondary); border-color: var(--border); cursor: default; }
+/* ── Modal ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6); z-index: 200;
+  justify-content: center; align-items: center;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 32px; max-width: 440px; width: 90%;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.2); position: relative;
+}
+.modal h2 { font-size: 20px; margin-bottom: 8px; color: var(--text); }
+.modal p { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+.modal input[type="text"] {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 15px; font-family: monospace;
+  background: var(--bg-secondary); color: var(--text); outline: none;
+  margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
+}
+.modal input[type="text"]:focus { border-color: var(--accent); }
+.modal .modal-actions { display: flex; gap: 8px; }
+.modal .modal-actions button {
+  flex: 1; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; transition: all 0.2s;
+}
+.modal .modal-actions .btn-activate { background: var(--accent); color: white; }
+.modal .modal-actions .btn-activate:hover { opacity: 0.9; }
+.modal .modal-actions .btn-cancel { background: var(--border); color: var(--text); }
+.modal .modal-actions .btn-cancel:hover { background: var(--bg-secondary); }
+.modal .modal-close {
+  position: absolute; top: 12px; right: 16px; background: none; border: none;
+  font-size: 20px; cursor: pointer; color: var(--text-secondary);
+}
+.modal .error-msg { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: 4px; }
+.modal .purchase-link { display: block; margin-top: 12px; font-size: 13px; }
+.modal .purchase-link a { color: var(--accent); text-decoration: underline; }
+@media (max-width: 768px) {
+  .pricing-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -265,12 +371,13 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
   <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">
     <span></span><span></span><span></span>
   </button>
-  <h1>Startup Research Report — Live Dashboard</h1>
+  <h1>Opportunity Intelligence Platform — Live Dashboard</h1>
   <div class="search-container">
     <input type="text" id="searchInput" placeholder="Search report..." autocomplete="off" />
     <span class="search-clear" id="searchClear">&times;</span>
   </div>
-  <span class="meta">Updated: June 02, 2026 at 22:48 UTC</span>
+  <span class="tier-badge free" id="tierBadge" onclick="showTierAction()">FREE</span>
+  <span class="meta">Updated: June 03, 2026 at 04:44 UTC</span>
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
     <span class="theme-icon" id="themeIcon">&#9788;</span>
   </button>
@@ -323,8 +430,8 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <div class="stats-grid">
 <div class="stat-card accent-blue"><span class="icon">&#128640;</span><div class="value">163</div><div class="label">Total Startups Tracked</div></div>
 <div class="stat-card accent-red"><span class="icon">&#9888;</span><div class="value">44</div><div class="label">Manufacturing Failures</div></div>
-<div class="stat-card accent-green"><span class="icon">&#128240;</span><div class="value">723</div><div class="label">News Articles</div></div>
-<div class="stat-card accent-amber"><span class="icon">&#128202;</span><div class="value">387</div><div class="label">Mfg-Related News</div></div>
+<div class="stat-card accent-green"><span class="icon">&#128240;</span><div class="value">884</div><div class="label">News Articles</div></div>
+<div class="stat-card accent-amber"><span class="icon">&#128202;</span><div class="value">456</div><div class="label">Mfg-Related News</div></div>
 </div>
     <div class="stats-grid" style="margin-top: 24px; border-top: 2px solid var(--border); padding-top: 24px;">
       <div class="stat-card accent-blue">
@@ -364,8 +471,46 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
       </div>
     </div>
     
-<div class="charts-grid"><div class="chart-container"><h3>Failure by Category</h3><canvas id="categoryChart"></canvas></div><div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div><div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div></div><h2 id="gmv-charts" style="font-size:16px;font-weight:700;margin:0 0 12px 0;color:var(--text);">Market Viability Charts</h2><div class="charts-grid"><div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div><div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div></div>
-<h1 id="research-report-failed-startups-revival-ready-manufacturing-industries">Research Report: Failed Startups &amp; Revival-Ready Manufacturing Industries</h1>
+<div class="charts-grid"><div class="chart-container"><h3>Failure by Category</h3><canvas id="categoryChart"></canvas></div><div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div><div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div></div><h2 id="gmv-charts" style="font-size:16px;font-weight:700;margin:0 0 12px 0;color:var(--text);">Market Viability Charts</h2><div class="charts-grid"><div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div><div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div></div><div class="chart-container" style="position:relative;height:300px;"><canvas id="revenueChart"></canvas></div>
+
+    <div class="stats-grid" style="margin-top: 24px; border-top: 2px solid var(--border); padding-top: 24px;">
+      <div class="stat-card accent-blue">
+        <span class="icon">&#127760;</span>
+        <div class="value">420/420</div>
+        <div class="label">Evaluations Done</div>
+      </div>
+      <div class="stat-card accent-green">
+        <span class="icon">&#128200;</span>
+        <div class="value">6.8/10</div>
+        <div class="label">Avg Viability Score</div>
+      </div>
+      <div class="stat-card accent-amber">
+        <span class="icon">&#127919;</span>
+        <div class="value">8/10</div>
+        <div class="label">Top Opportunity</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">E-commerce in China</div>
+      </div>
+      <div class="stat-card accent-red">
+        <span class="icon">&#128269;</span>
+        <div class="value">45</div>
+        <div class="label">Company Deep-Dives</div>
+      </div>
+    </div>
+    <div style="margin-bottom: 24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <h2 id="gmv-monitoring" style="margin:0;font-size:14px;font-weight:600;">Global Market Viability Analysis</h2>
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">COMPLETE</span>
+      </div>
+      <div style="background:var(--border);border-radius:8px;height:12px;overflow:hidden;">
+        <div style="height:100%;width:100.0%;background:#10B981;border-radius:8px;transition:width 0.5s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-top:4px;">
+        <span>42 sectors analyzed</span>
+        <span>100.0%</span>
+        <span>Last: 2026-06-02T21:47</span>
+      </div>
+    </div>
+    <h2 id="gmv-charts" style="font-size:16px;font-weight:700;margin:0 0 12px 0;color:var(--text);">Market Viability Charts</h2><div class="charts-grid"><div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div><div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div></div><h1 id="research-report-failed-startups-revival-ready-manufacturing-industries">Research Report: Failed Startups &amp; Revival-Ready Manufacturing Industries</h1>
 <hr />
 <h2 id="table-of-contents">TABLE OF CONTENTS</h2>
 <ol>
@@ -1626,15 +1771,15 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <h3 id="data-driven-opportunities-from-collected-data">Data-Driven Opportunities (from collected data)</h3>
 <ul>
 <li><strong>44 manufacturing startup failures</strong> in database suggest clear patterns to avoid</li>
-<li><strong>194 recent news articles</strong> about manufacturing startup failures signal active market churn</li>
+<li><strong>217 recent news articles</strong> about manufacturing startup failures signal active market churn</li>
 </ul>
 <h2 id="news-monitoring-manufacturing-startup-failures-news">News Monitoring: Manufacturing &amp; Startup Failures </h2>
 <h3 id="coverage-summary">Coverage Summary</h3>
 <ul>
-<li><strong>723</strong> articles collected from Google News and TechCrunch RSS feeds</li>
-<li><strong>387</strong> mention manufacturing (53.5%)</li>
-<li><strong>383</strong> mention startup failures (53.0%)</li>
-<li><strong>194</strong> are in the intersection (manufacturing + failure)</li>
+<li><strong>884</strong> articles collected from Google News and TechCrunch RSS feeds</li>
+<li><strong>456</strong> mention manufacturing (51.6%)</li>
+<li><strong>436</strong> mention startup failures (49.3%)</li>
+<li><strong>217</strong> are in the intersection (manufacturing + failure)</li>
 </ul>
 <h3 id="articles-by-source">Articles by Source</h3>
 <table>
@@ -1647,11 +1792,11 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <tbody>
 <tr>
 <td>google_news</td>
-<td>683</td>
+<td>824</td>
 </tr>
 <tr>
 <td>techcrunch</td>
-<td>40</td>
+<td>60</td>
 </tr>
 </tbody>
 </table>
@@ -1842,6 +1987,48 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <tbody>
 <tr>
 <td>techcrunch_rss</td>
+<td>2026-06-03T03:58:13</td>
+<td>success</td>
+<td>20</td>
+</tr>
+<tr>
+<td>google_news_rss</td>
+<td>2026-06-03T03:58:01</td>
+<td>success</td>
+<td>141</td>
+</tr>
+<tr>
+<td>reshoring_pdf</td>
+<td>2026-06-02T02:48:53</td>
+<td>success</td>
+<td>0</td>
+</tr>
+<tr>
+<td>failory_scraper</td>
+<td>2026-06-02T02:48:51</td>
+<td>partial</td>
+<td>0</td>
+</tr>
+<tr>
+<td>techcrunch_rss</td>
+<td>2026-06-02T02:48:50</td>
+<td>failed</td>
+<td>0</td>
+</tr>
+<tr>
+<td>google_news_rss</td>
+<td>2026-06-02T02:48:50</td>
+<td>failed</td>
+<td>0</td>
+</tr>
+<tr>
+<td>bls_survival_rates</td>
+<td>2026-06-02T02:48:50</td>
+<td>failed</td>
+<td>0</td>
+</tr>
+<tr>
+<td>techcrunch_rss</td>
 <td>2026-06-01T17:13:48</td>
 <td>success</td>
 <td>20</td>
@@ -1856,48 +2043,6 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>bls_survival_rates</td>
 <td>2026-06-01T17:13:14</td>
 <td>success</td>
-<td>0</td>
-</tr>
-<tr>
-<td>reshoring_pdf</td>
-<td>2026-06-01T16:15:31</td>
-<td>success</td>
-<td>0</td>
-</tr>
-<tr>
-<td>failory_scraper</td>
-<td>2026-06-01T16:15:29</td>
-<td>partial</td>
-<td>0</td>
-</tr>
-<tr>
-<td>techcrunch_rss</td>
-<td>2026-06-01T16:15:28</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>google_news_rss</td>
-<td>2026-06-01T16:15:28</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>bls_survival_rates</td>
-<td>2026-06-01T16:15:28</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>techcrunch_rss</td>
-<td>2026-06-01T00:30:38</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>techcrunch_rss</td>
-<td>2026-06-01T00:30:38</td>
-<td>failed</td>
 <td>0</td>
 </tr>
 </tbody>
@@ -2049,15 +2194,15 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <li><a href="https://www.failory.com/cemetery/zulily">https://www.failory.com/cemetery/zulily</a> (1 records)</li>
 </ul>
 <hr />
-<p><em>Report generated on 2026-06-01 17:14 UTC from the Startup Research automated data collection system.</em></p>
-<p><em>Database contains: 163 startups, 723 news articles, 31 BLS data points.</em></p>
+<p><em>Report generated on 2026-06-03 03:58 UTC from the Startup Research automated data collection system.</em></p>
+<p><em>Database contains: 163 startups, 884 news articles, 31 BLS data points.</em></p>
 <p><em>This report uses a two-pronged research approach: </em><em>Prong A</em><em> (Failed Manufacturing Startups 2024-2025) and </em><em>Prong B</em><em> (Manufacturing Revival &amp; Reshoring). See <a href="#methodology">Methodology</a> section for full details.</em></p>
     <div style="margin-top: 32px; border-top: 2px solid var(--border); padding-top: 24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <h2 id="llm-infrastructure" style="margin:0;font-size:20px;font-weight:700;color:var(--text);">LLM Infrastructure</h2>
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">ONLINE</span>
-          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#F59E0B;color:white;">MODERATE &middot; 13.0 tok/s</span>
+          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#EF4444;color:white;">SLOW &middot; 0 tok/s</span>
         </div>
       </div>
 
@@ -2079,9 +2224,9 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
         </div>
         <div class="stat-card accent-red">
           <span class="icon">&#9201;</span>
-          <div class="value">0.23s</div>
+          <div class="value">0s</div>
           <div class="label">Inference Latency</div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">3 tokens generated</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">0 tokens generated</div>
         </div>
       </div>
 
@@ -2133,13 +2278,116 @@ Meta Llama 3 Version Release Date: April 18, 2024
         <tr>
           <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500;">llama3:latest</td>
           <td style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary);">4.3 GB</td>
-          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;background:#10B981;color:white;margin-left:6px;">LOADED</span></td>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);font-size:12px;">Available</span></td>
         </tr>
           </tbody>
         </table>
       </div>
     </div>
+    <div class="gated-content" data-tier="pro">
+<div id="revenue-monitoring" class="dashboard-section">
+  <h2 class="section-title" style="display:flex;align-items:center;gap:8px;"><span class="tier-badge pro-badge">PRO</span> Revenue Monitoring</h2>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-value">$0.00</div><div class="stat-label">Total Revenue</div></div>
+    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Active Licenses</div></div>
+    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Pro Users</div></div>
+    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Enterprise Users</div></div>
+  </div>
+  <h3>Tier Distribution</h3>
+  <table class="data-table">
+    <thead><tr><th>Tier</th><th>Users</th><th>Share</th></tr></thead>
+    <tbody>
+      <tr><td>Free</td><td>0</td><td>0.0%</td></tr>
+      <tr><td>Pro</td><td>0</td><td>0.0%</td></tr>
+      <tr><td>Enterprise</td><td>0</td><td>0.0%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+
+    <div class="gated-content" data-tier="pro" id="pro-opportunity-deep-dives">
+      <div class="pro-lock-overlay">
+        <span class="lock-icon">&#128274;</span>
+        <h3>Opportunity Deep Dives</h3>
+        <p>AI-powered sector analysis, scored opportunities, and competitive landscape — available with Pro.</p>
+        <button class="upgrade-btn" onclick="showTierAction()">Upgrade to Pro</button>
+      </div>
+    </div>
     
+
+    <div id="pricing" style="margin-top:48px;padding-top:32px;border-top:2px solid var(--border);">
+      <h2 style="text-align:center;font-size:24px;margin-bottom:8px;">Choose Your Plan</h2>
+      <p style="text-align:center;color:var(--text-secondary);font-size:14px;margin-bottom:32px;">
+        From failed startups to found opportunities. Unlock the full platform.
+      </p>
+
+      <div class="pricing-grid">
+        <!-- Free -->
+        <div class="pricing-card">
+          <div class="tier-name">Free</div>
+          <div class="price">${0}<small>/forever</small></div>
+          <ul class="features"><li>Failure Database</li>
+<li>News Monitoring</li>
+<li>Manufacturing Survival</li>
+<li>Llm Pricing</li>
+<li>Basic Search</li>
+<li>Public Reports</li>
+</ul>
+          <a class="cta-btn current" href="javascript:void(0)">Current</a>
+        </div>
+
+        <!-- Pro (featured) -->
+        <div class="pricing-card featured">
+          <div class="tier-name">Pro</div>
+          <div class="price">${49}<small>/month</small></div>
+          <ul class="features"><li>Ai Analyst</li>
+<li>Unlimited Search</li>
+<li>Opportunity Reports</li>
+<li>Opportunity Deep Dives</li>
+<li>Industry Intelligence</li>
+<li>Llm Portfolio</li>
+<li>Llm Benchmarks</li>
+<li>Llm Cost Optimizer</li>
+<li>Alert System</li>
+</ul>
+          <a class="cta-btn primary" href="javascript:void(0)" onclick="showTierAction()">Get Pro</a>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="pricing-card">
+          <div class="tier-name">Enterprise</div>
+          <div class="price">${1,000}<small>/month</small></div>
+          <ul class="features"><li>Api Access</li>
+<li>Custom Monitoring</li>
+<li>Internal Reports</li>
+<li>Consulting Support</li>
+<li>Priority Support</li>
+<li>White Label</li>
+<li>Bulk Export</li>
+</ul>
+          <a class="cta-btn secondary" href="mailto:contact@oplatform.dev?subject=Enterprise%20Inquiry">Contact Us</a>
+        </div>
+      </div>
+    </div>
+    
+</div>
+<!-- Activation Modal -->
+<div class="modal-overlay" id="activateOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h2>Activate Pro Access</h2>
+    <p>Enter your license key to unlock premium features.</p>
+    <input type="text" id="licenseKeyInput" placeholder="PRO-XXXX-XXXX-XXXX" autocomplete="off" />
+    <div class="error-msg" id="licenseError"></div>
+    <div class="modal-actions">
+      <button class="btn-activate" onclick="activateLicense()">Activate</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+    <div class="purchase-link" id="purchaseLink">
+      <a href="#" target="_blank" id="purchaseUrl">Purchase a Pro license</a>
+    </div>
+  </div>
 </div>
 <button class="back-to-top" id="backToTop" aria-label="Back to top">&#9650;</button>
 <script>
@@ -2272,6 +2520,133 @@ Meta Llama 3 Version Release Date: April 18, 2024
   btn.addEventListener('click', function() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
+})();
+
+// ── Tier gate system ──
+(function() {
+  var tierBadge = document.getElementById('tierBadge');
+  var activateOverlay = document.getElementById('activateOverlay');
+  var licenseInput = document.getElementById('licenseKeyInput');
+  var licenseError = document.getElementById('licenseError');
+  var purchaseUrl = document.getElementById('purchaseUrl');
+  var _licenseData = null;
+  var _currentTier = 'free';
+
+  function hashKey(key) {
+    var hash = 0;
+    for (var i = 0; i < key.length; i++) {
+      var c = key.charCodeAt(i);
+      hash = ((hash << 5) - hash) + c;
+      hash |= 0;
+    }
+    // SHA-256 via SubtleCrypto (async, fallback to simple hash)
+    return key; // Pass raw key — validation uses hashed allowlist on server
+  }
+
+  async function sha256(str) {
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+
+  function updateBadge(tier) {
+    _currentTier = tier;
+    tierBadge.textContent = tier.toUpperCase();
+    tierBadge.className = 'tier-badge ' + tier;
+  }
+
+  function unlockContent(tier) {
+    var tiers = ['pro'];
+    if (tier === 'enterprise') tiers.push('enterprise');
+    tiers.forEach(function(t) {
+      document.querySelectorAll('.gated-content[data-tier="' + t + '"]').forEach(function(el) {
+        el.classList.add('unlocked');
+      });
+    });
+  }
+
+  async function validateAndActivate(key) {
+    try {
+      var resp = await fetch('licenses.json');
+      if (!resp.ok) return false;
+      var data = await resp.json();
+      _licenseData = data;
+      var hashedKey = await sha256(key);
+      return data.keys && data.keys.indexOf(hashedKey) !== -1;
+    } catch(e) {
+      return false;
+    }
+  }
+
+  async function initTierGate() {
+    var savedKey = localStorage.getItem('opl_license_key');
+    if (savedKey) {
+      var valid = await validateAndActivate(savedKey);
+      if (valid) {
+        updateBadge(savedKey.startsWith('ENT') ? 'enterprise' : 'pro');
+        unlockContent(_currentTier);
+      } else {
+        localStorage.removeItem('opl_license_key');
+      }
+    }
+    // Load purchase URL from licenses.json
+    try {
+      if (!_licenseData) {
+        var resp = await fetch('licenses.json');
+        _licenseData = await resp.json();
+      }
+      if (_licenseData && _licenseData.stripe_urls) {
+        if (_licenseData.stripe_urls.pro) purchaseUrl.href = _licenseData.stripe_urls.pro;
+      }
+    } catch(e) {}
+  }
+
+  window.activateLicense = async function() {
+    var key = licenseInput.value.trim().toUpperCase();
+    licenseError.textContent = '';
+    if (!key) { licenseError.textContent = 'Please enter a license key.'; return; }
+    if (!key.match(/^(PRO|ENT)-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
+      licenseError.textContent = 'Invalid format. Expected: PRO-XXXX-XXXX-XXXX';
+      return;
+    }
+    var valid = await validateAndActivate(key);
+    if (valid) {
+      localStorage.setItem('opl_license_key', key);
+      var tier = key.startsWith('ENT') ? 'enterprise' : 'pro';
+      updateBadge(tier);
+      unlockContent(tier);
+      closeModal();
+    } else {
+      licenseError.textContent = 'Invalid or expired license key.';
+    }
+  };
+
+  window.closeModal = function() {
+    activateOverlay.classList.remove('active');
+    licenseInput.value = '';
+    licenseError.textContent = '';
+  };
+
+  window.showTierAction = function() {
+    if (_currentTier === 'free') {
+      var pricingSection = document.getElementById('pricing');
+      if (pricingSection) pricingSection.scrollIntoView({ behavior: 'smooth' });
+      else activateOverlay.classList.add('active');
+    } else {
+      activateOverlay.classList.add('active');
+      document.querySelector('.modal h2').textContent = 'License Active — ' + _currentTier.toUpperCase();
+      document.getElementById('licenseKeyInput').value = localStorage.getItem('opl_license_key') || '';
+    }
+  };
+
+  activateOverlay.addEventListener('click', function(e) {
+    if (e.target === activateOverlay) closeModal();
+  });
+
+  licenseInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') window.activateLicense();
+  });
+
+  initTierGate();
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
@@ -2418,8 +2793,5 @@ Meta Llama 3 Version Release Date: April 18, 2024
         });
         
 </script>
-<script src="chat-widget.js"></script>
-<script src="risk-widget.js"></script>
-<script src="knowledge-graph-widget.js"></script>
 </body>
 </html>

@@ -240,6 +240,7 @@ agents:
         - opportunity_pipeline
         - correlation
         - global_market_viability
+        - risk_scorer
         - llm_pricing
         - llm_benchmark
         - llm_portfolio

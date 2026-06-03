@@ -485,6 +485,19 @@ _TABLES = [
         snapshot_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
+    """
+    CREATE TABLE IF NOT EXISTS startup_risk_scores (
+        id                  INT AUTO_INCREMENT PRIMARY KEY,
+        startup_id          INT NOT NULL,
+        risk_score          FLOAT NOT NULL COMMENT '0.0 (safe) to 1.0 (critical)',
+        risk_level          VARCHAR(20) NOT NULL COMMENT 'low, moderate, high, critical',
+        factors_json        JSON COMMENT 'Contributing risk factors',
+        recommendation      TEXT COMMENT 'Actionable recommendation',
+        scored_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uk_startup (startup_id),
+        FOREIGN KEY (startup_id) REFERENCES failed_startups(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
 ]
 
 _INDEXES = [

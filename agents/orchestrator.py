@@ -115,6 +115,10 @@ def _get_agent_class(name: str):
         from agents.span_agent import SpanAgent
         AGENT_REGISTRY["span_monitor"] = SpanAgent
         return SpanAgent
+    elif name == "risk_scorer":
+        from agents.risk_scorer import RiskScorerAgent
+        AGENT_REGISTRY["risk_scorer"] = RiskScorerAgent
+        return RiskScorerAgent
 
     raise ValueError(f"Unknown agent: {name}")
 

@@ -221,6 +221,65 @@ if HAS_FASTAPI:
 
     # ── Survival Rates ───────────────────────────────────────
 
+    # ── Risk Scores ──────────────────────────────────────────
+
+    @app.get("/api/risk-scores")
+    def risk_scores(
+        risk_level: str | None = Query(None, description="Filter: low, moderate, high, critical"),
+        limit: int = Query(20, ge=1, le=100),
+        offset: int = Query(0, ge=0),
+    ):
+        """Startup failure risk scores."""
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        where = "WHERE r.risk_level = %s" if risk_level else ""
+        params = [risk_level] if risk_level else []
+
+        cursor.execute(
+            f"""SELECT r.id, s.name, s.sector, s.country, s.funding_raised_usd,
+                      r.risk_score, r.risk_level, r.factors_json, r.recommendation, r.scored_at
+               FROM startup_risk_scores r
+               JOIN failed_startups s ON r.startup_id = s.id
+               {where}
+               ORDER BY r.risk_score DESC
+               LIMIT %s OFFSET %s""",
+            params + [limit, offset],
+        )
+        rows = [dict(r) for r in cursor.fetchall()]
+
+        # Parse factors JSON
+        for row in rows:
+            if isinstance(row.get("factors_json"), str):
+                try:
+                    row["factors"] = json.loads(row["factors_json"])
+                except json.JSONDecodeError:
+                    row["factors"] = []
+            else:
+                row["factors"] = row.get("factors_json", [])
+            del row["factors_json"]
+
+        cursor.close()
+        conn.close()
+        return {"results": rows}
+
+    @app.post("/api/score")
+    def score_a_startup(body: dict):
+        """Score a single startup's failure risk (no DB write).
+
+        Request body:
+            {"sector": "EV", "funding_usd": 50000000, "country": "US", "year_founded": 2019}
+        """
+        from agents.risk_scorer import score_startup
+        return score_startup(
+            sector=body.get("sector", ""),
+            funding_usd=body.get("funding_usd"),
+            country=body.get("country", ""),
+            region=body.get("region", ""),
+            year_founded=body.get("year_founded"),
+        )
+
     @app.get("/api/survival-rates")
     def survival_rates(
         naics: str | None = Query(None, description="NAICS code filter"),

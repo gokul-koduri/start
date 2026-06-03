@@ -1,0 +1,81 @@
+name: Daily Pipeline
+
+on:
+  schedule:
+    # Run daily at 8:00 AM UTC
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+    inputs:
+      pipeline:
+        description: 'Pipeline to run'
+        required: false
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - weekly
+          - full
+          - analysis
+          - collect-only
+          - report-only
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: startup_research
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Initialize database
+        env:
+          MYSQL_HOST: '127.0.0.1'
+          MYSQL_PORT: '3306'
+          MYSQL_USER: 'root'
+          MYSQL_PASSWORD: 'root'
+          MYSQL_DATABASE: 'startup_research'
+        run: python seed_data.py
+
+      - name: Run pipeline
+        env:
+          MYSQL_HOST: '127.0.0.1'
+          MYSQL_PORT: '3306'
+          MYSQL_USER: 'root'
+          MYSQL_PASSWORD: 'root'
+          MYSQL_DATABASE: 'startup_research'
+          BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+          LOG_LEVEL: INFO
+        run: |
+          PIPELINE=${{ github.event.inputs.pipeline || 'daily' }}
+          python run_agent.py --pipeline "$PIPELINE" --force
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-logs
+          path: data/logs/
+          retention-days: 7

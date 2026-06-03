@@ -1,3 +1,4 @@
+# Core dependencies
 requests>=2.31.0
 feedparser>=6.0.10
 beautifulsoup4>=4.12.0
@@ -7,3 +8,10 @@ pyyaml>=6.0
 python-dotenv>=1.0.0
 markdown>=3.5.0
 pymysql>=1.1.0
+
+# API server (optional — for web dashboard chat & REST API)
+fastapi>=0.110.0
+uvicorn>=0.29.0
+
+# Testing (optional — for running the test suite)
+pytest>=7.4.0

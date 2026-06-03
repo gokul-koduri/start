@@ -32,3 +32,9 @@ Thumbs.db
 
 # Archon local
 .archon/local/
+
+# Test cache
+.pytest_cache/
+
+# macOS launchd plists (user-specific)
+# Keep templates in project root, but not installed copies

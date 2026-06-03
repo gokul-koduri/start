@@ -71,6 +71,50 @@ def _get_agent_class(name: str):
         from agents.global_market_viability_agent import GlobalMarketViabilityAgent
         AGENT_REGISTRY["global_market_viability"] = GlobalMarketViabilityAgent
         return GlobalMarketViabilityAgent
+    elif name == "llm_pricing":
+        from agents.llm_pricing_agent import LLMPricingAgent
+        AGENT_REGISTRY["llm_pricing"] = LLMPricingAgent
+        return LLMPricingAgent
+    elif name == "llm_benchmark":
+        from agents.llm_benchmark_agent import LLMBenchmarkAgent
+        AGENT_REGISTRY["llm_benchmark"] = LLMBenchmarkAgent
+        return LLMBenchmarkAgent
+    elif name == "llm_portfolio":
+        from agents.llm_portfolio_agent import LLMPortfolioAgent
+        AGENT_REGISTRY["llm_portfolio"] = LLMPortfolioAgent
+        return LLMPortfolioAgent
+    elif name == "llm_cost_optimizer":
+        from agents.llm_cost_optimizer_agent import LLMCostOptimizerAgent
+        AGENT_REGISTRY["llm_cost_optimizer"] = LLMCostOptimizerAgent
+        return LLMCostOptimizerAgent
+    elif name == "license_manager":
+        from agents.license_agent import LicenseAgent
+        AGENT_REGISTRY["license_manager"] = LicenseAgent
+        return LicenseAgent
+    elif name == "knowledge_graph":
+        from agents.knowledge_graph_agent import KnowledgeGraphAgent
+        AGENT_REGISTRY["knowledge_graph"] = KnowledgeGraphAgent
+        return KnowledgeGraphAgent
+    elif name == "ai_analyst":
+        from agents.ai_analyst_agent import AIAnalystAgent
+        AGENT_REGISTRY["ai_analyst"] = AIAnalystAgent
+        return AIAnalystAgent
+    elif name == "alert_dispatcher":
+        from agents.alert_dispatcher_agent import AlertDispatcherAgent
+        AGENT_REGISTRY["alert_dispatcher"] = AlertDispatcherAgent
+        return AlertDispatcherAgent
+    elif name == "report_generator":
+        from agents.report_generator_agent import ReportGeneratorAgent
+        AGENT_REGISTRY["report_generator"] = ReportGeneratorAgent
+        return ReportGeneratorAgent
+    elif name == "stripe_payments":
+        from agents.stripe_webhook import StripePaymentAgent
+        AGENT_REGISTRY["stripe_payments"] = StripePaymentAgent
+        return StripePaymentAgent
+    elif name == "span_monitor":
+        from agents.span_agent import SpanAgent
+        AGENT_REGISTRY["span_monitor"] = SpanAgent
+        return SpanAgent
 
     raise ValueError(f"Unknown agent: {name}")
 

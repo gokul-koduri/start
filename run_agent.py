@@ -4,11 +4,12 @@
 Usage:
     python run_agent.py --pipeline daily          # Daily: fast collectors + report + publish
     python run_agent.py --pipeline weekly         # Weekly: all collectors + research + publish
-    python run_agent.py --pipeline analysis       # Run all 6 analysis agents
+    python run_agent.py --pipeline analysis       # Run all analysis agents
     python run_agent.py --pipeline full           # Collection + analysis + dashboard + publish
     python run_agent.py --pipeline collect-only   # Only run data collection
     python run_agent.py --pipeline report-only    # Only generate report
     python run_agent.py --pipeline publish-only   # Only publish (dashboard + git)
+    python run_agent.py --chat "query"           # Ask a natural language question (AI Analyst)
     python run_agent.py --pipeline daily --dry-run
 """
 
@@ -65,12 +66,31 @@ def main():
     )
     parser.add_argument("--dry-run", action="store_true", help="Log actions without making changes")
     parser.add_argument("--force", action="store_true", help="Force run even if no new data")
+    parser.add_argument(
+        "--chat",
+        type=str,
+        default=None,
+        help="Ask a natural language question about the data (AI Analyst mode)",
+    )
 
     args = parser.parse_args()
 
     setup_logging()
     _logger = logging.getLogger("run_agent")
     config = load_config()
+
+    # AI Analyst mode: direct query, bypass pipeline
+    if args.chat:
+        _logger.info("AI Analyst mode — query: %s", args.chat[:80])
+        agents_config = config.get("agents", {})
+        analyst_config = agents_config.get("ai_analyst", {})
+        analyst_config["_pipeline_name"] = "chat"
+        analyst_config["_scheduled"] = False
+
+        from agents.ai_analyst_agent import AIAnalystAgent
+        analyst = AIAnalystAgent(config=analyst_config, dry_run=args.dry_run, query=args.chat)
+        result = analyst.run()
+        sys.exit(1 if result.status == "failed" else 0)
 
     _logger.info("Startup Research Agent Pipeline")
     _logger.info("Project root: %s", get_project_root())
@@ -91,7 +111,10 @@ def main():
         for key in ["collection", "report", "dashboard", "git_publisher", "internet_research",
                      "failure_pattern", "survival_analysis", "revival_opportunity",
                      "geographic_strategy", "news_intelligence", "opportunity_pipeline",
-                     "whale_investor", "correlation", "global_market_viability"]:
+                     "whale_investor", "correlation", "global_market_viability",
+                     "llm_pricing", "llm_benchmark", "llm_portfolio", "llm_cost_optimizer",
+                     "license_manager", "knowledge_graph", "ai_analyst",
+                     "alert_dispatcher", "report_generator", "stripe_payments", "span_monitor"]:
             if key in agents_config:
                 orchestrator_config[key] = agents_config[key]
 

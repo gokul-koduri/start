@@ -205,12 +205,21 @@ agents:
       daily:
         - collection
         - report
+        - span_monitor
         - dashboard
         - git_publisher
       weekly:
+        - llm_pricing
+        - llm_benchmark
+        - llm_portfolio
+        - llm_cost_optimizer
+        - alert_dispatcher
+        - knowledge_graph
         - internet_research
         - collection
         - report
+        - report_generator
+        - span_monitor
         - dashboard
         - git_publisher
       collect-only:
@@ -218,6 +227,7 @@ agents:
       report-only:
         - report
       publish-only:
+        - license_manager
         - dashboard
         - git_publisher
       analysis:
@@ -230,6 +240,11 @@ agents:
         - opportunity_pipeline
         - correlation
         - global_market_viability
+        - llm_pricing
+        - llm_benchmark
+        - llm_portfolio
+        - llm_cost_optimizer
+        - knowledge_graph
       full:
         - collection
         - report
@@ -242,6 +257,11 @@ agents:
         - opportunity_pipeline
         - correlation
         - global_market_viability
+        - knowledge_graph
+        - alert_dispatcher
+        - stripe_payments
+        - report_generator
+        - span_monitor
         - dashboard
         - git_publisher
 
@@ -310,3 +330,78 @@ agents:
     delay_seconds: 3.0
     top_combinations: 15
     output_filename: "Global_Market_Viability.md"
+
+  llm_pricing:
+    enabled: true
+    request_delay_seconds: 2
+    timeout_seconds: 15
+
+  llm_benchmark:
+    enabled: true
+    timeout_seconds: 20
+    request_delay_seconds: 2
+
+  llm_portfolio:
+    enabled: true
+    allocation_weights:
+      primary: 0.70
+      secondary: 0.20
+      tertiary: 0.10
+
+  llm_cost_optimizer:
+    enabled: true
+    price_change_threshold: 0.05
+    quality_match_threshold: 0.85
+    max_alerts: 20
+
+  license_manager:
+    enabled: true
+    generate_keys: 0
+    default_tier: pro
+    key_expiry_days: 365
+    stripe_pro_url: "${STRIPE_PRO_URL}"
+    stripe_enterprise_url: ""
+
+  knowledge_graph:
+    enabled: true
+    ollama_url: "http://localhost:11434/api/chat"
+    ollama_model: "llama3"
+    delay_seconds: 1.0
+    batch_size: 50
+
+  ai_analyst:
+    enabled: true
+    ollama_url: "http://localhost:11434/api/chat"
+    ollama_model: "llama3"
+    timeout_seconds: 120
+    max_context_exchanges: 3
+
+  alert_dispatcher:
+    enabled: true
+    channels:
+      email: { enabled: false, smtp_host: "${SMTP_HOST}", smtp_port: 587, smtp_user: "${SMTP_USER}", smtp_password: "${SMTP_PASSWORD}", from_address: "${SMTP_FROM}", to_addresses: [] }
+      webhook_slack: { enabled: false, url: "${SLACK_WEBHOOK_URL}" }
+      webhook_discord: { enabled: false, url: "${DISCORD_WEBHOOK_URL}" }
+      webhook_custom: { enabled: false, url: "${CUSTOM_WEBHOOK_URL}" }
+    max_alerts_per_run: 50
+
+  report_generator:
+    enabled: true
+    output_dir: "data/reports"
+    output_formats:
+      - markdown
+      - html
+    email_delivery: { enabled: false, smtp_host: "${SMTP_HOST}", smtp_port: 587, smtp_user: "${SMTP_USER}", smtp_password: "${SMTP_PASSWORD}", from_address: "${SMTP_FROM}" }
+
+  stripe_payments:
+    enabled: false
+    stripe_secret_key: "${STRIPE_SECRET_KEY}"
+    poll_hours_back: 24
+
+  span_monitor:
+    enabled: true
+    lookback_days: 7
+    anomaly_thresholds:
+      duration_multiplier: 2.0
+      failure_rate_pct: 10.0
+      data_drop_pct: 50.0

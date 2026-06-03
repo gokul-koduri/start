@@ -316,21 +316,21 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 
 ### Data-Driven Opportunities (from collected data)
 - **44 manufacturing startup failures** in database suggest clear patterns to avoid
-- **194 recent news articles** about manufacturing startup failures signal active market churn
+- **217 recent news articles** about manufacturing startup failures signal active market churn
 
 ## News Monitoring: Manufacturing & Startup Failures {#news}
 
 ### Coverage Summary
-- **723** articles collected from Google News and TechCrunch RSS feeds
-- **387** mention manufacturing (53.5%)
-- **383** mention startup failures (53.0%)
-- **194** are in the intersection (manufacturing + failure)
+- **884** articles collected from Google News and TechCrunch RSS feeds
+- **456** mention manufacturing (51.6%)
+- **436** mention startup failures (49.3%)
+- **217** are in the intersection (manufacturing + failure)
 
 ### Articles by Source
 | Source | Articles |
 |--------|----------|
-| google_news | 683 |
-| techcrunch | 40 |
+| google_news | 824 |
+| techcrunch | 60 |
 
 ### Recent Manufacturing Startup Failures (News)
 
@@ -452,16 +452,16 @@ This report was compiled using a **two-pronged research approach**:
 
 | Collector | Last Run | Status | Records |
 |-----------|----------|--------|---------|
+| techcrunch_rss | 2026-06-03T03:58:13 | success | 20 |
+| google_news_rss | 2026-06-03T03:58:01 | success | 141 |
+| reshoring_pdf | 2026-06-02T02:48:53 | success | 0 |
+| failory_scraper | 2026-06-02T02:48:51 | partial | 0 |
+| techcrunch_rss | 2026-06-02T02:48:50 | failed | 0 |
+| google_news_rss | 2026-06-02T02:48:50 | failed | 0 |
+| bls_survival_rates | 2026-06-02T02:48:50 | failed | 0 |
 | techcrunch_rss | 2026-06-01T17:13:48 | success | 20 |
 | google_news_rss | 2026-06-01T17:13:26 | success | 104 |
 | bls_survival_rates | 2026-06-01T17:13:14 | success | 0 |
-| reshoring_pdf | 2026-06-01T16:15:31 | success | 0 |
-| failory_scraper | 2026-06-01T16:15:29 | partial | 0 |
-| techcrunch_rss | 2026-06-01T16:15:28 | failed | 0 |
-| google_news_rss | 2026-06-01T16:15:28 | failed | 0 |
-| bls_survival_rates | 2026-06-01T16:15:28 | failed | 0 |
-| techcrunch_rss | 2026-06-01T00:30:38 | failed | 0 |
-| techcrunch_rss | 2026-06-01T00:30:38 | failed | 0 |
 
 ### Data Sources
 | Source | Records |
@@ -598,8 +598,8 @@ This report was compiled using a **two-pronged research approach**:
 
 ---
 
-*Report generated on 2026-06-01 17:14 UTC from the Startup Research automated data collection system.*
+*Report generated on 2026-06-03 03:58 UTC from the Startup Research automated data collection system.*
 
-*Database contains: 163 startups, 723 news articles, 31 BLS data points.*
+*Database contains: 163 startups, 884 news articles, 31 BLS data points.*
 
 *This report uses a two-pronged research approach: **Prong A** (Failed Manufacturing Startups 2024-2025) and **Prong B** (Manufacturing Revival & Reshoring). See [Methodology](#methodology) section for full details.*

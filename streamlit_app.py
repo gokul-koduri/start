@@ -301,7 +301,7 @@ if page == "📊 Overview":
 
 # ── Startup Explorer ─────────────────────────────────────────
 elif page == "🏢 Startup Explorer":
-    st.title("🏢 Failed Startup Explorer")
+    st.title("🏢 Startup Explorer")
 
     startups = load_startups()
     if not startups:

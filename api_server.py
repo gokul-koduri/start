@@ -413,6 +413,141 @@ if HAS_FASTAPI:
         }
 
 
+    # ── Knowledge Graph ────────────────────────────────────
+
+    @app.get("/api/knowledge-graph")
+    def knowledge_graph(
+        entity_type: str | None = Query(None, description="Filter by entity type"),
+        limit: int = Query(100, ge=1, le=500),
+    ):
+        """Knowledge graph entities and relationships."""
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        where = "WHERE e.entity_type_id = t.id" if not entity_type else (
+            "WHERE e.entity_type_id = t.id AND t.type_name = %s"
+        )
+        params = [entity_type] if entity_type else []
+
+        cursor.execute(
+            f"""SELECT e.id, e.name, t.type_name as type, e.mention_count as mentions
+               FROM kg_entities e, kg_entity_types t
+               {where}
+               ORDER BY e.mention_count DESC LIMIT %s""",
+            params + [limit],
+        )
+        entities = [dict(r) for r in cursor.fetchall()]
+
+        cursor.execute(
+            """SELECT r.source_entity_id, r.target_entity_id,
+                      r.relationship_type, r.weight
+               FROM kg_relationships r
+               ORDER BY r.weight DESC LIMIT %s""",
+            (limit * 2,),
+        )
+        relationships = []
+        for r in cursor.fetchall():
+            relationships.append({
+                "source_id": r["source_entity_id"],
+                "target_id": r["target_entity_id"],
+                "relationship_type": r["relationship_type"],
+                "weight": r["weight"],
+            })
+
+        cursor.close()
+        conn.close()
+        return {"entities": entities, "relationships": relationships}
+
+    # ── License Validation ───────────────────────────────────
+
+    @app.post("/api/license/validate")
+    def validate_license(body: dict):
+        """Validate a license key and return tier + features.
+
+        Request body: {"license_key": "PRO-XXXX-XXXX-XXXX"}
+        """
+        key = body.get("license_key", "").strip()
+        if not key:
+            raise HTTPException(status_code=400, detail="Missing license_key")
+
+        import re
+        if not re.match(r"^(PRO|ENT)-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$", key):
+            return {"valid": False, "error": "Invalid key format"}
+
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT tier, status, expires_at FROM user_licenses WHERE license_key = %s",
+            (key,),
+        )
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if not row:
+            return {"valid": False, "error": "Key not found"}
+
+        if row["status"] != "active":
+            return {"valid": False, "error": f"Key is {row['status']}"}
+
+        from datetime import datetime, timezone
+        if row["expires_at"]:
+            try:
+                expires = datetime.strptime(str(row["expires_at"]), "%Y-%m-%d %H:%M:%S")
+                if expires < datetime.now():
+                    return {"valid": False, "error": "Key expired"}
+            except ValueError:
+                pass
+
+        from agents.license_agent import TIER_FEATURES, TIER_PRICING
+        tier = row["tier"]
+        return {
+            "valid": True,
+            "tier": tier,
+            "features": TIER_FEATURES.get(tier, []),
+            "pricing": TIER_PRICING.get(tier, {}),
+        }
+
+    @app.post("/api/license/generate")
+    def generate_license_key(body: dict):
+        """Generate a new license key (admin only).
+
+        Request body: {"tier": "pro", "expiry_days": 365}
+        """
+        tier = body.get("tier", "pro")
+        expiry_days = body.get("expiry_days", 365)
+
+        from agents.license_agent import generate_license
+        key = generate_license(tier, expiry_days)
+        return {"license_key": key, "tier": tier, "expiry_days": expiry_days}
+
+    @app.get("/api/license/metrics")
+    def license_metrics():
+        """Subscription and license metrics."""
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        metrics = {}
+        for tier in ["free", "pro", "enterprise"]:
+            cursor.execute(
+                "SELECT COUNT(*) as cnt FROM user_licenses WHERE tier = %s AND status = 'active'",
+                (tier,),
+            )
+            metrics[f"{tier}_users"] = cursor.fetchone()["cnt"]
+
+        cursor.execute(
+            "SELECT COALESCE(SUM(amount_usd), 0) as total FROM payment_events WHERE status = 'completed'"
+        )
+        metrics["total_revenue_usd"] = cursor.fetchone()["total"]
+
+        cursor.close()
+        conn.close()
+        return metrics
+
+
 # ── Main ─────────────────────────────────────────────────────
 
 def main():

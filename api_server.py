@@ -33,7 +33,7 @@ from db import schema
 
 # FastAPI imports (graceful fallback)
 try:
-    from fastapi import FastAPI, HTTPException, Query
+    from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
     from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
     from fastapi.middleware.cors import CORSMiddleware
     import uvicorn
@@ -217,6 +217,36 @@ if HAS_FASTAPI:
         cursor.close()
         conn.close()
         return {"total": total, "offset": offset, "limit": limit, "results": rows}
+
+    @app.get("/api/news/sentiment")
+    def news_sentiment():
+        """Sentiment distribution across scored news articles."""
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """SELECT sentiment_label, COUNT(*) as cnt, AVG(sentiment_score) as avg_score
+               FROM news_articles
+               WHERE sentiment_score IS NOT NULL
+               GROUP BY sentiment_label"""
+        )
+        distribution = [dict(r) for r in cursor.fetchall()]
+
+        cursor.execute("SELECT COUNT(*) as total FROM news_articles WHERE sentiment_score IS NOT NULL")
+        total_scored = cursor.fetchone()["total"]
+
+        cursor.execute("SELECT COUNT(*) as total FROM news_articles")
+        total_articles = cursor.fetchone()["total"]
+
+        cursor.close()
+        conn.close()
+        return {
+            "distribution": distribution,
+            "total_scored": total_scored,
+            "total_articles": total_articles,
+            "coverage_pct": round(total_scored / max(total_articles, 1) * 100, 1),
+        }
 
 
     # ── Survival Rates ───────────────────────────────────────
@@ -546,6 +576,134 @@ if HAS_FASTAPI:
         cursor.close()
         conn.close()
         return metrics
+
+
+    # ── Real-time WebSocket ───────────────────────────────────
+
+    import asyncio
+
+    class ConnectionManager:
+        """Manages active WebSocket connections for broadcasting live updates."""
+
+        def __init__(self):
+            self.active: list[WebSocket] = []
+
+        async def connect(self, ws: WebSocket):
+            await ws.accept()
+            self.active.append(ws)
+
+        def disconnect(self, ws: WebSocket):
+            if ws in self.active:
+                self.active.remove(ws)
+
+        async def broadcast(self, data: dict):
+            dead = []
+            for ws in self.active:
+                try:
+                    await ws.send_json(data)
+                except Exception:
+                    dead.append(ws)
+            for ws in dead:
+                self.disconnect(ws)
+
+    ws_manager = ConnectionManager()
+
+    @app.websocket("/ws/live")
+    async def ws_live(websocket: WebSocket):
+        """WebSocket endpoint for live dashboard data updates.
+
+        Connects the client and pushes DB stats periodically.
+        Events: stats_update, news_update, pipeline_status.
+        """
+        await ws_manager.connect(websocket)
+        try:
+            while True:
+                # Collect current stats
+                try:
+                    conn = get_connection()
+                    cursor = conn.cursor()
+
+                    cursor.execute("SELECT COUNT(*) as cnt FROM failed_startups")
+                    startup_count = cursor.fetchone()["cnt"]
+
+                    cursor.execute("SELECT COUNT(*) as cnt FROM news_articles")
+                    news_count = cursor.fetchone()["cnt"]
+
+                    cursor.execute(
+                        """SELECT risk_level, COUNT(*) as cnt
+                           FROM startup_risk_scores
+                           GROUP BY risk_level"""
+                    )
+                    risk_dist = {dict(r)["risk_level"]: dict(r)["cnt"] for r in cursor.fetchall()}
+
+                    cursor.execute(
+                        """SELECT sentiment_label, COUNT(*) as cnt
+                           FROM news_articles
+                           WHERE sentiment_score IS NOT NULL
+                           GROUP BY sentiment_label"""
+                    )
+                    sentiment_dist = {dict(r)["sentiment_label"]: dict(r)["cnt"] for r in cursor.fetchall()}
+
+                    cursor.execute(
+                        """SELECT agent_name, status, completed_at
+                           FROM agent_runs
+                           ORDER BY completed_at DESC LIMIT 5"""
+                    )
+                    recent_runs = [dict(r) for r in cursor.fetchall()]
+
+                    cursor.close()
+                    conn.close()
+
+                    await ws_manager.broadcast({
+                        "type": "stats_update",
+                        "data": {
+                            "startup_count": startup_count,
+                            "news_count": news_count,
+                            "risk_distribution": risk_dist,
+                            "sentiment_distribution": sentiment_dist,
+                            "recent_pipeline_runs": recent_runs,
+                        },
+                    })
+                except Exception:
+                    pass
+
+                await asyncio.sleep(30)  # Poll every 30 seconds
+
+        except WebSocketDisconnect:
+            ws_manager.disconnect(websocket)
+
+
+    @app.get("/api/stats/summary")
+    def stats_summary():
+        """Lightweight stats endpoint for quick polling."""
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT COUNT(*) as cnt FROM failed_startups")
+        startup_count = cursor.fetchone()["cnt"]
+
+        cursor.execute("SELECT COUNT(*) as cnt FROM news_articles")
+        news_count = cursor.fetchone()["cnt"]
+
+        cursor.execute("SELECT COUNT(*) as cnt FROM news_articles WHERE sentiment_score IS NOT NULL")
+        sentiment_scored = cursor.fetchone()["cnt"]
+
+        cursor.execute(
+            """SELECT risk_level, COUNT(*) as cnt
+               FROM startup_risk_scores GROUP BY risk_level"""
+        )
+        risk_dist = {dict(r)["risk_level"]: dict(r)["cnt"] for r in cursor.fetchall()}
+
+        cursor.close()
+        conn.close()
+
+        return {
+            "startups": startup_count,
+            "news": news_count,
+            "sentiment_scored": sentiment_scored,
+            "risk_distribution": risk_dist,
+        }
 
 
 # ── Main ─────────────────────────────────────────────────────

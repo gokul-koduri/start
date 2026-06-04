@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 10
+_SCHEMA_VERSION = 11
 
 _TABLES = [
     """
@@ -94,6 +94,10 @@ _TABLES = [
         is_manufacturing    INT DEFAULT 0,
         mentions_failure    INT DEFAULT 0,
         startup_name_extracted TEXT,
+        sentiment_score     FLOAT DEFAULT NULL COMMENT '-1.0 (negative) to 1.0 (positive)',
+        sentiment_label     VARCHAR(20) DEFAULT NULL COMMENT 'positive, negative, neutral, mixed',
+        sentiment_model     VARCHAR(100) DEFAULT NULL COMMENT 'Which model produced the score',
+        sentiment_analyzed_at DATETIME DEFAULT NULL,
         collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uq_news_url (url(767))
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -494,8 +498,28 @@ _TABLES = [
         factors_json        JSON COMMENT 'Contributing risk factors',
         recommendation      TEXT COMMENT 'Actionable recommendation',
         scored_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        model_name          VARCHAR(255) DEFAULT NULL COMMENT 'Which model produced this score',
+        model_version       VARCHAR(50) DEFAULT NULL COMMENT 'Model version/iteration',
+        confidence          FLOAT DEFAULT NULL COMMENT 'Model confidence 0.0-1.0',
         UNIQUE KEY uk_startup (startup_id),
         FOREIGN KEY (startup_id) REFERENCES failed_startups(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS ml_models (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        model_name          VARCHAR(255) NOT NULL COMMENT 'e.g. startup_failure_rf',
+        model_type          VARCHAR(100) NOT NULL COMMENT 'random_forest, xgboost',
+        model_path          VARCHAR(500) COMMENT 'Path to saved joblib file',
+        trained_at          DATETIME NOT NULL,
+        training_rows       INT DEFAULT 0,
+        features_used       TEXT COMMENT 'JSON: list of feature column names',
+        accuracy           FLOAT DEFAULT NULL,
+        f1_score            FLOAT DEFAULT NULL,
+        precision_score     FLOAT DEFAULT NULL,
+        recall_score        FLOAT DEFAULT NULL,
+        is_active           INT DEFAULT 0 COMMENT '1 = currently used for predictions',
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
 ]
@@ -543,6 +567,8 @@ _INDEXES = [
     "CREATE INDEX idx_span_pipeline_time ON span_snapshots(pipeline_name, snapshot_at DESC);",
     "CREATE INDEX idx_span_agent ON span_snapshots(agent_name);",
     "CREATE INDEX idx_span_anomaly ON span_snapshots(anomaly_detected, anomaly_type);",
+    "CREATE INDEX idx_ml_models_active ON ml_models(is_active);",
+    "CREATE INDEX idx_news_sentiment ON news_articles(sentiment_score);",
 ]
 
 

@@ -196,6 +196,18 @@ report:
   min_startups_for_region_section: 3
   manufacturing_highlight_threshold: 5
 
+# Ollama LLM configuration — shared by all agents via ModelManager
+ollama:
+  base_url: "http://localhost:11434"
+  models:
+    default: "llama3"
+    sentiment: "llama3"
+    ner: "llama3"
+    summarization: "llama3"
+    failure_analysis: "llama3"
+    classification: "llama3"
+    chat: "llama3"
+
 # Agent pipeline configuration
 agents:
   orchestrator:
@@ -241,6 +253,8 @@ agents:
         - correlation
         - global_market_viability
         - risk_scorer
+        - sentiment
+        - ml_predictor
         - llm_pricing
         - llm_benchmark
         - llm_portfolio
@@ -406,3 +420,18 @@ agents:
       duration_multiplier: 2.0
       failure_rate_pct: 10.0
       data_drop_pct: 50.0
+
+  sentiment:
+    enabled: true
+    mode: "fast"
+    batch_size: 100
+
+  ml_predictor:
+    enabled: true
+    min_training_samples: 50
+    model_output_dir: "data/models"
+
+# Real-time dashboard configuration
+realtime:
+  enabled: true
+  poll_interval_seconds: 30

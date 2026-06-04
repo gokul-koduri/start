@@ -119,6 +119,14 @@ def _get_agent_class(name: str):
         from agents.risk_scorer import RiskScorerAgent
         AGENT_REGISTRY["risk_scorer"] = RiskScorerAgent
         return RiskScorerAgent
+    elif name == "ml_predictor":
+        from agents.ml_predictor import MLPredictorAgent
+        AGENT_REGISTRY["ml_predictor"] = MLPredictorAgent
+        return MLPredictorAgent
+    elif name == "sentiment":
+        from agents.sentiment_agent import SentimentAgent
+        AGENT_REGISTRY["sentiment"] = SentimentAgent
+        return SentimentAgent
 
     raise ValueError(f"Unknown agent: {name}")
 

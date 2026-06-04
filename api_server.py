@@ -12,11 +12,21 @@ Endpoints:
     GET  /api/startups              — List failed startups (with filters)
     GET  /api/startups/{id}         — Single startup details
     GET  /api/news                  — Recent news articles
+    GET  /api/news/sentiment        — Sentiment distribution
+    GET  /api/risk-scores           — ML-generated risk scores
+    POST /api/score                 — Score a startup (ML + heuristic)
+    POST /api/ml/predict            — Predict failure with trained ML model
+    POST /api/ml/train              — Trigger ML model training
+    GET  /api/ml/models             — List trained ML models
     GET  /api/survival-rates        — BLS survival rate data
     GET  /api/revival-opportunities — Revival industry data
+    GET  /api/models                — List available Ollama models
+    POST /api/models/pull           — Pull/download a GGUF model
+    GET  /api/models/token-usage    — Ollama token usage stats
     GET  /api/alerts                — Active alerts
     POST /api/chat                  — AI Analyst natural language query
     GET  /api/pipeline-runs         — Recent pipeline execution history
+    GET  /ws/live                  — WebSocket live dashboard updates
 """
 
 import argparse
@@ -296,19 +306,213 @@ if HAS_FASTAPI:
 
     @app.post("/api/score")
     def score_a_startup(body: dict):
-        """Score a single startup's failure risk (no DB write).
+        """Score a single startup's failure risk using ML + heuristic (no DB write).
 
+        Uses trained ML model if available, falls back to rule-based heuristic.
         Request body:
             {"sector": "EV", "funding_usd": 50000000, "country": "US", "year_founded": 2019}
         """
         from agents.risk_scorer import score_startup
-        return score_startup(
+
+        heuristic = score_startup(
             sector=body.get("sector", ""),
             funding_usd=body.get("funding_usd"),
             country=body.get("country", ""),
             region=body.get("region", ""),
             year_founded=body.get("year_founded"),
+            failure_reason=body.get("failure_reason", ""),
         )
+
+        # Try ML model for blended scoring
+        try:
+            from agents.ml_trainer import MLTrainer, _build_features
+            trainer = MLTrainer({})
+            model, model_name, features = trainer.load_best_model()
+            if model is not None:
+                feat_dict = _build_features(body)
+                feat_vector = [[feat_dict[col] for col in features]]
+                proba = model.predict_proba(feat_vector)[0]
+                ml_score = proba[1] if len(proba) > 1 else proba[0]
+                blended = min(1.0, max(0.0, 0.7 * ml_score + 0.3 * heuristic["risk_score"]))
+                heuristic["risk_score"] = round(blended, 3)
+                heuristic["model_used"] = model_name
+                heuristic["ml_confidence"] = round(float(ml_score), 3)
+                heuristic["scoring_method"] = "blended_ml_heuristic"
+        except Exception:
+            pass
+
+        heuristic["scoring_method"] = heuristic.get("scoring_method", "heuristic_only")
+        return heuristic
+
+
+    # ── ML Model Management ──────────────────────────────────
+
+    @app.get("/api/ml/models")
+    def ml_models():
+        """List trained ML models from the ml_models table."""
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+        cursor.execute(
+            """SELECT model_name, model_type, model_path, trained_at, training_rows,
+                      features_used, accuracy, f1_score, precision_score, recall_score, is_active
+               FROM ml_models ORDER BY trained_at DESC"""
+        )
+        rows = [dict(r) for r in cursor.fetchall()]
+        cursor.close()
+        conn.close()
+        return {"models": rows}
+
+    @app.post("/api/ml/train")
+    def ml_train(
+        min_samples: int = Query(50, ge=10, description="Minimum training rows"),
+        test_split: float = Query(0.2, ge=0.1, le=0.5, description="Train/test split ratio"),
+    ):
+        """Trigger ML model training on existing startup data."""
+        try:
+            from agents.ml_trainer import MLTrainer
+            from db.connection import get_connection as _gc
+
+            conn = _gc()
+            schema.init_schema(conn)
+            trainer = MLTrainer({
+                "min_training_samples": min_samples,
+                "test_split": test_split,
+            })
+            result = trainer.train(conn)
+            conn.close()
+            return result
+        except Exception as e:
+            return {"status": "failed", "error": str(e)}
+
+    @app.post("/api/ml/predict")
+    def ml_predict(body: dict):
+        """Predict failure risk for a single startup using trained ML model.
+
+        Requires a trained model. Returns blended ML + heuristic score.
+        Falls back to heuristic-only if no model is available.
+
+        Request body:
+            {"sector": "EV", "funding_usd": 50000000, "country": "US", "year_founded": 2019}
+        """
+        from agents.risk_scorer import score_startup
+
+        heuristic = score_startup(
+            sector=body.get("sector", ""),
+            funding_usd=body.get("funding_usd"),
+            country=body.get("country", ""),
+            region=body.get("region", ""),
+            year_founded=body.get("year_founded"),
+            failure_reason=body.get("failure_reason", ""),
+        )
+
+        try:
+            from agents.ml_trainer import MLTrainer, _build_features
+            trainer = MLTrainer({})
+            model, model_name, features = trainer.load_best_model()
+            if model is None:
+                return {
+                    **heuristic,
+                    "model_used": None,
+                    "confidence": None,
+                    "scoring_method": "heuristic_only",
+                    "message": "No trained model available — using heuristic. Train a model via POST /api/ml/train.",
+                }
+
+            feat_dict = _build_features(body)
+            feat_vector = [[feat_dict[col] for col in features]]
+            proba = model.predict_proba(feat_vector)[0]
+            ml_score = float(proba[1] if len(proba) > 1 else proba[0])
+            blended = min(1.0, max(0.0, 0.7 * ml_score + 0.3 * heuristic["risk_score"]))
+
+            if blended >= 0.75:
+                risk_level = "critical"
+            elif blended >= 0.60:
+                risk_level = "high"
+            elif blended >= 0.45:
+                risk_level = "moderate"
+            else:
+                risk_level = "low"
+
+            return {
+                "risk_score": round(blended, 3),
+                "risk_level": risk_level,
+                "factors": heuristic["factors"],
+                "recommendation": heuristic["recommendation"],
+                "model_used": model_name,
+                "confidence": round(ml_score, 3),
+                "scoring_method": "blended_ml_heuristic",
+            }
+        except Exception as e:
+            return {**heuristic, "scoring_method": "heuristic_only", "error": str(e)}
+
+
+    # ── Ollama / LLM Model Management ─────────────────────────
+
+    @app.get("/api/models")
+    def list_ollama_models():
+        """List locally available Ollama models."""
+        try:
+            from agents.model_manager import ModelManager
+            mgr = ModelManager({})
+            models = mgr.list_local_models()
+            return {"models": models, "count": len(models)}
+        except Exception as e:
+            return {"models": [], "error": str(e)}
+
+    @app.post("/api/models/pull")
+    def pull_ollama_model(body: dict):
+        """Download a GGUF model from HuggingFace via Ollama.
+
+        Request body: {"model_name": "llama3.2:1b"}
+        """
+        model_name = body.get("model_name", "")
+        if not model_name:
+            raise HTTPException(status_code=400, detail="model_name is required")
+
+        try:
+            from agents.model_manager import ModelManager
+            mgr = ModelManager({})
+            success = mgr.pull_model(model_name)
+            if success:
+                return {"status": "success", "model": model_name, "message": f"Model '{model_name}' downloaded successfully."}
+            else:
+                return {"status": "failed", "model": model_name, "message": f"Failed to download model '{model_name}'."}
+        except Exception as e:
+            return {"status": "error", "model": model_name, "message": str(e)}
+
+    @app.get("/api/models/token-usage")
+    def token_usage():
+        """Ollama token usage statistics from local tracker."""
+        import json as _json
+        tracker_path = Path("data/cache/ollama_token_tracker.json")
+
+        if not tracker_path.exists():
+            return {"total_tokens": 0, "total_runs": 0, "by_model": {}}
+
+        try:
+            data = _json.loads(tracker_path.read_text())
+            if not isinstance(data, list):
+                return {"total_tokens": 0, "total_runs": 0, "by_model": {}}
+
+            total_tokens = sum(r.get("total_tokens", 0) for r in data)
+            by_model = {}
+            for r in data:
+                m = r.get("model", "unknown")
+                if m not in by_model:
+                    by_model[m] = {"runs": 0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+                by_model[m]["runs"] += 1
+                by_model[m]["prompt_tokens"] += r.get("prompt_tokens", 0)
+                by_model[m]["completion_tokens"] += r.get("completion_tokens", 0)
+                by_model[m]["total_tokens"] += r.get("total_tokens", 0)
+
+            return {
+                "total_tokens": total_tokens,
+                "total_runs": len(data),
+                "by_model": by_model,
+            }
+        except Exception as e:
+            return {"total_tokens": 0, "total_runs": 0, "error": str(e)}
 
     @app.get("/api/survival-rates")
     def survival_rates(

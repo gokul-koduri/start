@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 11
+_SCHEMA_VERSION = 12
 
 _TABLES = [
     """
@@ -522,6 +522,121 @@ _TABLES = [
         created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
+    # ── Phase 1: Opportunity Intelligence Platform tables ──
+    """
+    CREATE TABLE IF NOT EXISTS raw_signals (
+        id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+        signal_type     VARCHAR(50) NOT NULL COMMENT 'sec_filing, job_posting_spike, github_trend, funding_round, patent_filed, social_buzz, website_change, news_mention',
+        source_name     VARCHAR(100) NOT NULL,
+        source_url      VARCHAR(2048),
+        title           TEXT,
+        body_text       LONGTEXT,
+        entity_name     VARCHAR(255) COMMENT 'Extracted company/person/technology name',
+        published_at    DATETIME,
+        collected_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        processed       TINYINT DEFAULT 0 COMMENT '0=pending, 1=enriched, 2=scored',
+        UNIQUE KEY uq_signal_source_url (signal_type, source_url(767))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS opportunity_scores (
+        id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+        entity_name     VARCHAR(255) NOT NULL,
+        entity_type     VARCHAR(50) NOT NULL DEFAULT 'company' COMMENT 'company, technology, market',
+        composite_score FLOAT NOT NULL COMMENT '0.0-100.0 weighted composite',
+        raw_weighted_score FLOAT DEFAULT 0.0,
+        signal_count    INT DEFAULT 0,
+        signal_types_json TEXT COMMENT 'JSON: which signal types contributed',
+        signal_weights_json TEXT COMMENT 'JSON: individual signal weights and contributions',
+        freshness_score FLOAT COMMENT 'Average time-decay score 0.0-1.0',
+        anomaly_z_score FLOAT COMMENT 'Z-score anomaly detection value',
+        anomaly_type    VARCHAR(50) COMMENT 'spike, drop, or NULL',
+        trend_direction VARCHAR(10) COMMENT 'rising, falling, stable',
+        confidence      FLOAT DEFAULT 1.0 COMMENT 'Signal coverage confidence 0.0-1.0',
+        attribution_json TEXT COMMENT 'Full feature attribution JSON',
+        scored_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_opp_entity (entity_name, entity_type)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS signal_events (
+        id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+        event_type      VARCHAR(100) NOT NULL COMMENT 'funding_round, hiring_spike, product_launch, patent_filed, competitor_entry, distress_signal',
+        entity_name     VARCHAR(255) NOT NULL,
+        entity_type     VARCHAR(50) NOT NULL,
+        event_data_json LONGTEXT COMMENT 'JSON: full event payload',
+        source_signal_id BIGINT,
+        correlation_key VARCHAR(255) COMMENT 'For pattern matching across signals',
+        score_boost     FLOAT DEFAULT 0.0 COMMENT 'Score adjustment from pattern detection',
+        detected_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_events_type (event_type),
+        INDEX idx_events_entity (entity_name),
+        INDEX idx_events_time (detected_at DESC)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS sec_filings (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        cik             VARCHAR(20) COMMENT 'SEC CIK number',
+        company_name    VARCHAR(255) NOT NULL,
+        filing_type     VARCHAR(20) NOT NULL COMMENT '10-K, 10-Q, 8-K, S-1, DEF14A',
+        filed_date      DATE,
+        document_url    VARCHAR(2048),
+        summary_text    TEXT,
+        extracted_data  TEXT COMMENT 'JSON: key financials, risks, segments',
+        sentiment_score FLOAT COMMENT '-1.0 to 1.0 basic sentiment',
+        collected_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_sec_filing (company_name, filing_type, filed_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS job_postings (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        company_name    VARCHAR(255) NOT NULL,
+        job_title       VARCHAR(255) NOT NULL,
+        location        VARCHAR(255),
+        salary_min      INT,
+        salary_max      INT,
+        job_type        VARCHAR(50) COMMENT 'full_time, contract, remote',
+        skills_json     TEXT COMMENT 'JSON: extracted skill tags',
+        source_site     VARCHAR(100),
+        posted_date     DATE,
+        collected_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_job (company_name, job_title, source_site, posted_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS github_trends (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        repo_name       VARCHAR(255) NOT NULL,
+        repo_url        VARCHAR(2048),
+        stars           INT DEFAULT 0,
+        forks           INT DEFAULT 0,
+        language        VARCHAR(50),
+        description     TEXT,
+        topic_tags      TEXT COMMENT 'JSON: repo topics',
+        created_at      DATETIME,
+        pushed_at       DATETIME,
+        weekly_stars_delta INT DEFAULT 0 COMMENT 'Stars gained per week (velocity)',
+        source_signal_type VARCHAR(20) DEFAULT 'github_trending',
+        collected_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_github_repo (repo_name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS funding_events (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        company_name    VARCHAR(255) NOT NULL,
+        round_type      VARCHAR(50) COMMENT 'Seed, Series A, Series B, etc.',
+        amount_usd      BIGINT COMMENT 'Amount in USD',
+        investors_json  TEXT COMMENT 'JSON: list of investor names',
+        announced_date  DATE,
+        source          VARCHAR(100),
+        collected_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_funding (company_name, round_type, announced_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
 ]
 
 _INDEXES = [
@@ -569,6 +684,24 @@ _INDEXES = [
     "CREATE INDEX idx_span_anomaly ON span_snapshots(anomaly_detected, anomaly_type);",
     "CREATE INDEX idx_ml_models_active ON ml_models(is_active);",
     "CREATE INDEX idx_news_sentiment ON news_articles(sentiment_score);",
+    # ── Phase 1: Opportunity Intelligence indexes ──
+    "CREATE INDEX idx_raw_signals_type ON raw_signals(signal_type);",
+    "CREATE INDEX idx_raw_signals_entity ON raw_signals(entity_name);",
+    "CREATE INDEX idx_raw_signals_collected ON raw_signals(collected_at DESC);",
+    "CREATE INDEX idx_raw_signals_processed ON raw_signals(processed);",
+    "CREATE INDEX idx_opp_scores_composite ON opportunity_scores(composite_score DESC);",
+    "CREATE INDEX idx_opp_scores_trend ON opportunity_scores(trend_direction);",
+    "CREATE INDEX idx_opp_scores_entity ON opportunity_scores(entity_name);",
+    "CREATE INDEX idx_sec_filings_company ON sec_filings(company_name);",
+    "CREATE INDEX idx_sec_filings_type ON sec_filings(filing_type);",
+    "CREATE INDEX idx_sec_filings_date ON sec_filings(filed_date DESC);",
+    "CREATE INDEX idx_job_postings_company ON job_postings(company_name);",
+    "CREATE INDEX idx_job_postings_date ON job_postings(posted_date DESC);",
+    "CREATE INDEX idx_github_trends_language ON github_trends(language);",
+    "CREATE INDEX idx_github_trends_velocity ON github_trends(weekly_stars_delta DESC);",
+    "CREATE INDEX idx_funding_events_company ON funding_events(company_name);",
+    "CREATE INDEX idx_funding_events_date ON funding_events(announced_date DESC);",
+    "CREATE INDEX idx_funding_events_amount ON funding_events(amount_usd DESC);",
 ]
 
 

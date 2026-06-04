@@ -127,6 +127,10 @@ def _get_agent_class(name: str):
         from agents.sentiment_agent import SentimentAgent
         AGENT_REGISTRY["sentiment"] = SentimentAgent
         return SentimentAgent
+    elif name == "opportunity_scorer":
+        from agents.opportunity_scorer import OpportunityScorerAgent
+        AGENT_REGISTRY["opportunity_scorer"] = OpportunityScorerAgent
+        return OpportunityScorerAgent
 
     raise ValueError(f"Unknown agent: {name}")
 

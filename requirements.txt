@@ -29,3 +29,11 @@ pytest>=7.4.0
 pytest-asyncio>=0.23.0
 httpx>=0.27.0
 pytest-cov>=5.0.0
+
+# Phase 1: Opportunity Intelligence Platform
+# Real-time ingestion (optional — Kafka disabled if not installed)
+kafka-python-ng>=2.2.0
+redis>=5.0.0
+# Signal collectors
+PyGithub>=2.1.0
+# Note: sec-edgar-downloader is optional (SEC collector works with RSS fallback)

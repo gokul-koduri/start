@@ -909,6 +909,222 @@ if HAS_FASTAPI:
             "risk_distribution": risk_dist,
         }
 
+    # ── Phase 1: Opportunity Intelligence Endpoints ──────────
+
+    @app.get("/api/opportunities")
+    def list_opportunities(
+        limit: int = 50,
+        offset: int = 0,
+        min_score: float = 0,
+        trend: str | None = None,
+        entity_type: str | None = None,
+    ):
+        """List scored opportunities sorted by composite_score descending.
+
+        Query params:
+            limit: Max results (default 50)
+            offset: Pagination offset
+            min_score: Filter by minimum composite_score (0-100)
+            trend: Filter by trend_direction (rising, falling, stable)
+            entity_type: Filter by entity_type (company, technology, market)
+        """
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        query = "SELECT * FROM opportunity_scores WHERE composite_score >= %s"
+        params = [min_score]
+
+        if trend:
+            query += " AND trend_direction = %s"
+            params.append(trend)
+        if entity_type:
+            query += " AND entity_type = %s"
+            params.append(entity_type)
+
+        query += " ORDER BY composite_score DESC LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
+
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+
+        opportunities = []
+        for row in rows:
+            opp = dict(row)
+            if opp.get("attribution_json"):
+                try:
+                    opp["attribution"] = json.loads(opp["attribution_json"])
+                except (json.JSONDecodeError, TypeError):
+                    opp["attribution"] = []
+            else:
+                opp["attribution"] = []
+            if opp.get("signal_types_json"):
+                try:
+                    opp["signal_types"] = json.loads(opp["signal_types_json"])
+                except (json.JSONDecodeError, TypeError):
+                    opp["signal_types"] = []
+            else:
+                opp["signal_types"] = []
+            opportunities.append(opp)
+
+        # Get total count for pagination
+        count_query = "SELECT COUNT(*) as cnt FROM opportunity_scores WHERE composite_score >= %s"
+        count_params = [min_score]
+        if trend:
+            count_query += " AND trend_direction = %s"
+            count_params.append(trend)
+        if entity_type:
+            count_query += " AND entity_type = %s"
+            count_params.append(entity_type)
+        cursor.execute(count_query, count_params)
+        total = cursor.fetchone()["cnt"]
+
+        cursor.close()
+        conn.close()
+
+        return {
+            "opportunities": opportunities,
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        }
+
+    @app.get("/api/opportunities/{entity_name}")
+    def get_opportunity(entity_name: str):
+        """Get detailed opportunity data for a specific entity."""
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "SELECT * FROM opportunity_scores WHERE entity_name = %s",
+            (entity_name,),
+        )
+        row = cursor.fetchone()
+
+        if not row:
+            cursor.close()
+            conn.close()
+            return {"error": f"Entity '{entity_name}' not found"}, 404
+
+        opp = dict(row)
+        if opp.get("attribution_json"):
+            try:
+                opp["attribution"] = json.loads(opp["attribution_json"])
+            except (json.JSONDecodeError, TypeError):
+                opp["attribution"] = []
+        if opp.get("signal_weights_json"):
+            try:
+                opp["signal_weights"] = json.loads(opp["signal_weights_json"])
+            except (json.JSONDecodeError, TypeError):
+                opp["signal_weights"] = []
+
+        # Get recent signals for this entity
+        cursor.execute(
+            """SELECT signal_type, title, source_url, published_at
+               FROM raw_signals
+               WHERE entity_name = %s
+               ORDER BY published_at DESC LIMIT 20""",
+            (entity_name,),
+        )
+        opp["recent_signals"] = [dict(r) for r in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+        return opp
+
+    @app.get("/api/signals")
+    def list_signals(
+        limit: int = 50,
+        offset: int = 0,
+        signal_type: str | None = None,
+        entity_name: str | None = None,
+        processed: int | None = None,
+    ):
+        """List raw signals with filtering.
+
+        Query params:
+            limit: Max results
+            signal_type: Filter by signal type (sec_filing, job_posting_spike, etc.)
+            entity_name: Filter by entity name
+            processed: Filter by processed status (0=pending, 1=enriched, 2=scored)
+        """
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        query = "SELECT * FROM raw_signals WHERE 1=1"
+        params = []
+
+        if signal_type:
+            query += " AND signal_type = %s"
+            params.append(signal_type)
+        if entity_name:
+            query += " AND entity_name = %s"
+            params.append(entity_name)
+        if processed is not None:
+            query += " AND processed = %s"
+            params.append(processed)
+
+        query += " ORDER BY collected_at DESC LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
+
+        cursor.execute(query, params)
+        signals = [dict(r) for r in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+        return {"signals": signals, "limit": limit, "offset": offset}
+
+    @app.get("/api/signals/stats")
+    def signal_stats():
+        """Get statistics about signal collection."""
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        stats = {}
+
+        # Signal counts by type
+        cursor.execute(
+            "SELECT signal_type, COUNT(*) as cnt FROM raw_signals GROUP BY signal_type ORDER BY cnt DESC"
+        )
+        stats["by_type"] = {dict(r)["signal_type"]: dict(r)["cnt"] for r in cursor.fetchall()}
+
+        # Processing status
+        cursor.execute(
+            "SELECT processed, COUNT(*) as cnt FROM raw_signals GROUP BY processed"
+        )
+        stats["processing_status"] = {
+            str(dict(r)["processed"]): dict(r)["cnt"] for r in cursor.fetchall()
+        }
+
+        # Top entities by signal count
+        cursor.execute(
+            """SELECT entity_name, COUNT(*) as cnt, COUNT(DISTINCT signal_type) as types
+               FROM raw_signals
+               WHERE entity_name IS NOT NULL AND entity_name != ''
+               GROUP BY entity_name
+               ORDER BY cnt DESC LIMIT 20"""
+        )
+        stats["top_entities"] = [dict(r) for r in cursor.fetchall()]
+
+        # Opportunity score distribution
+        cursor.execute(
+            """SELECT
+                 COUNT(*) as total,
+                 AVG(composite_score) as avg_score,
+                 MAX(composite_score) as max_score,
+                 SUM(CASE WHEN composite_score >= 70 THEN 1 ELSE 0 END) as high_value
+               FROM opportunity_scores"""
+        )
+        row = cursor.fetchone()
+        stats["opportunity_summary"] = dict(row) if row else {}
+
+        cursor.close()
+        conn.close()
+        return stats
+
 
 # ── Main ─────────────────────────────────────────────────────
 

@@ -387,7 +387,8 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     <span class="search-clear" id="searchClear">&times;</span>
   </div>
   <span class="tier-badge free" id="tierBadge" onclick="showTierAction()">FREE</span>
-  <span class="meta">Updated: June 03, 2026 at 05:03 UTC</span>
+  <span id="wsStatus" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;background:#555;" title="Live connection status"></span>
+  <span class="meta" id="wsTime">Connecting...</span>
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
     <span class="theme-icon" id="themeIcon">&#9788;</span>
   </button>
@@ -2667,6 +2668,92 @@ Meta Llama 3 Version Release Date: April 18, 2024
   });
 
   initTierGate();
+})();
+</script>
+<!-- Real-time WebSocket Live Updates -->
+<script>
+(function() {
+  "use strict";
+  var WS_URL = (location.protocol === "https:" ? "wss:" : "ws:") + "//" + location.host + "/ws/live";
+  var STATS_URL = (location.protocol === "https:" ? "https:" : "http:") + "//" + location.host + "/api/stats/summary";
+  var ws = null;
+  var reconnectDelay = 1000;
+  var maxReconnectDelay = 30000;
+
+  function setStatus(connected) {
+    var dot = document.getElementById("wsStatus");
+    var label = document.getElementById("wsTime");
+    if (connected) {
+      dot.style.background = "#22c55e";
+      label.textContent = "Live";
+    } else {
+      dot.style.background = "#ef4444";
+      label.textContent = "Offline";
+    }
+  }
+
+  function updateStats(data) {
+    // Update stat card values by index in the first stats-grid
+    if (data.startups !== undefined) {
+      var cards = document.querySelectorAll(".stats-grid .stat-card .value");
+      if (cards.length >= 3) {
+        cards[0].textContent = data.startups.toLocaleString();
+        cards[2].textContent = data.news.toLocaleString();
+      }
+    }
+    // Update sentiment scored count in meta if available
+    if (data.sentiment_scored !== undefined && data.sentiment_scored > 0) {
+      // Show sentiment info in a subtle way
+      var existing = document.getElementById("sentimentMeta");
+      if (!existing) {
+        var span = document.createElement("span");
+        span.id = "sentimentMeta";
+        span.style.cssText = "font-size:11px;color:var(--text-secondary);margin-left:8px;";
+        span.textContent = data.sentiment_scored + " articles scored for sentiment";
+        var timeEl = document.getElementById("wsTime");
+        if (timeEl && timeEl.parentNode) {
+          timeEl.parentNode.insertBefore(span, timeEl.nextSibling);
+        }
+      }
+    }
+  }
+
+  function connect() {
+    try { ws = new WebSocket(WS_URL); } catch(e) { return; }
+
+    ws.onopen = function() {
+      reconnectDelay = 1000;
+      setStatus(true);
+    };
+
+    ws.onmessage = function(event) {
+      try {
+        var msg = JSON.parse(event.data);
+        if (msg.type === "stats_update" && msg.data) {
+          updateStats(msg.data);
+        }
+      } catch(e) {}
+    };
+
+    ws.onclose = function() {
+      setStatus(false);
+      setTimeout(connect, reconnectDelay);
+      reconnectDelay = Math.min(reconnectDelay * 2, maxReconnectDelay);
+    };
+
+    ws.onerror = function() { ws.close(); };
+  }
+
+  // Fetch initial stats on page load (fallback if WS is unavailable)
+  fetch(STATS_URL).then(function(r) { return r.json(); }).then(function(data) {
+    setStatus(true);
+    updateStats(data);
+  }).catch(function() {
+    setStatus(false);
+  });
+
+  // Start WebSocket connection
+  connect();
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>

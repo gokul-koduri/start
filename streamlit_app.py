@@ -111,7 +111,7 @@ with st.sidebar:
         ["📊 Overview", "🏢 Startup Explorer", "⚠️ Risk Scores",
          "📈 Sector Analysis", "🌍 Geographic Insights", "📰 News Feed",
          "🔗 Knowledge Graph", "🔄 Revival Opportunities", "💬 AI Analyst",
-         "💰 LLM Pricing", "🩺 Pipeline Health"],
+         "💰 LLM Pricing", "🩺 Pipeline Health", "🎭 Sentiment Analysis"],
         label_visibility="collapsed",
     )
 
@@ -925,3 +925,122 @@ elif page == "🩺 Pipeline Health":
                          use_container_width=True, hide_index=True)
     else:
         st.info("No span monitoring data.")
+
+
+# ── Sentiment Analysis Page ──────────────────────────────────
+
+elif page == "🎭 Sentiment Analysis":
+    st.title("🎭 Sentiment Analysis")
+    st.caption("News article sentiment scoring and trend analysis")
+
+    # KPI cards
+    total_articles = query_db("SELECT COUNT(*) as cnt FROM news_articles")
+    scored = query_db(
+        """SELECT sentiment_label, COUNT(*) as cnt, AVG(sentiment_score) as avg_score
+           FROM news_articles WHERE sentiment_score IS NOT NULL GROUP BY sentiment_label"""
+    )
+    total = total_articles[0]["cnt"] if total_articles else 0
+    scored_count = sum(r["cnt"] for r in scored) if scored else 0
+    coverage = round(scored_count / max(total, 1) * 100, 1)
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Total Articles", f"{total:,}")
+    col2.metric("Scored", f"{scored_count:,}")
+    col3.metric("Coverage", f"{coverage}%")
+    avg_score = query_db("SELECT AVG(sentiment_score) as avg FROM news_articles WHERE sentiment_score IS NOT NULL")
+    avg_val = avg_score[0]["avg"] if avg_score and avg_score[0]["avg"] else 0
+    col4.metric("Avg Sentiment", f"{avg_val:.3f}")
+
+    if scored_count == 0:
+        st.info("No articles scored yet. Run the sentiment agent: `python run_agent.py --pipeline analysis`")
+    else:
+        st.divider()
+
+        # Distribution pie chart
+        st.subheader("Sentiment Distribution")
+        dist_df = pd.DataFrame(scored)
+        fig_dist = px.pie(dist_df, values="cnt", names="sentiment_label",
+                           color="sentiment_label",
+                           color_discrete_map={"positive": "#22c55e", "negative": "#ef4444", "neutral": "#6366f1"},
+                           hole=0.4, title="Sentiment Labels")
+        st.plotly_chart(fig_dist, use_container_width=True)
+
+        col_left, col_right = st.columns(2)
+
+        with col_left:
+            st.subheader("📈 Sentiment Timeline")
+            timeline = query_db(
+                """SELECT DATE(sentiment_analyzed_at) as day,
+                          AVG(sentiment_score) as avg_score,
+                          COUNT(*) as cnt
+                   FROM news_articles
+                   WHERE sentiment_score IS NOT NULL
+                   GROUP BY day ORDER BY day DESC LIMIT 30"""
+            )
+            if timeline:
+                tl_df = pd.DataFrame(timeline)
+                fig_tl = px.line(tl_df, x="day", y="avg_score",
+                                 title="Average Sentiment Over Time",
+                                 labels={"day": "", "avg_score": "Avg Sentiment"})
+                fig_tl.add_hrect(y0=0.05, y1=1, fillcolor="green", opacity=0.05)
+                fig_tl.add_hrect(y0=-1, y1=-0.05, fillcolor="red", opacity=0.05)
+                fig_tl.update_layout(height=350)
+                st.plotly_chart(fig_tl, use_container_width=True)
+
+        with col_right:
+            st.subheader("📡 Sentiment by Source")
+            by_source = query_db(
+                """SELECT source_name, sentiment_label, COUNT(*) as cnt
+                   FROM news_articles
+                   WHERE sentiment_score IS NOT NULL
+                   GROUP BY source_name, sentiment_label"""
+            )
+            if by_source:
+                src_df = pd.DataFrame(by_source)
+                fig_src = px.bar(src_df, x="source_name", y="cnt", color="sentiment_label",
+                                 barmode="group",
+                                 color_discrete_map={"positive": "#22c55e", "negative": "#ef4444", "neutral": "#6366f1"},
+                                 title="Articles by Source and Sentiment")
+                fig_src.update_layout(height=350, xaxis_tickangle=-30)
+                st.plotly_chart(fig_src, use_container_width=True)
+
+        # Top positive/negative articles
+        st.divider()
+        pos, neg = st.columns(2)
+
+        with pos:
+            st.subheader("👍 Most Positive")
+            positive = query_db(
+                """SELECT title, source_name, sentiment_score, published_at
+                   FROM news_articles
+                   WHERE sentiment_score > 0
+                   ORDER BY sentiment_score DESC LIMIT 10"""
+            )
+            if positive:
+                st.dataframe(pd.DataFrame(positive), use_container_width=True, hide_index=True)
+            else:
+                st.caption("No positive articles scored yet.")
+
+        with neg:
+            st.subheader("👎 Most Negative")
+            negative = query_db(
+                """SELECT title, source_name, sentiment_score, published_at
+                   FROM news_articles
+                   WHERE sentiment_score < 0
+                   ORDER BY sentiment_score ASC LIMIT 10"""
+            )
+            if negative:
+                st.dataframe(pd.DataFrame(negative), use_container_width=True, hide_index=True)
+            else:
+                st.caption("No negative articles scored yet.")
+
+        # Model info
+        st.divider()
+        models_used = query_db(
+            """SELECT sentiment_model, COUNT(*) as cnt, MIN(sentiment_analyzed_at) as first_used
+               FROM news_articles WHERE sentiment_model IS NOT NULL GROUP BY sentiment_model"""
+        )
+        if models_used:
+            st.subheader("🤖 Model Usage")
+            st.dataframe(pd.DataFrame(models_used), use_container_width=True, hide_index=True)
+

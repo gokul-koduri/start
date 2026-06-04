@@ -201,7 +201,7 @@ ollama:
   base_url: "http://localhost:11434"
   models:
     default: "llama3"
-    sentiment: "llama3"
+    sentiment: "llama3.2:1b"
     ner: "llama3"
     summarization: "llama3"
     failure_analysis: "llama3"

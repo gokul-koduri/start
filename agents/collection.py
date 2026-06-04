@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 
 from agents.base import AgentResult, BaseAgent
+from config import load_config
 
 # Import all collectors from the existing registry
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -42,13 +43,18 @@ class CollectionAgent(BaseAgent):
         return "collection"
 
     def execute(self, upstream_results: list | None = None) -> AgentResult:
-        daily_mode = self.config.get("daily_mode", False)
+        # Merge full config (rss, classification, etc.) with agent-specific config
+        full_config = load_config()
+        full_config.update(self.config)
+        collector_config = full_config
+
+        daily_mode = collector_config.get("daily_mode", False)
 
         # Determine which collectors to run
         if daily_mode:
-            collector_names = self.config.get("daily_collectors", DAILY_COLLECTORS)
+            collector_names = collector_config.get("daily_collectors", DAILY_COLLECTORS)
         else:
-            collector_names = self.config.get("collectors", list(ALL_COLLECTORS.keys()))
+            collector_names = collector_config.get("collectors", list(ALL_COLLECTORS.keys()))
 
         _logger.info("CollectionAgent: Running %d collectors (daily_mode=%s)",
                      len(collector_names), daily_mode)
@@ -64,7 +70,7 @@ class CollectionAgent(BaseAgent):
                 continue
 
             collector_class = ALL_COLLECTORS[collector_name]
-            collector = collector_class(config={}, dry_run=self.dry_run)
+            collector = collector_class(config=collector_config, dry_run=self.dry_run)
 
             _logger.info("Running collector: %s", collector_name)
             result = collector.run()

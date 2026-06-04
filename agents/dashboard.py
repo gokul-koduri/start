@@ -1511,7 +1511,7 @@ def _build_ollama_usage_html(usage: dict) -> str:
         </div>
         <div class="stat-card accent-amber">
           <span class="icon">&#128176;</span>
-          <div class="value">${max(cost_equiv.values()):.2f}</div>
+          <div class="value">${max(cost_equiv.values(), default=0):.2f}</div>
           <div class="label">Max Equivalent Cost</div>
           <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">If hosted on most expensive</div>
         </div>

@@ -18,6 +18,7 @@ data/*.db-shm
 data/pdfs/
 data/logs/
 data/collectors.lock
+data/cache/
 
 # IDE
 .vscode/

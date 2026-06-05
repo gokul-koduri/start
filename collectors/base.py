@@ -35,12 +35,72 @@ class BaseCollector(ABC):
         - Database connection and schema initialization
         - collection_runs audit trail (start/update/end)
         - Error handling and logging
+        - Optional Kafka publish for real-time stream processing
     """
 
     def __init__(self, config: dict | None = None, dry_run: bool = False):
         self.config = config or {}
         self.dry_run = dry_run
         self._run_id = None
+        self._kafka_producer = None
+
+    def _get_kafka_producer(self):
+        """Lazy-load Kafka producer for stream processing.
+
+        Returns None if Kafka is not available — collectors still work in batch mode.
+        """
+        if self._kafka_producer is None:
+            try:
+                from ingestion.kafka_producer import SignalKafkaProducer
+                bootstrap = self.config.get("kafka_brokers") or "localhost:9092"
+                self._kafka_producer = SignalKafkaProducer(bootstrap_servers=bootstrap)
+            except Exception:
+                self._kafka_producer = False  # Sentinel: don't retry
+        return self._kafka_producer if self._kafka_producer else None
+
+    def publish_signal(
+        self,
+        signal_type: str,
+        title: str,
+        entity_name: str,
+        source_url: str = "",
+        body_text: str = "",
+        raw_score: float = 0.0,
+        **metadata,
+    ) -> None:
+        """Publish a normalized signal to Kafka for real-time stream processing.
+
+        Fire-and-forget — if Kafka is unavailable, this silently skips.
+        The collector's batch MySQL write is the primary data path.
+
+        Args:
+            signal_type: One of the valid signal types.
+            title: Headline or summary.
+            entity_name: Primary entity referenced.
+            source_url: URL of the source.
+            body_text: Full text content.
+            raw_score: Initial signal strength (0-100).
+            **metadata: Additional key-value metadata.
+        """
+        if self.dry_run:
+            return
+        producer = self._get_kafka_producer()
+        if producer is None:
+            return
+        try:
+            from ingestion.signal_normalizer import normalize_signal
+            envelope = normalize_signal(
+                signal_type, self.name,
+                source_url=source_url,
+                title=title,
+                body_text=body_text,
+                entity_name=entity_name,
+                raw_score=raw_score,
+                **metadata,
+            )
+            producer.send(envelope)
+        except Exception as e:
+            _logger.debug("Kafka publish failed for %s: %s (non-critical)", entity_name, e)
 
     @property
     @abstractmethod

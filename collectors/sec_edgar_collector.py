@@ -153,6 +153,17 @@ class SECEdgarCollector(BaseCollector):
                         ),
                     )
 
+                    # Publish to Kafka for real-time stream processing
+                    self.publish_signal(
+                        "sec_filing",
+                        title=title,
+                        entity_name=company_name or "Unknown",
+                        source_url=link,
+                        body_text=(summary or "")[:10000],
+                        raw_score=60.0,
+                        filing_type=filing_type,
+                    )
+
                     result.records_inserted += 1
                     result.records_collected += 1
 

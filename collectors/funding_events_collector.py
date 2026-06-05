@@ -150,6 +150,18 @@ class FundingEventsCollector(BaseCollector):
                             ),
                         )
 
+                        # Publish to Kafka for real-time stream processing
+                        self.publish_signal(
+                            "funding_round",
+                            title=title,
+                            entity_name=company_name or "Unknown",
+                            source_url=link,
+                            body_text=(summary or "")[:10000],
+                            raw_score=raw_score,
+                            source_site=source_name,
+                            amount_usd=amount,
+                        )
+
                         result.records_inserted += 1
                         result.records_collected += 1
 

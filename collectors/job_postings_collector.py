@@ -179,6 +179,18 @@ class JobPostingsCollector(BaseCollector):
                             ),
                         )
 
+                        # Publish to Kafka for real-time stream processing
+                        self.publish_signal(
+                            "job_posting_spike",
+                            title=title,
+                            entity_name=company_name or "Unknown",
+                            source_url=link,
+                            body_text=(summary or "")[:5000],
+                            raw_score=40.0,
+                            location=location,
+                            source_site=source_name,
+                        )
+
                         # Track company counts for spike detection
                         if company_name:
                             company_counts[company_name] = company_counts.get(company_name, 0) + 1

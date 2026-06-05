@@ -27,6 +27,8 @@ Endpoints:
     POST /api/chat                  — AI Analyst natural language query
     GET  /api/pipeline-runs         — Recent pipeline execution history
     GET  /ws/live                  — WebSocket live dashboard updates
+    GET  /api/search                — Unified semantic/fulltext/hybrid search
+    GET  /api/entities/{name}/connections — Knowledge graph connections
 """
 
 import argparse
@@ -693,6 +695,268 @@ if HAS_FASTAPI:
         conn.close()
         return {"entities": entities, "relationships": relationships}
 
+    # ── Phase 2: Unified Search ────────────────────────────
+
+    @app.get("/api/search")
+    def unified_search(
+        q: str = Query(..., description="Search query"),
+        mode: str = Query("hybrid", description="Search mode: semantic, fulltext, hybrid"),
+        entity_type: str | None = Query(None, description="Filter by entity_type"),
+        signal_type: str | None = Query(None, description="Filter by signal_type"),
+        limit: int = Query(20, ge=1, le=100),
+    ):
+        """Unified search across vector and full-text indexes.
+
+        Modes:
+            semantic — Qdrant vector search (requires embeddings + Qdrant)
+            fulltext — Elasticsearch BM25 search
+            hybrid — Blend of both (default)
+
+        Returns ranked results with scores and highlights.
+        Falls back gracefully if backends are unavailable.
+        """
+        if mode not in ("semantic", "fulltext", "hybrid"):
+            raise HTTPException(status_code=400, detail="mode must be semantic, fulltext, or hybrid")
+
+        # Build filter dict
+        filters = {}
+        if entity_type:
+            filters["entity_type"] = entity_type
+        if signal_type:
+            filters["signal_type"] = signal_type
+
+        results = []
+        search_mode_used = mode
+
+        try:
+            if mode in ("semantic", "hybrid"):
+                from db.vector_store import VectorStore
+                from nlp.embedding_generator import EmbeddingGenerator
+
+                vs_config = {}
+                vector_store = VectorStore(vs_config)
+                vector_store.connect()
+
+                embedder = EmbeddingGenerator()
+                embedder.load()
+
+                if vector_store.is_connected:
+                    vector_results = vector_store.search_by_text(
+                        q, embedder, limit=limit, filters=filters if filters else None,
+                    )
+                    results.extend([r.to_dict() for r in vector_results])
+
+                    if mode == "semantic":
+                        return {
+                            "query": q,
+                            "mode": "semantic",
+                            "total": len(results),
+                            "results": results,
+                        }
+                else:
+                    search_mode_used = "fulltext"
+
+        except ImportError:
+            search_mode_used = "fulltext"
+        except Exception as e:
+            search_mode_used = "fulltext"
+
+        # Full-text search (Elasticsearch)
+        try:
+            from db.search_index import SearchIndex
+            search_index = SearchIndex({})
+            search_index.connect()
+
+            if search_index.is_connected:
+                es_results = search_index.search(q, limit=limit, filters=filters if filters else None)
+                for r in es_results:
+                    results.append({
+                        "id": r.id,
+                        "score": r.score,
+                        "source": r.source,
+                        "highlights": r.highlights,
+                        "search_engine": "elasticsearch",
+                    })
+        except ImportError:
+            pass
+        except Exception:
+            pass
+
+        if not results:
+            return {
+                "query": q,
+                "mode": mode,
+                "mode_used": search_mode_used,
+                "total": 0,
+                "results": [],
+                "message": "No search backends available. Install qdrant-client and/or elasticsearch.",
+            }
+
+        # Deduplicate by ID and sort by score
+        seen = {}
+        for r in results:
+            rid = r.get("id", "")
+            if rid not in seen or r.get("score", 0) > seen[rid].get("score", 0):
+                seen[rid] = r
+        results = sorted(seen.values(), key=lambda x: x.get("score", 0), reverse=True)[:limit]
+
+        return {
+            "query": q,
+            "mode": mode,
+            "mode_used": search_mode_used,
+            "total": len(results),
+            "results": results,
+        }
+
+
+    # ── Phase 2: Entity Connections (Graph Traversal) ────────
+
+    @app.get("/api/entities/{entity_name}/connections")
+    def entity_connections(
+        entity_name: str,
+        depth: int = Query(1, ge=1, le=3, description="Graph traversal depth (1-3)"),
+        relationship_type: str | None = Query(None, description="Filter by relationship type"),
+        limit: int = Query(50, ge=1, le=200, description="Max nodes to return"),
+    ):
+        """Get knowledge graph connections for an entity.
+
+        Traverses the knowledge graph from the given entity name, returning
+        nodes and edges suitable for visualization (D3.js, G6, Cytoscape).
+
+        Response format:
+            nodes: [{id, name, type, mentions}]
+            edges: [{source, target, relationship_type, weight}]
+        """
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        # Resolve entity by name (check aliases too)
+        entity_id = None
+        cursor.execute(
+            """SELECT e.id, e.name, t.type_name, e.mention_count
+               FROM kg_entities e, kg_entity_types t
+               WHERE e.entity_type_id = t.id AND e.name = %s""",
+            (entity_name,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            # Try alias lookup
+            try:
+                cursor.execute(
+                    """SELECT canonical_entity_id FROM kg_entity_aliases
+                       WHERE alias_name = %s OR normalized_alias = %s""",
+                    (entity_name, entity_name.lower().replace(" ", "")),
+                )
+                alias_row = cursor.fetchone()
+                if alias_row:
+                    cursor.execute("SELECT id, name, mention_count FROM kg_entities WHERE id = %s", (alias_row["canonical_entity_id"],))
+                    row = cursor.fetchone()
+            except Exception:
+                pass
+
+        if not row:
+            cursor.close()
+            conn.close()
+            raise HTTPException(status_code=404, detail=f"Entity '{entity_name}' not found in knowledge graph")
+
+        entity_id = row["id"]
+
+        # BFS traversal
+        nodes = {}  # id -> node dict
+        edges = []
+
+        def add_node(nid, name, ntype, mentions):
+            if nid not in nodes:
+                nodes[nid] = {
+                    "id": nid,
+                    "name": name,
+                    "type": ntype,
+                    "mentions": mentions or 0,
+                }
+
+        # Add the starting entity
+        add_node(entity_id, row["name"], row.get("type_name", "unknown"), row.get("mention_count"))
+
+        visited = {entity_id}
+        frontier = [entity_id]
+
+        for d in range(depth):
+            if not frontier or len(nodes) >= limit:
+                break
+
+            next_frontier = []
+            for fid in frontier:
+                # Outgoing relationships
+                rel_query = """SELECT r.target_entity_id, r.relationship_type, r.weight,
+                                      e2.name, t.type_name, e2.mention_count
+                               FROM kg_relationships r
+                               JOIN kg_entities e2 ON r.target_entity_id = e2.id
+                               JOIN kg_entity_types t ON e2.entity_type_id = t.id
+                               WHERE r.source_entity_id = %s"""
+                rel_params = [fid]
+                if relationship_type:
+                    rel_query += " AND r.relationship_type = %s"
+                    rel_params.append(relationship_type)
+                cursor.execute(rel_query, rel_params)
+
+                for r in cursor.fetchall():
+                    tid = r["target_entity_id"]
+                    if tid not in visited and len(nodes) < limit:
+                        visited.add(tid)
+                        next_frontier.append(tid)
+                        add_node(tid, r["name"], r["type_name"], r["mention_count"])
+                    edges.append({
+                        "source": fid,
+                        "target": tid,
+                        "relationship_type": r["relationship_type"],
+                        "weight": r["weight"],
+                    })
+
+                # Incoming relationships
+                rel_query = """SELECT r.source_entity_id, r.relationship_type, r.weight,
+                                      e2.name, t.type_name, e2.mention_count
+                               FROM kg_relationships r
+                               JOIN kg_entities e2 ON r.source_entity_id = e2.id
+                               JOIN kg_entity_types t ON e2.entity_type_id = t.id
+                               WHERE r.target_entity_id = %s"""
+                rel_params = [fid]
+                if relationship_type:
+                    rel_query += " AND r.relationship_type = %s"
+                    rel_params.append(relationship_type)
+                cursor.execute(rel_query, rel_params)
+
+                for r in cursor.fetchall():
+                    sid = r["source_entity_id"]
+                    if sid not in visited and len(nodes) < limit:
+                        visited.add(sid)
+                        next_frontier.append(sid)
+                        add_node(sid, r["name"], r["type_name"], r["mention_count"])
+                    # Avoid duplicate edge (undirected)
+                    if not any(e["source"] == sid and e["target"] == fid for e in edges):
+                        edges.append({
+                            "source": sid,
+                            "target": fid,
+                            "relationship_type": r["relationship_type"],
+                            "weight": r["weight"],
+                        })
+
+            frontier = next_frontier
+
+        cursor.close()
+        conn.close()
+
+        return {
+            "entity_name": entity_name,
+            "entity_id": entity_id,
+            "depth": depth,
+            "nodes": list(nodes.values()),
+            "edges": edges,
+            "total_nodes": len(nodes),
+            "total_edges": len(edges),
+        }
+
+
     # ── License Validation ───────────────────────────────────
 
     @app.post("/api/license/validate")
@@ -876,38 +1140,6 @@ if HAS_FASTAPI:
         except WebSocketDisconnect:
             ws_manager.disconnect(websocket)
 
-
-    @app.get("/api/stats/summary")
-    def stats_summary():
-        """Lightweight stats endpoint for quick polling."""
-        conn = get_connection()
-        schema.init_schema(conn)
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT COUNT(*) as cnt FROM failed_startups")
-        startup_count = cursor.fetchone()["cnt"]
-
-        cursor.execute("SELECT COUNT(*) as cnt FROM news_articles")
-        news_count = cursor.fetchone()["cnt"]
-
-        cursor.execute("SELECT COUNT(*) as cnt FROM news_articles WHERE sentiment_score IS NOT NULL")
-        sentiment_scored = cursor.fetchone()["cnt"]
-
-        cursor.execute(
-            """SELECT risk_level, COUNT(*) as cnt
-               FROM startup_risk_scores GROUP BY risk_level"""
-        )
-        risk_dist = {dict(r)["risk_level"]: dict(r)["cnt"] for r in cursor.fetchall()}
-
-        cursor.close()
-        conn.close()
-
-        return {
-            "startups": startup_count,
-            "news": news_count,
-            "sentiment_scored": sentiment_scored,
-            "risk_distribution": risk_dist,
-        }
 
     # ── Phase 1: Opportunity Intelligence Endpoints ──────────
 
@@ -1124,6 +1356,144 @@ if HAS_FASTAPI:
         cursor.close()
         conn.close()
         return stats
+
+
+    # ── In-Memory Cache ───────────────────────────────────
+    # Simple TTL cache to avoid repeated COUNT(*) queries on stats endpoints.
+    # Falls back gracefully — no external Redis required for basic operation.
+
+    _cache: dict[str, tuple] = {}  # key -> (json_bytes, expiry_timestamp)
+
+    def _cache_get(key: str, ttl: int = 60) -> dict | None:
+        """Return cached value if still fresh, else None."""
+        import time
+        entry = _cache.get(key)
+        if entry and entry[1] > time.time():
+            return entry[0]
+        _cache.pop(key, None)
+        return None
+
+    def _cache_set(key: str, value: dict, ttl: int = 60):
+        import time
+        _cache[key] = (value, time.time() + ttl)
+
+    # ── Cached Stats Endpoints ───────────────────────────
+
+    @app.get("/api/stats/summary")
+    def stats_summary():
+        """Lightweight stats endpoint for quick polling (cached 60s)."""
+        CACHED_KEY = "stats:summary"
+        cached = _cache_get(CACHED_KEY, ttl=60)
+        if cached:
+            return cached
+
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT COUNT(*) as cnt FROM failed_startups")
+        startup_count = cursor.fetchone()["cnt"]
+
+        cursor.execute("SELECT COUNT(*) as cnt FROM news_articles")
+        news_count = cursor.fetchone()["cnt"]
+
+        cursor.execute("SELECT COUNT(*) as cnt FROM news_articles WHERE sentiment_score IS NOT NULL")
+        sentiment_scored = cursor.fetchone()["cnt"]
+
+        cursor.execute("SELECT COUNT(*) as cnt FROM opportunity_scores WHERE composite_score >= 60")
+        opportunities_count = cursor.fetchone()["cnt"]
+
+        cursor.execute("SELECT COUNT(*) as cnt FROM raw_signals WHERE DATE(collected_at) = CURDATE()")
+        signals_today = cursor.fetchone()["cnt"]
+
+        cursor.execute("SELECT COUNT(*) as cnt FROM raw_signals")
+        total_signals = cursor.fetchone()["cnt"]
+
+        cursor.execute(
+            """SELECT risk_level, COUNT(*) as cnt
+               FROM startup_risk_scores GROUP BY risk_level"""
+        )
+        risk_dist = {dict(r)["risk_level"]: dict(r)["cnt"] for r in cursor.fetchall()}
+
+        cursor.close()
+        conn.close()
+
+        result = {
+            "startups": startup_count,
+            "news": news_count,
+            "sentiment_scored": sentiment_scored,
+            "opportunities": opportunities_count,
+            "signals_today": signals_today,
+            "total_signals": total_signals,
+            "risk_distribution": risk_dist,
+        }
+
+        _cache_set(CACHED_KEY, result, ttl=60)
+        return result
+
+    @app.get("/api/cache/clear")
+    def cache_clear():
+        """Clear all cached responses (admin endpoint)."""
+        _cache.clear()
+        return {"status": "cleared", "message": "All cache entries removed"}
+
+    # ── Stream Processing Status ──────────────────────────
+
+    @app.get("/api/stream/status")
+    def stream_status():
+        """Health check for stream processing pipeline — reads live metrics from Redis."""
+        import json
+        import time
+        redis_ok = False
+        pipeline_metrics = {}
+
+        try:
+            import redis as redis_client
+            r = redis_client.from_url(
+                "redis://localhost:6379/0",
+                socket_connect_timeout=2,
+                decode_responses=True,
+            )
+            redis_ok = r.ping()
+
+            # Read pipeline metrics published by stream/pipeline.py
+            raw_metrics = r.get("stream:metrics")
+            if raw_metrics:
+                try:
+                    pipeline_metrics = json.loads(raw_metrics)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            r.close()
+        except Exception:
+            pass
+
+        # Determine overall status from pipeline metrics
+        signals_processed = pipeline_metrics.get("signals_processed", 0)
+        last_processed = pipeline_metrics.get("last_processed_at", 0)
+        pipeline_active = signals_processed > 0 and (time.time() - last_processed) < 300
+
+        if not redis_ok:
+            overall = "degraded"
+        elif pipeline_active:
+            overall = "healthy"
+        elif signals_processed > 0:
+            overall = "stale"
+        else:
+            overall = "not_started"
+
+        return {
+            "status": overall,
+            "timestamp": time.time(),
+            "pipeline": pipeline_metrics,
+            "components": {
+                "redis": {"status": "connected" if redis_ok else "disconnected"},
+                "kafka": {"status": "connected" if pipeline_active else "unknown"},
+                "bytewax": {"status": "running" if pipeline_active else "stopped"},
+                "clickhouse": {"status": "not_configured", "ingestion_rate": 0},
+                "timescaledb": {"status": "not_configured", "hypertables": 0},
+            },
+            "cache_entries": len(_cache),
+        }
 
 
 # ── Main ─────────────────────────────────────────────────────

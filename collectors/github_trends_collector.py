@@ -144,6 +144,18 @@ class GithubTrendsCollector(BaseCollector):
                         ),
                     )
 
+                    # Publish to Kafka for real-time stream processing
+                    self.publish_signal(
+                        "github_trend",
+                        title=f"{repo_name} ({language}) — {stars}★",
+                        entity_name=repo_name,
+                        source_url=repo_url,
+                        body_text=(description or "")[:5000],
+                        raw_score=raw_score_value,
+                        language=language,
+                        stars=stars,
+                    )
+
                     result.records_collected += 1
 
                     # Check if this is a notable repo

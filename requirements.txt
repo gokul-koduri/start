@@ -37,3 +37,19 @@ redis>=5.0.0
 # Signal collectors
 PyGithub>=2.1.0
 # Note: sec-edgar-downloader is optional (SEC collector works with RSS fallback)
+
+# Phase 2: Intelligence (NLP + Search)
+spacy>=3.7.0
+sentence-transformers>=2.5.0
+qdrant-client>=1.9.0
+elasticsearch>=8.12.0
+praw>=7.7.0
+
+# Phase 3: Stream Processing + OLAP
+bytewax>=0.16.0
+clickhouse-driver>=0.2.0
+# orjson is 2-3x faster than json for serialization
+orjson>=3.9.0
+# dagster for orchestration (install separately: pip install dagster dagster-webserver)
+# dagster>=1.6.0
+# dagster-webserver>=1.6.0

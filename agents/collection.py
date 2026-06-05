@@ -14,6 +14,8 @@ from collectors.google_news_rss import GoogleNewsRSSCollector
 from collectors.techcrunch_rss import TechCrunchRSSCollector
 from collectors.failory_scraper import FailoryScraper
 from collectors.reshoring_pdf import ReshoringPDFCollector
+from collectors.patent_collector import PatentCollector
+from collectors.social_media_collector import SocialMediaCollector
 
 ALL_COLLECTORS = {
     "bls_survival_rates": BLSSurvivalRateCollector,
@@ -21,10 +23,12 @@ ALL_COLLECTORS = {
     "techcrunch_rss": TechCrunchRSSCollector,
     "failory_scraper": FailoryScraper,
     "reshoring_pdf": ReshoringPDFCollector,
+    "patents": PatentCollector,
+    "social_media": SocialMediaCollector,
 }
 
 # Fast collectors suitable for daily runs
-DAILY_COLLECTORS = ["google_news_rss", "techcrunch_rss"]
+DAILY_COLLECTORS = ["google_news_rss", "techcrunch_rss", "social_media"]
 
 _logger = logging.getLogger(__name__)
 

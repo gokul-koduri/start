@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 12
+_SCHEMA_VERSION = 13
 
 _TABLES = [
     """
@@ -637,6 +637,74 @@ _TABLES = [
         UNIQUE KEY uq_funding (company_name, round_type, announced_date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
+    # ── Phase 2: Intelligence tables ──
+    """
+    CREATE TABLE IF NOT EXISTS patent_filings (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        patent_number   VARCHAR(50) NOT NULL COMMENT 'e.g., US20250123456A1',
+        title           TEXT NOT NULL,
+        assignee        VARCHAR(255) COMMENT 'Company or organization',
+        abstract_text   TEXT,
+        filing_date     DATE,
+        grant_date      DATE,
+        classification  VARCHAR(50) COMMENT 'CPC classification code',
+        inventors_json  TEXT COMMENT 'JSON: list of inventor names',
+        citations_count INT DEFAULT 0,
+        claims_count    INT DEFAULT 0,
+        document_url    VARCHAR(2048),
+        source          VARCHAR(100) DEFAULT 'uspto',
+        collected_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_patent_number (patent_number)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS social_posts (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        platform        VARCHAR(20) NOT NULL COMMENT 'reddit, hacker_news',
+        post_id         VARCHAR(50) NOT NULL COMMENT 'Platform-specific post ID',
+        title           TEXT NOT NULL,
+        body_text       TEXT,
+        author          VARCHAR(100),
+        score           INT DEFAULT 0,
+        num_comments    INT DEFAULT 0,
+        url             VARCHAR(2048),
+        subreddit       VARCHAR(100) COMMENT 'Reddit-specific',
+        entity_name     VARCHAR(255) COMMENT 'Extracted entity name',
+        entity_type     VARCHAR(50) DEFAULT 'company',
+        post_url        VARCHAR(2048) COMMENT 'Original post URL for link posts',
+        published_at    DATETIME,
+        collected_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_social_post (platform, post_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS vector_embeddings (
+        id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+        entity_name     VARCHAR(255) NOT NULL,
+        entity_type     VARCHAR(50) NOT NULL,
+        content_type    VARCHAR(50) NOT NULL COMMENT 'title, body, summary',
+        content_text    TEXT NOT NULL,
+        embedding_model VARCHAR(100) NOT NULL DEFAULT 'all-MiniLM-L6-v2',
+        vector_data     JSON NOT NULL COMMENT '384-dim float array',
+        qdrant_point_id VARCHAR(100) COMMENT 'Qdrant point UUID for sync',
+        created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_vec_entity (entity_name),
+        INDEX idx_vec_type (entity_type),
+        INDEX idx_vec_model (embedding_model)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS kg_entity_aliases (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        alias_name          VARCHAR(255) NOT NULL,
+        normalized_alias    VARCHAR(255) NOT NULL,
+        canonical_entity_id INT NOT NULL,
+        alias_source        VARCHAR(100) COMMENT 'Where this alias was seen',
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_alias_normalized (normalized_alias),
+        INDEX idx_alias_canonical (canonical_entity_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
 ]
 
 _INDEXES = [
@@ -702,6 +770,18 @@ _INDEXES = [
     "CREATE INDEX idx_funding_events_company ON funding_events(company_name);",
     "CREATE INDEX idx_funding_events_date ON funding_events(announced_date DESC);",
     "CREATE INDEX idx_funding_events_amount ON funding_events(amount_usd DESC);",
+    # ── Phase 2: Intelligence indexes ──
+    "CREATE INDEX idx_patent_assignee ON patent_filings(assignee);",
+    "CREATE INDEX idx_patent_filing_date ON patent_filings(filing_date DESC);",
+    "CREATE INDEX idx_patent_classification ON patent_filings(classification);",
+    "CREATE INDEX idx_social_entity ON social_posts(entity_name);",
+    "CREATE INDEX idx_social_score ON social_posts(score DESC);",
+    "CREATE INDEX idx_social_published ON social_posts(published_at DESC);",
+    # ── Phase 3: Composite indexes for dashboard queries ──
+    "CREATE INDEX idx_startups_region_sector ON failed_startups(region, sector);",
+    "CREATE INDEX idx_news_manufacturing_sentiment ON news_articles(is_manufacturing, sentiment_score);",
+    "CREATE INDEX idx_opp_score_composite_trend ON opportunity_scores(composite_score DESC, trend_direction);",
+    "CREATE INDEX idx_vector_embed_entity ON vector_embeddings(entity_name);",
 ]
 
 

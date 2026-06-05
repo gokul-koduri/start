@@ -115,7 +115,8 @@ def main():
                      "llm_pricing", "llm_benchmark", "llm_portfolio", "llm_cost_optimizer",
                      "license_manager", "knowledge_graph", "ai_analyst",
                      "alert_dispatcher", "report_generator", "stripe_payments", "span_monitor",
-                     "opportunity_scorer"]:
+                     "opportunity_scorer", "entity_resolver", "nlp_enrichment",
+                     "semantic_search"]:
             if key in agents_config:
                 orchestrator_config[key] = agents_config[key]
 

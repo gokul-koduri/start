@@ -259,6 +259,8 @@ agents:
         - llm_benchmark
         - llm_portfolio
         - llm_cost_optimizer
+        - entity_resolver
+        - nlp_enrichment
         - knowledge_graph
       full:
         - collection
@@ -435,3 +437,98 @@ agents:
 realtime:
   enabled: true
   poll_interval_seconds: 30
+
+# Phase 2: NLP Pipeline configuration
+nlp:
+  enabled: true
+  spacy_model: "en_core_web_trf"
+  embedding_model: "all-MiniLM-L6-v2"
+  device: "cpu"
+  batch_size: 32
+  confidence_threshold: 0.7
+  summarization:
+    max_length: 200
+
+# Phase 2: Patent collector configuration
+patents:
+  enabled: true
+  queries:
+    - query: "artificial intelligence startup"
+      classification: "G06N"
+    - query: "machine learning model"
+      classification: "G06N"
+    - query: "semiconductor chip"
+      classification: "H01L"
+    - query: "battery technology electric vehicle"
+      classification: "H01M"
+  max_results_per_query: 50
+  lookback_days: 30
+
+# Phase 2: Social media collector configuration
+social_media:
+  enabled: true
+  reddit:
+    subreddits:
+      - "startups"
+      - "technology"
+      - "programming"
+      - "SaaS"
+      - "machinelearning"
+      - "artificial"
+    post_limit: 100
+    min_score: 10
+  hacker_news:
+    queries:
+      - "startup funding"
+      - "AI company"
+      - "new product launch"
+    max_results: 50
+  lookback_hours: 24
+
+# Phase 2: Qdrant vector database
+qdrant:
+  url: "${QDRANT_URL:-http://localhost:6333}"
+  collection_name: "startup_signals"
+  embedding_dim: 384
+  batch_size: 100
+
+# Phase 2: Elasticsearch
+elasticsearch:
+  url: "${ELASTICSEARCH_URL:-http://localhost:9200}"
+  index_name: "startup_research"
+  batch_size: 100
+
+# Phase 3: ClickHouse (OLAP Analytics)
+clickhouse:
+  url: "${CLICKHOUSE_URL:-http://localhost:8123}"
+  database: startup_analytics
+  batch_size: 1000
+  # Tables auto-created on connect:
+  # signal_events, trend_metrics, cohort_analysis
+
+# Phase 3: TimescaleDB (Time-Series)
+timescaledb:
+  url: "${TIMESCALEDB_URL:-postgresql://startup:startup2024@localhost:5433/startup_timeseries}"
+  # Hypertables auto-created on connect:
+  # signal_metrics, anomaly_scores, engagement_trends
+
+# Phase 3: Redis (Cache + Pub/Sub)
+redis:
+  url: "${REDIS_URL:-redis://localhost:6379/0}"
+  ttl:
+    stats: 60         # DB count queries cache
+    opportunities: 120  # Opportunity list cache
+    search: 300        # Search results cache
+    embeddings: 3600   # Embedding similarity cache
+
+# Phase 3: Stream Processing (Bytewax)
+stream:
+  workers: 1
+  batch_size: 100
+  topics:
+    raw: raw.signals
+    enriched: enriched.signals
+    scores: scores.updates
+    graph: graph.events
+    alerts: alerts.triggered
+

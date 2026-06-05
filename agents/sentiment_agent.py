@@ -69,7 +69,8 @@ def _keyword_sentiment(text: str) -> tuple[float, str]:
         "partnership", "revenue", "thriving", "milestone", "breakthrough",
     }
 
-    words = text.lower().split()
+    import re
+    words = re.findall(r"[a-z]+", text.lower())
     neg_count = sum(1 for w in words if w in negative_words)
     pos_count = sum(1 for w in words if w in positive_words)
     total = neg_count + pos_count

@@ -131,6 +131,18 @@ def _get_agent_class(name: str):
         from agents.opportunity_scorer import OpportunityScorerAgent
         AGENT_REGISTRY["opportunity_scorer"] = OpportunityScorerAgent
         return OpportunityScorerAgent
+    elif name == "entity_resolver":
+        from agents.entity_resolver import EntityResolverAgent
+        AGENT_REGISTRY["entity_resolver"] = EntityResolverAgent
+        return EntityResolverAgent
+    elif name == "nlp_enrichment":
+        from agents.nlp_enrichment_agent import NLPEnrichmentAgent
+        AGENT_REGISTRY["nlp_enrichment"] = NLPEnrichmentAgent
+        return NLPEnrichmentAgent
+    elif name == "semantic_search":
+        from agents.semantic_search_agent import SemanticSearchAgent
+        AGENT_REGISTRY["semantic_search"] = SemanticSearchAgent
+        return SemanticSearchAgent
 
     raise ValueError(f"Unknown agent: {name}")
 

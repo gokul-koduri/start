@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 13
+_SCHEMA_VERSION = 15
 
 _TABLES = [
     """
@@ -703,6 +703,415 @@ _TABLES = [
         created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uq_alias_normalized (normalized_alias),
         INDEX idx_alias_canonical (canonical_entity_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS company_profiles (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        company_name        VARCHAR(255) NOT NULL,
+        company_number      VARCHAR(100) NOT NULL COMMENT 'Unique company identifier',
+        jurisdiction_code   VARCHAR(10) NOT NULL COMMENT 'ISO country code',
+        incorporation_date  DATE,
+        dissolution_date    DATE,
+        company_type        VARCHAR(100),
+        current_status      VARCHAR(50),
+        registered_address   TEXT,
+        officers            TEXT COMMENT 'JSON: list of officer names/positions',
+        registry_url        VARCHAR(2048),
+        source_search_term  VARCHAR(255),
+        raw_score           FLOAT DEFAULT 0,
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_company_jurisdiction (jurisdiction_code, company_number),
+        KEY idx_company_name (company_name),
+        KEY idx_status (current_status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS arxiv_papers (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        arxiv_id            VARCHAR(50) NOT NULL,
+        title               TEXT NOT NULL,
+        authors             TEXT COMMENT 'JSON: list of author names',
+        abstract            TEXT,
+        primary_category    VARCHAR(50),
+        categories          TEXT COMMENT 'JSON: list of category codes',
+        published_date      DATE,
+        updated_date        DATE,
+        pdf_url             VARCHAR(2048),
+        source_url          VARCHAR(2048),
+        doi                 VARCHAR(255),
+        search_term         VARCHAR(255),
+        raw_score           FLOAT DEFAULT 0,
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_arxiv_id (arxiv_id),
+        KEY idx_category (primary_category),
+        KEY idx_published (published_date),
+        KEY idx_search_term (search_term)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS producthunt_launches (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        ph_id               VARCHAR(50) NOT NULL,
+        name                VARCHAR(255) NOT NULL,
+        tagline             TEXT,
+        description         TEXT,
+        product_url         VARCHAR(2048),
+        votes_count         INT DEFAULT 0,
+        comments_count      INT DEFAULT 0,
+        topics              TEXT COMMENT 'JSON: list of topic names',
+        makers              TEXT COMMENT 'JSON: list of maker names',
+        website_url         VARCHAR(2048),
+        featured            BOOL DEFAULT FALSE,
+        launched_at         DATETIME,
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_ph_id (ph_id),
+        KEY idx_votes (votes_count),
+        KEY idx_launched (launched_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS website_monitor_snapshots (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        url                 VARCHAR(2048) NOT NULL,
+        page_title          VARCHAR(512),
+        meta_description    TEXT,
+        content_hash        VARCHAR(64) COMMENT 'SHA-256 of body text',
+        signals_found       TEXT COMMENT 'JSON: list of matched signal keywords',
+        body_text_excerpt   TEXT COMMENT 'First 1000 chars of body text',
+        http_status         INT,
+        snapshot_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_url (url(255)),
+        KEY idx_snapshot (snapshot_at),
+        KEY idx_content_hash (content_hash)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 4: Stack Overflow posts ──
+    """
+    CREATE TABLE IF NOT EXISTS stackoverflow_posts (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        post_id             BIGINT NOT NULL COMMENT 'Stack Overflow question ID',
+        title               TEXT NOT NULL,
+        body_text           TEXT COMMENT 'Stripped HTML body text',
+        tags                TEXT COMMENT 'JSON array of tags',
+        score               INT DEFAULT 0,
+        answer_count        INT DEFAULT 0,
+        view_count          INT DEFAULT 0,
+        author_name         VARCHAR(255),
+        author_reputation   INT DEFAULT 0,
+        is_answered         TINYINT DEFAULT 0,
+        bounty_amount       INT DEFAULT 0,
+        link                VARCHAR(512),
+        created_at          DATETIME,
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_post_id (post_id),
+        KEY idx_score (score),
+        KEY idx_created (created_at),
+        KEY idx_tags (tags(255))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 4: Package trends (NPM/PyPI) ──
+    """
+    CREATE TABLE IF NOT EXISTS package_trends (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        package_name        VARCHAR(255) NOT NULL,
+        registry            VARCHAR(20) NOT NULL COMMENT 'npm or pypi',
+        version             VARCHAR(100),
+        description         TEXT,
+        monthly_downloads   BIGINT DEFAULT 0,
+        keywords            TEXT COMMENT 'JSON array of keywords',
+        author              VARCHAR(255),
+        license_type        VARCHAR(100),
+        project_url         VARCHAR(512),
+        created_at_registry DATETIME COMMENT 'Date package was first published',
+        updated_at_registry DATETIME COMMENT 'Last update on registry',
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_pkg_registry (package_name, registry),
+        KEY idx_downloads (monthly_downloads),
+        KEY idx_updated (updated_at_registry),
+        KEY idx_registry (registry)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 4: SEC Regulatory Filings ──
+    """
+    CREATE TABLE IF NOT EXISTS regulatory_filings (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        filing_id           VARCHAR(100) NOT NULL COMMENT 'SEC filing accession number',
+        filing_type         VARCHAR(20) NOT NULL COMMENT 'S-1, 8-K, SC 13D',
+        company_name        VARCHAR(512),
+        summary             TEXT,
+        filed_date          DATETIME,
+        link                VARCHAR(512),
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_filing_id (filing_id),
+        KEY idx_type (filing_type),
+        KEY idx_filed (filed_date),
+        KEY idx_company (company_name(255))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 4: Newsletter Articles ──
+    """
+    CREATE TABLE IF NOT EXISTS newsletter_articles (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        title               TEXT NOT NULL,
+        source_name         VARCHAR(255),
+        author              VARCHAR(255),
+        content_text        TEXT,
+        publish_date        DATETIME,
+        url                 VARCHAR(2048),
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_url (url(255)),
+        KEY idx_source (source_name),
+        KEY idx_published (publish_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Market Sizing Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_market_sizing (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        sector              VARCHAR(255) NOT NULL,
+        market_size_usd     BIGINT COMMENT 'Estimated total market size in USD',
+        growth_rate         DOUBLE COMMENT 'Expected annual growth rate (0-1)',
+        confidence_score    DOUBLE COMMENT 'Confidence in estimate (0-1)',
+        data_sources        TEXT COMMENT 'JSON: data sources and counts',
+        methodology          VARCHAR(100) COMMENT 'Estimation methodology used',
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0 COMMENT 'Number of data points analyzed',
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_sector_market (sector)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Competitive Landscape Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_competitive_landscape (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        sector              VARCHAR(255) NOT NULL,
+        competitor_count    INT DEFAULT 0,
+        market_concentration DOUBLE COMMENT 'HHI or concentration metric',
+        fragmentation_score DOUBLE COMMENT '0-1, 1=highly fragmented',
+        avg_funding_competitors BIGINT,
+        top_competitors_json TEXT COMMENT 'JSON: top 5 competitors',
+        entry_barriers       VARCHAR(50) COMMENT 'low, medium, high',
+        rivalry_intensity    VARCHAR(50) COMMENT 'low, medium, high',
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_sector_competitive (sector)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Founder Background Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_founder_background (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        analysis_type       VARCHAR(255) NOT NULL,
+        insights_json       TEXT NOT NULL,
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Technology Stack Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_technology_stack (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        technology          VARCHAR(255) NOT NULL,
+        category            VARCHAR(100) COMMENT 'language, framework, database, etc',
+        adoption_score      DOUBLE COMMENT '0-1 adoption rate',
+        trend_direction     VARCHAR(20) COMMENT 'rising, stable, declining',
+        github_repos        INT DEFAULT 0,
+        stackoverflow_questions INT DEFAULT 0,
+        avg_company_age     DOUBLE COMMENT 'Avg age of companies using this',
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_tech_category (technology, category)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Moat Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_moat (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        sector              VARCHAR(255) NOT NULL,
+        moat_type           VARCHAR(100) COMMENT 'network_effect, ip, switching_cost, scale',
+        moat_strength       DOUBLE COMMENT '0-1 strength score',
+        defensibility       VARCHAR(50) COMMENT 'low, medium, high',
+        sustainability      VARCHAR(50) COMMENT 'short_term, medium_term, long_term',
+        examples_json       TEXT COMMENT 'JSON: example companies',
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_sector_moat (sector, moat_type)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Timing Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_timing (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        sector              VARCHAR(255) NOT NULL,
+        market_phase        VARCHAR(50) COMMENT 'emerging, growth, mature, declining',
+        entry_timing        VARCHAR(50) COMMENT 'too_early, optimal, crowded, late',
+        opportunity_score   DOUBLE COMMENT '0-1 timing attractiveness',
+        success_rate        DOUBLE COMMENT 'Historical success rate',
+        avg_funding_required BIGINT,
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_sector_timing (sector)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Graph Traversal Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_graph_traversal (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        start_entity        VARCHAR(255) NOT NULL,
+        traversal_type      VARCHAR(100) COMMENT 'bfs, dfs, shortest_path',
+        path_length         INT DEFAULT 0,
+        entities_visited    INT DEFAULT 0,
+        relationships_found INT DEFAULT 0,
+        path_json           TEXT COMMENT 'JSON: traversal path',
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Community Detection Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_community_detection (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        community_id        INT NOT NULL,
+        community_size      INT DEFAULT 0,
+        centrality_score    DOUBLE,
+        key_entities_json   TEXT COMMENT 'JSON: central entities',
+        cohesion_score      DOUBLE,
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Influence Propagation Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_influence_propagation (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        source_entity       VARCHAR(255) NOT NULL,
+        propagation_depth   INT DEFAULT 0,
+        entities_influenced INT DEFAULT 0,
+        influence_score     DOUBLE,
+        propagation_paths_json TEXT,
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Temporal Graph Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_temporal_graph (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        entity_name         VARCHAR(255) NOT NULL,
+        time_window_start   DATETIME,
+        time_window_end     DATETIME,
+        relationship_count  INT DEFAULT 0,
+        centrality_change   DOUBLE,
+        emergence_score     DOUBLE,
+        temporal_patterns_json TEXT,
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Topic Modeling Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_topic_modeling (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        topic_id            INT NOT NULL,
+        topic_name          VARCHAR(255),
+        topic_words         TEXT COMMENT 'JSON: top words',
+        document_count      INT DEFAULT 0,
+        coherence_score     DOUBLE,
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_topic (topic_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Relationship Extraction Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_relationship_extraction (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        source_entity       VARCHAR(255) NOT NULL,
+        target_entity       VARCHAR(255) NOT NULL,
+        relationship_type   VARCHAR(100) NOT NULL,
+        confidence          DOUBLE COMMENT '0-1 extraction confidence',
+        evidence_json       TEXT COMMENT 'JSON: supporting evidence',
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_relationship (source_entity, target_entity, relationship_type)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Trend Detection Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_trend_detection (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        trend_name          VARCHAR(255) NOT NULL,
+        trend_direction     VARCHAR(20) NOT NULL COMMENT 'rising, falling, stable',
+        magnitude           DOUBLE COMMENT 'Trend strength',
+        start_period        DATETIME,
+        end_period          DATETIME,
+        supporting_signals  INT DEFAULT 0,
+        confidence          DOUBLE,
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_trend_period (trend_name, start_period)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Intent Classification Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_intent_classification (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        entity_name         VARCHAR(255) NOT NULL,
+        intent_category     VARCHAR(100) NOT NULL COMMENT 'investment, partnership, acquisition, etc',
+        confidence          DOUBLE,
+        context_json        TEXT COMMENT 'JSON: contextual signals',
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_entity_intent (entity_name, intent_category)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Sector Rotation Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_sector_rotation (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        sector              VARCHAR(255) NOT NULL,
+        rotation_signal     VARCHAR(20) NOT NULL COMMENT 'inflow, outflow, neutral',
+        flow_strength       DOUBLE COMMENT '0-1 strength of rotation signal',
+        capital_change      BIGINT,
+        sentiment_shift    DOUBLE,
+        momentum_score      DOUBLE,
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_sector_rotation (sector, analyzed_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Phase 5: Cohort Analysis ──
+    """
+    CREATE TABLE IF NOT EXISTS analysis_cohort_analysis (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        cohort_name         VARCHAR(255) NOT NULL,
+        cohort_definition   TEXT COMMENT 'How cohort is defined',
+        survival_rate       DOUBLE,
+        avg_funding         BIGINT,
+        failure_rate        DOUBLE,
+        success_rate        DOUBLE,
+        time_horizon       INT COMMENT 'Months/years analyzed',
+        metrics_json        TEXT COMMENT 'JSON: detailed cohort metrics',
+        analyzed_at         DATETIME NOT NULL,
+        record_count        INT DEFAULT 0,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_cohort_time (cohort_name, analyzed_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
 ]

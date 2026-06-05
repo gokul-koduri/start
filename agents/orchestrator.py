@@ -147,6 +147,70 @@ def _get_agent_class(name: str):
         from agents.project_monitor import ProjectMonitorAgent
         AGENT_REGISTRY["project_monitor"] = ProjectMonitorAgent
         return ProjectMonitorAgent
+    elif name == "market_sizing":
+        from agents.market_sizing_agent import MarketSizingAgent
+        AGENT_REGISTRY["market_sizing"] = MarketSizingAgent
+        return MarketSizingAgent
+    elif name == "competitive_landscape":
+        from agents.competitive_landscape_agent import CompetitiveLandscapeAgent
+        AGENT_REGISTRY["competitive_landscape"] = CompetitiveLandscapeAgent
+        return CompetitiveLandscapeAgent
+    elif name == "founder_background":
+        from agents.founder_background_agent import FounderBackgroundAgent
+        AGENT_REGISTRY["founder_background"] = FounderBackgroundAgent
+        return FounderBackgroundAgent
+    elif name == "technology_stack":
+        from agents.technology_stack_agent import TechnologyStackAgent
+        AGENT_REGISTRY["technology_stack"] = TechnologyStackAgent
+        return TechnologyStackAgent
+    elif name == "moat_analyzer":
+        from agents.moat_analyzer_agent import MoatAnalyzerAgent
+        AGENT_REGISTRY["moat_analyzer"] = MoatAnalyzerAgent
+        return MoatAnalyzerAgent
+    elif name == "timing":
+        from agents.timing_agent import TimingAgent
+        AGENT_REGISTRY["timing"] = TimingAgent
+        return TimingAgent
+    elif name == "graph_traversal":
+        from agents.graph_traversal_agent import GraphTraversalAgent
+        AGENT_REGISTRY["graph_traversal"] = GraphTraversalAgent
+        return GraphTraversalAgent
+    elif name == "community_detector":
+        from agents.community_detector_agent import CommunityDetectorAgent
+        AGENT_REGISTRY["community_detector"] = CommunityDetectorAgent
+        return CommunityDetectorAgent
+    elif name == "influence_propagation":
+        from agents.influence_propagation_agent import InfluencePropagationAgent
+        AGENT_REGISTRY["influence_propagation"] = InfluencePropagationAgent
+        return InfluencePropagationAgent
+    elif name == "temporal_graph":
+        from agents.temporal_graph_agent import TemporalGraphAgent
+        AGENT_REGISTRY["temporal_graph"] = TemporalGraphAgent
+        return TemporalGraphAgent
+    elif name == "topic_modeling":
+        from agents.topic_modeling_agent import TopicModelingAgent
+        AGENT_REGISTRY["topic_modeling"] = TopicModelingAgent
+        return TopicModelingAgent
+    elif name == "relationship_extractor":
+        from agents.relationship_extractor import RelationshipExtractorAgent
+        AGENT_REGISTRY["relationship_extractor"] = RelationshipExtractorAgent
+        return RelationshipExtractorAgent
+    elif name == "trend_detector":
+        from agents.trend_detector_agent import TrendDetectorAgent
+        AGENT_REGISTRY["trend_detector"] = TrendDetectorAgent
+        return TrendDetectorAgent
+    elif name == "intent_classifier":
+        from agents.intent_classifier_agent import IntentClassifierAgent
+        AGENT_REGISTRY["intent_classifier"] = IntentClassifierAgent
+        return IntentClassifierAgent
+    elif name == "sector_rotation":
+        from agents.sector_rotation_agent import SectorRotationAgent
+        AGENT_REGISTRY["sector_rotation"] = SectorRotationAgent
+        return SectorRotationAgent
+    elif name == "cohort_analysis":
+        from agents.cohort_analysis_agent import CohortAnalysisAgent
+        AGENT_REGISTRY["cohort_analysis"] = CohortAnalysisAgent
+        return CohortAnalysisAgent
 
     raise ValueError(f"Unknown agent: {name}")
 

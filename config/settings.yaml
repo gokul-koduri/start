@@ -485,6 +485,201 @@ social_media:
     max_results: 50
   lookback_hours: 24
 
+# Phase 4: GitHub Deep Collector
+github_deep:
+  enabled: true
+  api:
+    base_url: "https://api.github.com"
+    token: "${GITHUB_TOKEN}"
+    rate_limit:
+      requests_per_minute: 60
+  search_queries:
+    - "created:>{since} stars:>50 language:python topic:ai"
+    - "created:>{since} stars:>50 topic:llm topic:agent"
+    - "created:>{since} stars:>100 topic:startup topic:saas"
+  detail_endpoints:
+    commits: true
+    contributors: true
+    releases: true
+    lookback_days: 30
+  min_stars: 50
+
+# Phase 4: Reddit Stream Collector
+reddit_stream:
+  enabled: true
+  subreddits:
+    - "startups"
+    - "technology"
+    - "programming"
+    - "SaaS"
+    - "machinelearning"
+    - "artificial"
+    - "entrepreneur"
+  stream_timeout: 30
+  max_posts: 50
+  min_score: 10
+  comment_limit: 5
+  collect_comments: true
+
+# Phase 4: HN Live Collector
+hn_live:
+  enabled: true
+  firebase:
+    base_url: "https://hacker-news.firebaseio.com/v0"
+  algolia:
+    base_url: "https://hn.algolia.com/api/v1"
+  max_stories: 50
+  min_points: 5
+  comment_limit: 5
+  collect_comments: true
+
+# Phase 4: OpenCorporates Collector
+opencorporates:
+  enabled: true
+  api_token: "${OPENCORPORATES_API_TOKEN}"
+  base_url: "https://api.opencorporates.com/v0.4"
+  rate_limit:
+    requests_per_day: 50
+  search_queries:
+    - query: "AI startup"
+      jurisdictions: ["us", "gb", "de"]
+    - query: "machine learning"
+      jurisdictions: ["us", "gb"]
+    - query: "fintech"
+      jurisdictions: ["us", "gb", "sg"]
+  per_page: 30
+  min_delay_seconds: 2
+
+# Phase 4: arXiv Collector
+arxiv:
+  enabled: true
+  base_url: "http://export.arxiv.org/api/query"
+  max_results_per_query: 50
+  min_delay_seconds: 3
+  search_queries:
+    - terms: "machine learning"
+      categories: ["cs.AI", "cs.LG"]
+    - terms: "large language model"
+      categories: ["cs.CL", "cs.AI"]
+    - terms: "computer vision"
+      categories: ["cs.CV", "cs.AI"]
+    - terms: "reinforcement learning"
+      categories: ["cs.LG", "stat.ML"]
+
+# Phase 4: Product Hunt Collector
+producthunt:
+  enabled: true
+  api_token: "${PRODUCTHUNT_API_TOKEN}"
+  base_url: "https://api.producthunt.com/v2/api/graphql"
+  posts_per_request: 50
+  min_delay_seconds: 5
+  max_requests: 5
+  topic_filter:
+    - "ai"
+    - "developer-tools"
+    - "saas"
+    - "no-code"
+    - "open-source"
+
+# Phase 4: Website Monitor Collector
+website_monitor:
+  enabled: true
+  timeout_seconds: 15
+  user_agent: "StartupResearchBot/1.0"
+  min_delay_seconds: 2
+  signal_keywords:
+    funding:
+      - "raised"
+      - "funding"
+      - "series a"
+      - "series b"
+      - "investment"
+      - "seed round"
+    hiring:
+      - "we're hiring"
+      - "careers"
+      - "join our team"
+      - "open positions"
+    launch:
+      - "now available"
+      - "launching"
+      - "public beta"
+      - "early access"
+    pricing:
+      - "pricing"
+      - "plans starting at"
+  watch_urls: []
+
+# Phase 4: Twitter/X Collector (Nitter RSS)
+twitter:
+  enabled: true
+  nitter_instances:
+    - "https://nitter.net"
+    - "https://nitter.privacydev.net"
+  search_queries:
+    - "startup funding"
+    - "new product launch"
+    - "series A announcement"
+  timeout_seconds: 15
+  min_delay_seconds: 3
+
+# Phase 4: Stack Overflow Collector
+stackoverflow:
+  enabled: true
+  base_url: "https://api.stackexchange.com/2.3"
+  search_queries:
+    - terms: "startup SaaS deployment"
+      tags: ["deployment", "saas"]
+      min_score: 5
+    - terms: "machine learning production"
+      tags: ["machine-learning", "production"]
+      min_score: 10
+    - terms: "scaling microservices architecture"
+      tags: ["microservices", "architecture"]
+      min_score: 5
+  max_results_per_query: 50
+  min_delay_seconds: 2
+  site: "stackoverflow"
+  timeout_seconds: 15
+
+# Phase 4: NPM/PyPI Trends Collector
+npm_pypi:
+  enabled: true
+  packages:
+    - name: "next"
+      registry: "npm"
+    - name: "express"
+      registry: "npm"
+    - name: "fastapi"
+      registry: "pypi"
+    - name: "langchain"
+      registry: "pypi"
+    - name: "ollama"
+      registry: "npm"
+  timeout_seconds: 15
+  min_delay_seconds: 1
+
+# Phase 4: Regulatory Filings Collector (SEC EDGAR)
+regulatory:
+  enabled: true
+  base_url: "https://www.sec.gov/cgi-bin/browse-edgar"
+  search_companies:
+    - "AI startup"
+    - "tech company"
+  filing_types: ["S-1", "8-K", "SC 13D"]
+  max_results_per_query: 40
+  min_delay_seconds: 3
+  user_agent: "StartupResearchBot/1.0 (educational research project)"
+
+# Phase 4: Newsletter Aggregation Collector
+newsletter:
+  enabled: true
+  sources:
+    - "https://example.com/newsletter-archive"
+    - "https://techdigest.com/daily"
+  timeout_seconds: 15
+  min_delay_seconds: 2
+
 # Phase 2: Qdrant vector database
 qdrant:
   url: "${QDRANT_URL:-http://localhost:6333}"

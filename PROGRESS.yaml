@@ -1,1065 +1,1085 @@
-# PROGRESS.yaml — Machine-readable progress manifest
-# Read/written by agents/project_monitor.py
-# DO NOT edit manually — use: python -m agents.project_monitor --complete <session_id>
-
-schema_version: 1
-last_updated: "2026-06-05T00:00:00Z"
-last_session_worked: "3.12"
-
+deviations: []
+health_history: []
+last_session_worked: '5.18'
+last_updated: '2026-06-05T22:00:00.000000+00:00'
+phases:
+  phase_1:
+    commit: b09d812
+    name: Foundation
+    sessions_completed: 8
+    sessions_total: 8
+    status: complete
+  phase_2:
+    commit: 2cf5eeb
+    name: Intelligence
+    sessions_completed: 10
+    sessions_total: 10
+    status: complete
+  phase_3:
+    commit: d7bb6c2
+    name: Scale
+    sessions_completed: 12
+    sessions_total: 12
+    status: complete
+  phase_4:
+    commit: 0b861da
+    name: Deep Collection
+    sessions_completed: 15
+    sessions_total: 15
+    status: complete
+  phase_5:
+    commit: null
+    name: Advanced Intelligence
+    sessions_completed: 18
+    sessions_total: 18
+    status: complete
+  phase_6:
+    name: Operations
+    sessions_completed: 0
+    sessions_total: 16
+    status: not_started
 project:
-  name: "Opportunity Intelligence Platform"
-  repo_path: "/Users/kodurigokul/Desktop/Startup_Research_Report"
-  schema_version: 13
-  test_count: 228
-  python_file_count: 111
+  name: Opportunity Intelligence Platform
+  python_file_count: 142
+  repo_path: /Users/kodurigokul/Desktop/Startup_Research_Report
+  schema_version: 15
   target:
     agents: 50
-    collectors: 24
     api_endpoints: 40
+    collectors: 24
     db_tables: 65
     docker_services: 18
     tests: 400
-
-phases:
-  phase_1:
-    name: "Foundation"
-    status: "complete"
-    sessions_total: 8
-    sessions_completed: 8
-    commit: "b09d812"
-  phase_2:
-    name: "Intelligence"
-    status: "complete"
-    sessions_total: 10
-    sessions_completed: 10
-    commit: "2cf5eeb"
-  phase_3:
-    name: "Scale"
-    status: "complete"
-    sessions_total: 12
-    sessions_completed: 12
-    commit: "d7bb6c2"
-  phase_4:
-    name: "Deep Collection"
-    status: "not_started"
-    sessions_total: 15
-    sessions_completed: 0
-  phase_5:
-    name: "Advanced Intelligence"
-    status: "not_started"
-    sessions_total: 18
-    sessions_completed: 0
-  phase_6:
-    name: "Operations"
-    status: "not_started"
-    sessions_total: 16
-    sessions_completed: 0
-
+  test_count: 632
+schema_version: 1
 sessions:
-  # ═══ Phase 4: Deep Collection ═══
-  "4.1":
-    title: "GitHub Deep Collector"
-    phase: 4
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
+  '4.1':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T16:03:27.464193+00:00'
     dependencies: []
     files_to_create:
-      - "collectors/github_deep_collector.py"
-      - "tests/test_github_deep.py"
+    - collectors/github_deep_collector.py
+    - tests/test_github_deep.py
     files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-    validation:
-      - type: "file_exists"
-        path: "collectors/github_deep_collector.py"
-      - type: "file_exists"
-        path: "tests/test_github_deep.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.github_deep_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "GithubDeepCollector"
-
-  "4.2":
-    title: "Reddit Stream Collector"
+    - agents/collection.py
+    - config/settings.yaml
     phase: 4
-    status: "pending"
     started_at: null
-    completed_at: null
-    commit_sha: null
+    status: complete
+    title: GitHub Deep Collector
+    validation:
+    - path: collectors/github_deep_collector.py
+      type: file_exists
+    - path: tests/test_github_deep.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.github_deep_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: GithubDeepCollector
+      type: registered_in
+  '4.10':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T20:15:32.905158+00:00'
     dependencies: []
     files_to_create:
-      - "collectors/reddit_stream_collector.py"
-      - "tests/test_reddit_stream.py"
+    - collectors/npm_pypi_collector.py
+    - tests/test_npm_pypi.py
     files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-    validation:
-      - type: "file_exists"
-        path: "collectors/reddit_stream_collector.py"
-      - type: "file_exists"
-        path: "tests/test_reddit_stream.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.reddit_stream_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "RedditStreamCollector"
-
-  "4.3":
-    title: "HN Live Collector"
+    - agents/collection.py
+    - config/settings.yaml
+    - db/schema.py
     phase: 4
-    status: "pending"
     started_at: null
-    completed_at: null
-    commit_sha: null
+    status: complete
+    title: NPM/PyPI Trends
+    validation:
+    - path: collectors/npm_pypi_collector.py
+      type: file_exists
+    - path: tests/test_npm_pypi.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.npm_pypi_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: NPMPyPICollector
+      type: registered_in
+  '4.11':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T20:39:57.133061+00:00'
     dependencies: []
     files_to_create:
-      - "collectors/hn_live_collector.py"
-      - "tests/test_hn_live.py"
+    - collectors/regulatory_collector.py
+    - tests/test_regulatory.py
     files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-    validation:
-      - type: "file_exists"
-        path: "collectors/hn_live_collector.py"
-      - type: "file_exists"
-        path: "tests/test_hn_live.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.hn_live_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "HNLiveCollector"
-
-  "4.4":
-    title: "OpenCorporates Collector"
+    - agents/collection.py
+    - config/settings.yaml
+    - db/schema.py
     phase: 4
-    status: "pending"
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: []
+    status: complete
+    title: Regulatory Filings
+    validation:
+    - path: collectors/regulatory_collector.py
+      type: file_exists
+    - path: tests/test_regulatory.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.regulatory_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: RegulatoryCollector
+      type: registered_in
+  '4.12':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T20:39:59.198012+00:00'
+    dependencies:
+    - '4.2'
+    - '4.3'
     files_to_create:
-      - "collectors/opencorporates_collector.py"
-      - "tests/test_opencorporates.py"
+    - collectors/newsletter_collector.py
+    - tests/test_newsletter.py
     files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-      - "db/schema.py"
-    validation:
-      - type: "file_exists"
-        path: "collectors/opencorporates_collector.py"
-      - type: "file_exists"
-        path: "tests/test_opencorporates.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.opencorporates_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "OpenCorporatesCollector"
-
-  "4.5":
-    title: "arXiv Paper Signals"
+    - agents/collection.py
+    - config/settings.yaml
+    - db/schema.py
     phase: 4
-    status: "pending"
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: []
-    files_to_create:
-      - "collectors/arxiv_collector.py"
-      - "tests/test_arxiv.py"
-    files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-      - "db/schema.py"
+    status: complete
+    title: Newsletter Aggregation
     validation:
-      - type: "file_exists"
-        path: "collectors/arxiv_collector.py"
-      - type: "file_exists"
-        path: "tests/test_arxiv.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.arxiv_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "ArxivCollector"
-
-  "4.6":
-    title: "Product Hunt Launches"
-    phase: 4
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: []
-    files_to_create:
-      - "collectors/producthunt_collector.py"
-      - "tests/test_producthunt.py"
-    files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-      - "db/schema.py"
-    validation:
-      - type: "file_exists"
-        path: "collectors/producthunt_collector.py"
-      - type: "file_exists"
-        path: "tests/test_producthunt.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.producthunt_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "ProductHuntCollector"
-
-  "4.7":
-    title: "Website Monitor Collector"
-    phase: 4
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: []
-    files_to_create:
-      - "collectors/website_monitor_collector.py"
-      - "tests/test_website_monitor.py"
-    files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-      - "db/schema.py"
-    validation:
-      - type: "file_exists"
-        path: "collectors/website_monitor_collector.py"
-      - type: "file_exists"
-        path: "tests/test_website_monitor.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.website_monitor_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "WebsiteMonitorCollector"
-
-  "4.8":
-    title: "Twitter/X Signals"
-    phase: 4
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: []
-    files_to_create:
-      - "collectors/twitter_collector.py"
-      - "tests/test_twitter.py"
-    files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-    validation:
-      - type: "file_exists"
-        path: "collectors/twitter_collector.py"
-      - type: "file_exists"
-        path: "tests/test_twitter.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.twitter_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "TwitterCollector"
-
-  "4.9":
-    title: "Stack Overflow Adoption"
-    phase: 4
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: []
-    files_to_create:
-      - "collectors/stackoverflow_collector.py"
-      - "tests/test_stackoverflow.py"
-    files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-      - "db/schema.py"
-    validation:
-      - type: "file_exists"
-        path: "collectors/stackoverflow_collector.py"
-      - type: "file_exists"
-        path: "tests/test_stackoverflow.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.stackoverflow_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "StackOverflowCollector"
-
-  "4.10":
-    title: "NPM/PyPI Trends"
-    phase: 4
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: []
-    files_to_create:
-      - "collectors/npm_pypi_collector.py"
-      - "tests/test_npm_pypi.py"
-    files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-      - "db/schema.py"
-    validation:
-      - type: "file_exists"
-        path: "collectors/npm_pypi_collector.py"
-      - type: "file_exists"
-        path: "tests/test_npm_pypi.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.npm_pypi_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "NPMPyPICollector"
-
-  "4.11":
-    title: "Regulatory Filings"
-    phase: 4
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: []
-    files_to_create:
-      - "collectors/regulatory_collector.py"
-      - "tests/test_regulatory.py"
-    files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-      - "db/schema.py"
-    validation:
-      - type: "file_exists"
-        path: "collectors/regulatory_collector.py"
-      - type: "file_exists"
-        path: "tests/test_regulatory.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.regulatory_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "RegulatoryCollector"
-
-  "4.12":
-    title: "Newsletter Aggregation"
-    phase: 4
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["4.2", "4.3"]
-    files_to_create:
-      - "collectors/newsletter_collector.py"
-      - "tests/test_newsletter.py"
-    files_to_modify:
-      - "agents/collection.py"
-      - "config/settings.yaml"
-      - "db/schema.py"
-    validation:
-      - type: "file_exists"
-        path: "collectors/newsletter_collector.py"
-      - type: "file_exists"
-        path: "tests/test_newsletter.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "collectors.newsletter_collector"
-      - type: "registered_in"
-        file: "agents/collection.py"
-        symbol: "NewsletterCollector"
-
-  "4.13":
-    title: "Schema Migration v14"
-    phase: 4
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7", "4.8", "4.9", "4.10", "4.11", "4.12"]
+    - path: collectors/newsletter_collector.py
+      type: file_exists
+    - path: tests/test_newsletter.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.newsletter_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: NewsletterCollector
+      type: registered_in
+  '4.13':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T20:40:01.223702+00:00'
+    dependencies:
+    - '4.1'
+    - '4.2'
+    - '4.3'
+    - '4.4'
+    - '4.5'
+    - '4.6'
+    - '4.7'
+    - '4.8'
+    - '4.9'
+    - '4.10'
+    - '4.11'
+    - '4.12'
     files_to_create: []
     files_to_modify:
-      - "db/schema.py"
-      - "requirements.txt"
-      - "agents/collection.py"
-    validation:
-      - type: "tests_pass"
-      - type: "schema_version_ge"
-        version: 14
-
-  "4.14":
-    title: "Phase 4 Integration Tests"
+    - db/schema.py
+    - requirements.txt
+    - agents/collection.py
     phase: 4
-    status: "pending"
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["4.13"]
+    status: complete
+    title: Schema Migration v14
+    validation:
+    - type: tests_pass
+    - type: schema_version_ge
+      version: 14
+  '4.14':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T20:40:03.281560+00:00'
+    dependencies:
+    - '4.13'
     files_to_create:
-      - "tests/test_phase4_integration.py"
+    - tests/test_phase4_integration.py
     files_to_modify: []
-    validation:
-      - type: "file_exists"
-        path: "tests/test_phase4_integration.py"
-      - type: "tests_pass"
-
-  "4.15":
-    title: "Phase 4 Commit + Validation"
     phase: 4
-    status: "pending"
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["4.14"]
+    status: complete
+    title: Phase 4 Integration Tests
+    validation:
+    - path: tests/test_phase4_integration.py
+      type: file_exists
+    - type: tests_pass
+  '4.15':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T20:40:05.330149+00:00'
+    dependencies:
+    - '4.14'
     files_to_create: []
     files_to_modify:
-      - "PROGRESS.yaml"
-      - "ROADMAP.md"
-    validation:
-      - type: "tests_pass"
-
-  # ═══ Phase 5: Advanced Intelligence ═══
-  "5.1":
-    title: "Market Sizing Agent"
-    phase: 5
-    status: "pending"
+    - PROGRESS.yaml
+    - ROADMAP.md
+    phase: 4
     started_at: null
-    completed_at: null
-    commit_sha: null
+    status: complete
+    title: Phase 4 Commit + Validation
+    validation:
+    - type: tests_pass
+  '4.2':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T16:22:28.206015+00:00'
     dependencies: []
     files_to_create:
-      - "agents/market_sizing_agent.py"
-      - "tests/test_market_sizing.py"
+    - collectors/reddit_stream_collector.py
+    - tests/test_reddit_stream.py
     files_to_modify:
-      - "agents/orchestrator.py"
-      - "config/settings.yaml"
-      - "db/schema.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/market_sizing_agent.py"
-      - type: "file_exists"
-        path: "tests/test_market_sizing.py"
-      - type: "tests_pass"
-      - type: "import_clean"
-        module: "agents.market_sizing_agent"
-
-  "5.2":
-    title: "Competitive Landscape"
-    phase: 5
-    status: "pending"
+    - agents/collection.py
+    - config/settings.yaml
+    phase: 4
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.1"]
-    files_to_create:
-      - "agents/competitive_landscape_agent.py"
-      - "tests/test_competitive_landscape.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
-      - "db/schema.py"
+    status: complete
+    title: Reddit Stream Collector
     validation:
-      - type: "file_exists"
-        path: "agents/competitive_landscape_agent.py"
-      - type: "tests_pass"
-
-  "5.3":
-    title: "Founder Background"
-    phase: 5
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["4.4"]
-    files_to_create:
-      - "agents/founder_background_agent.py"
-      - "tests/test_founder_background.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
-      - "db/schema.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/founder_background_agent.py"
-      - type: "tests_pass"
-
-  "5.4":
-    title: "Technology Stack"
-    phase: 5
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["4.1", "4.9"]
-    files_to_create:
-      - "agents/technology_stack_agent.py"
-      - "tests/test_tech_stack.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/technology_stack_agent.py"
-      - type: "tests_pass"
-
-  "5.5":
-    title: "Moat Analyzer"
-    phase: 5
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.2", "5.4"]
-    files_to_create:
-      - "agents/moat_analyzer_agent.py"
-      - "tests/test_moat_analyzer.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/moat_analyzer_agent.py"
-      - type: "tests_pass"
-
-  "5.6":
-    title: "Timing Agent"
-    phase: 5
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.1"]
-    files_to_create:
-      - "agents/timing_agent.py"
-      - "tests/test_timing.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/timing_agent.py"
-      - type: "tests_pass"
-
-  "5.7":
-    title: "Graph Traversal"
-    phase: 5
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
+    - path: collectors/reddit_stream_collector.py
+      type: file_exists
+    - path: tests/test_reddit_stream.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.reddit_stream_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: RedditStreamCollector
+      type: registered_in
+  '4.3':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T16:34:35.365541+00:00'
     dependencies: []
     files_to_create:
-      - "agents/graph_traversal_agent.py"
-      - "tests/test_graph_traversal.py"
-      - "db/graph_queries.py"
+    - collectors/hn_live_collector.py
+    - tests/test_hn_live.py
     files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/graph_traversal_agent.py"
-      - type: "file_exists"
-        path: "db/graph_queries.py"
-      - type: "tests_pass"
-
-  "5.8":
-    title: "Community Detector"
-    phase: 5
-    status: "pending"
+    - agents/collection.py
+    - config/settings.yaml
+    phase: 4
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.7"]
-    files_to_create:
-      - "agents/community_detector_agent.py"
-      - "tests/test_community_detector.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
+    status: complete
+    title: HN Live Collector
     validation:
-      - type: "file_exists"
-        path: "agents/community_detector_agent.py"
-      - type: "tests_pass"
-
-  "5.9":
-    title: "Influence Propagation"
-    phase: 5
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.7", "5.8"]
-    files_to_create:
-      - "agents/influence_propagation_agent.py"
-      - "tests/test_influence_propagation.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/influence_propagation_agent.py"
-      - type: "tests_pass"
-
-  "5.10":
-    title: "Temporal Graph"
-    phase: 5
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.7"]
-    files_to_create:
-      - "agents/temporal_graph_agent.py"
-      - "tests/test_temporal_graph.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/temporal_graph_agent.py"
-      - type: "tests_pass"
-
-  "5.11":
-    title: "Topic Modeling"
-    phase: 5
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
+    - path: collectors/hn_live_collector.py
+      type: file_exists
+    - path: tests/test_hn_live.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.hn_live_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: HNLiveCollector
+      type: registered_in
+  '4.4':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T17:20:28.417200+00:00'
     dependencies: []
     files_to_create:
-      - "agents/topic_modeling_agent.py"
-      - "tests/test_topic_modeling.py"
+    - collectors/opencorporates_collector.py
+    - tests/test_opencorporates.py
     files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/topic_modeling_agent.py"
-      - type: "tests_pass"
-
-  "5.12":
-    title: "Relationship Extractor"
-    phase: 5
-    status: "pending"
+    - agents/collection.py
+    - config/settings.yaml
+    - db/schema.py
+    phase: 4
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.11"]
+    status: complete
+    title: OpenCorporates Collector
+    validation:
+    - path: collectors/opencorporates_collector.py
+      type: file_exists
+    - path: tests/test_opencorporates.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.opencorporates_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: OpenCorporatesCollector
+      type: registered_in
+  '4.5':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T17:32:25.573311+00:00'
+    dependencies: []
     files_to_create:
-      - "agents/relationship_extractor.py"
-      - "tests/test_relationship_extractor.py"
+    - collectors/arxiv_collector.py
+    - tests/test_arxiv.py
     files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/relationship_extractor.py"
-      - type: "tests_pass"
-
-  "5.13":
-    title: "Trend Detector"
-    phase: 5
-    status: "pending"
+    - agents/collection.py
+    - config/settings.yaml
+    - db/schema.py
+    phase: 4
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.6"]
+    status: complete
+    title: arXiv Paper Signals
+    validation:
+    - path: collectors/arxiv_collector.py
+      type: file_exists
+    - path: tests/test_arxiv.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.arxiv_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: ArxivCollector
+      type: registered_in
+  '4.6':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T17:42:01.031009+00:00'
+    dependencies: []
     files_to_create:
-      - "agents/trend_detector_agent.py"
-      - "tests/test_trend_detector.py"
+    - collectors/producthunt_collector.py
+    - tests/test_producthunt.py
     files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/trend_detector_agent.py"
-      - type: "tests_pass"
-
-  "5.14":
-    title: "Intent Classifier"
-    phase: 5
-    status: "pending"
+    - agents/collection.py
+    - config/settings.yaml
+    - db/schema.py
+    phase: 4
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.11"]
+    status: complete
+    title: Product Hunt Launches
+    validation:
+    - path: collectors/producthunt_collector.py
+      type: file_exists
+    - path: tests/test_producthunt.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.producthunt_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: ProductHuntCollector
+      type: registered_in
+  '4.7':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T18:34:14.630991+00:00'
+    dependencies: []
     files_to_create:
-      - "agents/intent_classifier_agent.py"
-      - "tests/test_intent_classifier.py"
+    - collectors/website_monitor_collector.py
+    - tests/test_website_monitor.py
     files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/intent_classifier_agent.py"
-      - type: "tests_pass"
-
-  "5.15":
-    title: "Sector Rotation"
-    phase: 5
-    status: "pending"
+    - agents/collection.py
+    - config/settings.yaml
+    - db/schema.py
+    phase: 4
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.1", "5.6"]
+    status: complete
+    title: Website Monitor Collector
+    validation:
+    - path: collectors/website_monitor_collector.py
+      type: file_exists
+    - path: tests/test_website_monitor.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.website_monitor_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: WebsiteMonitorCollector
+      type: registered_in
+  '4.8':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T19:20:54.863932+00:00'
+    dependencies: []
     files_to_create:
-      - "agents/sector_rotation_agent.py"
-      - "tests/test_sector_rotation.py"
+    - collectors/twitter_collector.py
+    - tests/test_twitter.py
     files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/sector_rotation_agent.py"
-      - type: "tests_pass"
-
-  "5.16":
-    title: "Cohort Analysis"
-    phase: 5
-    status: "pending"
+    - agents/collection.py
+    - config/settings.yaml
+    phase: 4
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.15"]
+    status: complete
+    title: Twitter/X Signals
+    validation:
+    - path: collectors/twitter_collector.py
+      type: file_exists
+    - path: tests/test_twitter.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.twitter_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: TwitterCollector
+      type: registered_in
+  '4.9':
+    commit_sha: 0b861da
+    completed_at: '2026-06-05T19:24:52.471214+00:00'
+    dependencies: []
     files_to_create:
-      - "agents/cohort_analysis_agent.py"
-      - "tests/test_cohort_analysis.py"
+    - collectors/stackoverflow_collector.py
+    - tests/test_stackoverflow.py
     files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/cohort_analysis_agent.py"
-      - type: "tests_pass"
-
-  "5.17":
-    title: "Schema + Integration"
-    phase: 5
-    status: "pending"
+    - agents/collection.py
+    - config/settings.yaml
+    - db/schema.py
+    phase: 4
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "5.10", "5.11", "5.12", "5.13", "5.14", "5.15", "5.16"]
+    status: complete
+    title: Stack Overflow Adoption
+    validation:
+    - path: collectors/stackoverflow_collector.py
+      type: file_exists
+    - path: tests/test_stackoverflow.py
+      type: file_exists
+    - type: tests_pass
+    - module: collectors.stackoverflow_collector
+      type: import_clean
+    - file: agents/collection.py
+      symbol: StackOverflowCollector
+      type: registered_in
+  '5.1':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies: []
     files_to_create:
-      - "tests/test_phase5_integration.py"
+    - agents/market_sizing_agent.py
+    - tests/test_market_sizing.py
     files_to_modify:
-      - "db/schema.py"
-      - "agents/orchestrator.py"
-    validation:
-      - type: "tests_pass"
-      - type: "schema_version_ge"
-        version: 15
-
-  "5.18":
-    title: "Commit + Validation"
+    - agents/orchestrator.py
+    - config/settings.yaml
+    - db/schema.py
     phase: 5
-    status: "pending"
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["5.17"]
+    status: complete
+    title: Market Sizing Agent
+    validation:
+    - path: agents/market_sizing_agent.py
+      type: file_exists
+    - path: tests/test_market_sizing.py
+      type: file_exists
+    - type: tests_pass
+    - module: agents.market_sizing_agent
+      type: import_clean
+  '5.10':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.7'
+    files_to_create:
+    - agents/temporal_graph_agent.py
+    - tests/test_temporal_graph.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Temporal Graph
+    validation:
+    - path: agents/temporal_graph_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.11':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies: []
+    files_to_create:
+    - agents/topic_modeling_agent.py
+    - tests/test_topic_modeling.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Topic Modeling
+    validation:
+    - path: agents/topic_modeling_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.12':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.11'
+    files_to_create:
+    - agents/relationship_extractor.py
+    - tests/test_relationship_extractor.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Relationship Extractor
+    validation:
+    - path: agents/relationship_extractor.py
+      type: file_exists
+    - type: tests_pass
+  '5.13':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.6'
+    files_to_create:
+    - agents/trend_detector_agent.py
+    - tests/test_trend_detector.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Trend Detector
+    validation:
+    - path: agents/trend_detector_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.14':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.11'
+    files_to_create:
+    - agents/intent_classifier_agent.py
+    - tests/test_intent_classifier.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Intent Classifier
+    validation:
+    - path: agents/intent_classifier_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.15':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.1'
+    - '5.6'
+    files_to_create:
+    - agents/sector_rotation_agent.py
+    - tests/test_sector_rotation.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Sector Rotation
+    validation:
+    - path: agents/sector_rotation_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.16':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.15'
+    files_to_create:
+    - agents/cohort_analysis_agent.py
+    - tests/test_cohort_analysis.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Cohort Analysis
+    validation:
+    - path: agents/cohort_analysis_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.17':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.1'
+    - '5.2'
+    - '5.3'
+    - '5.4'
+    - '5.5'
+    - '5.6'
+    - '5.7'
+    - '5.8'
+    - '5.9'
+    - '5.10'
+    - '5.11'
+    - '5.12'
+    - '5.13'
+    - '5.14'
+    - '5.15'
+    - '5.16'
+    files_to_create:
+    - tests/test_phase5_integration.py
+    files_to_modify:
+    - db/schema.py
+    - agents/orchestrator.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Schema + Integration
+    validation:
+    - type: tests_pass
+    - type: schema_version_ge
+      version: 15
+  '5.18':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.17'
     files_to_create: []
     files_to_modify:
-      - "PROGRESS.yaml"
-      - "ROADMAP.md"
-    validation:
-      - type: "tests_pass"
-
-  # ═══ Phase 6: Operations ═══
-  "6.1":
-    title: "Auth Package (JWT + RBAC)"
-    phase: 6
-    status: "pending"
+    - PROGRESS.yaml
+    - ROADMAP.md
+    phase: 5
     started_at: null
-    completed_at: null
-    commit_sha: null
+    status: complete
+    title: Commit + Validation
+    validation:
+    - type: tests_pass
+  '5.2':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.1'
+    files_to_create:
+    - agents/competitive_landscape_agent.py
+    - tests/test_competitive_landscape.py
+    files_to_modify:
+    - agents/orchestrator.py
+    - db/schema.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Competitive Landscape
+    validation:
+    - path: agents/competitive_landscape_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.3':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '4.4'
+    files_to_create:
+    - agents/founder_background_agent.py
+    - tests/test_founder_background.py
+    files_to_modify:
+    - agents/orchestrator.py
+    - db/schema.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Founder Background
+    validation:
+    - path: agents/founder_background_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.4':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '4.1'
+    - '4.9'
+    files_to_create:
+    - agents/technology_stack_agent.py
+    - tests/test_tech_stack.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Technology Stack
+    validation:
+    - path: agents/technology_stack_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.5':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.2'
+    - '5.4'
+    files_to_create:
+    - agents/moat_analyzer_agent.py
+    - tests/test_moat_analyzer.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Moat Analyzer
+    validation:
+    - path: agents/moat_analyzer_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.6':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.1'
+    files_to_create:
+    - agents/timing_agent.py
+    - tests/test_timing.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 5
+    started_at: null
+    status: complete
+    title: Timing Agent
+    validation:
+    - path: agents/timing_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.7':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
     dependencies: []
     files_to_create:
-      - "auth/__init__.py"
-      - "auth/jwt_handler.py"
-      - "auth/rbac.py"
-      - "tests/test_auth.py"
+    - agents/graph_traversal_agent.py
+    - tests/test_graph_traversal.py
+    - db/graph_queries.py
     files_to_modify:
-      - "requirements.txt"
-    validation:
-      - type: "file_exists"
-        path: "auth/jwt_handler.py"
-      - type: "tests_pass"
-
-  "6.2":
-    title: "Tenant Manager"
-    phase: 6
-    status: "pending"
+    - agents/orchestrator.py
+    phase: 5
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["6.1"]
+    status: complete
+    title: Graph Traversal
+    validation:
+    - path: agents/graph_traversal_agent.py
+      type: file_exists
+    - path: db/graph_queries.py
+      type: file_exists
+    - type: tests_pass
+  '5.8':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.7'
     files_to_create:
-      - "auth/tenant_manager.py"
-      - "tests/test_tenant_manager.py"
+    - agents/community_detector_agent.py
+    - tests/test_community_detector.py
     files_to_modify:
-      - "db/schema.py"
-    validation:
-      - type: "file_exists"
-        path: "auth/tenant_manager.py"
-      - type: "tests_pass"
-
-  "6.3":
-    title: "API v2 Router"
-    phase: 6
-    status: "pending"
+    - agents/orchestrator.py
+    phase: 5
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["6.1"]
+    status: complete
+    title: Community Detector
+    validation:
+    - path: agents/community_detector_agent.py
+      type: file_exists
+    - type: tests_pass
+  '5.9':
+    commit_sha: pending
+    completed_at: '2026-06-05T22:00:00.000000+00:00'
+    dependencies:
+    - '5.7'
+    - '5.8'
     files_to_create:
-      - "api/v2/__init__.py"
-      - "api/v2/opportunities.py"
-      - "api/v2/signals.py"
-      - "tests/test_api_v2.py"
+    - agents/influence_propagation_agent.py
+    - tests/test_influence_propagation.py
     files_to_modify:
-      - "api_server.py"
-    validation:
-      - type: "file_exists"
-        path: "api/v2/opportunities.py"
-      - type: "tests_pass"
-
-  "6.4":
-    title: "API v2 Webhooks + Export"
-    phase: 6
-    status: "pending"
+    - agents/orchestrator.py
+    phase: 5
     started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["6.3"]
-    files_to_create:
-      - "api/v2/webhooks.py"
-      - "api/v2/export.py"
-    files_to_modify:
-      - "api_server.py"
+    status: complete
+    title: Influence Propagation
     validation:
-      - type: "file_exists"
-        path: "api/v2/webhooks.py"
-      - type: "tests_pass"
-
-  "6.5":
-    title: "Webhook Dispatcher"
-    phase: 6
-    status: "pending"
-    started_at: null
-    completed_at: null
+    - path: agents/influence_propagation_agent.py
+      type: file_exists
+    - type: tests_pass
+  '6.1':
     commit_sha: null
-    dependencies: ["6.4"]
-    files_to_create:
-      - "webhooks/__init__.py"
-      - "webhooks/dispatcher.py"
-      - "webhooks/templates.py"
-      - "tests/test_webhooks.py"
-    files_to_modify:
-      - "config/settings.yaml"
-    validation:
-      - type: "file_exists"
-        path: "webhooks/dispatcher.py"
-      - type: "tests_pass"
-
-  "6.6":
-    title: "Collaboration Features"
-    phase: 6
-    status: "pending"
-    started_at: null
     completed_at: null
-    commit_sha: null
-    dependencies: ["6.2"]
-    files_to_create:
-      - "collaboration/__init__.py"
-      - "collaboration/annotations.py"
-      - "collaboration/watchlists.py"
-    files_to_modify:
-      - "db/schema.py"
-      - "api_server.py"
-    validation:
-      - type: "file_exists"
-        path: "collaboration/annotations.py"
-      - type: "tests_pass"
-
-  "6.7":
-    title: "Slack Integration Agent"
-    phase: 6
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["6.5"]
-    files_to_create:
-      - "agents/slack_integration_agent.py"
-      - "tests/test_slack_integration.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/slack_integration_agent.py"
-      - type: "tests_pass"
-
-  "6.8":
-    title: "Email Digest Agent"
-    phase: 6
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["6.5"]
-    files_to_create:
-      - "agents/email_digest_agent.py"
-      - "tests/test_email_digest.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/email_digest_agent.py"
-      - type: "tests_pass"
-
-  "6.9":
-    title: "Export Agent"
-    phase: 6
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["6.4"]
-    files_to_create:
-      - "agents/export_agent.py"
-      - "tests/test_export_agent.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/export_agent.py"
-      - type: "tests_pass"
-
-  "6.10":
-    title: "Feed Generator Agent"
-    phase: 6
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
-    dependencies: ["6.4"]
-    files_to_create:
-      - "agents/feed_generator_agent.py"
-      - "tests/test_feed_generator.py"
-    files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/feed_generator_agent.py"
-      - type: "tests_pass"
-
-  "6.11":
-    title: "Prometheus Metrics"
-    phase: 6
-    status: "pending"
-    started_at: null
-    completed_at: null
-    commit_sha: null
     dependencies: []
     files_to_create:
-      - "monitoring/__init__.py"
-      - "monitoring/metrics.py"
-      - "monitoring/health.py"
+    - auth/__init__.py
+    - auth/jwt_handler.py
+    - auth/rbac.py
+    - tests/test_auth.py
     files_to_modify:
-      - "api_server.py"
-    validation:
-      - type: "file_exists"
-        path: "monitoring/metrics.py"
-      - type: "tests_pass"
-
-  "6.12":
-    title: "Data Quality Agent"
+    - requirements.txt
     phase: 6
-    status: "pending"
     started_at: null
-    completed_at: null
+    status: pending
+    title: Auth Package (JWT + RBAC)
+    validation:
+    - path: auth/jwt_handler.py
+      type: file_exists
+    - type: tests_pass
+  '6.10':
     commit_sha: null
+    completed_at: null
+    dependencies:
+    - '6.4'
+    files_to_create:
+    - agents/feed_generator_agent.py
+    - tests/test_feed_generator.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 6
+    started_at: null
+    status: pending
+    title: Feed Generator Agent
+    validation:
+    - path: agents/feed_generator_agent.py
+      type: file_exists
+    - type: tests_pass
+  '6.11':
+    commit_sha: null
+    completed_at: null
     dependencies: []
     files_to_create:
-      - "agents/data_quality_agent.py"
-      - "tests/test_data_quality.py"
+    - monitoring/__init__.py
+    - monitoring/metrics.py
+    - monitoring/health.py
     files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/data_quality_agent.py"
-      - type: "tests_pass"
-
-  "6.13":
-    title: "Pipeline Health Agent"
+    - api_server.py
     phase: 6
-    status: "pending"
     started_at: null
-    completed_at: null
+    status: pending
+    title: Prometheus Metrics
+    validation:
+    - path: monitoring/metrics.py
+      type: file_exists
+    - type: tests_pass
+  '6.12':
     commit_sha: null
-    dependencies: ["6.11"]
+    completed_at: null
+    dependencies: []
     files_to_create:
-      - "agents/pipeline_health_agent.py"
-      - "tests/test_pipeline_health.py"
+    - agents/data_quality_agent.py
+    - tests/test_data_quality.py
     files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/pipeline_health_agent.py"
-      - type: "tests_pass"
-
-  "6.14":
-    title: "Cost Tracking Agent"
+    - agents/orchestrator.py
     phase: 6
-    status: "pending"
     started_at: null
-    completed_at: null
+    status: pending
+    title: Data Quality Agent
+    validation:
+    - path: agents/data_quality_agent.py
+      type: file_exists
+    - type: tests_pass
+  '6.13':
     commit_sha: null
-    dependencies: ["6.11"]
+    completed_at: null
+    dependencies:
+    - '6.11'
     files_to_create:
-      - "agents/cost_tracking_agent.py"
-      - "tests/test_cost_tracking.py"
+    - agents/pipeline_health_agent.py
+    - tests/test_pipeline_health.py
     files_to_modify:
-      - "agents/orchestrator.py"
-    validation:
-      - type: "file_exists"
-        path: "agents/cost_tracking_agent.py"
-      - type: "tests_pass"
-
-  "6.15":
-    title: "Dagster Orchestration"
+    - agents/orchestrator.py
     phase: 6
-    status: "pending"
     started_at: null
-    completed_at: null
+    status: pending
+    title: Pipeline Health Agent
+    validation:
+    - path: agents/pipeline_health_agent.py
+      type: file_exists
+    - type: tests_pass
+  '6.14':
     commit_sha: null
-    dependencies: ["6.13"]
+    completed_at: null
+    dependencies:
+    - '6.11'
     files_to_create:
-      - "dagster/__init__.py"
-      - "dagster/repository.py"
-      - "dagster/ops/collect_ops.py"
-      - "dagster/ops/score_ops.py"
-      - "dagster/ops/kg_ops.py"
-      - "dagster/schedules.py"
-      - "tests/test_dagster_repo.py"
+    - agents/cost_tracking_agent.py
+    - tests/test_cost_tracking.py
     files_to_modify:
-      - "docker-compose.yml"
-      - "requirements.txt"
-    validation:
-      - type: "file_exists"
-        path: "dagster/repository.py"
-      - type: "tests_pass"
-
-  "6.16":
-    title: "Final Commit + Deploy"
+    - agents/orchestrator.py
     phase: 6
-    status: "pending"
     started_at: null
-    completed_at: null
+    status: pending
+    title: Cost Tracking Agent
+    validation:
+    - path: agents/cost_tracking_agent.py
+      type: file_exists
+    - type: tests_pass
+  '6.15':
     commit_sha: null
-    dependencies: ["6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10", "6.11", "6.12", "6.13", "6.14", "6.15"]
+    completed_at: null
+    dependencies:
+    - '6.13'
+    files_to_create:
+    - dagster/__init__.py
+    - dagster/repository.py
+    - dagster/ops/collect_ops.py
+    - dagster/ops/score_ops.py
+    - dagster/ops/kg_ops.py
+    - dagster/schedules.py
+    - tests/test_dagster_repo.py
+    files_to_modify:
+    - docker-compose.yml
+    - requirements.txt
+    phase: 6
+    started_at: null
+    status: pending
+    title: Dagster Orchestration
+    validation:
+    - path: dagster/repository.py
+      type: file_exists
+    - type: tests_pass
+  '6.16':
+    commit_sha: null
+    completed_at: null
+    dependencies:
+    - '6.1'
+    - '6.2'
+    - '6.3'
+    - '6.4'
+    - '6.5'
+    - '6.6'
+    - '6.7'
+    - '6.8'
+    - '6.9'
+    - '6.10'
+    - '6.11'
+    - '6.12'
+    - '6.13'
+    - '6.14'
+    - '6.15'
     files_to_create: []
     files_to_modify:
-      - "docker-compose.yml"
-      - "PROGRESS.yaml"
-      - "ROADMAP.md"
+    - docker-compose.yml
+    - PROGRESS.yaml
+    - ROADMAP.md
+    phase: 6
+    started_at: null
+    status: pending
+    title: Final Commit + Deploy
     validation:
-      - type: "tests_pass"
-
-deviations: []
-health_history: []
+    - type: tests_pass
+  '6.2':
+    commit_sha: null
+    completed_at: null
+    dependencies:
+    - '6.1'
+    files_to_create:
+    - auth/tenant_manager.py
+    - tests/test_tenant_manager.py
+    files_to_modify:
+    - db/schema.py
+    phase: 6
+    started_at: null
+    status: pending
+    title: Tenant Manager
+    validation:
+    - path: auth/tenant_manager.py
+      type: file_exists
+    - type: tests_pass
+  '6.3':
+    commit_sha: null
+    completed_at: null
+    dependencies:
+    - '6.1'
+    files_to_create:
+    - api/v2/__init__.py
+    - api/v2/opportunities.py
+    - api/v2/signals.py
+    - tests/test_api_v2.py
+    files_to_modify:
+    - api_server.py
+    phase: 6
+    started_at: null
+    status: pending
+    title: API v2 Router
+    validation:
+    - path: api/v2/opportunities.py
+      type: file_exists
+    - type: tests_pass
+  '6.4':
+    commit_sha: null
+    completed_at: null
+    dependencies:
+    - '6.3'
+    files_to_create:
+    - api/v2/webhooks.py
+    - api/v2/export.py
+    files_to_modify:
+    - api_server.py
+    phase: 6
+    started_at: null
+    status: pending
+    title: API v2 Webhooks + Export
+    validation:
+    - path: api/v2/webhooks.py
+      type: file_exists
+    - type: tests_pass
+  '6.5':
+    commit_sha: null
+    completed_at: null
+    dependencies:
+    - '6.4'
+    files_to_create:
+    - webhooks/__init__.py
+    - webhooks/dispatcher.py
+    - webhooks/templates.py
+    - tests/test_webhooks.py
+    files_to_modify:
+    - config/settings.yaml
+    phase: 6
+    started_at: null
+    status: pending
+    title: Webhook Dispatcher
+    validation:
+    - path: webhooks/dispatcher.py
+      type: file_exists
+    - type: tests_pass
+  '6.6':
+    commit_sha: null
+    completed_at: null
+    dependencies:
+    - '6.2'
+    files_to_create:
+    - collaboration/__init__.py
+    - collaboration/annotations.py
+    - collaboration/watchlists.py
+    files_to_modify:
+    - db/schema.py
+    - api_server.py
+    phase: 6
+    started_at: null
+    status: pending
+    title: Collaboration Features
+    validation:
+    - path: collaboration/annotations.py
+      type: file_exists
+    - type: tests_pass
+  '6.7':
+    commit_sha: null
+    completed_at: null
+    dependencies:
+    - '6.5'
+    files_to_create:
+    - agents/slack_integration_agent.py
+    - tests/test_slack_integration.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 6
+    started_at: null
+    status: pending
+    title: Slack Integration Agent
+    validation:
+    - path: agents/slack_integration_agent.py
+      type: file_exists
+    - type: tests_pass
+  '6.8':
+    commit_sha: null
+    completed_at: null
+    dependencies:
+    - '6.5'
+    files_to_create:
+    - agents/email_digest_agent.py
+    - tests/test_email_digest.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 6
+    started_at: null
+    status: pending
+    title: Email Digest Agent
+    validation:
+    - path: agents/email_digest_agent.py
+      type: file_exists
+    - type: tests_pass
+  '6.9':
+    commit_sha: null
+    completed_at: null
+    dependencies:
+    - '6.4'
+    files_to_create:
+    - agents/export_agent.py
+    - tests/test_export_agent.py
+    files_to_modify:
+    - agents/orchestrator.py
+    phase: 6
+    started_at: null
+    status: pending
+    title: Export Agent
+    validation:
+    - path: agents/export_agent.py
+      type: file_exists
+    - type: tests_pass

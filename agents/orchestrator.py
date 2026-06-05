@@ -143,6 +143,10 @@ def _get_agent_class(name: str):
         from agents.semantic_search_agent import SemanticSearchAgent
         AGENT_REGISTRY["semantic_search"] = SemanticSearchAgent
         return SemanticSearchAgent
+    elif name == "project_monitor":
+        from agents.project_monitor import ProjectMonitorAgent
+        AGENT_REGISTRY["project_monitor"] = ProjectMonitorAgent
+        return ProjectMonitorAgent
 
     raise ValueError(f"Unknown agent: {name}")
 

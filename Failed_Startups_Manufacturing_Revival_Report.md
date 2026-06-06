@@ -321,15 +321,15 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 ## News Monitoring: Manufacturing & Startup Failures {#news}
 
 ### Coverage Summary
-- **942** articles collected from Google News and TechCrunch RSS feeds
-- **487** mention manufacturing (51.7%)
-- **454** mention startup failures (48.2%)
+- **943** articles collected from Google News and TechCrunch RSS feeds
+- **488** mention manufacturing (51.7%)
+- **454** mention startup failures (48.1%)
 - **229** are in the intersection (manufacturing + failure)
 
 ### Articles by Source
 | Source | Articles |
 |--------|----------|
-| google_news | 862 |
+| google_news | 863 |
 | techcrunch | 80 |
 
 ### Recent Manufacturing Startup Failures (News)
@@ -452,16 +452,16 @@ This report was compiled using a **two-pronged research approach**:
 
 | Collector | Last Run | Status | Records |
 |-----------|----------|--------|---------|
-| newsletter | 2026-06-06T04:35:27 | partial | 0 |
-| regulatory | 2026-06-06T04:35:20 | partial | 0 |
-| npm_pypi | 2026-06-06T04:35:17 | failed | 0 |
-| stackoverflow | 2026-06-06T04:35:10 | partial | 0 |
-| twitter | 2026-06-06T04:34:32 | partial | 0 |
-| website_monitor | 2026-06-06T04:34:32 | partial | 0 |
-| producthunt | 2026-06-06T04:34:32 | failed | 0 |
-| arxiv | 2026-06-06T04:34:17 | success | 200 |
-| opencorporates | 2026-06-06T04:34:17 | failed | 0 |
-| hn_live | 2026-06-06T04:34:11 | success | 61 |
+| newsletter | 2026-06-06T04:40:20 | partial | 0 |
+| regulatory | 2026-06-06T04:40:13 | partial | 0 |
+| npm_pypi | 2026-06-06T04:40:10 | failed | 0 |
+| stackoverflow | 2026-06-06T04:40:03 | partial | 0 |
+| twitter | 2026-06-06T04:39:25 | partial | 0 |
+| website_monitor | 2026-06-06T04:39:25 | partial | 0 |
+| producthunt | 2026-06-06T04:39:25 | failed | 0 |
+| arxiv | 2026-06-06T04:39:12 | success | 200 |
+| opencorporates | 2026-06-06T04:39:12 | failed | 0 |
+| hn_live | 2026-06-06T04:39:07 | success | 59 |
 
 ### Data Sources
 | Source | Records |
@@ -598,8 +598,8 @@ This report was compiled using a **two-pronged research approach**:
 
 ---
 
-*Report generated on 2026-06-06 04:36 UTC from the Startup Research automated data collection system.*
+*Report generated on 2026-06-06 04:41 UTC from the Startup Research automated data collection system.*
 
-*Database contains: 163 startups, 942 news articles, 31 BLS data points.*
+*Database contains: 163 startups, 943 news articles, 31 BLS data points.*
 
 *This report uses a two-pronged research approach: **Prong A** (Failed Manufacturing Startups 2024-2025) and **Prong B** (Manufacturing Revival & Reshoring). See [Methodology](#methodology) section for full details.*

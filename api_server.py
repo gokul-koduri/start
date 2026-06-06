@@ -1250,18 +1250,29 @@ if HAS_FASTAPI:
     import asyncio
 
     class ConnectionManager:
-        """Manages active WebSocket connections for broadcasting live updates."""
+        """Manages active WebSocket connections for broadcasting live updates.
+
+        Features:
+            - Connection tracking with metadata (connected_at, client_id, last_ping)
+            - Heartbeat: server sends ping every 30s, expects pong within 10s
+            - Broadcasting to all clients or filtered subsets
+        """
 
         def __init__(self):
-            self.active: list[WebSocket] = []
+            self.active: dict[WebSocket, dict] = {}
+            self._started_at = datetime.now(timezone.utc)
 
-        async def connect(self, ws: WebSocket):
+        async def connect(self, ws: WebSocket, client_id: str | None = None):
             await ws.accept()
-            self.active.append(ws)
+            self.active[ws] = {
+                "connected_at": datetime.now(timezone.utc),
+                "client_id": client_id,
+                "last_ping": datetime.now(timezone.utc),
+                "last_pong": datetime.now(timezone.utc),
+            }
 
         def disconnect(self, ws: WebSocket):
-            if ws in self.active:
-                self.active.remove(ws)
+            self.active.pop(ws, None)
 
         async def broadcast(self, data: dict):
             dead = []
@@ -1273,16 +1284,213 @@ if HAS_FASTAPI:
             for ws in dead:
                 self.disconnect(ws)
 
+        async def send_heartbeat(self):
+            """Send ping to all connections, check for stale ones."""
+            now = datetime.now(timezone.utc)
+            dead = []
+            for ws, info in list(self.active.items()):
+                # Check if we received a pong recently (10 second tolerance)
+                pong_age = (now - info.get("last_pong", now)).total_seconds()
+                if pong_age > 40:  # Missed 2+ heartbeats
+                    dead.append(ws)
+                    continue
+                try:
+                    await ws.send_json({"type": "ping"})
+                    info["last_ping"] = now
+                except Exception:
+                    dead.append(ws)
+            for ws in dead:
+                self.disconnect(ws)
+
+        def handle_pong(self, ws: WebSocket):
+            """Record a pong response from a client."""
+            if ws in self.active:
+                self.active[ws]["last_pong"] = datetime.now(timezone.utc)
+
+        @property
+        def connection_count(self) -> int:
+            return len(self.active)
+
+        def get_status(self) -> dict:
+            """Return connection manager status for monitoring."""
+            now = datetime.now(timezone.utc)
+            uptime = (now - self._started_at).total_seconds()
+            return {
+                "active_connections": self.connection_count,
+                "uptime_seconds": int(uptime),
+                "connections": [
+                    {
+                        "client_id": info.get("client_id"),
+                        "connected_at": info["connected_at"].isoformat(),
+                        "connected_for_seconds": int((now - info["connected_at"]).total_seconds()),
+                    }
+                    for info in self.active.values()
+                ],
+            }
+
     ws_manager = ConnectionManager()
+
+    # Background task: heartbeat loop
+    _heartbeat_task = None
+
+    async def _heartbeat_loop():
+        """Send periodic heartbeats to all WebSocket connections."""
+        while True:
+            await asyncio.sleep(30)
+            try:
+                await ws_manager.send_heartbeat()
+            except Exception:
+                pass
+
+    # Background task: score push loop
+    _score_push_task = None
+    _score_queue: asyncio.Queue | None = None
+
+    def _kafka_score_reader():
+        """Sync thread: read from Kafka scores.updates and push to async queue."""
+        import threading
+        topic = "scores.updates"
+        try:
+            from kafka import KafkaConsumer
+            consumer = KafkaConsumer(
+                topic,
+                bootstrap_servers=os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092").split(","),
+                value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+                auto_offset_reset="latest",
+                consumer_timeout_ms=5000,
+            )
+            _logger.info("Score push: Kafka consumer connected to %s", topic)
+            while True:
+                messages = consumer.poll(timeout_ms=3000)
+                for tp, msgs in messages.items():
+                    for msg in msgs:
+                        if _score_queue is not None:
+                            _score_queue.put_nowait(msg.value)
+            consumer.close()
+        except ImportError:
+            _logger.info("Score push: kafka-python not installed, using DB poll fallback")
+        except Exception as e:
+            _logger.warning("Score push: Kafka consumer failed: %s", e)
+
+    async def _score_push_loop():
+        """Background task: push score updates to WebSocket clients.
+
+        Tries Kafka first, falls back to DB polling.
+        """
+        global _score_queue
+        _score_queue = asyncio.Queue()
+
+        # Start Kafka reader in a thread
+        import threading
+        kafka_thread = threading.Thread(target=_kafka_score_reader, daemon=True)
+        kafka_thread.start()
+
+        last_seen_ids: set[int] = set()
+
+        while True:
+            # Check for Kafka messages
+            try:
+                while not _score_queue.empty():
+                    score_data = _score_queue.get_nowait()
+                    await ws_manager.broadcast({
+                        "type": "score_update",
+                        "data": score_data,
+                    })
+                    _logger.debug("Pushed score update: %s (%.1f)",
+                                  score_data.get("entity_name", ""),
+                                  score_data.get("composite_score", 0))
+            except Exception:
+                pass
+
+            # DB poll fallback: check for recently updated scores
+            try:
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute(
+                    """SELECT id, entity_name, entity_type, composite_score,
+                              signal_count, trend_direction, attribution_json
+                       FROM opportunity_scores
+                       WHERE last_updated >= DATE_SUB(NOW(), INTERVAL 60 SECOND)
+                       ORDER BY last_updated DESC LIMIT 20"""
+                )
+                rows = cursor.fetchall()
+                cursor.close()
+                conn.close()
+
+                for row in rows:
+                    if row["id"] not in last_seen_ids:
+                        last_seen_ids.add(row["id"])
+                        await ws_manager.broadcast({
+                            "type": "score_update",
+                            "data": {
+                                "entity_name": row["entity_name"],
+                                "entity_type": row["entity_type"],
+                                "composite_score": row["composite_score"],
+                                "signal_count": row["signal_count"],
+                                "trend_direction": row["trend_direction"],
+                            },
+                        })
+                        # Also try to broadcast score delta
+                        try:
+                            conn2 = get_connection()
+                            cursor2 = conn2.cursor()
+                            cursor2.execute(
+                                """SELECT entity_name, entity_type, old_score, new_score,
+                                          delta, trend_previous, trend_current, signal_breakdown_json
+                                   FROM score_deltas
+                                   WHERE entity_name = %s AND entity_type = %s
+                                   ORDER BY detected_at DESC LIMIT 1""",
+                                (row["entity_name"], row["entity_type"]),
+                            )
+                            delta_row = cursor2.fetchone()
+                            cursor2.close()
+                            conn2.close()
+                            if delta_row:
+                                import json as _json
+                                await ws_manager.broadcast({
+                                    "type": "score_delta",
+                                    "data": {
+                                        "entity_name": delta_row["entity_name"],
+                                        "old_score": delta_row["old_score"],
+                                        "new_score": delta_row["new_score"],
+                                        "change": delta_row["delta"],
+                                        "trend_previous": delta_row["trend_previous"],
+                                        "trend_current": delta_row["trend_current"],
+                                        "signal_deltas": _json.loads(delta_row.get("signal_breakdown_json", "{}")),
+                                    },
+                                })
+                        except Exception:
+                            pass
+
+                # Trim seen IDs
+                if len(last_seen_ids) > 500:
+                    last_seen_ids = set(list(last_seen_ids)[-200:])
+
+            except Exception:
+                pass
+
+            await asyncio.sleep(5)  # Check every 5 seconds
 
     @app.websocket("/ws/live")
     async def ws_live(websocket: WebSocket):
         """WebSocket endpoint for live dashboard data updates.
 
-        Connects the client and pushes DB stats periodically.
-        Events: stats_update, news_update, pipeline_status.
+        Connects the client and pushes:
+        - stats_update: DB statistics every 30 seconds
+        - score_update: Real-time score changes (from Kafka or DB poll)
+        - score_delta: Score change details with breakdown
+        - ping/pong: Heartbeat every 30 seconds
         """
+        global _heartbeat_task, _score_push_task
+
         await ws_manager.connect(websocket)
+
+        # Start background tasks on first connection
+        if _heartbeat_task is None:
+            _heartbeat_task = asyncio.create_task(_heartbeat_loop())
+        if _score_push_task is None:
+            _score_push_task = asyncio.create_task(_score_push_loop())
+
         try:
             while True:
                 # Collect current stats
@@ -1334,11 +1542,79 @@ if HAS_FASTAPI:
                 except Exception:
                     pass
 
-                await asyncio.sleep(30)  # Poll every 30 seconds
+                # Wait for incoming messages (pong, subscribe) or timeout for stats poll
+                try:
+                    data = await asyncio.wait_for(websocket.receive_json(), timeout=30.0)
+                    if isinstance(data, dict) and data.get("type") == "pong":
+                        ws_manager.handle_pong(websocket)
+                except asyncio.TimeoutError:
+                    pass  # Normal — just means no client message, continue to next stats poll
+                except Exception:
+                    break  # Connection lost
 
         except WebSocketDisconnect:
             ws_manager.disconnect(websocket)
+        finally:
+            ws_manager.disconnect(websocket)
 
+    # WebSocket status endpoint
+    @app.get("/api/ws/status")
+    def ws_status():
+        """WebSocket connection manager status."""
+        return ws_manager.get_status()
+
+
+    # ── Score Deltas ────────────────────────────────────────────
+
+    @app.get("/api/scores/deltas")
+    def list_score_deltas(
+        limit: int = Query(20, ge=1, le=100),
+        entity: str | None = None,
+        hours: int = Query(1, ge=1, le=72),
+    ):
+        """Recent score changes with delta breakdown.
+
+        Query params:
+            limit: Max results (default 20)
+            entity: Filter by entity name
+            hours: Look back N hours (default 1)
+        """
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+        try:
+            if entity:
+                cursor.execute(
+                    """SELECT id, entity_name, entity_type, old_score, new_score,
+                              delta, trend_previous, trend_current, signal_breakdown_json,
+                              detected_at
+                       FROM score_deltas
+                       WHERE entity_name = %s AND detected_at >= DATE_SUB(NOW(), INTERVAL %s HOUR)
+                       ORDER BY detected_at DESC LIMIT %s""",
+                    (entity, hours, limit),
+                )
+            else:
+                cursor.execute(
+                    """SELECT id, entity_name, entity_type, old_score, new_score,
+                              delta, trend_previous, trend_current, signal_breakdown_json,
+                              detected_at
+                       FROM score_deltas
+                       WHERE detected_at >= DATE_SUB(NOW(), INTERVAL %s HOUR)
+                       ORDER BY detected_at DESC LIMIT %s""",
+                    (hours, limit),
+                )
+            rows = [dict(r) for r in cursor.fetchall()]
+            # Parse signal_breakdown_json
+            for row in rows:
+                try:
+                    row["signal_deltas"] = json.loads(row.pop("signal_breakdown_json", "{}") or "{}")
+                except (json.JSONDecodeError, TypeError):
+                    row["signal_deltas"] = {}
+        except Exception:
+            rows = []
+        cursor.close()
+        conn.close()
+        return {"results": rows, "count": len(rows)}
 
     # ── Phase 1: Opportunity Intelligence Endpoints ──────────
 

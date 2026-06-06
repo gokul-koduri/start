@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 18
+_SCHEMA_VERSION = 19
 
 _TABLES = [
     """
@@ -592,6 +592,22 @@ _TABLES = [
         scored_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         UNIQUE KEY uq_opp_entity (entity_name, entity_type)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS score_deltas (
+        id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+        entity_name         VARCHAR(255) NOT NULL,
+        entity_type         VARCHAR(50) NOT NULL DEFAULT 'company',
+        old_score           FLOAT,
+        new_score           FLOAT NOT NULL,
+        delta               FLOAT NOT NULL COMMENT 'Change in score (positive or negative)',
+        trend_previous      VARCHAR(10),
+        trend_current       VARCHAR(10),
+        signal_breakdown_json TEXT COMMENT 'JSON: per-signal contribution changes',
+        detected_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_entity (entity_name, entity_type),
+        INDEX idx_detected (detected_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """

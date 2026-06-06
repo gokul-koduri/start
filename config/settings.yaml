@@ -735,3 +735,42 @@ stream:
     graph: graph.events
     alerts: alerts.triggered
 
+# Sprint 2: Collector Scheduler
+scheduler:
+  groups:
+    # Fast collectors: news, RSS, social — every 2 hours
+    fast:
+      interval_minutes: 120
+      collectors:
+        - google_news_rss
+        - techcrunch_rss
+        - hn_live
+        - reddit_stream
+        - twitter
+    # Standard collectors: data sources — every 6 hours
+    standard:
+      interval_minutes: 360
+      collectors:
+        - github_deep
+        - stackoverflow
+        - producthunt
+        - arxiv
+        - npm_pypi
+        - newsletter
+        - website_monitor
+    # Slow collectors: scrapers, APIs — daily
+    daily:
+      interval_minutes: 1440
+      collectors:
+        - bls_survival_rates
+        - failory_scraper
+        - reshoring_pdf
+        - opencorporates
+        - regulatory
+        - sec_edgar
+  collector_timeout: 300
+  max_concurrent: 3
+  retry:
+    max_attempts: 3
+    backoff_seconds: [30, 60, 120]
+

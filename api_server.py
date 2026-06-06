@@ -137,6 +137,60 @@ if HAS_FASTAPI:
         return counts
 
 
+    # ── Collection Status (Sprint 2) ──────────────────────
+
+    @app.get("/api/collection/status")
+    def collection_status(
+        collector: str | None = Query(None, description="Filter by collector name"),
+    ):
+        """Show last run status for each collector."""
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        if collector:
+            cursor.execute(
+                "SELECT * FROM collection_runs WHERE collector_name = %s "
+                "ORDER BY started_at DESC LIMIT 1",
+                (collector,),
+            )
+            rows = cursor.fetchall()
+        else:
+            # Get latest run per collector
+            cursor.execute(
+                "SELECT cr.* FROM collection_runs cr "
+                "INNER JOIN ("
+                "  SELECT collector_name, MAX(started_at) as max_started "
+                "  FROM collection_runs GROUP BY collector_name"
+                ") latest ON cr.collector_name = latest.collector_name "
+                "AND cr.started_at = latest.max_started "
+                "ORDER BY cr.started_at DESC"
+            )
+            rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        # Load scheduler config for next-run estimates
+        sched_config = load_config().get("scheduler", {})
+        groups = sched_config.get("groups", {})
+        intervals = {}
+        for group_def in groups.values():
+            interval = group_def.get("interval_minutes", 360)
+            for name in group_def.get("collectors", []):
+                intervals[name] = interval
+
+        statuses = []
+        for row in rows:
+            entry = dict(row)
+            name = entry.get("collector_name", "")
+            if name in intervals:
+                entry["interval_minutes"] = intervals[name]
+            statuses.append(entry)
+
+        return {"collectors": statuses, "count": len(statuses)}
+
+
     # ── Startups ──────────────────────────────────────────────
 
     @app.get("/api/startups")

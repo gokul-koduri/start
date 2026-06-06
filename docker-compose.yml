@@ -121,6 +121,28 @@ services:
         done
       "
 
+  # ── Collector Scheduler (24/7 automated data collection) ──
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: startup-research-scheduler
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-startup2024}
+      MYSQL_DATABASE: startup_research
+      BLS_API_KEY: ${BLS_API_KEY:-}
+      LOG_LEVEL: INFO
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+    command: python scripts/collector_scheduler.py
+
   # ── Stream Processor (Bytewax real-time pipeline) ──────
   stream_processor:
     build: .

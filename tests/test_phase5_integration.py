@@ -120,10 +120,11 @@ class TestPhase5AgentsIntegration:
             assert result.agent_name == agent.name
 
     def test_schema_version_is_15(self):
-        """Test that schema version has been bumped to 15."""
+        """Test that schema version has been bumped to 15 or later."""
         schema_path = Path(__file__).parent.parent / "db" / "schema.py"
         schema_content = schema_path.read_text()
-        assert "_SCHEMA_VERSION = 15" in schema_content
+        # Allow version 15 or 16 (Phase 6 bumped it)
+        assert "_SCHEMA_VERSION = 15" in schema_content or "_SCHEMA_VERSION = 16" in schema_content
 
     def test_all_analysis_tables_exist(self):
         """Test that all Phase 5 analysis tables exist in schema file."""

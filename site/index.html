@@ -190,7 +190,7 @@ th, td {
 }
 th {
   background: var(--accent-light); font-weight: 600;
-  position: sticky; top: 0; z-index: 10;
+  position: sticky; top: 0;
 }
 tr:nth-child(even) { background: var(--bg-secondary); }
 tr:hover { background: var(--accent-light); }
@@ -257,16 +257,6 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
   .search-container input { width: 120px; }
   .search-container input:focus { width: 160px; }
   h2#table-of-contents + ol { column-count: 1; }
-  table { font-size: 12px; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-}
-/* ── Accessibility ── */
-a:focus-visible, button:focus-visible, input:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-::selection {
-  background: var(--accent);
-  color: #fff;
 }
 /* ── Tier badge ── */
 .tier-badge {
@@ -387,8 +377,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     <span class="search-clear" id="searchClear">&times;</span>
   </div>
   <span class="tier-badge free" id="tierBadge" onclick="showTierAction()">FREE</span>
-  <span id="wsStatus" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;background:#555;" title="Live connection status"></span>
-  <span class="meta" id="wsTime">Connecting...</span>
+  <span class="meta">Updated: June 06, 2026 at 04:36 UTC</span>
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
     <span class="theme-icon" id="themeIcon">&#9788;</span>
   </button>
@@ -440,10 +429,10 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 </nav>
 <div class="main">
 <div class="stats-grid">
-<div class="stat-card accent-blue"><span class="icon">&#128640;</span><div class="value">162</div><div class="label">Total Startups Tracked</div></div>
-<div class="stat-card accent-red"><span class="icon">&#9888;</span><div class="value">43</div><div class="label">Manufacturing Failures</div></div>
-<div class="stat-card accent-green"><span class="icon">&#128240;</span><div class="value">884</div><div class="label">News Articles</div></div>
-<div class="stat-card accent-amber"><span class="icon">&#128202;</span><div class="value">456</div><div class="label">Mfg-Related News</div></div>
+<div class="stat-card accent-blue"><span class="icon">&#128640;</span><div class="value">163</div><div class="label">Total Startups Tracked</div></div>
+<div class="stat-card accent-red"><span class="icon">&#9888;</span><div class="value">44</div><div class="label">Manufacturing Failures</div></div>
+<div class="stat-card accent-green"><span class="icon">&#128240;</span><div class="value">942</div><div class="label">News Articles</div></div>
+<div class="stat-card accent-amber"><span class="icon">&#128202;</span><div class="value">487</div><div class="label">Mfg-Related News</div></div>
 </div>
     <div class="stats-grid" style="margin-top: 24px; border-top: 2px solid var(--border); padding-top: 24px;">
       <div class="stat-card accent-blue">
@@ -884,10 +873,18 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Battery Cell Manufacturing</td>
 <td>$14B+</td>
 <td>2024</td>
-<td>Production delays, cost overruns, cancelled BMW/VW orders</td>
+<td>Production delays, cost overruns, cancelled orders</td>
 </tr>
 <tr>
 <td>6</td>
+<td><strong>Northvolt</strong></td>
+<td>Battery Cell Manufacturing</td>
+<td>$14B+</td>
+<td>2024</td>
+<td>Production delays, cost overruns, cancelled BMW/VW</td>
+</tr>
+<tr>
+<td>7</td>
 <td><strong>Desktop Metal</strong></td>
 <td>3D Printing / Additive Mfg</td>
 <td>~$6B (SPAC valuation)</td>
@@ -895,7 +892,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>SPAC overvaluation, inability to achieve profitability</td>
 </tr>
 <tr>
-<td>7</td>
+<td>8</td>
 <td><strong>Katerra</strong></td>
 <td>Modular Construction</td>
 <td>$2B+</td>
@@ -903,7 +900,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Overambitious vertical integration</td>
 </tr>
 <tr>
-<td>8</td>
+<td>9</td>
 <td><strong>Royole Technology</strong></td>
 <td>Display Manufacturing</td>
 <td>~$2B+</td>
@@ -911,7 +908,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Could not mass-produce flexible displays</td>
 </tr>
 <tr>
-<td>9</td>
+<td>10</td>
 <td><strong>Byton</strong></td>
 <td>EV Manufacturing</td>
 <td>¥8.4B (~$1.2B+)</td>
@@ -919,7 +916,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Burned cash without delivering mass-market car</td>
 </tr>
 <tr>
-<td>10</td>
+<td>11</td>
 <td><strong>Fisker</strong></td>
 <td>EV Manufacturing</td>
 <td>~$1B+</td>
@@ -927,7 +924,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Poor product quality, failed to compete with Tesla</td>
 </tr>
 <tr>
-<td>11</td>
+<td>12</td>
 <td><strong>Veev</strong></td>
 <td>Modular Construction</td>
 <td>~$600M+</td>
@@ -935,7 +932,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Supply chain costs, market downturn in real estate</td>
 </tr>
 <tr>
-<td>12</td>
+<td>13</td>
 <td><strong>Rad Power Bikes</strong></td>
 <td>E-bike Manufacturing</td>
 <td>~$300M+</td>
@@ -943,7 +940,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Supply chain, cash flow issues</td>
 </tr>
 <tr>
-<td>13</td>
+<td>14</td>
 <td><strong>54gene</strong></td>
 <td>Biomanufacturing</td>
 <td>~$45M</td>
@@ -951,7 +948,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Business model issues; board disputes</td>
 </tr>
 <tr>
-<td>14</td>
+<td>15</td>
 <td><strong>RoboTire</strong></td>
 <td>Robotics / Automotive Service</td>
 <td>$30M+</td>
@@ -959,7 +956,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Automated tire changing economics did not work at scale</td>
 </tr>
 <tr>
-<td>15</td>
+<td>16</td>
 <td><strong>Vreal</strong></td>
 <td>Entertainment</td>
 <td>$15M</td>
@@ -967,7 +964,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Bad Timing</td>
 </tr>
 <tr>
-<td>16</td>
+<td>17</td>
 <td><strong>HiPhi / Human Horizons</strong></td>
 <td>EV Manufacturing</td>
 <td>Hundreds of millions</td>
@@ -975,7 +972,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Production halt; bankruptcy restructuring</td>
 </tr>
 <tr>
-<td>17</td>
+<td>18</td>
 <td><strong>Hengchi</strong></td>
 <td>EV Manufacturing</td>
 <td>Tens of billions (Evergrande)</td>
@@ -983,7 +980,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Evergrande debt crisis consumed subsidiary</td>
 </tr>
 <tr>
-<td>18</td>
+<td>19</td>
 <td><strong>Neta Auto</strong></td>
 <td>EV Manufacturing</td>
 <td>Top-seller status</td>
@@ -991,7 +988,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Bankruptcy restructuring</td>
 </tr>
 <tr>
-<td>19</td>
+<td>20</td>
 <td><strong>Dextrous Robotics</strong></td>
 <td>Robotics / Material Handling</td>
 <td>Well-funded</td>
@@ -999,7 +996,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Robotics pilot could not scale to commercial deployment</td>
 </tr>
 <tr>
-<td>20</td>
+<td>21</td>
 <td><strong>WM Motor</strong></td>
 <td>EV Manufacturing</td>
 <td>¥30B+ (~$4B+)</td>
@@ -1007,7 +1004,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Collapsed under debt</td>
 </tr>
 <tr>
-<td>21</td>
+<td>22</td>
 <td><strong>Quibi</strong></td>
 <td>Entertainment</td>
 <td>$1.8B</td>
@@ -1015,23 +1012,23 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Multiple Reasons</td>
 </tr>
 <tr>
-<td>22</td>
+<td>23</td>
 <td><strong>HubHaus</strong></td>
-<td>Real Estate / Co-living</td>
+<td>Software &amp; Hardware</td>
 <td>$13.4M</td>
 <td>2020</td>
 <td>Bad Timing</td>
 </tr>
 <tr>
-<td>23</td>
+<td>24</td>
 <td><strong>Anki</strong></td>
-<td>Consumer Electronics / Robotics</td>
+<td>Software &amp; Hardware</td>
 <td>$182M</td>
 <td>2019</td>
 <td>Lack of Funds</td>
 </tr>
 <tr>
-<td>24</td>
+<td>25</td>
 <td><strong>Munchery</strong></td>
 <td>Food &amp; Beverage</td>
 <td>$125.4M</td>
@@ -1039,31 +1036,31 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Multiple Reasons</td>
 </tr>
 <tr>
-<td>25</td>
+<td>26</td>
 <td><strong>Seven Dreamers Laboratories</strong></td>
-<td>Home Appliances</td>
+<td>Software &amp; Hardware</td>
 <td>$95M</td>
 <td>2019</td>
 <td>Poor Product</td>
 </tr>
 <tr>
-<td>26</td>
+<td>27</td>
 <td><strong>Aria Insights</strong></td>
-<td>Drone / AI Analytics</td>
+<td>Software &amp; Hardware</td>
 <td>$39M</td>
 <td>2019</td>
 <td>Multiple Reasons</td>
 </tr>
 <tr>
-<td>27</td>
+<td>28</td>
 <td><strong>MatterFab</strong></td>
-<td>Metal Additive Manufacturing</td>
+<td>Software &amp; Hardware</td>
 <td>$13.2M</td>
 <td>2019</td>
 <td>Bad Business Model</td>
 </tr>
 <tr>
-<td>28</td>
+<td>29</td>
 <td><strong>Navdy</strong></td>
 <td>Transportation</td>
 <td>$41.8M</td>
@@ -1071,15 +1068,15 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Multiple Reasons</td>
 </tr>
 <tr>
-<td>29</td>
+<td>30</td>
 <td><strong>ChaCha</strong></td>
-<td>Search / AI</td>
+<td>Software &amp; Hardware</td>
 <td>$96M</td>
 <td>2016</td>
 <td>Competition</td>
 </tr>
 <tr>
-<td>30</td>
+<td>31</td>
 <td><strong>Skully</strong></td>
 <td>Transportation</td>
 <td>$15M</td>
@@ -1087,63 +1084,63 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Mismanagement of Funds</td>
 </tr>
 <tr>
-<td>31</td>
+<td>32</td>
 <td><strong>DotCloud</strong></td>
-<td>Cloud Infrastructure</td>
+<td>Software &amp; Hardware</td>
 <td>$13.7M</td>
 <td>2016</td>
 <td>Mismanagement of Funds</td>
 </tr>
 <tr>
-<td>32</td>
+<td>33</td>
 <td><strong>RethinkDB</strong></td>
-<td>Database Technology</td>
+<td>Software &amp; Hardware</td>
 <td>$12.2M</td>
 <td>2016</td>
 <td>Lack of PMF</td>
 </tr>
 <tr>
-<td>33</td>
+<td>34</td>
 <td><strong>Parse</strong></td>
-<td>Cloud Platform / Mobile Backend</td>
+<td>Software &amp; Hardware</td>
 <td>$7M</td>
 <td>2016</td>
 <td>Acquisition Flu</td>
 </tr>
 <tr>
-<td>34</td>
+<td>35</td>
 <td><strong>Fuhu</strong></td>
-<td>Consumer Electronics</td>
+<td>Software &amp; Hardware</td>
 <td>$66.2M</td>
 <td>2015</td>
 <td>Mismanagement of Funds</td>
 </tr>
 <tr>
-<td>35</td>
+<td>36</td>
 <td><strong>QBotix</strong></td>
-<td>Solar Robotics</td>
+<td>Software &amp; Hardware</td>
 <td>$23.5M</td>
 <td>2015</td>
 <td>Competition</td>
 </tr>
 <tr>
-<td>36</td>
+<td>37</td>
 <td><strong>FoundationDB</strong></td>
-<td>Database Technology</td>
+<td>Software &amp; Hardware</td>
 <td>$22.7M</td>
 <td>2015</td>
 <td>Acquisition Flu</td>
 </tr>
 <tr>
-<td>37</td>
+<td>38</td>
 <td><strong>Zirtual</strong></td>
-<td>Virtual Assistant Services</td>
+<td>Software &amp; Hardware</td>
 <td>$5.5M</td>
 <td>2015</td>
 <td>Mismanagement of Funds</td>
 </tr>
 <tr>
-<td>38</td>
+<td>39</td>
 <td><strong>Circa</strong></td>
 <td>Entertainment</td>
 <td>$4.7M</td>
@@ -1151,23 +1148,23 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Lack of Funds</td>
 </tr>
 <tr>
-<td>39</td>
+<td>40</td>
 <td><strong>Wattage</strong></td>
-<td>Consumer Electronics</td>
+<td>Software &amp; Hardware</td>
 <td>$200K</td>
 <td>2015</td>
 <td>No Market Need</td>
 </tr>
 <tr>
-<td>40</td>
+<td>41</td>
 <td><strong>Lumos</strong></td>
-<td>Smart Lighting</td>
+<td>Software &amp; Hardware</td>
 <td>No Data</td>
 <td>2015</td>
 <td>Lack of Experience</td>
 </tr>
 <tr>
-<td>41</td>
+<td>42</td>
 <td><strong>Selltag</strong></td>
 <td>e-Commerce</td>
 <td>€325K</td>
@@ -1175,7 +1172,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>Failure to Pivot</td>
 </tr>
 <tr>
-<td>42</td>
+<td>43</td>
 <td><strong>Berg</strong></td>
 <td>Design</td>
 <td>$1.3M</td>
@@ -1183,7 +1180,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <td>No Market Need</td>
 </tr>
 <tr>
-<td>43</td>
+<td>44</td>
 <td><strong>SchoolGennie</strong></td>
 <td>Education</td>
 <td>N/A</td>
@@ -1565,7 +1562,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 </ul>
 <h3 id="latest-reshoring-data">Latest Reshoring Data</h3>
 <ul>
-<li><strong>244,940 jobs announced/created</strong>; <strong>69% success rate</strong>; <strong>CHIPS Act ($52B); IRA ($369B)</strong> (2024)</li>
+<li><strong>CHIPS Act ($52B); IRA ($369B)</strong> (2024)</li>
 </ul>
 <h3 id="industries-with-revival-potential">Industries With Revival Potential</h3>
 <h4 id="semiconductor-fabrication">Semiconductor Fabrication</h4>
@@ -1664,99 +1661,99 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 </thead>
 <tbody>
 <tr>
-<td><strong>Consumer Electronics &amp; Software</strong> (Anki, Fuhu, Wattage, Lumos, ChaCha, Aria Insights, Seven Dreamers, QBotix, DotCloud, Parse, RethinkDB, FoundationDB, Zirtual, HubHaus, MatterFab)</td>
-<td>Closed electronics factories</td>
-<td>Use closed electronics assembly plants for edge computing hardware and AI inference appliance manufacturing</td>
+<td><strong>Software &amp; Hardware</strong> (Aria Insights, DotCloud, Anki, QBotix, Seven Dreamers Laboratories, ChaCha, Foun&hellip;)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>EV Manufacturing</strong> (HiPhi / Human Horizons, Neta Auto, Hengchi, Byton, WM Motor, BluSmart, Fisker)</td>
-<td>Closed auto plants (Rust Belt, Southeast)</td>
-<td>Repurpose closed auto plants for EV battery recycling — 10M+ EV batteries will need recycling by 2030</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Entertainment</strong> (Vreal, Quibi, Circa)</td>
-<td>Closed warehouse/distribution centers</td>
-<td>Convert closed warehouses into automated micro-fulfillment centers for e-commerce</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
-<td><strong>Battery Cell Manufacturing</strong> (Northvolt)</td>
-<td>Closed chemical plants (Northeast, PR)</td>
-<td>Convert former chemical plants into battery cell production facilities leveraging IRA incentives ($369B)</td>
+<td><strong>Battery Cell Manufacturing</strong> (Northvolt, Northvolt)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Modular Construction</strong> (Katerra, Veev)</td>
-<td>Closed textile mills (Southeast)</td>
-<td>Convert closed textile mills into modular/pre-fab housing manufacturing — housing shortage drives demand</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Transportation</strong> (Navdy, Skully)</td>
-<td>Closed auto parts factories</td>
-<td>Repurpose for ADAS sensor and EV component supply chain manufacturing</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>3D Printing</strong> (BCN3D)</td>
 <td>Closed specialty manufacturing facilities</td>
-<td>Turn closed industrial facilities into regional 3D printing service bureaus for on-demand parts</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>3D Printing / Additive Mfg</strong> (Desktop Metal)</td>
-<td>Closed steel mills (Rust Belt)</td>
-<td>Convert closed steel mills into metal additive manufacturing service centers serving aerospace and automotive</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Biomanufacturing</strong> (54gene)</td>
-<td>Closed pharma plants (NJ, PA, PR)</td>
-<td>Turn closed pharma plants into API manufacturing for generic drugs — U.S. imports 87% of APIs</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Construction 3D Printing</strong> (Black Buffalo 3D)</td>
-<td>Closed construction material facilities</td>
-<td>Pivot to sustainable building materials manufacturing — eco-concrete, hempcrete, recycled aggregates</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Design</strong> (Berg)</td>
-<td>Closed consumer electronics plants</td>
-<td>Apply connected-product design expertise to IoT sensor manufacturing for smart factory applications</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Display Manufacturing</strong> (Royole Technology)</td>
-<td>Closed electronics factories (Sun Belt)</td>
-<td>Repurpose for micro-LED and AR/VR display component assembly — nearshoring from Asia</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>E-bike Manufacturing</strong> (Rad Power Bikes)</td>
-<td>Closed bicycle/bicycle component factories</td>
-<td>Pivot to light EV assembly (e-scooters, e-cargo bikes) for last-mile delivery market</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>e-Commerce</strong> (Selltag)</td>
-<td>Closed retail distribution centers</td>
-<td>Convert into automated micro-fulfillment for D2C brands leveraging robotics</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Education</strong> (SchoolGennie)</td>
-<td>Closed consumer electronics plants</td>
-<td>Manufacture educational hardware (STEM kits, VR training headsets) for vocational training market</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Food &amp; Beverage</strong> (Munchery)</td>
-<td>Closed food processing plants</td>
-<td>Repurpose for alternative protein / plant-based food manufacturing — $29B market by 2030</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Robotics / Automotive Service</strong> (RoboTire)</td>
-<td>Closed automotive service centers</td>
-<td>Deploy automated EV maintenance and battery swapping stations using refined robotics approaches</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Robotics / Material Handling</strong> (Dextrous Robotics)</td>
-<td>Closed warehouse/industrial facilities</td>
-<td>Focus on narrow-use-case warehouse automation (palletizing, sorting) rather than general-purpose robotics</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
 <td><strong>Semiconductor Manufacturing</strong> (Wusheng Semiconductor)</td>
-<td>Closed semiconductor fabs (1990s-2000s)</td>
-<td>Reactivate former Intel/AMD/Motorola fabs for specialty chip production — CHIPS Act ($52B) funding available</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
 </tr>
 </tbody>
 </table>
@@ -1774,16 +1771,16 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 </ol>
 <h3 id="data-driven-opportunities-from-collected-data">Data-Driven Opportunities (from collected data)</h3>
 <ul>
-<li><strong>43 manufacturing startup failures</strong> in database suggest clear patterns to avoid</li>
-<li><strong>217 recent news articles</strong> about manufacturing startup failures signal active market churn</li>
+<li><strong>44 manufacturing startup failures</strong> in database suggest clear patterns to avoid</li>
+<li><strong>229 recent news articles</strong> about manufacturing startup failures signal active market churn</li>
 </ul>
 <h2 id="news-monitoring-manufacturing-startup-failures-news">News Monitoring: Manufacturing &amp; Startup Failures </h2>
 <h3 id="coverage-summary">Coverage Summary</h3>
 <ul>
-<li><strong>884</strong> articles collected from Google News and TechCrunch RSS feeds</li>
-<li><strong>456</strong> mention manufacturing (51.6%)</li>
-<li><strong>436</strong> mention startup failures (49.3%)</li>
-<li><strong>217</strong> are in the intersection (manufacturing + failure)</li>
+<li><strong>942</strong> articles collected from Google News and TechCrunch RSS feeds</li>
+<li><strong>487</strong> mention manufacturing (51.7%)</li>
+<li><strong>454</strong> mention startup failures (48.2%)</li>
+<li><strong>229</strong> are in the intersection (manufacturing + failure)</li>
 </ul>
 <h3 id="articles-by-source">Articles by Source</h3>
 <table>
@@ -1796,54 +1793,74 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <tbody>
 <tr>
 <td>google_news</td>
-<td>824</td>
+<td>862</td>
 </tr>
 <tr>
 <td>techcrunch</td>
-<td>60</td>
+<td>80</td>
 </tr>
 </tbody>
 </table>
 <h3 id="recent-manufacturing-startup-failures-news">Recent Manufacturing Startup Failures (News)</h3>
-<p><strong>I&rsquo;m 40 and $300,000 in debt after my startup failed. I&rsquo;m living on $10 a day in South Korea. - Business Insider</strong>
+<p><strong>[] I&rsquo;m 40 and $300,000 in debt after my startup failed. I&rsquo;m living on $10 a day in South Korea. - Business Insider</strong>
+- <em>Business Insider</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMihgFBVV95cUxPZGlaN1pZbTA4X0FvNGtibUdEa1ZLMlgyVk5xY3UzUTVwVTdVZVlidS1aT2.
 - <a href="https://news.google.com/rss/articles/CBMihgFBVV95cUxPZGlaN1pZbTA4X0FvNGtibUdEa1ZLMlgyVk5xY3UzUTVwVTdVZVlidS1aT213LTlYQ0xFTlJ2RENEVDduOTJQRFlFR3cydmZPNHppdVR0VHVLLVRYR0ttN1ZRaXJXamZZMUgwOXUwNWxmUVVJaEtNMWZlRE1fNGEyVzJFdkhmdw?oc=5">Read more</a></p>
-<p><strong>The Startup Where You Worked Failed. Your Career Should Be Fine. - WSJ</strong>
+<p><strong>[] The Startup Where You Worked Failed. Your Career Should Be Fine. - WSJ</strong>
+- <em>WSJ</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMihAFBVV95cUxPVHRONzQzck5lMnA4T3FUY1lTMUNMUmJwRVVDUHdzalFVOGoyZGhaUDU3SH.
 - <a href="https://news.google.com/rss/articles/CBMihAFBVV95cUxPVHRONzQzck5lMnA4T3FUY1lTMUNMUmJwRVVDUHdzalFVOGoyZGhaUDU3SHJyWVR5dUgxUHZOREVHVS1qNmhTU1NPZFpnUTJ4M1dYRnFfbnBzRjdQamNUWTltMjBzLXk2YlNwTElfdmFYaUFOX0RqZ2U4S25WRF9XSkVxbUQ?oc=5">Read more</a></p>
-<p><strong>10 years after Richmond super startup failed, creditors recoup $100 million - Richmond Times-Dispatch</strong>
+<p><strong>[] 10 years after Richmond super startup failed, creditors recoup $100 million - Richmond Times-Dispatch</strong>
+- <em>Richmond Times-Dispatch</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMilAFBVV95cUxQM3FCdThLc3VEcWxkVHNiajU3V1RkSFR4TkJEaUlkanV4Rnh6bTdMb3EzMk.
 - <a href="https://news.google.com/rss/articles/CBMilAFBVV95cUxQM3FCdThLc3VEcWxkVHNiajU3V1RkSFR4TkJEaUlkanV4Rnh6bTdMb3EzMkhZNGdhQnpReVZEa0k0T2ZtTjF5N29GdXJTQ3dzM1BCdDQ2WmlUOEVPS1Q5TmlxTzM5X1Y4bmt1Yzd5ck1HZnRlbE84cjd1RW9pczh3Mk92N3ZMakR1ejNSaEFIak5vR3ZS?oc=5">Read more</a></p>
-<p><strong>Bollinger Is Selling Off Its Last 20 Trucks As EV Startup Failed - AUTOJOSH</strong>
+<p><strong>[] Bollinger Is Selling Off Its Last 20 Trucks As EV Startup Failed - AUTOJOSH</strong>
+- <em>AUTOJOSH</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMijwFBVV95cUxPWW5EOGRfdHJmdTFNTGptUndHSmRzNF9kMEt4Z2xBeXAzeXRoUGZoMFJYeF.
 - <a href="https://news.google.com/rss/articles/CBMijwFBVV95cUxPWW5EOGRfdHJmdTFNTGptUndHSmRzNF9kMEt4Z2xBeXAzeXRoUGZoMFJYeFltMWI3ZTVLX09xWVVNS3ZFRFpxZUQtZ1MxdmRKMXdfRUd0WWlVMFIwNnZBdllLSmtPbXVvUl9VandxenRKbGswbEpNQ1FtVDhIa0Y3SklkTnAxSVIzalFkMXVWbw?oc=5">Read more</a></p>
-<p><strong>AI startup founded by U of T alumni to revive failed drug candidates: The Globe and Mail - University of Toronto</strong>
+<p><strong>[] AI startup founded by U of T alumni to revive failed drug candidates: The Globe and Mail - University of Toronto</strong>
+- <em>University of Toronto</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMipgFBVV95cUxNYm1Xd1U5aGRQNDhkTWE1U3pPSDNVWWNiXzBsN1lvRjNVRkZXMVBMUUEwdn.
 - <a href="https://news.google.com/rss/articles/CBMipgFBVV95cUxNYm1Xd1U5aGRQNDhkTWE1U3pPSDNVWWNiXzBsN1lvRjNVRkZXMVBMUUEwdnlSRFhrdVBvdUxHRmlpT3VPaVJVa2xldjJTZ2dsM0FjVW9BcGtyUnc2cjJ6VWUzc0lYQ0t4N1NmXzEwNng2RW9SallHSWtrOEpOUkI1UWxVMGxrNkdkbDhZQUxvM3ViX2ZOS2hraUhpanh1bEJ0N25GUzhR?oc=5">Read more</a></p>
-<p><strong>He quit GTBank, his startup failed: This founder reinvented himself to an exit and venture scale in the diaspora - Techpoint Africa</strong>
+<p><strong>[] He quit GTBank, his startup failed: This founder reinvented himself to an exit and venture scale in the diaspora - Techpoint Africa</strong>
+- <em>Techpoint Africa</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMickFVX3lxTE90ODJxS0xKeVYzSGkxT1pGNVd2U2xRaW9kcXRZeG5nRzY3YlN1NWJQQTlEcF.
 - <a href="https://news.google.com/rss/articles/CBMickFVX3lxTE90ODJxS0xKeVYzSGkxT1pGNVd2U2xRaW9kcXRZeG5nRzY3YlN1NWJQQTlEcFVTTDJZVkIyRHRpTDNnajdhc0NFVHZqZ2l6NjNtZ1dBbHp0c0lvZk40SnZfX0FSQzk4S0owajViZUR2MVNXdw?oc=5">Read more</a></p>
-<p><strong>Guess Which Failed EV Startup’s Prototype Is Now On Facebook Marketplace - The Autopian</strong>
+<p><strong>[] Guess Which Failed EV Startup’s Prototype Is Now On Facebook Marketplace - The Autopian</strong>
+- <em>The Autopian</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiogFBVV95cUxObV9XYjNrT0RrbWlfbklVV1gwbnpYUVRBcWctRHFvOWN0cXVnam9ybEtFc3.
 - <a href="https://news.google.com/rss/articles/CBMiogFBVV95cUxObV9XYjNrT0RrbWlfbklVV1gwbnpYUVRBcWctRHFvOWN0cXVnam9ybEtFc3RFcVh1Z2htaVRDS3ZMWjRMZHBZLVp1eXp4ZzJvT2tRbnRSZGExc3JZTDgxejBZQ09RSHdlQ3pjYkxnLWRxZWV1b05fbVBlNlZoVm1XbWxNWk0yWmRZY3pyMFp1NEVtLVd0RWxucFhvUDdXVnF4MUE?oc=5">Read more</a></p>
-<p><strong>My First Startup Failed. It Was an Important Step in Discovering My Real Passion. - inc.com</strong>
+<p><strong>[] My First Startup Failed. It Was an Important Step in Discovering My Real Passion. - inc.com</strong>
+- <em>inc.com</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiywFBVV95cUxQTWphVkF5Q3JOTm85WEtwQ0ExNFRmQUYyV1llRzhxcVJSMncyRDVvV3NWQT.
 - <a href="https://news.google.com/rss/articles/CBMiywFBVV95cUxQTWphVkF5Q3JOTm85WEtwQ0ExNFRmQUYyV1llRzhxcVJSMncyRDVvV3NWQTRaVmFkS1l3QmFnd0pUWWxYUWJYcTZqS0pxWEZXR2t6blRqMmhxbE13U09xN2NTSVVoUFBKeVFWcVMtRTdtM2hXeldHZm1iVTJURFRQXzRENUtSMk1DUzljRW1iOUhSNlNybzcyMFVub3lNTVpRQ3BheUg3em10blR3SzNrd1o3ZUxFbGs0SzF0eDNKbDdSRjZpZGEzMHhqZw?oc=5">Read more</a></p>
-<p><strong>Couple lost Rs 21 lakh when their startup failed. 6 years later, they sold it for Rs 209 crore - Moneycontrol.com</strong>
+<p><strong>[] Couple lost Rs 21 lakh when their startup failed. 6 years later, they sold it for Rs 209 crore - Moneycontrol.com</strong>
+- <em>Moneycontrol.com</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMi4AFBVV95cUxQaGVfSGt4ZUhmU2h1bmRueW9oTGZJNVZoODg0bEZyTWc1MF93S1ZsckRuSz.
 - <a href="https://news.google.com/rss/articles/CBMi4AFBVV95cUxQaGVfSGt4ZUhmU2h1bmRueW9oTGZJNVZoODg0bEZyTWc1MF93S1ZsckRuSzBqQkFSdTVqY3FTQTNLblVidU9rZ2xyZmtZTi1ra0tUMGNDQllFNnh4a2VzeTFTcEZqZC1Tel9hUTNZMkQzMmlWdWVqZGo0b2JFQ0RvVklJaXJPdTltN05SODhGcTFZeWtRdG9nNV9hWklDS2x6cFdjNVA1eThST0NQaWRFUVNGdW9CNGF5cVkyWEdxTnR4d0Z0b3ZwS05OTTBpVk9fR0R0ZldJUUEyQThXNVdBVNIB5gFBVV95cUxPc1ZTYktleEhISnBwQ3RFTXdKR0NiYVRUblhEeURSUWJLb0FDX05SalNfa0pYWFBfWFZlNlozbHNKTTh4ZUNSWFZodDYtTS11X2Jqb2thOW84enJtMFU4b2lhbkVsYnZzbFF0V0RWTzFtN19TbGYzZEN6dlU4bzhTVUxnRjM3cTVTbXNxMkh5eVE4QTlneVVYVFJKb2d1bXBndDFjN3dCdERmbHVsNVh5LUhaeUE3akQyV1l1SHp0N1UwYURaY1dpN1JTWXdZcGNaV205ZG1jMmdmVEZoUURlQlExMlFfZw?oc=5">Read more</a></p>
-<p><strong>5 Critical Lessons I Learned From My Failed Startup - inc.com</strong>
+<p><strong>[] 5 Critical Lessons I Learned From My Failed Startup - inc.com</strong>
+- <em>inc.com</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMilAFBVV95cUxOZ2ZEVlVvS0lsWkpjYWhmRTAtdHdNZmQ4WHJ3bEFPTnAtZy1zcDhEZDlaST.
 - <a href="https://news.google.com/rss/articles/CBMilAFBVV95cUxOZ2ZEVlVvS0lsWkpjYWhmRTAtdHdNZmQ4WHJ3bEFPTnAtZy1zcDhEZDlaSTRZbDVJeWF3N2Foc2FhUmE0WFNpNm1nRlBTTWN0OEExaGN2V0Mwdmp3enN1MUd5aVdnbElZSmt4M1MzRUI0cTY4aVRObGg2SUZYcEs5V2JkRldMZDhnU3VZcDR3Q3RMS3ht?oc=5">Read more</a></p>
-<p><strong>EV Truck Startups That Failed - CarBuzz</strong>
+<p><strong>[] EV Truck Startups That Failed - CarBuzz</strong>
+- <em>CarBuzz</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiWEFVX3lxTE92T2hGOGtWZk1wTG5TVzIzMlZNSndfWTRUT1hreS1mMHNyajZHTGR5WkhuLT.
 - <a href="https://news.google.com/rss/articles/CBMiWEFVX3lxTE92T2hGOGtWZk1wTG5TVzIzMlZNSndfWTRUT1hreS1mMHNyajZHTGR5WkhuLTNSazVSVTB1T0FWTTJXTUs1bzg2T0JRSWZXVXBIZGhtMlE5S0s?oc=5">Read more</a></p>
-<p><strong>2025 will likely be another brutal year of failed startups, data suggests - TechCrunch</strong>
+<p><strong>[] 2025 will likely be another brutal year of failed startups, data suggests - TechCrunch</strong>
+- <em>TechCrunch</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiqwFBVV95cUxOemgycWU1dldwd3VBYm9ZRjdYWDBfZDRZQTZzTHNRWGVZODkwdGFpM0dmT0.
 - <a href="https://news.google.com/rss/articles/CBMiqwFBVV95cUxOemgycWU1dldwd3VBYm9ZRjdYWDBfZDRZQTZzTHNRWGVZODkwdGFpM0dmT0VyNHBoRVQzNUJtdmliYXpVQTlSeHlEVzlOaGk5UnAxTzV6NV9NRGtjS2lSUlhfWU9udWZHd2k2UVFDS0ZyU3VuM1pxU1NOVzRycU5Rd3dsTUlQOUFkNzlEcWxLbDlfVFpjcExnbHB4eDVpbHdyZkk4NUxZdW1nVEk?oc=5">Read more</a></p>
-<p><strong>Nobody is shocked that this Kenyan food delivery startup failed after one year - qz.com</strong>
+<p><strong>[] Nobody is shocked that this Kenyan food delivery startup failed after one year - qz.com</strong>
+- <em>qz.com</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMijwFBVV95cUxPMUpDN2hFUFI2UU9rQm9qLWJ6VmlhM3lhSUtWVjZSM1ZCN0UzVDZLOGNpVn.
 - <a href="https://news.google.com/rss/articles/CBMijwFBVV95cUxPMUpDN2hFUFI2UU9rQm9qLWJ6VmlhM3lhSUtWVjZSM1ZCN0UzVDZLOGNpVnRCWGNTVlpiTGt5TDJXcEVpQngzekdvQ25ZVnEwekw2d18taTNaSmo5Q0NlZDhEX3UzbmJrZkRScmJKaEVhXzJ1X2UwZ20zNkw2WlBmSzRyYkNrVGxoNU4xT0drbw?oc=5">Read more</a></p>
-<p><strong>19 Failed Startups with Legal Challenges - Failory</strong>
+<p><strong>[] 19 Failed Startups with Legal Challenges - Failory</strong>
+- <em>Failory</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiakFVX3lxTFA3TlR0TGFWQzd6ZnVQei1ubndFdk85ZVV6eGR2a3FXVEVmMnlZNDNxR0kyQi.
 - <a href="https://news.google.com/rss/articles/CBMiakFVX3lxTFA3TlR0TGFWQzd6ZnVQei1ubndFdk85ZVV6eGR2a3FXVEVmMnlZNDNxR0kyQi1KV0Y3bmpxUmZDREVfOF9hZFpzdk1YbXQ5Z1lnU0Fqc3Nxd1JyRjFLZFhJQXE2blBuMmlHbWc?oc=5">Read more</a></p>
-<p><strong>The Bright Side to a Failed Startup - LatamList</strong>
+<p><strong>[] The Bright Side to a Failed Startup - LatamList</strong>
+- <em>LatamList</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiakFVX3lxTE16alZUenRVRE5ZcVNjOTVVRGpmTTV2RG5kQjhfVFYxNWp4bXkyUDM2QUc4Sz.
 - <a href="https://news.google.com/rss/articles/CBMiakFVX3lxTE16alZUenRVRE5ZcVNjOTVVRGpmTTV2RG5kQjhfVFYxNWp4bXkyUDM2QUc4SzdxZlBUQm9DNE1HWUE1TUhpWmlaN3YxWXBtUGNaUUNpMDZlSUxFRm9lNVUtVDZiTnlrd3Fsb0HSAW9BVV95cUxQdGhZWWZ0SHhUSVRjWHVNUlFlSlFic0dzbUVwN3o3aDFwY0VfSEFSRmxHOVpXR3M4eU5yZzNzc1hDUFQ3UmZYRWJJOTVjNlRIWEVwM0ZYRjhFR3VsLUo1XzFyV2p2ZFF4b043Z0pScTA?oc=5">Read more</a></p>
-<p><strong>I helped launch an &lsquo;Uber for lawn care&rsquo; startup that failed miserably. This is exactly how I knew when to give up — and how we were able to pivot to launching a multimillion-dollar company within the same year. - Business Insider</strong>
+<p><strong>[] I helped launch an &lsquo;Uber for lawn care&rsquo; startup that failed miserably. This is exactly how I knew when to give up — and how we were able to pivot to launching a multimillion-dollar company within the same year. - Business Insider</strong>
+- <em>Business Insider</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiogFBVV95cUxQVDFDX0Z5YThsUWQtdm9vZVR3MFU3MFprcmhnS1dFMDFrVjlBY05keVRkV0.
 - <a href="https://news.google.com/rss/articles/CBMiogFBVV95cUxQVDFDX0Z5YThsUWQtdm9vZVR3MFU3MFprcmhnS1dFMDFrVjlBY05keVRkV0pvcXdNZVo5VEZoN2UyRm9Xbk9vcDJUcGVaNmNyWVI5eE44YlZuNVIzUlNhdFVOVFRTRzVNTDVDcmtkQ01paDdtZjJnUUpwaUh1V1ZyY2hlUnZPZ0puTXhENTZQQVU5ZmhYNDJ3bF9hZjFWOFZ4SEE?oc=5">Read more</a></p>
-<p><strong>Two of his startups failed. Now, this 30-year-old just bagged $32 million for his company - CNBC</strong>
+<p><strong>[] Two of his startups failed. Now, this 30-year-old just bagged $32 million for his company - CNBC</strong>
+- <em>CNBC</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMirAFBVV95cUxPTXAtV0RhRnlldU9INFhRWkhBSUR0OFY3S3NmUkVQVF83dlRhemdpWHRLbm.
 - <a href="https://news.google.com/rss/articles/CBMirAFBVV95cUxPTXAtV0RhRnlldU9INFhRWkhBSUR0OFY3S3NmUkVQVF83dlRhemdpWHRLbmxFTkc0QTZVMnBUS0FMM0IwVmdnTmZheTcxSkg3eEVndTNFQ0NpNDFxcHpXWHBNOFdHaUJHVG5wdlBldVotZHMzdFVPOW9MMGxCWkpiX21vck5CX0ozaW56WWR5ODZlSzJDaTN1MXJwZnM0SDNpYlZYVG82Yk9TbG5M0gGyAUFVX3lxTE9NTUZObV9FUHN3cEdsSGRzSFkwTll1RVRsWVlCUUZqSklWTWhsUXJJZHl6TTk1UW81ZFp5S0ZSZGJlUklmNkVhUGtaaUtfRHA5ZzJGWjd0Z3ZiTFpyaTd4TWhDdUFEbEZBZXNicmpZV3RqNGFiRFc3bjBzWUNSZlVFQmR6X0tKaG5zRFZ6U05WRGtsc2xYdzN2WFNkRHBodkFtNlFkblZSeDAyczlKbXlaLWc?oc=5">Read more</a></p>
-<p><strong>Morrow Batteries Bankruptcy &amp; Why Battery Startups Are Failing - Battery Technology</strong>
+<p><strong>[] Morrow Batteries Bankruptcy &amp; Why Battery Startups Are Failing - Battery Technology</strong>
+- <em>Battery Technology</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMivwFBVV95cUxQemw5VkxpRXBNU01qRGx4dlVlb0JsQ3ozSnc5dlRGVFMwLXQxaFJRcHRneX.
 - <a href="https://news.google.com/rss/articles/CBMivwFBVV95cUxQemw5VkxpRXBNU01qRGx4dlVlb0JsQ3ozSnc5dlRGVFMwLXQxaFJRcHRneXZUWG1DY3NXYTdsUV9PQkFRdGQ4dkRwMjRYSllkdFMtY1ZJVjZoMFVrdjg3eDA4MmJDdDNmODVFR0NESHByMVJUekFmM0ItbzNaelloMUxOTkNPa1JFV2ZrY2VVbzhFSzJtMU1od1gyS3BwZ3pqeVJkcm5HY25GVHVZV091cW5iend2cDl5VkdDT1AtSQ?oc=5">Read more</a></p>
-<p><strong>Window coating startup buys failed Tesla supplier&rsquo;s Michigan plant for new HQ - Crain&rsquo;s Detroit Business</strong>
+<p><strong>[] Window coating startup buys failed Tesla supplier&rsquo;s Michigan plant for new HQ - Crain&rsquo;s Detroit Business</strong>
+- <em>Crain&rsquo;s Detroit Business</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiowFBVV95cUxOMkR0XzhabEJGUXNrR2szZlFLbEpnLWtzWEtFSlUzSkVOQ2ZHLTd2dXo2M1.
 - <a href="https://news.google.com/rss/articles/CBMiowFBVV95cUxOMkR0XzhabEJGUXNrR2szZlFLbEpnLWtzWEtFSlUzSkVOQ2ZHLTd2dXo2M1FDS2JvVkhmYVNUTnFWck9YazIyWFBsRGdtV1o0dlZYYkNHM1drOGo3S2IySmdIM09ieDFZVVhXaHpuUVVXWk54VlY3MWt1bGZ4dUZnSEhQSUlLWV9ZMi1RdjNySWg3M2Z4N0V4LUFrZl9QczNsZU4w?oc=5">Read more</a></p>
-<p><strong>Fisker files for U.S. bankruptcy after cash burn, quality issues with Ocean crossover - Automotive News</strong>
+<p><strong>[] Fisker files for U.S. bankruptcy after cash burn, quality issues with Ocean crossover - Automotive News</strong>
+- <em>Automotive News</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMimAFBVV95cUxQTjdGcXFsUDFjR0NlWnlQUWljYWlhMklaeUNYQmlkdHBSNUs4NlVNZVB0bU.
 - <a href="https://news.google.com/rss/articles/CBMimAFBVV95cUxQTjdGcXFsUDFjR0NlWnlQUWljYWlhMklaeUNYQmlkdHBSNUs4NlVNZVB0bUhuUzc0a0FMa0IzZkQzRm9jdzdNWHRBWElGUW55bTBQMWZoVHJ3T1gyTFg1UTBMWGpaUXZIZVhCTS1QcXhHUGpnZmJMa0QzYUptOW9MbXgtanFKNnpjU1VYbU9qSWs5QU5ubDJ3Xw?oc=5">Read more</a></p>
 <h3 id="identified-startup-names-in-news">Identified Startup Names in News</h3>
 <table>
@@ -1970,64 +1987,64 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 </thead>
 <tbody>
 <tr>
-<td>techcrunch_rss</td>
-<td>2026-06-03T05:03:48</td>
+<td>newsletter</td>
+<td>2026-06-06T04:35:27</td>
+<td>partial</td>
+<td>0</td>
+</tr>
+<tr>
+<td>regulatory</td>
+<td>2026-06-06T04:35:20</td>
+<td>partial</td>
+<td>0</td>
+</tr>
+<tr>
+<td>npm_pypi</td>
+<td>2026-06-06T04:35:17</td>
+<td>failed</td>
+<td>0</td>
+</tr>
+<tr>
+<td>stackoverflow</td>
+<td>2026-06-06T04:35:10</td>
+<td>partial</td>
+<td>0</td>
+</tr>
+<tr>
+<td>twitter</td>
+<td>2026-06-06T04:34:32</td>
+<td>partial</td>
+<td>0</td>
+</tr>
+<tr>
+<td>website_monitor</td>
+<td>2026-06-06T04:34:32</td>
+<td>partial</td>
+<td>0</td>
+</tr>
+<tr>
+<td>producthunt</td>
+<td>2026-06-06T04:34:32</td>
+<td>failed</td>
+<td>0</td>
+</tr>
+<tr>
+<td>arxiv</td>
+<td>2026-06-06T04:34:17</td>
 <td>success</td>
+<td>200</td>
+</tr>
+<tr>
+<td>opencorporates</td>
+<td>2026-06-06T04:34:17</td>
+<td>failed</td>
 <td>0</td>
 </tr>
 <tr>
-<td>google_news_rss</td>
-<td>2026-06-03T05:03:39</td>
+<td>hn_live</td>
+<td>2026-06-06T04:34:11</td>
 <td>success</td>
-<td>0</td>
-</tr>
-<tr>
-<td>techcrunch_rss</td>
-<td>2026-06-03T05:01:53</td>
-<td>success</td>
-<td>0</td>
-</tr>
-<tr>
-<td>google_news_rss</td>
-<td>2026-06-03T05:01:42</td>
-<td>success</td>
-<td>0</td>
-</tr>
-<tr>
-<td>techcrunch_rss</td>
-<td>2026-06-03T04:56:07</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>google_news_rss</td>
-<td>2026-06-03T04:56:06</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>techcrunch_rss</td>
-<td>2026-06-03T04:48:40</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>google_news_rss</td>
-<td>2026-06-03T04:48:40</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>techcrunch_rss</td>
-<td>2026-06-03T04:43:02</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>google_news_rss</td>
-<td>2026-06-03T04:43:02</td>
-<td>failed</td>
-<td>0</td>
+<td>61</td>
 </tr>
 </tbody>
 </table>
@@ -2178,27 +2195,27 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 <li><a href="https://www.failory.com/cemetery/zulily">https://www.failory.com/cemetery/zulily</a> (1 records)</li>
 </ul>
 <hr />
-<p><em>Report generated on 2026-06-03 05:03 UTC from the Startup Research automated data collection system.</em></p>
-<p><em>Database contains: 162 startups, 884 news articles, 31 BLS data points.</em></p>
+<p><em>Report generated on 2026-06-06 04:36 UTC from the Startup Research automated data collection system.</em></p>
+<p><em>Database contains: 163 startups, 942 news articles, 31 BLS data points.</em></p>
 <p><em>This report uses a two-pronged research approach: </em><em>Prong A</em><em> (Failed Manufacturing Startups 2024-2025) and </em><em>Prong B</em><em> (Manufacturing Revival &amp; Reshoring). See <a href="#methodology">Methodology</a> section for full details.</em></p>
     <div style="margin-top: 32px; border-top: 2px solid var(--border); padding-top: 24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <h2 id="llm-infrastructure" style="margin:0;font-size:20px;font-weight:700;color:var(--text);">LLM Infrastructure</h2>
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">ONLINE</span>
-          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#F59E0B;color:white;">MODERATE &middot; 13.6 tok/s</span>
+          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">FAST &middot; 100.0 tok/s</span>
         </div>
       </div>
 
       <div class="stats-grid">
         <div class="stat-card accent-blue">
           <span class="icon">&#129302;</span>
-          <div class="value">llama3</div>
+          <div class="value">llama3.2</div>
           <div class="label">Active Model</div>
         </div>
         <div class="stat-card accent-green">
           <span class="icon">&#128202;</span>
-          <div class="value">8.0B</div>
+          <div class="value">1.2B</div>
           <div class="label">Parameters</div>
         </div>
         <div class="stat-card accent-amber">
@@ -2208,9 +2225,9 @@ a:focus-visible, button:focus-visible, input:focus-visible {
         </div>
         <div class="stat-card accent-red">
           <span class="icon">&#9201;</span>
-          <div class="value">0.22s</div>
+          <div class="value">0.02s</div>
           <div class="label">Inference Latency</div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">3 tokens generated</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">2 tokens generated</div>
         </div>
       </div>
 
@@ -2229,7 +2246,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
           </tr>
           <tr>
             <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);">Quantization</td>
-            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;">Q4_0</td>
+            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;">Q8_0</td>
           </tr>
           <tr>
             <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);">API Endpoint</td>
@@ -2237,10 +2254,10 @@ a:focus-visible, button:focus-visible, input:focus-visible {
           </tr>
           <tr>
             <td style="padding:8px 16px;color:var(--text-secondary);">License</td>
-            <td style="padding:8px 16px;font-weight:500;font-size:12px;">META LLAMA 3 COMMUNITY LICENSE AGREEMENT
+            <td style="padding:8px 16px;font-weight:500;font-size:12px;">LLAMA 3.2 COMMUNITY LICENSE AGREEMENT
+Llama 3.2 Version Release Date: September 25, 2024
 
-Meta Llama 3 Version Release Date: April 18, 2024
-“Agreement” means the terms </td>
+“Agreement” means the terms an</td>
           </tr>
         </table>
       </div>
@@ -2260,9 +2277,14 @@ Meta Llama 3 Version Release Date: April 18, 2024
           <tbody>
             
         <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500;">llama3.2:1b</td>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary);">1.2 GB</td>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);font-size:12px;">Available</span></td>
+        </tr>
+        <tr>
           <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500;">llama3:latest</td>
           <td style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary);">4.3 GB</td>
-          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;background:#10B981;color:white;margin-left:6px;">LOADED</span></td>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);font-size:12px;">Available</span></td>
         </tr>
           </tbody>
         </table>
@@ -2278,15 +2300,15 @@ Meta Llama 3 Version Release Date: April 18, 2024
       <div class="stats-grid">
         <div class="stat-card accent-blue">
           <span class="icon">&#128256;</span>
-          <div class="value">50</div>
+          <div class="value">83</div>
           <div class="label">Total Tokens</div>
           <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">
-            43 in / 7 out
+            74 in / 9 out
           </div>
         </div>
         <div class="stat-card accent-green">
           <span class="icon">&#128640;</span>
-          <div class="value">3</div>
+          <div class="value">4</div>
           <div class="label">Inferences</div>
         </div>
         <div class="stat-card accent-amber">
@@ -2668,92 +2690,6 @@ Meta Llama 3 Version Release Date: April 18, 2024
   });
 
   initTierGate();
-})();
-</script>
-<!-- Real-time WebSocket Live Updates -->
-<script>
-(function() {
-  "use strict";
-  var WS_URL = (location.protocol === "https:" ? "wss:" : "ws:") + "//" + location.host + "/ws/live";
-  var STATS_URL = (location.protocol === "https:" ? "https:" : "http:") + "//" + location.host + "/api/stats/summary";
-  var ws = null;
-  var reconnectDelay = 1000;
-  var maxReconnectDelay = 30000;
-
-  function setStatus(connected) {
-    var dot = document.getElementById("wsStatus");
-    var label = document.getElementById("wsTime");
-    if (connected) {
-      dot.style.background = "#22c55e";
-      label.textContent = "Live";
-    } else {
-      dot.style.background = "#ef4444";
-      label.textContent = "Offline";
-    }
-  }
-
-  function updateStats(data) {
-    // Update stat card values by index in the first stats-grid
-    if (data.startups !== undefined) {
-      var cards = document.querySelectorAll(".stats-grid .stat-card .value");
-      if (cards.length >= 3) {
-        cards[0].textContent = data.startups.toLocaleString();
-        cards[2].textContent = data.news.toLocaleString();
-      }
-    }
-    // Update sentiment scored count in meta if available
-    if (data.sentiment_scored !== undefined && data.sentiment_scored > 0) {
-      // Show sentiment info in a subtle way
-      var existing = document.getElementById("sentimentMeta");
-      if (!existing) {
-        var span = document.createElement("span");
-        span.id = "sentimentMeta";
-        span.style.cssText = "font-size:11px;color:var(--text-secondary);margin-left:8px;";
-        span.textContent = data.sentiment_scored + " articles scored for sentiment";
-        var timeEl = document.getElementById("wsTime");
-        if (timeEl && timeEl.parentNode) {
-          timeEl.parentNode.insertBefore(span, timeEl.nextSibling);
-        }
-      }
-    }
-  }
-
-  function connect() {
-    try { ws = new WebSocket(WS_URL); } catch(e) { return; }
-
-    ws.onopen = function() {
-      reconnectDelay = 1000;
-      setStatus(true);
-    };
-
-    ws.onmessage = function(event) {
-      try {
-        var msg = JSON.parse(event.data);
-        if (msg.type === "stats_update" && msg.data) {
-          updateStats(msg.data);
-        }
-      } catch(e) {}
-    };
-
-    ws.onclose = function() {
-      setStatus(false);
-      setTimeout(connect, reconnectDelay);
-      reconnectDelay = Math.min(reconnectDelay * 2, maxReconnectDelay);
-    };
-
-    ws.onerror = function() { ws.close(); };
-  }
-
-  // Fetch initial stats on page load (fallback if WS is unavailable)
-  fetch(STATS_URL).then(function(r) { return r.json(); }).then(function(data) {
-    setStatus(true);
-    updateStats(data);
-  }).catch(function() {
-    setStatus(false);
-  });
-
-  // Start WebSocket connection
-  connect();
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>

@@ -1,0 +1,28 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+labels: ["enhancement", "triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: "What are you trying to do that you can't do today?"
+      placeholder: "I want to get notified when a startup's score changes significantly"
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: "How do you imagine this working?"
+      placeholder: "Add email/Slack alerts that trigger when a score moves > 10 points"
+    validations:
+      required: true
+  - type: dropdown
+    id: importance
+    attributes:
+      label: How important is this to you?
+      options:
+        - "Critical — I can't use the platform without this"
+        - "Important — This would significantly improve my experience"
+        - "Nice to have — Would be helpful but not essential"

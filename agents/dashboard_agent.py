@@ -1018,7 +1018,7 @@ def _track_chat_tokens(result: dict, payload: dict | None = None) -> None:
         return
 
     try:
-        from agents.ollama_usage_tracker import _track_inference
+        from agents.ollama_usage_tracker_agent import _track_inference
         _track_inference(model, prompt_tokens, completion_tokens)
     except Exception as e:
         _logger.debug("Could not track Ollama tokens: %s", e)

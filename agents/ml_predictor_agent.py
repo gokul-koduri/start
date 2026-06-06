@@ -13,8 +13,8 @@ import logging
 from datetime import datetime, timezone
 
 from agents.base import AgentResult, BaseAgent
-from agents.risk_scorer import score_startup
-from agents.ml_trainer import MLTrainer, _build_features
+from agents.risk_scorer_agent import score_startup
+from agents.ml_trainer_agent import MLTrainer, _build_features
 from db.connection import get_connection
 from db import schema
 

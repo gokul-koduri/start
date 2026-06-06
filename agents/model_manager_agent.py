@@ -4,7 +4,7 @@ Provides a single point for all agents to request LLM inference via Ollama,
 with support for HuggingFace GGUF models and automatic token tracking.
 
 Usage:
-    from agents.model_manager import ModelManager
+    from agents.model_manager_agent import ModelManager
 
     mgr = ModelManager(config)
     response = mgr.infer("sentiment", "Analyze: Company X raised $50M then failed")

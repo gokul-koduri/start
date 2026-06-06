@@ -12,7 +12,7 @@ Architecture:
        -> update subscription_metrics
 
 Also provides an optional Flask webhook server for local development:
-    python -c "from agents.stripe_webhook import create_flask_app; create_flask_app().run(port=5000)"
+    python -c "from agents.stripe_webhook_agent import create_flask_app; create_flask_app().run(port=5000)"
 
 Config options:
     stripe_secret_key: str — Stripe API secret key (${STRIPE_SECRET_KEY})
@@ -236,7 +236,7 @@ def create_flask_app(stripe_webhook_secret: str = ""):
     """Create a Flask app for receiving Stripe webhook events locally.
 
     Usage:
-        python -c "from agents.stripe_webhook import create_flask_app; \\
+        python -c "from agents.stripe_webhook_agent import create_flask_app; \\
                    create_flask_app('whsec_...').run(port=5000)"
 
     Requires Flask: pip install flask

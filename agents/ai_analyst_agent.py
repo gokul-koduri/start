@@ -17,7 +17,7 @@ import urllib.request
 import urllib.error
 
 from agents.base import AgentResult, BaseAgent
-from agents.ollama_usage_tracker import _track_inference
+from agents.ollama_usage_tracker_agent import _track_inference
 from db.connection import get_connection
 from db import schema
 

@@ -4,8 +4,8 @@ import logging
 from datetime import datetime, timezone
 
 from agents.base import AgentResult, BaseAgent
-from agents.collection import CollectionAgent
-from agents.report import ReportAgent
+from agents.collection_agent import CollectionAgent
+from agents.report_agent import ReportAgent
 
 _logger = logging.getLogger(__name__)
 
@@ -24,15 +24,15 @@ def _get_agent_class(name: str):
 
     # Lazy imports for agents that may have optional deps
     if name == "dashboard":
-        from agents.dashboard import DashboardAgent
+        from agents.dashboard_agent import DashboardAgent
         AGENT_REGISTRY["dashboard"] = DashboardAgent
         return DashboardAgent
     elif name == "git_publisher":
-        from agents.git_publisher import GitPublisherAgent
+        from agents.git_publisher_agent import GitPublisherAgent
         AGENT_REGISTRY["git_publisher"] = GitPublisherAgent
         return GitPublisherAgent
     elif name == "internet_research":
-        from agents.internet_research import InternetResearchAgent
+        from agents.internet_research_agent import InternetResearchAgent
         AGENT_REGISTRY["internet_research"] = InternetResearchAgent
         return InternetResearchAgent
     elif name == "failure_pattern":
@@ -108,7 +108,7 @@ def _get_agent_class(name: str):
         AGENT_REGISTRY["report_generator"] = ReportGeneratorAgent
         return ReportGeneratorAgent
     elif name == "stripe_payments":
-        from agents.stripe_webhook import StripePaymentAgent
+        from agents.stripe_webhook_agent import StripePaymentAgent
         AGENT_REGISTRY["stripe_payments"] = StripePaymentAgent
         return StripePaymentAgent
     elif name == "span_monitor":
@@ -116,11 +116,11 @@ def _get_agent_class(name: str):
         AGENT_REGISTRY["span_monitor"] = SpanAgent
         return SpanAgent
     elif name == "risk_scorer":
-        from agents.risk_scorer import RiskScorerAgent
+        from agents.risk_scorer_agent import RiskScorerAgent
         AGENT_REGISTRY["risk_scorer"] = RiskScorerAgent
         return RiskScorerAgent
     elif name == "ml_predictor":
-        from agents.ml_predictor import MLPredictorAgent
+        from agents.ml_predictor_agent import MLPredictorAgent
         AGENT_REGISTRY["ml_predictor"] = MLPredictorAgent
         return MLPredictorAgent
     elif name == "sentiment":
@@ -128,11 +128,11 @@ def _get_agent_class(name: str):
         AGENT_REGISTRY["sentiment"] = SentimentAgent
         return SentimentAgent
     elif name == "opportunity_scorer":
-        from agents.opportunity_scorer import OpportunityScorerAgent
+        from agents.opportunity_scorer_agent import OpportunityScorerAgent
         AGENT_REGISTRY["opportunity_scorer"] = OpportunityScorerAgent
         return OpportunityScorerAgent
     elif name == "entity_resolver":
-        from agents.entity_resolver import EntityResolverAgent
+        from agents.entity_resolver_agent import EntityResolverAgent
         AGENT_REGISTRY["entity_resolver"] = EntityResolverAgent
         return EntityResolverAgent
     elif name == "nlp_enrichment":
@@ -144,7 +144,7 @@ def _get_agent_class(name: str):
         AGENT_REGISTRY["semantic_search"] = SemanticSearchAgent
         return SemanticSearchAgent
     elif name == "project_monitor":
-        from agents.project_monitor import ProjectMonitorAgent
+        from agents.project_monitor_agent import ProjectMonitorAgent
         AGENT_REGISTRY["project_monitor"] = ProjectMonitorAgent
         return ProjectMonitorAgent
     elif name == "market_sizing":
@@ -192,7 +192,7 @@ def _get_agent_class(name: str):
         AGENT_REGISTRY["topic_modeling"] = TopicModelingAgent
         return TopicModelingAgent
     elif name == "relationship_extractor":
-        from agents.relationship_extractor import RelationshipExtractorAgent
+        from agents.relationship_extractor_agent import RelationshipExtractorAgent
         AGENT_REGISTRY["relationship_extractor"] = RelationshipExtractorAgent
         return RelationshipExtractorAgent
     elif name == "trend_detector":

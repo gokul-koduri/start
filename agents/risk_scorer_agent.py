@@ -9,7 +9,7 @@ If training data is insufficient, falls back to a rule-based heuristic scorer.
 
 Run:
     python run_agent.py --pipeline analysis   (includes risk_scorer agent)
-    python -c "from agents.risk_scorer import score_startup; print(score_startup(sector='EV', funding_usd=50_000_000, country='US'))"
+    python -c "from agents.risk_scorer_agent import score_startup; print(score_startup(sector='EV', funding_usd=50_000_000, country='US'))"
 
 Config options:
     min_training_samples: int — min rows to train ML model (default: 100)

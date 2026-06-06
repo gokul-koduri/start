@@ -131,7 +131,7 @@ class SentimentAgent(BaseAgent):
         model_manager = None
         if mode == "deep":
             try:
-                from agents.model_manager import ModelManager
+                from agents.model_manager_agent import ModelManager
                 model_manager = ModelManager(self.config)
                 _logger.info("SentimentAgent: Using Ollama LLM for deep sentiment analysis")
             except Exception as e:

@@ -8,7 +8,7 @@ Outputs:
 - Training metrics logged to ml_models table
 
 Run:
-    python -c "from agents.ml_trainer import MLTrainer; MLTrainer({}).train()"
+    python -c "from agents.ml_trainer_agent import MLTrainer; MLTrainer({}).train()"
     python run_agent.py --pipeline analysis   (includes ml_predictor agent)
 
 Config options:

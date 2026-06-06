@@ -9,7 +9,7 @@ import pytest
 import yaml
 
 import agents.project_monitor as pm_module
-from agents.project_monitor import ProjectMonitorAgent
+from agents.project_monitor_agent import ProjectMonitorAgent
 
 
 # ── Fixtures ─────────────────────────────────────────────────────

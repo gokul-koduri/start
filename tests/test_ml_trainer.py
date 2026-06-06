@@ -13,7 +13,7 @@ class TestMLTrainer:
     """Test ML trainer utility functions."""
 
     def test_parse_funding_dollars(self):
-        from agents.ml_trainer import _parse_funding
+        from agents.ml_trainer_agent import _parse_funding
 
         assert _parse_funding("$50M") == 50_000_000
         assert _parse_funding("$1.2B") == 1_200_000_000
@@ -23,14 +23,14 @@ class TestMLTrainer:
         assert _parse_funding("unknown") == 0.0
 
     def test_parse_int(self):
-        from agents.ml_trainer import _parse_int
+        from agents.ml_trainer_agent import _parse_int
 
         assert _parse_int("2020") == 2020
         assert _parse_int("2023.5") == 2023
         assert _parse_int("invalid") == 2020  # fallback
 
     def test_load_training_data_from_csv(self, tmp_path):
-        from agents.ml_trainer import load_training_data_from_csv
+        from agents.ml_trainer_agent import load_training_data_from_csv
 
         csv_path = tmp_path / "test_data.csv"
         with open(csv_path, "w", newline="") as f:
@@ -46,7 +46,7 @@ class TestMLTrainer:
         assert features[0]["sector_encoded"] > 0
 
     def test_load_training_data_from_csv_empty(self, tmp_path):
-        from agents.ml_trainer import load_training_data_from_csv
+        from agents.ml_trainer_agent import load_training_data_from_csv
 
         csv_path = tmp_path / "empty.csv"
         with open(csv_path, "w", newline="") as f:
@@ -61,15 +61,15 @@ class TestMLPredictor:
     """Test ML predictor agent (no real DB or model)."""
 
     def test_ml_predictor_name(self):
-        from agents.ml_predictor import MLPredictorAgent
+        from agents.ml_predictor_agent import MLPredictorAgent
 
         agent = MLPredictorAgent({})
         assert agent.name == "ml_predictor"
 
     def test_ml_predictor_skips_without_model(self, tmp_path):
         """MLPredictorAgent should return skip result when no model exists."""
-        from agents.ml_predictor import MLPredictorAgent
-        from agents.ml_trainer import MLTrainer
+        from agents.ml_predictor_agent import MLPredictorAgent
+        from agents.ml_trainer_agent import MLTrainer
 
         # Point to empty directory so no model files are found
         agent = MLPredictorAgent({"model_output_dir": str(tmp_path)})

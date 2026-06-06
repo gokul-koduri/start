@@ -79,47 +79,47 @@ class TestMLFeatureEngineering:
     """Test ML trainer feature building functions."""
 
     def test_encode_sector_known(self):
-        from agents.ml_trainer import _encode_sector
+        from agents.ml_trainer_agent import _encode_sector
 
         assert _encode_sector("Crypto/Blockchain") == 20.0
         assert _encode_sector("Cybersecurity") == 1.0
         assert _encode_sector("SaaS") == 2.0
 
     def test_encode_sector_unknown(self):
-        from agents.ml_trainer import _encode_sector
+        from agents.ml_trainer_agent import _encode_sector
 
         assert _encode_sector("UnknownSector") == 10.0
         assert _encode_sector("") == 10.0
 
     def test_encode_sector_partial_match(self):
-        from agents.ml_trainer import _encode_sector
+        from agents.ml_trainer_agent import _encode_sector
 
         # "EdTech" should match partially
         result = _encode_sector("EdTech Platform")
         assert result == 15.0
 
     def test_country_risk_known(self):
-        from agents.ml_trainer import _country_risk
+        from agents.ml_trainer_agent import _country_risk
 
         assert _country_risk("US") == 1.0
         assert _country_risk("India") == 1.15
         assert _country_risk("Germany") == 0.9
 
     def test_country_risk_unknown(self):
-        from agents.ml_trainer import _country_risk
+        from agents.ml_trainer_agent import _country_risk
 
         assert _country_risk("") == 1.05
         assert _country_risk("Unknown") == 1.1
 
     def test_is_manufacturing(self):
-        from agents.ml_trainer import _is_manufacturing
+        from agents.ml_trainer_agent import _is_manufacturing
 
         assert _is_manufacturing("Battery Manufacturing") == 1
         assert _is_manufacturing("SaaS Platform") == 0
         assert _is_manufacturing("EV", "Automotive") == 1
 
     def test_build_features(self):
-        from agents.ml_trainer import _build_features
+        from agents.ml_trainer_agent import _build_features
 
         row = {
             "sector": "Crypto/Blockchain",

@@ -22,7 +22,7 @@ class TestRelationshipExtractorAgent:
 
     @pytest.fixture
     def agent(self):
-        from agents.relationship_extractor import RelationshipExtractorAgent
+        from agents.relationship_extractor_agent import RelationshipExtractorAgent
         return RelationshipExtractorAgent(config={}, dry_run=False)
 
     def test_agent_name(self, agent):

@@ -11,7 +11,7 @@ mock_pymysql = MagicMock()
 sys.modules["pymysql"] = mock_pymysql
 sys.modules["pymysql.cursors"] = mock_pymysql.cursors
 
-from agents.risk_scorer import score_startup
+from agents.risk_scorer_agent import score_startup
 
 
 class TestRiskScorer:

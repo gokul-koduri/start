@@ -327,7 +327,7 @@ if HAS_FASTAPI:
         Request body:
             {"sector": "EV", "funding_usd": 50000000, "country": "US", "year_founded": 2019}
         """
-        from agents.risk_scorer import score_startup
+        from agents.risk_scorer_agent import score_startup
 
         heuristic = score_startup(
             sector=body.get("sector", ""),
@@ -340,7 +340,7 @@ if HAS_FASTAPI:
 
         # Try ML model for blended scoring
         try:
-            from agents.ml_trainer import MLTrainer, _build_features
+            from agents.ml_trainer_agent import MLTrainer, _build_features
             trainer = MLTrainer({})
             model, model_name, features = trainer.load_best_model()
             if model is not None:
@@ -385,7 +385,7 @@ if HAS_FASTAPI:
     ):
         """Trigger ML model training on existing startup data."""
         try:
-            from agents.ml_trainer import MLTrainer
+            from agents.ml_trainer_agent import MLTrainer
             from db.connection import get_connection as _gc
 
             conn = _gc()
@@ -410,7 +410,7 @@ if HAS_FASTAPI:
         Request body:
             {"sector": "EV", "funding_usd": 50000000, "country": "US", "year_founded": 2019}
         """
-        from agents.risk_scorer import score_startup
+        from agents.risk_scorer_agent import score_startup
 
         heuristic = score_startup(
             sector=body.get("sector", ""),
@@ -422,7 +422,7 @@ if HAS_FASTAPI:
         )
 
         try:
-            from agents.ml_trainer import MLTrainer, _build_features
+            from agents.ml_trainer_agent import MLTrainer, _build_features
             trainer = MLTrainer({})
             model, model_name, features = trainer.load_best_model()
             if model is None:
@@ -468,7 +468,7 @@ if HAS_FASTAPI:
     def list_ollama_models():
         """List locally available Ollama models."""
         try:
-            from agents.model_manager import ModelManager
+            from agents.model_manager_agent import ModelManager
             mgr = ModelManager({})
             models = mgr.list_local_models()
             return {"models": models, "count": len(models)}
@@ -486,7 +486,7 @@ if HAS_FASTAPI:
             raise HTTPException(status_code=400, detail="model_name is required")
 
         try:
-            from agents.model_manager import ModelManager
+            from agents.model_manager_agent import ModelManager
             mgr = ModelManager({})
             success = mgr.pull_model(model_name)
             if success:

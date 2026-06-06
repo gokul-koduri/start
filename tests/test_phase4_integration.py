@@ -55,7 +55,7 @@ class TestPhase4CollectorsRegistered:
 
     def test_all_collectors_dict(self):
         """Test ALL_COLLECTORS dict exists and has expected collectors."""
-        from agents.collection import ALL_COLLECTORS
+        from agents.collection_agent import ALL_COLLECTORS
 
         # Expected Phase 4 collectors
         phase4_collectors = [
@@ -74,13 +74,13 @@ class TestPhase4CollectorsRegistered:
 
     def test_regulatory_registered(self):
         """Test regulatory collector is registered."""
-        from agents.collection import ALL_COLLECTORS
+        from agents.collection_agent import ALL_COLLECTORS
         assert "regulatory" in ALL_COLLECTORS
         assert ALL_COLLECTORS["regulatory"] is not None
 
     def test_newsletter_registered(self):
         """Test newsletter collector is registered."""
-        from agents.collection import ALL_COLLECTORS
+        from agents.collection_agent import ALL_COLLECTORS
         assert "newsletter" in ALL_COLLECTORS
         assert ALL_COLLECTORS["newsletter"] is not None
 

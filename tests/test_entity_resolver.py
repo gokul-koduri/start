@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from agents.entity_resolver import (
+from agents.entity_resolver_agent import (
     EntityResolverAgent,
     _jaro_winkler_similarity,
 )

@@ -35,6 +35,7 @@ import argparse
 import json
 import logging
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -240,7 +241,7 @@ if HAS_FASTAPI:
                        funding_raised_usd, funding_description, year_founded, year_shutdown,
                        failure_reason, failure_category, notable, source
                 FROM failed_startups {where_clause}
-                ORDER BY funding_raised_usd DESC NULLS LAST
+                ORDER BY funding_raised_usd DESC
                 LIMIT %s OFFSET %s""",
             params + [limit, offset],
         )

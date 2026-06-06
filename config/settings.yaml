@@ -234,6 +234,14 @@ agents:
         - span_monitor
         - dashboard
         - git_publisher
+      dev-team:
+        - product_manager
+        - business_analyst
+        - solution_architect
+        - ux_designer
+        - software_engineer
+        - qa_engineer
+        - devops_engineer
       collect-only:
         - collection
       report-only:

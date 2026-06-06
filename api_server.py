@@ -69,6 +69,19 @@ if HAS_FASTAPI:
         allow_headers=["*"],
     )
 
+    # ── API v2 Routers ─────────────────────────────────────────
+    try:
+        from api.v2.opportunities import router as v2_opportunities_router
+        from api.v2.signals import router as v2_signals_router
+        from api.v2.webhooks import router as v2_webhooks_router
+        from api.v2.export import router as v2_export_router
+        app.include_router(v2_opportunities_router, prefix="/api")
+        app.include_router(v2_signals_router, prefix="/api")
+        app.include_router(v2_webhooks_router, prefix="/api")
+        app.include_router(v2_export_router, prefix="/api")
+    except ImportError as e:
+        _logger.warning("Could not import API v2 routers: %s", e)
+
 
     # ── Dashboard ─────────────────────────────────────────────
 

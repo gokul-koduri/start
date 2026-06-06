@@ -211,6 +211,64 @@ def _get_agent_class(name: str):
         from agents.cohort_analysis_agent import CohortAnalysisAgent
         AGENT_REGISTRY["cohort_analysis"] = CohortAnalysisAgent
         return CohortAnalysisAgent
+    elif name == "slack_integration":
+        from agents.slack_integration_agent import SlackIntegrationAgent
+        AGENT_REGISTRY["slack_integration"] = SlackIntegrationAgent
+        return SlackIntegrationAgent
+    elif name == "email_digest":
+        from agents.email_digest_agent import EmailDigestAgent
+        AGENT_REGISTRY["email_digest"] = EmailDigestAgent
+        return EmailDigestAgent
+    elif name == "export":
+        from agents.export_agent import ExportAgent
+        AGENT_REGISTRY["export"] = ExportAgent
+        return ExportAgent
+    elif name == "feed_generator":
+        from agents.feed_generator_agent import FeedGeneratorAgent
+        AGENT_REGISTRY["feed_generator"] = FeedGeneratorAgent
+        return FeedGeneratorAgent
+    elif name == "data_quality":
+        from agents.data_quality_agent import DataQualityAgent
+        AGENT_REGISTRY["data_quality"] = DataQualityAgent
+        return DataQualityAgent
+    elif name == "pipeline_health":
+        from agents.pipeline_health_agent import PipelineHealthAgent
+        AGENT_REGISTRY["pipeline_health"] = PipelineHealthAgent
+        return PipelineHealthAgent
+    elif name == "cost_tracking":
+        from agents.cost_tracking_agent import CostTrackingAgent
+        AGENT_REGISTRY["cost_tracking"] = CostTrackingAgent
+        return CostTrackingAgent
+
+    # ── AI Product Development Team (7 agents) ──
+    elif name == "product_manager":
+        from agents.product_manager_agent import ProductManagerAgent
+        AGENT_REGISTRY["product_manager"] = ProductManagerAgent
+        return ProductManagerAgent
+    elif name == "business_analyst":
+        from agents.business_analyst_agent import BusinessAnalystAgent
+        AGENT_REGISTRY["business_analyst"] = BusinessAnalystAgent
+        return BusinessAnalystAgent
+    elif name == "solution_architect":
+        from agents.solution_architect_agent import SolutionArchitectAgent
+        AGENT_REGISTRY["solution_architect"] = SolutionArchitectAgent
+        return SolutionArchitectAgent
+    elif name == "ux_designer":
+        from agents.ux_designer_agent import UXDesignerAgent
+        AGENT_REGISTRY["ux_designer"] = UXDesignerAgent
+        return UXDesignerAgent
+    elif name == "software_engineer":
+        from agents.software_engineer_agent import SoftwareEngineerAgent
+        AGENT_REGISTRY["software_engineer"] = SoftwareEngineerAgent
+        return SoftwareEngineerAgent
+    elif name == "qa_engineer":
+        from agents.qa_engineer_agent import QAEngineerAgent
+        AGENT_REGISTRY["qa_engineer"] = QAEngineerAgent
+        return QAEngineerAgent
+    elif name == "devops_engineer":
+        from agents.devops_engineer_agent import DevOpsEngineerAgent
+        AGENT_REGISTRY["devops_engineer"] = DevOpsEngineerAgent
+        return DevOpsEngineerAgent
 
     raise ValueError(f"Unknown agent: {name}")
 
@@ -236,6 +294,9 @@ class OrchestratorAgent(BaseAgent):
         pipelines = self.config.get("pipelines", {
             "daily": ["collection", "report"],
             "weekly": ["collection", "report"],
+            "dev-team": ["product_manager", "business_analyst", "solution_architect",
+                         "ux_designer", "software_engineer", "qa_engineer",
+                         "devops_engineer"],
         })
 
         agent_names = pipelines.get(pipeline_name, pipelines.get("daily", ["collection", "report"]))

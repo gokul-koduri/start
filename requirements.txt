@@ -50,6 +50,10 @@ bytewax>=0.16.0
 clickhouse-driver>=0.2.0
 # orjson is 2-3x faster than json for serialization
 orjson>=3.9.0
+
+# Phase 6: Operations (Auth + Monitoring)
+pyjwt>=2.8.0
+prometheus-client>=0.20.0
 # dagster for orchestration (install separately: pip install dagster dagster-webserver)
 # dagster>=1.6.0
 # dagster-webserver>=1.6.0

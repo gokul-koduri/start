@@ -60,7 +60,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run startup research agent pipeline")
     parser.add_argument(
         "--pipeline",
-        choices=["daily", "weekly", "analysis", "full", "collect-only", "report-only", "publish-only"],
+        choices=["daily", "weekly", "analysis", "full", "collect-only", "report-only", "publish-only", "dev-team"],
         default="daily",
         help="Which pipeline to run (default: daily)",
     )
@@ -72,12 +72,64 @@ def main():
         default=None,
         help="Ask a natural language question about the data (AI Analyst mode)",
     )
+    parser.add_argument(
+        "--agent",
+        type=str,
+        default=None,
+        help="Run a single agent by name (e.g. product_manager, qa_engineer)",
+    )
 
     args = parser.parse_args()
 
     setup_logging()
     _logger = logging.getLogger("run_agent")
     config = load_config()
+
+    # Single agent mode: run one agent directly
+    if args.agent:
+        # Redirect ALL logging to stderr so JSON output on stdout is clean
+        for handler in logging.getLogger().handlers[:]:
+            logging.getLogger().removeHandler(handler)
+            if hasattr(handler, 'stream') and handler.stream == sys.stdout:
+                handler.stream = sys.stderr
+                logging.getLogger().addHandler(handler)
+            else:
+                logging.getLogger().addHandler(handler)
+        for name in logging.root.manager.loggerDict:
+            lg = logging.getLogger(name)
+            for h in lg.handlers[:]:
+                if hasattr(h, 'stream') and h.stream == sys.stdout:
+                    lg.removeHandler(h)
+                    h.stream = sys.stderr
+                    lg.addHandler(h)
+
+        _logger.info("Single agent mode — agent: %s", args.agent)
+        from agents.orchestrator import _get_agent_class
+        try:
+            agent_class = _get_agent_class(args.agent)
+        except ValueError as e:
+            _logger.error("Unknown agent: %s", args.agent)
+            sys.exit(1)
+
+        agent = agent_class(config={}, dry_run=args.dry_run)
+        result = agent.run()
+
+        # Print summary to stderr (logging)
+        _logger.info("Agent '%s' finished: status=%s", result.agent_name, result.status)
+        if result.errors:
+            for err in result.errors:
+                _logger.error("  Error: %s", err)
+
+        # Print JSON to stdout only
+        import json as _json
+        output = {"status": result.status, "agent_name": result.agent_name}
+        if result.errors:
+            output["errors"] = result.errors
+        if result.data:
+            output["data"] = result.data
+        print(_json.dumps(output, indent=2, default=str))
+
+        sys.exit(1 if result.status == "failed" else 0)
 
     # AI Analyst mode: direct query, bypass pipeline
     if args.chat:
@@ -116,7 +168,10 @@ def main():
                      "license_manager", "knowledge_graph", "ai_analyst",
                      "alert_dispatcher", "report_generator", "stripe_payments", "span_monitor",
                      "opportunity_scorer", "entity_resolver", "nlp_enrichment",
-                     "semantic_search"]:
+                     "semantic_search",
+                     # AI Product Development Team
+                     "product_manager", "business_analyst", "solution_architect",
+                     "ux_designer", "software_engineer", "qa_engineer", "devops_engineer"]:
             if key in agents_config:
                 orchestrator_config[key] = agents_config[key]
 

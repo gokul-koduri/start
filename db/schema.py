@@ -4,9 +4,29 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 15
+_SCHEMA_VERSION = 16
 
 _TABLES = [
+    """
+    CREATE TABLE IF NOT EXISTS tenants (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        name            VARCHAR(255) NOT NULL,
+        slug            VARCHAR(100) NOT NULL UNIQUE,
+        config          TEXT COMMENT 'JSON tenant configuration',
+        created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        is_active       TINYINT DEFAULT 1
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS api_webhooks (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        url             VARCHAR(2048) NOT NULL,
+        events_json     TEXT NOT NULL COMMENT 'JSON: list of event types',
+        headers_json    TEXT COMMENT 'JSON: custom headers',
+        active          TINYINT DEFAULT 1,
+        created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
     """
     CREATE TABLE IF NOT EXISTS failed_startups (
         id                  INT PRIMARY KEY AUTO_INCREMENT,
@@ -535,7 +555,7 @@ _TABLES = [
         published_at    DATETIME,
         collected_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         processed       TINYINT DEFAULT 0 COMMENT '0=pending, 1=enriched, 2=scored',
-        UNIQUE KEY uq_signal_source_url (signal_type, source_url(767))
+        UNIQUE KEY uq_signal_source_url (signal_type, source_url(500))
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """

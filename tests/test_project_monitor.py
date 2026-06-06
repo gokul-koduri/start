@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 import yaml
 
-import agents.project_monitor as pm_module
+import agents.project_monitor_agent as pm_module
 from agents.project_monitor_agent import ProjectMonitorAgent
 
 

@@ -11,6 +11,12 @@ mock_pymysql = MagicMock()
 sys.modules['pymysql'] = mock_pymysql
 sys.modules['pymysql.cursors'] = mock_pymysql.cursors
 
+# Save originals so we don't poison other test modules
+_saved_db_modules = {
+    key: sys.modules.pop(key, None)
+    for key in ("db", "db.connection", "db.schema", "db.dedup")
+}
+
 # Mock db modules that try to connect to MySQL
 mock_db_conn = MagicMock()
 sys.modules['db'] = MagicMock()
@@ -22,6 +28,13 @@ sys.modules['db.schema'] = MagicMock()
 
 from collectors.failory_scraper import FailoryScraper
 from bs4 import BeautifulSoup
+
+# Restore real db modules so other tests aren't poisoned
+for key, orig in _saved_db_modules.items():
+    if orig is not None:
+        sys.modules[key] = orig
+    else:
+        sys.modules.pop(key, None)
 
 
 class TestFailoryScraper:

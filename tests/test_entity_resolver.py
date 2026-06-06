@@ -78,7 +78,7 @@ class TestEntityResolverAgent:
     def test_execute_no_db(self):
         """Returns failed result when DB connection fails."""
         agent = EntityResolverAgent()
-        with patch("agents.entity_resolver.get_connection", side_effect=Exception("no db")):
+        with patch("agents.entity_resolver_agent.get_connection", side_effect=Exception("no db")):
             result = agent.execute()
         assert result.status == "failed"
         assert len(result.errors) > 0
@@ -93,8 +93,8 @@ class TestEntityResolverAgent:
         mock_cursor.fetchall.return_value = []
         mock_conn.cursor.return_value = mock_cursor
 
-        with patch("agents.entity_resolver.get_connection", return_value=mock_conn):
-            with patch("agents.entity_resolver.schema") as mock_schema:
+        with patch("agents.entity_resolver_agent.get_connection", return_value=mock_conn):
+            with patch("agents.entity_resolver_agent.schema") as mock_schema:
                 result = agent.execute()
 
         assert result.status == "success"

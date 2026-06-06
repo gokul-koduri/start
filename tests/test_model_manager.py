@@ -95,7 +95,7 @@ class TestTokenTracking:
 
         # Patch the tracker path
         tracker_path = tmp_path / "tracker.json"
-        with patch("agents.model_manager._TOKEN_TRACKER_PATH", tracker_path):
+        with patch("agents.model_manager_agent._TOKEN_TRACKER_PATH", tracker_path):
             mgr = ModelManager({})
             mgr._track_usage("llama3", 100, 50)
 
@@ -111,7 +111,7 @@ class TestTokenTracking:
         from agents.model_manager_agent import ModelManager
 
         tracker_path = tmp_path / "tracker.json"
-        with patch("agents.model_manager._TOKEN_TRACKER_PATH", tracker_path):
+        with patch("agents.model_manager_agent._TOKEN_TRACKER_PATH", tracker_path):
             mgr = ModelManager({})
             mgr._track_usage("llama3", 10, 5)
             mgr._track_usage("llama3", 20, 10)

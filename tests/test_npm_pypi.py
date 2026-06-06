@@ -13,6 +13,12 @@ mock_pymysql = MagicMock()
 sys.modules["pymysql"] = mock_pymysql
 sys.modules["pymysql.cursors"] = mock_pymysql.cursors
 
+# Save originals so we don't poison other test modules
+_saved_db_modules = {
+    key: sys.modules.pop(key, None)
+    for key in ("db", "db.connection", "db.schema", "db.dedup")
+}
+
 mock_db = MagicMock()
 sys.modules["db"] = mock_db
 sys.modules["db.connection"] = mock_db
@@ -23,6 +29,13 @@ sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
 from collectors.npm_pypi_collector import NPMPyPICollector
 from collectors.base import CollectionResult
+
+# Restore real db modules so other tests aren't poisoned
+for key, orig in _saved_db_modules.items():
+    if orig is not None:
+        sys.modules[key] = orig
+    else:
+        sys.modules.pop(key, None)
 
 
 def _make_npm_data(name="next", version="14.0.0",

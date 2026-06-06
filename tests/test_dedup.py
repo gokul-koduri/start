@@ -11,14 +11,6 @@ mock_pymysql = MagicMock()
 sys.modules['pymysql'] = mock_pymysql
 sys.modules['pymysql.cursors'] = mock_pymysql.cursors
 
-# Ensure we get the REAL db.dedup, not a leftover mock from test_collectors
-if 'db.dedup' in sys.modules and isinstance(sys.modules['db.dedup'], MagicMock):
-    del sys.modules['db.dedup']
-if 'db' in sys.modules and isinstance(sys.modules['db'], MagicMock):
-    del sys.modules['db']
-if 'db.connection' in sys.modules and isinstance(sys.modules.get('db.connection'), MagicMock):
-    del sys.modules['db.connection']
-
 from db.dedup import dedup_startup
 
 

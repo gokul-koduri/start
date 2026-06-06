@@ -660,6 +660,103 @@ if HAS_FASTAPI:
         return {"results": rows}
 
 
+    # ── Alert Preferences ──────────────────────────────────────
+
+    @app.get("/api/alerts/preferences")
+    def get_alert_preferences():
+        """Get current alert notification preferences."""
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM alert_preferences ORDER BY updated_at DESC LIMIT 1")
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        if row:
+            prefs = dict(row)
+            # Convert INT booleans to actual booleans
+            for key in ("email_enabled", "slack_enabled", "discord_enabled", "webhook_enabled"):
+                prefs[key] = bool(prefs.get(key, 1))
+            return prefs
+        # Return defaults
+        return {
+            "email_enabled": True, "slack_enabled": True,
+            "discord_enabled": True, "webhook_enabled": True,
+            "min_score_threshold": 80.0, "max_alerts_per_hour": 20,
+            "quiet_hours_start": None, "quiet_hours_end": None,
+        }
+
+    @app.put("/api/alerts/preferences")
+    def update_alert_preferences(body: dict):
+        """Update alert notification preferences.
+
+        Request body (all fields optional):
+            {
+                "email_enabled": true,
+                "slack_enabled": true,
+                "min_score_threshold": 85.0,
+                "quiet_hours_start": "22:00",
+                "quiet_hours_end": "08:00",
+                "max_alerts_per_hour": 10
+            }
+        """
+        allowed = {
+            "email_enabled", "slack_enabled", "discord_enabled", "webhook_enabled",
+            "min_score_threshold", "quiet_hours_start", "quiet_hours_end",
+            "max_alerts_per_hour",
+        }
+        updates = {k: v for k, v in body.items() if k in allowed}
+        if not updates:
+            return {"status": "no_changes", "message": "No valid fields to update"}
+
+        # Convert booleans to ints for MySQL
+        for key in ("email_enabled", "slack_enabled", "discord_enabled", "webhook_enabled"):
+            if key in updates and isinstance(updates[key], bool):
+                updates[key] = int(updates[key])
+
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+
+        # Check if preferences exist
+        cursor.execute("SELECT id FROM alert_preferences ORDER BY updated_at DESC LIMIT 1")
+        existing = cursor.fetchone()
+
+        if existing:
+            set_clause = ", ".join(f"{k} = %s" for k in updates)
+            values = list(updates.values()) + [existing["id"]]
+            cursor.execute(f"UPDATE alert_preferences SET {set_clause} WHERE id = %s", values)
+        else:
+            cols = ", ".join(updates.keys())
+            placeholders = ", ".join(["%s"] * len(updates))
+            cursor.execute(f"INSERT INTO alert_preferences ({cols}) VALUES ({placeholders})", list(updates.values()))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"status": "updated", "preferences": updates}
+
+    @app.get("/api/alerts/dead-letters")
+    def list_dead_letters(limit: int = Query(20, ge=1, le=100)):
+        """List failed alerts in the dead letter queue."""
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                """SELECT id, alert_type, entity_name, composite_score,
+                          error_message, attempts, last_attempt_at, created_at
+                   FROM alert_dead_letters
+                   ORDER BY created_at DESC LIMIT %s""",
+                (limit,),
+            )
+            rows = [dict(r) for r in cursor.fetchall()]
+        except Exception:
+            rows = []  # Table may not exist yet
+        cursor.close()
+        conn.close()
+        return {"results": rows, "count": len(rows)}
+
     # ── Pipeline Runs ─────────────────────────────────────────
 
     @app.get("/api/pipeline-runs")

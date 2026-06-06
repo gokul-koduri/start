@@ -72,7 +72,7 @@ class TestPhase6Integration(unittest.TestCase):
         schema_path = Path(__file__).parent.parent / "db" / "schema.py"
         schema_content = schema_path.read_text()
         self.assertTrue(
-            "_SCHEMA_VERSION = 16" in schema_content or "_SCHEMA_VERSION = 17" in schema_content,
+            "_SCHEMA_VERSION = 16" in schema_content or "_SCHEMA_VERSION = 17" in schema_content or "_SCHEMA_VERSION = 18" in schema_content,
             "Schema version should be >= 16"
         )
 

@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 17
+_SCHEMA_VERSION = 18
 
 _TABLES = [
     """
@@ -481,6 +481,21 @@ _TABLES = [
         cooldown_minutes    INT DEFAULT 1440 COMMENT 'min minutes between alerts for this rule',
         last_triggered_at   DATETIME,
         created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS alert_preferences (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        email_enabled       INT DEFAULT 1,
+        slack_enabled       INT DEFAULT 1,
+        discord_enabled     INT DEFAULT 1,
+        webhook_enabled     INT DEFAULT 1,
+        min_score_threshold DOUBLE DEFAULT 80.0,
+        quiet_hours_start   VARCHAR(5) COMMENT 'HH:MM UTC, e.g. 22:00',
+        quiet_hours_end     VARCHAR(5) COMMENT 'HH:MM UTC, e.g. 08:00',
+        max_alerts_per_hour INT DEFAULT 20,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """

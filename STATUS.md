@@ -47,22 +47,20 @@
 ## Documentation Structure
 
 ```
+Root:
+  README.md, ROADMAP.md, STATUS.md, CONTRIBUTING.md
+
 docs/
-├── README.md                  ✅ NEW
-├── requirements/
-│   └── product-vision.md      ✅ NEW
-├── architecture/              (existing .md files referenced)
-├── api/
-│   └── changelog.md           ✅ NEW
-├── testing/                   (TESTING_STRATEGY.md referenced)
-├── deployment/
-│   └── checklist.md           ✅ NEW
-├── adr/
-│   └── README.md              ✅ NEW (ADR-001 to ADR-020 indexed)
-├── sprints/
-│   └── sprint-plan.md         ✅ NEW
-└── user-stories/
-    └── stories.md             ✅ NEW
+├── business/          (7 files) plan, pitch, financials, GTM, competitive
+├── engineering/       (15 files) problem, design, coding, tests, risks, work-plan
+├── operations/        (13 files) agent guide, API, deploy, security, monitoring
+├── reports/           (5 files) generated analysis reports
+├── requirements/      product-vision.md
+├── adr/               README.md (ADR-001 to ADR-020)
+├── api/               changelog.md
+├── deployment/        checklist.md
+├── sprints/           sprint-plan.md
+└── user-stories/      stories.md
 ```
 
 ---

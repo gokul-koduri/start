@@ -162,15 +162,23 @@ refactor(db): extract db helpers for boilerplate reduction
 ## Documentation Structure
 
 ```
+Root:
+  README.md             Project overview, quickstart
+  ROADMAP.md            Master roadmap (this file)
+  STATUS.md             Current status quick reference
+  CONTRIBUTING.md       Community contribution guide
+
 /docs
-  /requirements        ← Product vision, scope, risk assessment
-  /architecture        ← System design, database, API, security
-  /api                 ← API specs, changelog
-  /testing             ← Test strategy, results, coverage
-  /deployment          ← Checklists, runbooks, rollback
-  /adr                 ← Architecture Decision Records (ADR-001 to ADR-020)
-  /sprints             ← Sprint plans, burndown
-  /user-stories        ← User stories with acceptance criteria
+  /business             Plan, pitch deck, financials, GTM, competitive analysis
+  /engineering          Problem def, solution design, coding standards, tests, risks
+  /operations           Agent guide, API docs, deployment, security, monitoring
+  /reports              Generated analysis reports
+  /requirements         Product vision, scope, success metrics
+  /adr                  Architecture Decision Records (ADR-001 to ADR-020)
+  /api                  API specs, changelog
+  /deployment           Checklists, runbooks, rollback
+  /sprints              Sprint plans, burndown
+  /user-stories         User stories with acceptance criteria
 ```
 
 ---
@@ -194,12 +202,12 @@ Maintained in these locations:
 
 | What | Where |
 |---|---|
-| Product Backlog | WORK_PLAN.md (107 tasks) |
+| Product Backlog | docs/engineering/work-plan.md (107 tasks) |
 | Sprint Backlog | docs/sprints/sprint-plan.md |
-| Burndown Status | Sprint completion % in WORK_PLAN.md |
-| Risks | RISK_MANAGEMENT.md (21 risks) |
+| Burndown Status | Sprint completion % in work-plan.md |
+| Risks | docs/engineering/risk-management.md (21 risks) |
 | Blockers | GitHub Issues (bug_report.yml) |
-| ADRs | docs/adr/ and DOCUMENT_DECISIONS.md |
+| ADRs | docs/adr/ and docs/engineering/document-decisions.md |
 | Daily Status | STATUS.md |
 
 ---
@@ -241,4 +249,4 @@ python run_agent.py --agent devops_engineer
 ---
 
 *Last updated: June 5, 2026*
-*Related: WORK_PLAN.md, STATUS.md, DESIGN_BEFORE_CODING.md, CODING_STANDARDS.md*
+*Related: docs/engineering/work-plan.md, STATUS.md, docs/engineering/design-before-coding.md, docs/engineering/coding-standards.md*

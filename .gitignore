@@ -1,41 +1,94 @@
-# Python
+# ============================================================
+# Opportunity Intelligence Platform — .gitignore
+# ============================================================
+
+# ── Python ──
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
 *.egg-info/
+*.egg
 dist/
 build/
-*.egg
+eggs/
+sdist/
+wheels/
+*.whl
 .venv/
 venv/
+env/
+.Python
 
-# Environment
+# ── Environment & Secrets ──
 .env
+.env.local
+.env.production
+!.env.example
+!.env.docker
 
-# Data (runtime)
+# ── Data (runtime, NOT source) ──
 data/*.db
 data/*.db-wal
 data/*.db-shm
+data/*.sql.gz
 data/pdfs/
 data/logs/
-data/collectors.lock
 data/cache/
+data/agents.lock
+data/backups/
+!.gitkeep
 
-# IDE
+# ── IDE / Editor ──
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+*.sublime-*
 
-# OS
+# ── OS ──
 .DS_Store
 Thumbs.db
+desktop.ini
+.Trash-*
 
-# Archon local
+# ── Testing ──
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# ── Jupyter ──
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Node.js (dashboard) ──
+node_modules/
+dashboard/.next/
+dashboard/out/
+
+# ── Build artifacts ──
+site/
+*.tgz
+*.tar.gz
+
+# ── Stray pip artifacts ──
+=*
+
+# ── Archon local ──
 .archon/local/
 
-# Test cache
-.pytest_cache/
+# ── macOS launchd (user-specific) ──
+com.startup-research.*.plist
 
-# macOS launchd plists (user-specific)
-# Keep templates in project root, but not installed copies
+# ── Claude AI ──
+.claude/
+
+# ── Temporary files ──
+*.tmp
+*.bak
+*.log
+*.pid
+data/collectors.lock

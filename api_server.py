@@ -1616,6 +1616,79 @@ if HAS_FASTAPI:
         conn.close()
         return {"results": rows, "count": len(rows)}
 
+    # ── Score Accuracy ──────────────────────────────────────────
+
+    @app.get("/api/score/accuracy")
+    def score_accuracy(
+        weeks: int = Query(4, ge=1, le=52),
+        run_validation_now: bool = Query(False, alias="run"),
+    ):
+        """Scoring accuracy metrics with weekly trend.
+
+        Query params:
+            weeks: Look back N weeks for accuracy history (default 4)
+            run: If true, run validation now and store result
+        """
+        # Optionally run validation and persist
+        if run_validation_now:
+            try:
+                from scoring.validate import run_validation
+                report = run_validation()
+                conn = get_connection()
+                schema.init_schema(conn)
+                cursor = conn.cursor()
+                weights_json = json.dumps({k: v for k, v in report.weights_used.items()})
+                cursor.execute(
+                    """INSERT INTO score_accuracy_runs
+                       (accuracy_pct, total_tested, correct,
+                        true_positives, false_positives, true_negatives, false_negatives,
+                        precision_pct, recall_pct, f1_score, threshold_used, weights_snapshot, run_notes)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                    (report.accuracy, report.total, report.correct,
+                     report.true_positives, report.false_positives,
+                     report.true_negatives, report.false_negatives,
+                     report.precision, report.recall, report.f1_score,
+                     report.threshold, weights_json,
+                     f"Auto-run via API: {report.correct}/{report.total} correct"),
+                )
+                conn.commit()
+                cursor.close()
+                conn.close()
+            except Exception as e:
+                _logger.warning("Score accuracy run failed: %s", e)
+
+        # Fetch accuracy history
+        conn = get_connection()
+        schema.init_schema(conn)
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                """SELECT id, accuracy_pct, total_tested, correct,
+                          true_positives, false_positives, true_negatives, false_negatives,
+                          precision_pct, recall_pct, f1_score, threshold_used, run_at
+                   FROM score_accuracy_runs
+                   WHERE run_at >= DATE_SUB(NOW(), INTERVAL %s WEEK)
+                   ORDER BY run_at DESC""",
+                (weeks,),
+            )
+            history = [dict(r) for r in cursor.fetchall()]
+        except Exception:
+            history = []
+
+        # Also return latest validation result (always available)
+        latest = None
+        if history:
+            latest = history[0]
+
+        cursor.close()
+        conn.close()
+        return {
+            "latest": latest,
+            "history": history,
+            "total_runs": len(history),
+            "weeks_covered": weeks,
+        }
+
     # ── Phase 1: Opportunity Intelligence Endpoints ──────────
 
     @app.get("/api/opportunities")

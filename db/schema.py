@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 19
+_SCHEMA_VERSION = 20
 
 _TABLES = [
     """
@@ -608,6 +608,26 @@ _TABLES = [
         detected_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_entity (entity_name, entity_type),
         INDEX idx_detected (detected_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS score_accuracy_runs (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        accuracy_pct        FLOAT NOT NULL COMMENT 'Percentage correct (0-100)',
+        total_tested        INT NOT NULL,
+        correct             INT NOT NULL,
+        true_positives      INT DEFAULT 0,
+        false_positives     INT DEFAULT 0,
+        true_negatives      INT DEFAULT 0,
+        false_negatives     INT DEFAULT 0,
+        precision_pct       FLOAT,
+        recall_pct          FLOAT,
+        f1_score            FLOAT,
+        threshold_used      FLOAT DEFAULT 70.0,
+        weights_snapshot    TEXT COMMENT 'JSON snapshot of weights used',
+        run_notes           TEXT,
+        run_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_run_at (run_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """

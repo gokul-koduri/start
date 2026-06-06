@@ -365,6 +365,10 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
   .pricing-grid { grid-template-columns: 1fr; }
 }
 </style>
+<!-- Plausible Analytics (privacy-friendly, no cookies) -->
+<!-- Set PLAUSIBLE_DOMAIN env var to your domain, e.g. analytics.example.com -->
+<!-- <script defer data-domain="" src="https://plausible.io/js/script.js"></script> -->
+
 </head>
 <body>
 <div class="header">
@@ -2834,7 +2838,54 @@ Llama 3.2 Version Release Date: September 25, 2024
                 }
             }
         });
-        
+
 </script>
+
+<!-- Help Widget -->
+<style>
+.help-fab {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent); color: #fff; border: none;
+  font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.2);
+  transition: transform .2s, box-shadow .2s;
+}
+.help-fab:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+.help-modal {
+  display: none; position: fixed; bottom: 90px; right: 24px; z-index: 9998;
+  width: 340px; max-height: 480px; overflow-y: auto;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.15);
+  padding: 24px; font-family: -apple-system, sans-serif;
+}
+.help-modal.open { display: block; }
+.help-modal h3 { margin: 0 0 12px; font-size: 16px; color: var(--text); }
+.help-modal .faq-item { margin-bottom: 10px; }
+.help-modal .faq-q { font-weight: 600; color: var(--text); font-size: 13px; }
+.help-modal .faq-a { color: var(--text-secondary); font-size: 12px; margin-top: 2px; }
+.help-modal a { color: var(--accent); text-decoration: none; }
+.help-modal a:hover { text-decoration: underline; }
+</style>
+<button class="help-fab" id="helpFab" title="Help (?)">?</button>
+<div class="help-modal" id="helpModal">
+  <h3>Quick Help</h3>
+  <div class="faq-item"><div class="faq-q">How do I search for startups?</div><div class="faq-a">Use the search bar at the top — type a company name, sector, or failure reason.</div></div>
+  <div class="faq-item"><div class="faq-q">What does the risk score mean?</div><div class="faq-a">Scores range 0-1: low (0-.3), moderate (.3-.5), high (.5-.7), critical (.7-1.0).</div></div>
+  <div class="faq-item"><div class="faq-q">Can I export the data?</div><div class="faq-a">Yes — use the API at <code>/api/v2/export</code> or the CSV download on the dashboard.</div></div>
+  <div class="faq-item"><div class="faq-q">How often is data updated?</div><div class="faq-a">The pipeline runs daily at 8 AM UTC, collecting from 15+ data sources.</div></div>
+  <div class="faq-item"><div class="faq-q">Where can I report issues?</div><div class="faq-a"><a href="https://github.com/gokul-koduri/startup-research/issues" target="_blank">GitHub Issues</a> or use the feedback button below.</div></div>
+  <hr style="border-color:var(--border);margin:12px 0">
+  <a href="https://github.com/gokul-koduri/startup-research/issues/new" target="_blank">Report a Bug</a> &middot;
+  <a href="mailto:feedback@example.com?subject=Feedback">Send Feedback</a>
+</div>
+<script>
+(function(){
+  var fab=document.getElementById('helpFab'), modal=document.getElementById('helpModal');
+  fab.addEventListener('click',function(){ modal.classList.toggle('open'); });
+  document.addEventListener('keydown',function(e){ if(e.key==='?'){ e.preventDefault(); modal.classList.toggle('open'); }});
+  document.addEventListener('click',function(e){ if(!fab.contains(e.target)&&!modal.contains(e.target)) modal.classList.remove('open'); });
+})();
+</script>
+
 </body>
 </html>

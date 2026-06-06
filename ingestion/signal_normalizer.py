@@ -12,7 +12,7 @@ with the same fields by the time they reach the scoring engine.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 import uuid
 
@@ -58,7 +58,7 @@ class SignalEnvelope:
         if not self.id:
             self.id = str(uuid.uuid4())
         if not self.collected_at:
-            self.collected_at = datetime.utcnow()
+            self.collected_at = datetime.now(timezone.utc)
         # Truncate body text to prevent oversized messages
         self.body_text = self.body_text[:50_000]
 

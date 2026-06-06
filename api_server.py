@@ -75,10 +75,12 @@ if HAS_FASTAPI:
         from api.v2.signals import router as v2_signals_router
         from api.v2.webhooks import router as v2_webhooks_router
         from api.v2.export import router as v2_export_router
+        from api.v2.feedback import router as v2_feedback_router
         app.include_router(v2_opportunities_router, prefix="/api")
         app.include_router(v2_signals_router, prefix="/api")
         app.include_router(v2_webhooks_router, prefix="/api")
         app.include_router(v2_export_router, prefix="/api")
+        app.include_router(v2_feedback_router, prefix="/api")
     except ImportError as e:
         _logger.warning("Could not import API v2 routers: %s", e)
 
@@ -653,6 +655,8 @@ if HAS_FASTAPI:
         if result.status == "failed":
             raise HTTPException(status_code=500, detail=result.errors)
 
+        answer = result.data.get("answer", "")
+        _log_chat("api", query, answer)
         return {
             "answer": result.data.get("answer", ""),
             "intent": result.data.get("intent", ""),
@@ -709,6 +713,36 @@ if HAS_FASTAPI:
         return {"entities": entities, "relationships": relationships}
 
     # ── Phase 2: Unified Search ────────────────────────────
+
+    def _log_query(query: str, search_mode: str, results_count: int):
+        """Log search query to query_log table (best-effort, never fails)."""
+        try:
+            conn = get_connection()
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO query_log (query, search_mode, results_count, source) "
+                    "VALUES (%s, %s, %s, %s)",
+                    (query[:500], search_mode, results_count, "api"),
+                )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass  # Never break search on logging failure
+
+    def _log_chat(session_id: str, user_message: str, ai_response: str, response_ms: int = 0):
+        """Log chat conversation to chat_log table (best-effort)."""
+        try:
+            conn = get_connection()
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO chat_log (session_id, user_message, ai_response, response_ms) "
+                    "VALUES (%s, %s, %s, %s)",
+                    (session_id, user_message, ai_response[:5000] if ai_response else None, response_ms),
+                )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
 
     @app.get("/api/search")
     def unified_search(
@@ -813,6 +847,7 @@ if HAS_FASTAPI:
                 seen[rid] = r
         results = sorted(seen.values(), key=lambda x: x.get("score", 0), reverse=True)[:limit]
 
+        _log_query(q, search_mode_used, len(results))
         return {
             "query": q,
             "mode": mode,

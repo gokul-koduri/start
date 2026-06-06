@@ -157,6 +157,8 @@ volumes:
   elasticsearch_data:
   clickhouse_data:
   timescaledb_data:
+  caddy_data:
+  caddy_config:
 
   # ── Redis (Cache + Pub/Sub) ──────────────────────────────
   redis:
@@ -273,3 +275,22 @@ volumes:
       timeout: 5s
       retries: 5
       start_period: 15s
+
+  # ── Caddy (Reverse Proxy + Auto HTTPS) ──────────────
+  caddy:
+    image: caddy:2-alpine
+    container_name: startup-research-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+      - streamlit
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+      CADDY_EMAIL: ${CADDY_EMAIL:-admin@example.com}

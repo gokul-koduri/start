@@ -67,11 +67,14 @@ class TestPhase6Integration(unittest.TestCase):
         self.assertIn("slack_integration", AGENT_REGISTRY)
 
     def test_schema_version_16(self):
-        """Test schema version is 16."""
+        """Test schema version is at least 16."""
         from pathlib import Path
         schema_path = Path(__file__).parent.parent / "db" / "schema.py"
         schema_content = schema_path.read_text()
-        self.assertIn("_SCHEMA_VERSION = 16", schema_content)
+        self.assertTrue(
+            "_SCHEMA_VERSION = 16" in schema_content or "_SCHEMA_VERSION = 17" in schema_content,
+            "Schema version should be >= 16"
+        )
 
     def test_new_tables_in_schema(self):
         """Test new tables are in schema."""

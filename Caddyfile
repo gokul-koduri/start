@@ -1,0 +1,37 @@
+# Caddy reverse proxy for the Opportunity Intelligence Platform
+# Usage: Set DOMAIN env var to your domain (e.g., example.com)
+# Caddy auto-provisions HTTPS via Let's Encrypt.
+
+{
+    email {$CADDY_EMAIL:-admin@example.com}
+    auto_https on
+}
+
+{$DOMAIN:localhost} {
+    # API Server
+    reverse_proxy /api/* api:8000
+    reverse_proxy /ws/* api:8000
+    reverse_proxy /docs api:8000
+    reverse_proxy /openapi.json api:8000
+
+    # Streamlit Dashboard (catch-all)
+    reverse_proxy /* streamlit:8501
+
+    # Security headers
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://plausible.io; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:;"
+    }
+
+    # Compression
+    encode gzip
+
+    # Logging
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}

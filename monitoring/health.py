@@ -1,5 +1,6 @@
 """Health check endpoints."""
 
+import datetime
 import logging
 import shutil
 from typing import Dict
@@ -64,5 +65,5 @@ def get_health_status() -> Dict:
         "database": check_database_health(),
         "redis": check_redis_health(),
         "disk": check_disk_space(),
-        "timestamp": __import__("datetime").datetime.now().__import__("timezone").utc.now().isoformat(),
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     }

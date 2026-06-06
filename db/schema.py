@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 16
+_SCHEMA_VERSION = 17
 
 _TABLES = [
     """
@@ -1132,6 +1132,68 @@ _TABLES = [
         record_count        INT DEFAULT 0,
         created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uq_cohort_time (cohort_name, analyzed_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Sprint 1: Feedback System tables ──
+    """
+    CREATE TABLE IF NOT EXISTS query_log (
+        id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+        query           VARCHAR(500) NOT NULL,
+        search_mode     VARCHAR(20) DEFAULT 'hybrid',
+        results_count   INT DEFAULT 0,
+        response_ms     INT DEFAULT 0,
+        source          VARCHAR(50) DEFAULT 'web',
+        ip_hash         VARCHAR(64) DEFAULT NULL,
+        user_agent      VARCHAR(200) DEFAULT NULL,
+        created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_query_created (query(100), created_at),
+        INDEX idx_ql_created (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS chat_log (
+        id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+        session_id      VARCHAR(36) DEFAULT NULL,
+        user_message    TEXT NOT NULL,
+        ai_response     TEXT,
+        model_used      VARCHAR(50) DEFAULT 'llama3:8b',
+        response_ms     INT DEFAULT 0,
+        sources_used    TEXT,
+        ip_hash         VARCHAR(64) DEFAULT NULL,
+        created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_cl_session (session_id),
+        INDEX idx_cl_created (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS score_feedback (
+        id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+        entity_name     VARCHAR(200) NOT NULL,
+        score_given     FLOAT,
+        rating          TINYINT NOT NULL,
+        user_score      INT DEFAULT NULL,
+        comment         TEXT DEFAULT NULL,
+        ip_hash         VARCHAR(64) DEFAULT NULL,
+        created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_sf_entity (entity_name),
+        INDEX idx_sf_rating (rating),
+        INDEX idx_sf_created (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS feature_requests (
+        id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+        feature         VARCHAR(500) NOT NULL,
+        category        VARCHAR(50) DEFAULT 'general',
+        source          VARCHAR(50) DEFAULT 'feedback',
+        upvotes         INT DEFAULT 1,
+        status          VARCHAR(20) DEFAULT 'open',
+        ip_hash         VARCHAR(64) DEFAULT NULL,
+        created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_fr_status (status),
+        INDEX idx_fr_upvotes (upvotes DESC),
+        INDEX idx_fr_category (category)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
 ]

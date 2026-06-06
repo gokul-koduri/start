@@ -1,9 +1,9 @@
 {
-  "last_updated": "2026-06-03T05:03:49.000487+00:00",
+  "last_updated": "2026-06-06T04:36:36.684945+00:00",
   "total_startups": 163,
   "manufacturing_startups": 44,
-  "total_articles": 884,
-  "manufacturing_articles": 456,
+  "total_articles": 942,
+  "manufacturing_articles": 487,
   "recent_failures": [
     {
       "name": "Zulily",
@@ -40,48 +40,48 @@
     "top_score": 8,
     "progress_pct": 100.0,
     "sectors_done": [
-      "EV",
-      "EV Ride-Hailing",
-      "Education",
-      "Social Media",
-      "Quick Commerce",
-      "Robotics",
-      "3D Printing",
-      "BNPL/Fintech",
-      "PropTech/Construction",
-      "Semiconductors",
-      "Design",
-      "EdTech",
-      "Transportation",
-      "E-commerce",
       "Logistics",
-      "Social/Chat",
-      "Battery Manufacturing",
-      "Finances",
-      "Analytics",
       "Fintech",
-      "Healthtech/Genomics",
-      "EV/Automotive",
-      "Proptech",
-      "Beauty/D2C",
-      "Micro-mobility",
+      "Analytics",
       "Marketing",
-      "Fintech/Payments",
-      "Music",
-      "Flexible Display",
-      "Healthtech",
-      "Content/Social Commerce",
-      "Travel",
-      "Fashion-tech",
-      "Food & Beverage",
+      "Education",
+      "Premium EV",
+      "Social/Chat",
+      "EdTech",
       "Entertainment",
-      "Health",
+      "EV Ride-Hailing",
+      "Fintech/Payments",
+      "Quick Commerce",
       "Software & Hardware",
+      "Battery Manufacturing",
+      "E-commerce",
+      "EV/Automotive",
+      "Travel",
+      "PropTech/Construction",
+      "Design",
+      "Health",
+      "Healthtech",
+      "Productivity",
       "Biotech/Genomics",
+      "Content/Social Commerce",
+      "Fashion-tech",
+      "Robotics",
+      "Micro-mobility",
       "Construction",
       "Mobility/EV",
-      "Premium EV",
-      "Productivity"
+      "Food & Beverage",
+      "Transportation",
+      "Finances",
+      "BNPL/Fintech",
+      "Proptech",
+      "EV",
+      "3D Printing",
+      "Social Media",
+      "Music",
+      "Healthtech/Genomics",
+      "Flexible Display",
+      "Semiconductors",
+      "Beauty/D2C"
     ],
     "country_scores": {
       "US": {
@@ -146,28 +146,26 @@
     "endpoint": "http://localhost:11434",
     "models": [
       {
+        "name": "llama3.2:1b",
+        "size_bytes": 1321098329
+      },
+      {
         "name": "llama3:latest",
         "size_bytes": 4661224676
       }
     ],
-    "loaded_models": [
-      {
-        "name": "llama3:latest",
-        "size_bytes": 5587662273,
-        "vram_bytes": 0
-      }
-    ],
+    "loaded_models": [],
     "total_vram_mb": 0,
-    "test_latency_s": 0.22,
-    "test_tokens": 3,
+    "test_latency_s": 0.02,
+    "test_tokens": 2,
     "model_details": {
-      "name": "llama3:latest",
+      "name": "llama3.2:1b",
       "family": "llama",
       "format": "gguf",
-      "quantization_level": "Q4_0",
-      "parameter_count": 8030261248,
+      "quantization_level": "Q8_0",
+      "parameter_count": 1235814432,
       "quantization_version": 2,
-      "license": "META LLAMA 3 COMMUNITY LICENSE AGREEMENT\n\nMeta Llama 3 Version Release Date: April 18, 2024\n\u201cAgreement\u201d means the terms "
+      "license": "LLAMA 3.2 COMMUNITY LICENSE AGREEMENT\nLlama 3.2 Version Release Date: September 25, 2024\n\n\u201cAgreement\u201d means the terms an"
     }
   },
   "llm_pricing": {
@@ -179,10 +177,10 @@
     "cheapest_output": {}
   },
   "ollama_usage": {
-    "total_prompt_tokens": 43,
-    "total_completion_tokens": 7,
-    "total_tokens": 50,
-    "inference_count": 3,
+    "total_prompt_tokens": 74,
+    "total_completion_tokens": 9,
+    "total_tokens": 83,
+    "inference_count": 4,
     "cost_equivalence": {},
     "snapshots": [],
     "status": "tracking"

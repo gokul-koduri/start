@@ -712,7 +712,7 @@ clickhouse:
 
 # Phase 3: TimescaleDB (Time-Series)
 timescaledb:
-  url: "${TIMESCALEDB_URL:-postgresql://startup:startup2024@localhost:5433/startup_timeseries}"
+  url: "${TIMESCALEDB_URL:-postgresql://startup:${TIMESCALEDB_PASSWORD}@localhost:5433/startup_timeseries}"
   # Hypertables auto-created on connect:
   # signal_metrics, anomaly_scores, engagement_trends
 
@@ -777,7 +777,7 @@ scheduler:
 
 # ── Authentication & Security (Sprint 4) ──
 auth:
-  jwt_secret: "change-me-in-production"
+  jwt_secret: "${JWT_SECRET}"
   jwt_expiry_hours: 24
   bcrypt_rounds: 12
   rate_limit_per_minute: 60

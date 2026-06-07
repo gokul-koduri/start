@@ -71,6 +71,46 @@ if HAS_FASTAPI:
         allow_headers=["*"],
     )
 
+    # ── Security Headers (T-060) ──
+    from starlette.middleware.base import BaseHTTPMiddleware
+
+    class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+        """Add security headers to all responses."""
+        async def dispatch(self, request, call_next):
+            response = await call_next(request)
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["X-Frame-Options"] = "DENY"
+            response.headers["X-XSS-Protection"] = "1; mode=block"
+            response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+            response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self'; "
+                "style-src 'self' 'unsafe-inline'; "
+                "img-src 'self' data:; "
+                "connect-src 'self' ws: wss:"
+            )
+            if request.url.hostname not in ("localhost", "127.0.0.1"):
+                response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+            return response
+
+    app.add_middleware(SecurityHeadersMiddleware)
+
+    # ── Rate Limiting (T-059) ──
+    try:
+        from slowapi import Limiter, _rate_limit_exceeded_handler
+        from slowapi.util import get_remote_address
+        from slowapi.errors import RateLimitExceeded
+        from slowapi.middleware import SlowAPIMiddleware
+
+        _limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
+        app.state.limiter = _limiter
+        app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+        app.add_middleware(SlowAPIMiddleware)
+        logging.getLogger("api_server").info("Rate limiting enabled: 60 req/min per IP")
+    except ImportError:
+        logging.getLogger("api_server").warning("slowapi not installed — rate limiting disabled")
+
     # ── Sentry/GlitchTip integration (optional, env-driven) (T-048) ──
     _sentry_dsn = os.environ.get("SENTRY_DSN", "")
     if _sentry_dsn:

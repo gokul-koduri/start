@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 20
+_SCHEMA_VERSION = 21
 
 _TABLES = [
     """
@@ -1247,6 +1247,45 @@ _TABLES = [
         INDEX idx_fr_category (category)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
+    # ── Sprint 3: Feedback + Analytics tables ──
+    """
+    CREATE TABLE IF NOT EXISTS feedback_analysis (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        analysis_week       VARCHAR(20) NOT NULL COMMENT 'ISO week e.g. 2026-W23',
+        trending_queries    TEXT COMMENT 'JSON: list of trending search queries with counts',
+        common_questions    TEXT COMMENT 'JSON: list of common chat questions with counts',
+        avg_rating          FLOAT DEFAULT 0.0 COMMENT 'Average score feedback rating (1-5)',
+        rating_count        INT DEFAULT 0,
+        rating_distribution TEXT COMMENT 'JSON: {1: count, 2: count, ...}',
+        calibration_gaps    TEXT COMMENT 'JSON: entities where user_score differs from AI score',
+        top_feature_requests TEXT COMMENT 'JSON: top feature requests with upvotes',
+        total_queries       INT DEFAULT 0,
+        total_chats         INT DEFAULT 0,
+        total_feedback      INT DEFAULT 0,
+        analyzed_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_analysis_week (analysis_week)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS error_log (
+        id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+        error_type          VARCHAR(100) NOT NULL COMMENT 'Python exception class name',
+        error_message       TEXT NOT NULL,
+        traceback_text      TEXT,
+        endpoint            VARCHAR(255) COMMENT 'API endpoint or module path',
+        request_method      VARCHAR(10),
+        request_path        VARCHAR(500),
+        severity            VARCHAR(20) DEFAULT 'error' COMMENT 'warning, error, critical',
+        fingerprint         VARCHAR(64) COMMENT 'SHA-256 hash for deduplication',
+        request_data        TEXT COMMENT 'JSON: sanitized request body/params',
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_el_type (error_type),
+        INDEX idx_el_endpoint (endpoint),
+        INDEX idx_el_severity (severity),
+        INDEX idx_el_created (created_at),
+        INDEX idx_el_fingerprint (fingerprint)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
 ]
 
 _INDEXES = [
@@ -1324,6 +1363,9 @@ _INDEXES = [
     "CREATE INDEX idx_news_manufacturing_sentiment ON news_articles(is_manufacturing, sentiment_score);",
     "CREATE INDEX idx_opp_score_composite_trend ON opportunity_scores(composite_score DESC, trend_direction);",
     "CREATE INDEX idx_vector_embed_entity ON vector_embeddings(entity_name);",
+    # ── Sprint 3: Feedback + Analytics indexes ──
+    "CREATE INDEX idx_feedback_analysis_week ON feedback_analysis(analysis_week);",
+    "CREATE INDEX idx_error_log_type_time ON error_log(error_type, created_at DESC);",
 ]
 
 

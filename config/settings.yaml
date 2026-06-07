@@ -221,6 +221,7 @@ agents:
         - dashboard
         - git_publisher
       weekly:
+        - feedback_analyzer       # Sprint 3: analyze feedback before weekly run
         - llm_pricing
         - llm_benchmark
         - llm_portfolio

@@ -111,7 +111,8 @@ with st.sidebar:
         ["📊 Overview", "🏢 Startup Explorer", "⚠️ Risk Scores",
          "📈 Sector Analysis", "🌍 Geographic Insights", "📰 News Feed",
          "🔗 Knowledge Graph", "🔄 Revival Opportunities", "💬 AI Analyst",
-         "💰 LLM Pricing", "🩺 Pipeline Health", "🎭 Sentiment Analysis"],
+         "💰 LLM Pricing", "🩺 Pipeline Health", "🎭 Sentiment Analysis",
+         "📋 Feedback Analytics", "⚡ Performance"],
         label_visibility="collapsed",
     )
 
@@ -233,6 +234,25 @@ def load_llm_benchmarks():
         FROM llm_benchmarks
         ORDER BY benchmark_category, benchmark_score DESC
     """)
+
+
+@st.cache_data(ttl=120)
+def load_feedback_stats():
+    """Cached feedback statistics for the feedback page."""
+    return query_db(
+        "SELECT COUNT(*) as cnt, AVG(rating) as avg_rating "
+        "FROM score_feedback WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+    )
+
+
+@st.cache_data(ttl=120)
+def load_performance_stats():
+    """Cached performance stats for the performance page."""
+    return query_db(
+        """SELECT COUNT(*) as cnt, AVG(response_ms) as avg_ms
+           FROM query_log WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+             AND response_ms > 0"""
+    )
 
 
 # ══════════════════════════════════════════════════════════════
@@ -1043,4 +1063,12 @@ elif page == "🎭 Sentiment Analysis":
         if models_used:
             st.subheader("🤖 Model Usage")
             st.dataframe(pd.DataFrame(models_used), use_container_width=True, hide_index=True)
+
+elif page == "📋 Feedback Analytics":
+    from streamlit.pages.feedback import render as render_feedback
+    render_feedback()
+
+elif page == "⚡ Performance":
+    from streamlit.pages.performance import render as render_performance
+    render_performance()
 

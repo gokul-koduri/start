@@ -269,6 +269,10 @@ def _get_agent_class(name: str):
         from agents.devops_engineer_agent import DevOpsEngineerAgent
         AGENT_REGISTRY["devops_engineer"] = DevOpsEngineerAgent
         return DevOpsEngineerAgent
+    elif name == "feedback_analyzer":
+        from agents.feedback_analyzer_agent import FeedbackAnalyzerAgent
+        AGENT_REGISTRY["feedback_analyzer"] = FeedbackAnalyzerAgent
+        return FeedbackAnalyzerAgent
 
     raise ValueError(f"Unknown agent: {name}")
 
@@ -304,6 +308,11 @@ class OrchestratorAgent(BaseAgent):
         _logger.info("Orchestrator: Starting pipeline '%s' with %d stages",
                      pipeline_name, len(agent_names))
         _logger.info("Orchestrator: Stages: %s", " → ".join(agent_names))
+
+        # Check feedback analyzer output for priority adjustments
+        feedback_priority = self._check_feedback_priorities()
+        if feedback_priority:
+            _logger.info("Orchestrator: Feedback priorities detected: %s", feedback_priority)
 
         all_results = []
         overall_status = "success"
@@ -370,3 +379,37 @@ class OrchestratorAgent(BaseAgent):
             },
             errors=[e for r in all_results for e in r.errors],
         )
+
+    def _check_feedback_priorities(self) -> dict:
+        """Check feedback_analysis for priority signals (best-effort)."""
+        try:
+            from db.connection import get_connection
+            import json as _json
+
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT trending_queries, top_feature_requests "
+                "FROM feedback_analysis ORDER BY analyzed_at DESC LIMIT 1"
+            )
+            row = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            if not row:
+                return {}
+            priorities = {}
+            queries = _json.loads(row.get("trending_queries", "[]") or "[]")
+            if queries:
+                themes = set()
+                for q in queries[:5]:
+                    words = q.get("query", "").lower().split()
+                    themes.update(w for w in words if len(w) > 4)
+                priorities["trending_themes"] = list(themes)[:10]
+            features = _json.loads(row.get("top_feature_requests", "[]") or "[]")
+            if features:
+                priorities["requested_features"] = [
+                    f.get("feature", "") for f in features[:3]
+                ]
+            return priorities
+        except Exception:
+            return {}

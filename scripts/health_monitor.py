@@ -165,6 +165,53 @@ def check_pipeline_freshness() -> dict:
         return {"status": "unknown", "error": str(e)}
 
 
+def check_errors() -> dict:
+    """Check recent error rate from error_log table (T-049)."""
+    try:
+        from db.connection import get_connection
+        from contextlib import closing
+        with closing(get_connection()) as conn:
+            cursor = conn.cursor()
+            # Errors in last hour
+            cursor.execute(
+                "SELECT COUNT(*) as cnt FROM error_log "
+                "WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)"
+            )
+            hourly_errors = cursor.fetchone()["cnt"]
+            # Errors in last 24 hours
+            cursor.execute(
+                "SELECT COUNT(*) as cnt FROM error_log "
+                "WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)"
+            )
+            daily_errors = cursor.fetchone()["cnt"]
+            # Most common error types
+            cursor.execute(
+                "SELECT error_type, COUNT(*) as cnt FROM error_log "
+                "WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) "
+                "GROUP BY error_type ORDER BY cnt DESC LIMIT 5"
+            )
+            top_errors = [dict(r) for r in cursor.fetchall()]
+            cursor.close()
+
+        if hourly_errors > 50:
+            status = "critical"
+        elif hourly_errors > 10:
+            status = "warning"
+        elif daily_errors > 100:
+            status = "warning"
+        else:
+            status = "healthy"
+
+        return {
+            "status": status,
+            "hourly_errors": hourly_errors,
+            "daily_errors": daily_errors,
+            "top_error_types": top_errors,
+        }
+    except Exception as e:
+        return {"status": "unknown", "error": str(e)}
+
+
 def run_all_checks() -> dict:
     """Run all health checks and return combined report."""
     checks = {
@@ -174,6 +221,7 @@ def run_all_checks() -> dict:
         "api": check_api(),
         "docker": check_docker(),
         "pipeline": check_pipeline_freshness(),
+        "errors": check_errors(),
     }
 
     # Determine overall status

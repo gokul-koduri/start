@@ -34,6 +34,7 @@ Endpoints:
 import argparse
 import json
 import logging
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -69,6 +70,60 @@ if HAS_FASTAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # ── Sentry/GlitchTip integration (optional, env-driven) (T-048) ──
+    _sentry_dsn = os.environ.get("SENTRY_DSN", "")
+    if _sentry_dsn:
+        try:
+            import sentry_sdk
+            sentry_sdk.init(dsn=_sentry_dsn, traces_sample_rate=0.1)
+            _logger.info("Sentry/GlitchTip error tracking enabled")
+        except ImportError:
+            _logger.warning("SENTRY_DSN set but sentry-sdk not installed. pip install sentry-sdk")
+
+    # ── Global exception handler — logs to error_log table (T-047) ──
+    import traceback as _traceback
+    import hashlib as _hashlib
+
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request, exc):
+        """Catch all unhandled exceptions, log to error_log table, return JSON."""
+        _logger.error("Unhandled exception on %s: %s", request.url.path, exc)
+
+        # Log to error_log table (best-effort)
+        try:
+            conn = get_connection()
+            schema.init_schema(conn)
+            tb = _traceback.format_exc()
+            fp = _hashlib.sha256(
+                f"{type(exc).__name__}:{str(exc)[:100]}".encode()
+            ).hexdigest()[:16]
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """INSERT INTO error_log
+                       (error_type, error_message, traceback_text, endpoint,
+                        request_method, request_path, severity, fingerprint)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                    (
+                        type(exc).__name__,
+                        str(exc)[:2000],
+                        tb[:5000],
+                        "api_server",
+                        request.method,
+                        str(request.url.path)[:500],
+                        "error",
+                        fp,
+                    ),
+                )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass  # Never fail the error handler itself
+
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error", "error_type": type(exc).__name__},
+        )
 
     # ── API v2 Routers ─────────────────────────────────────────
     try:

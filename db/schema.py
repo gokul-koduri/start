@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 21
+_SCHEMA_VERSION = 22
 
 _TABLES = [
     """
@@ -1284,6 +1284,40 @@ _TABLES = [
         INDEX idx_el_severity (severity),
         INDEX idx_el_created (created_at),
         INDEX idx_el_fingerprint (fingerprint)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS users (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        email               VARCHAR(255) NOT NULL UNIQUE,
+        password_hash       VARCHAR(255) NOT NULL COMMENT 'bcrypt hash',
+        display_name        VARCHAR(255),
+        role                VARCHAR(50) NOT NULL DEFAULT 'viewer' COMMENT 'viewer, analyst, admin',
+        is_active           TINYINT DEFAULT 1,
+        last_login_at       DATETIME,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_users_email (email),
+        INDEX idx_users_role (role),
+        INDEX idx_users_active (is_active)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS api_keys (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        user_id             INT NOT NULL,
+        key_prefix          VARCHAR(8) NOT NULL COMMENT 'First 8 chars for identification',
+        key_hash            VARCHAR(255) NOT NULL UNIQUE COMMENT 'SHA-256 hash of the key',
+        name                VARCHAR(255) COMMENT 'Human-readable key label',
+        permissions         TEXT COMMENT 'JSON: list of permission strings',
+        last_used_at        DATETIME,
+        expires_at          DATETIME,
+        is_active           TINYINT DEFAULT 1,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        INDEX idx_apikeys_hash (key_hash),
+        INDEX idx_apikeys_user (user_id),
+        INDEX idx_apikeys_active (is_active)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
 ]

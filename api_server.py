@@ -140,6 +140,13 @@ if HAS_FASTAPI:
     except ImportError as e:
         _logger.warning("Could not import API v2 routers: %s", e)
 
+    # Auth router (T-054, T-055, T-057)
+    try:
+        from api.v2.auth import router as v2_auth_router
+        app.include_router(v2_auth_router, prefix="/api")
+    except ImportError as e:
+        logging.getLogger("api_server").warning("Could not import auth router: %s", e)
+
 
     # ── Dashboard ─────────────────────────────────────────────
 

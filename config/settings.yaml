@@ -775,3 +775,12 @@ scheduler:
     max_attempts: 3
     backoff_seconds: [30, 60, 120]
 
+# ── Authentication & Security (Sprint 4) ──
+auth:
+  jwt_secret: "change-me-in-production"
+  jwt_expiry_hours: 24
+  bcrypt_rounds: 12
+  rate_limit_per_minute: 60
+  max_api_keys_per_user: 10
+  password_min_length: 8
+

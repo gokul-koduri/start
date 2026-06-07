@@ -237,4 +237,4 @@ class TestPhase4SchemaTables:
         schema_path = Path(__file__).parent.parent / "db" / "schema.py"
         schema_content = schema_path.read_text()
         # Allow version 14, 15, or 16 (Phase 6 bumped it)
-        assert "_SCHEMA_VERSION = 14" in schema_content or "_SCHEMA_VERSION = 15" in schema_content or "_SCHEMA_VERSION = 16" in schema_content or "_SCHEMA_VERSION = 17" in schema_content or "_SCHEMA_VERSION = 18" in schema_content or "_SCHEMA_VERSION = 19" in schema_content or "_SCHEMA_VERSION = 20" in schema_content or "_SCHEMA_VERSION = 21" in schema_content
+        assert "_SCHEMA_VERSION = 14" in schema_content or "_SCHEMA_VERSION = 15" in schema_content or "_SCHEMA_VERSION = 16" in schema_content or "_SCHEMA_VERSION = 17" in schema_content or "_SCHEMA_VERSION = 18" in schema_content or "_SCHEMA_VERSION = 19" in schema_content or "_SCHEMA_VERSION = 20" in schema_content or "_SCHEMA_VERSION = 21" in schema_content or "_SCHEMA_VERSION = 22" in schema_content

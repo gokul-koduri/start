@@ -53,6 +53,8 @@ orjson>=3.9.0
 
 # Phase 6: Operations (Auth + Monitoring)
 pyjwt>=2.8.0
+bcrypt>=4.1.0
+python-multipart>=0.0.9
 prometheus-client>=0.20.0
 # dagster for orchestration (install separately: pip install dagster dagster-webserver)
 # dagster>=1.6.0

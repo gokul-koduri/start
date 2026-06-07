@@ -223,10 +223,10 @@ class TestStreamlitFeedbackPage(unittest.TestCase):
 class TestSchemaV21(unittest.TestCase):
     """Test schema version 21 changes."""
 
-    def test_schema_version_is_21(self):
-        """Schema version is 21."""
+    def test_schema_version_is_at_least_21(self):
+        """Schema version is at least 21."""
         from db.schema import get_schema_version
-        self.assertEqual(get_schema_version(), 21)
+        self.assertGreaterEqual(get_schema_version(), 21)
 
     def test_feedback_analysis_table_in_schema(self):
         """feedback_analysis table exists in schema."""

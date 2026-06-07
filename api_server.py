@@ -1981,13 +1981,57 @@ if HAS_FASTAPI:
         import time
         _cache[key] = (value, time.time() + ttl)
 
+    # ── Redis-Backed Cache (T-050) ─────────────────────────
+    # Two-tier cache: Redis first (shared across workers), then in-memory fallback.
+
+    _REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+
+    def _redis_cache_get(key: str) -> dict | None:
+        """Try Redis first, fall back to in-memory cache."""
+        try:
+            import redis as _redis
+            r = _redis.from_url(_REDIS_URL, socket_connect_timeout=2, decode_responses=True)
+            raw = r.get(f"api:{key}")
+            r.close()
+            if raw:
+                import json as _json
+                return _json.loads(raw)
+        except Exception:
+            pass
+        # Fallback to in-memory
+        return _cache_get(key)
+
+    def _redis_cache_set(key: str, value: dict, ttl: int = 60):
+        """Set both Redis and in-memory cache."""
+        _cache_set(key, value, ttl)
+        try:
+            import redis as _redis
+            import json as _json
+            r = _redis.from_url(_REDIS_URL, socket_connect_timeout=2, decode_responses=True)
+            r.setex(f"api:{key}", ttl, _json.dumps(value, default=str))
+            r.close()
+        except Exception:
+            pass
+
+    def _redis_cache_invalidate(pattern: str = "api:*"):
+        """Clear matching keys from both Redis and in-memory cache."""
+        _cache.clear()
+        try:
+            import redis as _redis
+            r = _redis.from_url(_REDIS_URL, socket_connect_timeout=2, decode_responses=True)
+            for key in r.scan_iter(pattern):
+                r.delete(key)
+            r.close()
+        except Exception:
+            pass
+
     # ── Cached Stats Endpoints ───────────────────────────
 
     @app.get("/api/stats/summary")
     def stats_summary():
-        """Lightweight stats endpoint for quick polling (cached 60s)."""
+        """Lightweight stats endpoint for quick polling (Redis-backed, 60s TTL)."""
         CACHED_KEY = "stats:summary"
-        cached = _cache_get(CACHED_KEY, ttl=60)
+        cached = _redis_cache_get(CACHED_KEY)
         if cached:
             return cached
 
@@ -2032,14 +2076,140 @@ if HAS_FASTAPI:
             "risk_distribution": risk_dist,
         }
 
-        _cache_set(CACHED_KEY, result, ttl=60)
+        _redis_cache_set(CACHED_KEY, result, ttl=60)
         return result
 
     @app.get("/api/cache/clear")
     def cache_clear():
-        """Clear all cached responses (admin endpoint)."""
-        _cache.clear()
-        return {"status": "cleared", "message": "All cache entries removed"}
+        """Clear all cached responses — both Redis and in-memory (admin endpoint)."""
+        _redis_cache_invalidate()
+        return {"status": "cleared", "message": "All cache entries removed (Redis + in-memory)"}
+
+    # ── Performance Analytics (T-052) ────────────────────
+
+    @app.get("/api/performance")
+    def performance_analytics(hours: int = Query(24, ge=1, le=168, description="Lookback window in hours")):
+        """Performance analytics: latencies, error rates, cache stats.
+
+        Returns query/chat latency percentiles, error counts, and cache metrics.
+        Each section degrades gracefully if the underlying query fails.
+        """
+        result = {"hours": hours}
+
+        # Query latency from query_log
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """SELECT response_ms FROM query_log
+                   WHERE created_at >= DATE_SUB(NOW(), INTERVAL %s HOUR)
+                     AND response_ms IS NOT NULL AND response_ms > 0
+                   ORDER BY response_ms""",
+                (hours,),
+            )
+            rows = [r["response_ms"] for r in cursor.fetchall()]
+            cursor.close()
+            conn.close()
+            if rows:
+                n = len(rows)
+                result["query_latency"] = {
+                    "count": n,
+                    "min_ms": rows[0],
+                    "max_ms": rows[-1],
+                    "avg_ms": round(sum(rows) / n, 1),
+                    "p50_ms": rows[int(n * 0.50)],
+                    "p95_ms": rows[int(n * 0.95)],
+                    "p99_ms": rows[min(int(n * 0.99), n - 1)],
+                }
+            else:
+                result["query_latency"] = {"count": 0}
+        except Exception as e:
+            result["query_latency"] = {"error": str(e)}
+
+        # Chat latency
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """SELECT COUNT(*) as cnt, AVG(response_ms) as avg_ms
+                   FROM chat_log
+                   WHERE created_at >= DATE_SUB(NOW(), INTERVAL %s HOUR)
+                     AND response_ms IS NOT NULL""",
+                (hours,),
+            )
+            row = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            result["chat_latency"] = {
+                "total": row["cnt"],
+                "avg_ms": round(row["avg_ms"], 1) if row["avg_ms"] else 0,
+            }
+        except Exception as e:
+            result["chat_latency"] = {"error": str(e)}
+
+        # Error rate from error_log
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT COUNT(*) as cnt FROM error_log "
+                "WHERE created_at >= DATE_SUB(NOW(), INTERVAL %s HOUR)",
+                (hours,),
+            )
+            error_count = cursor.fetchone()["cnt"]
+            cursor.close()
+            conn.close()
+            # Estimate total requests from query_log + chat_log
+            query_count = result.get("query_latency", {}).get("count", 0)
+            chat_count = result.get("chat_latency", {}).get("total", 0)
+            total_requests = query_count + chat_count
+            rate = round((error_count / total_requests) * 100, 2) if total_requests > 0 else 0
+            result["error_rate"] = {
+                "errors": error_count,
+                "total_requests": total_requests,
+                "rate_percent": rate,
+            }
+        except Exception as e:
+            result["error_rate"] = {"error": str(e)}
+
+        # Cache stats
+        result["cache"] = {
+            "in_memory_entries": len(_cache),
+            "redis_available": False,
+        }
+        try:
+            import redis as _redis_check
+            r = _redis_check.from_url(_REDIS_URL, socket_connect_timeout=1)
+            r.ping()
+            api_keys = list(r.scan_iter("api:*"))
+            result["cache"]["redis_available"] = True
+            result["cache"]["redis_api_keys"] = len(api_keys)
+            r.close()
+        except Exception:
+            pass
+
+        # Slowest endpoints (by request_path from error_log as proxy)
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """SELECT request_path, COUNT(*) as cnt
+                   FROM error_log
+                   WHERE created_at >= DATE_SUB(NOW(), INTERVAL %s HOUR)
+                     AND request_path IS NOT NULL
+                   GROUP BY request_path ORDER BY cnt DESC LIMIT 10""",
+                (hours,),
+            )
+            result["slowest_endpoints"] = [
+                {"path": r["request_path"], "errors": r["cnt"]}
+                for r in cursor.fetchall()
+            ]
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            result["slowest_endpoints"] = {"error": str(e)}
+
+        return result
 
     # ── Stream Processing Status ──────────────────────────
 

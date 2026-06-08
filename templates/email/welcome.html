@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Welcome to OIP! 👋</h2>
+<p>Thanks for signing up for the Opportunity Intelligence Platform. Here's how to get started:</p>
+
+<div class="card">
+  <h3>1. Search a startup</h3>
+  <p>Type any company name into the dashboard search bar. You'll get a composite score (0-100) with factor breakdown.</p>
+</div>
+
+<div class="card">
+  <h3>2. Ask the AI analyst</h3>
+  <p>Try questions like "Why do most EV startups fail?" or "Which manufacturing sectors have revival opportunities?"</p>
+</div>
+
+<div class="card">
+  <h3>3. Browse failure patterns</h3>
+  <p>Explore 163+ failed startups with detailed failure reason taxonomy cross-referenced with BLS survival data.</p>
+</div>
+
+<a href="{{ dashboard_url }}" class="cta-button">Open Dashboard</a>
+
+<p style="margin-top: 24px; font-size: 13px; color: #64748b;">
+  Questions? Reply to this email or open an issue on
+  <a href="https://github.com/gokul-koduri/start">GitHub</a>.
+</p>
+
+{% endblock %}

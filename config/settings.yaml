@@ -411,13 +411,24 @@ agents:
       webhook_custom: { enabled: false, url: "${CUSTOM_WEBHOOK_URL}" }
     max_alerts_per_run: 50
 
+  email_digest:
+    enabled: true
+    template: "digest.html"
+    max_recipients: 500
+
+  email_worker:
+    enabled: true
+    batch_size: 50
+    delay_between_emails: 0.5
+    loop_interval_seconds: 30
+
   report_generator:
     enabled: true
     output_dir: "data/reports"
     output_formats:
       - markdown
       - html
-    email_delivery: { enabled: false, smtp_host: "${SMTP_HOST}", smtp_port: 587, smtp_user: "${SMTP_USER}", smtp_password: "${SMTP_PASSWORD}", from_address: "${SMTP_FROM}" }
+    email_delivery: { enabled: false }  # No longer needs SMTP config — uses email_worker queue
 
   stripe_payments:
     enabled: false

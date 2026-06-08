@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ subject }}</title>
+  <style>
+    /* Reset */
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    body { margin: 0; padding: 0; width: 100% !important; height: 100% !important; background-color: #f4f5f7; }
+
+    /* Typography */
+    body, td, th { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
+    h1 { margin: 0; font-size: 24px; line-height: 32px; color: #0f172a; font-weight: 700; }
+    h2 { margin: 0 0 8px 0; font-size: 18px; line-height: 24px; color: #1e293b; font-weight: 600; }
+    h3 { margin: 0 0 6px 0; font-size: 15px; line-height: 20px; color: #334155; font-weight: 600; }
+    p { margin: 0 0 12px 0; font-size: 15px; line-height: 22px; color: #475569; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .email-wrapper { width: 100%; background-color: #f4f5f7; padding: 32px 16px; }
+    .email-container { max-width: 640px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+    /* Header */
+    .header { background: linear-gradient(135deg, #0f3460 0%, #16213e 100%); padding: 28px 32px; }
+    .header h1 { color: #ffffff; font-size: 22px; }
+    .header .subtitle { color: #94a3b8; font-size: 14px; margin-top: 4px; }
+
+    /* Body */
+    .body { padding: 28px 32px; }
+
+    /* Cards */
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; margin: 16px 0; }
+    .card-title { font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .card-value { font-size: 28px; font-weight: 700; color: #0f172a; }
+
+    /* Tables */
+    .data-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+    .data-table th { background: #0f3460; color: white; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 13px; }
+    .data-table td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; color: #334155; }
+    .data-table tr:nth-child(even) td { background: #f8fafc; }
+
+    /* Score colors */
+    .score-high { color: #16a34a; font-weight: 700; }
+    .score-mid { color: #d97706; font-weight: 700; }
+    .score-low { color: #dc2626; font-weight: 700; }
+
+    /* Alert badges */
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .badge-critical { background: #fef2f2; color: #dc2626; }
+    .badge-high { background: #fff7ed; color: #ea580c; }
+    .badge-medium { background: #fefce8; color: #ca8a04; }
+    .badge-low { background: #f0fdf4; color: #16a34a; }
+
+    /* CTA button */
+    .cta-button { display: inline-block; background: #0f3460; color: #ffffff !important; padding: 12px 24px; border-radius: 6px; font-size: 15px; font-weight: 600; text-decoration: none; margin: 16px 0; }
+    .cta-button:hover { background: #1a4a8a; text-decoration: none; }
+
+    /* Footer */
+    .footer { background: #f8fafc; padding: 20px 32px; border-top: 1px solid #e2e8f0; }
+    .footer p { font-size: 12px; color: #94a3b8; margin: 0 0 4px 0; line-height: 18px; }
+    .footer a { color: #64748b; }
+
+    /* Responsive */
+    @media only screen and (max-width: 640px) {
+      .email-container { border-radius: 0; }
+      .header, .body, .footer { padding-left: 20px; padding-right: 20px; }
+      h1 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+    <div class="email-container">
+      <div class="header">
+        <h1>{{ header_title }}</h1>
+        {% if header_subtitle %}<div class="subtitle">{{ header_subtitle }}</div>{% endif %}
+      </div>
+      <div class="body">
+        {% block content %}{% endblock %}
+      </div>
+      <div class="footer">
+        <p><strong>Opportunity Intelligence Platform</strong> — Open-source startup intelligence</p>
+        <p>
+          <a href="https://github.com/gokul-koduri/start">GitHub</a> ·
+          <a href="{{ unsubscribe_url }}">Unsubscribe</a> ·
+          <a href="{{ preferences_url }}">Email Preferences</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

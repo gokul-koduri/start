@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<p>An alert was triggered by the Opportunity Intelligence Platform.</p>
+
+<div class="card" style="border-left: 4px solid {{ alert_color }}; margin: 16px 0;">
+  <span class="badge badge-{{ priority_class }}">{{ priority_label }}</span>
+  <h2 style="margin-top: 8px;">{{ alert_title }}</h2>
+  <p>{{ alert_description }}</p>
+</div>
+
+{% if details %}
+<h3>Details</h3>
+<table class="data-table">
+  <thead>
+    <tr><th>Field</th><th>Value</th></tr>
+  </thead>
+  <tbody>
+    {% for d in details %}
+    <tr><td>{{ d.field }}</td><td>{{ d.value }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<a href="{{ dashboard_url }}" class="cta-button">View in Dashboard</a>
+
+{% endblock %}

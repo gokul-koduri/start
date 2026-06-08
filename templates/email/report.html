@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+<p>{{ intro_text }}</p>
+
+<!-- Sections rendered from report -->
+{% for section in sections %}
+<h2>{{ section.title }}</h2>
+
+  {% if section.table %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        {% for col in section.table.columns %}
+        <th>{{ col }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in section.table.rows %}
+      <tr>
+        {% for cell in row.cells %}
+        <td>{{ cell }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if section.bullets %}
+  {% for b in section.bullets %}
+  <p style="margin-bottom: 4px;">· {{ b }}</p>
+  {% endfor %}
+  {% endif %}
+
+  {% if section.cards %}
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin: 12px 0;">
+    <tr>
+      {% for c in section.cards %}
+      <td width="{{ 100 // section.cards|length }}%" style="padding-right: 8px;">
+        <div class="card">
+          <div class="card-title">{{ c.label }}</div>
+          <div class="card-value">{{ c.value }}</div>
+        </div>
+      </td>
+      {% endfor %}
+    </tr>
+  </table>
+  {% endif %}
+{% endfor %}
+
+<a href="{{ dashboard_url }}" class="cta-button">View Full Report</a>
+
+{% endblock %}

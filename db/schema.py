@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 22
+_SCHEMA_VERSION = 23
 
 _TABLES = [
     """
@@ -1320,6 +1320,64 @@ _TABLES = [
         INDEX idx_apikeys_active (is_active)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
+    # ── Email queue tables (schema v23) ──
+    """
+    CREATE TABLE IF NOT EXISTS outbound_emails (
+        id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+        recipient           VARCHAR(255) NOT NULL,
+        recipient_name      VARCHAR(255),
+        subject             VARCHAR(500) NOT NULL,
+        email_type          VARCHAR(50) NOT NULL COMMENT 'report, digest, alert, welcome, notification',
+        plain_body          TEXT NOT NULL,
+        html_body           MEDIUMTEXT NOT NULL,
+        from_address        VARCHAR(255) NOT NULL,
+        reply_to            VARCHAR(255),
+        status              VARCHAR(20) NOT NULL DEFAULT 'queued' COMMENT 'queued, sending, sent, failed, dead',
+        priority            TINYINT NOT NULL DEFAULT 5 COMMENT '1=urgent, 5=normal, 9=low',
+        attempts            TINYINT NOT NULL DEFAULT 0,
+        max_attempts        TINYINT NOT NULL DEFAULT 5,
+        last_attempt_at     DATETIME,
+        next_retry_at       DATETIME COMMENT 'Exponential backoff: now + 2^attempts minutes',
+        last_error          TEXT,
+        sent_at             DATETIME,
+        message_id          VARCHAR(255) COMMENT 'SMTP Message-ID for tracking',
+        related_id          VARCHAR(100) COMMENT 'FK-like reference: report_id, alert_id, etc.',
+        metadata_json       TEXT COMMENT 'JSON: arbitrary metadata for this email',
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_oe_status_priority (status, priority, next_retry_at),
+        INDEX idx_oe_status_created (status, created_at),
+        INDEX idx_oe_recipient (recipient),
+        INDEX idx_oe_type (email_type),
+        INDEX idx_oe_sent (sent_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS email_delivery_log (
+        id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+        outbound_email_id   BIGINT NOT NULL,
+        event_type          VARCHAR(30) NOT NULL COMMENT 'queued, sent, bounced, deferred, complained, opened, clicked',
+        smtp_response       TEXT COMMENT 'Raw SMTP server response',
+        smtp_status_code    VARCHAR(10),
+        detail              TEXT COMMENT 'Human-readable detail',
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (outbound_email_id) REFERENCES outbound_emails(id) ON DELETE CASCADE,
+        INDEX idx_edl_email (outbound_email_id),
+        INDEX idx_edl_event (event_type),
+        INDEX idx_edl_created (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS email_suppressions (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        email               VARCHAR(255) NOT NULL UNIQUE,
+        reason              VARCHAR(50) NOT NULL COMMENT 'bounce, complaint, manual, unsubscribe',
+        detail              TEXT,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_es_email (email),
+        INDEX idx_es_reason (reason)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
 ]
 
 _INDEXES = [
@@ -1400,6 +1458,11 @@ _INDEXES = [
     # ── Sprint 3: Feedback + Analytics indexes ──
     "CREATE INDEX idx_feedback_analysis_week ON feedback_analysis(analysis_week);",
     "CREATE INDEX idx_error_log_type_time ON error_log(error_type, created_at DESC);",
+    # ── Email queue indexes (schema v23) ──
+    "CREATE INDEX idx_oe_status_retry ON outbound_emails(status, next_retry_at);",
+    "CREATE INDEX idx_oe_attempts ON outbound_emails(attempts, max_attempts);",
+    "CREATE INDEX idx_edl_email_created ON email_delivery_log(outbound_email_id, created_at);",
+    "CREATE INDEX idx_es_created ON email_suppressions(created_at);",
 ]
 
 

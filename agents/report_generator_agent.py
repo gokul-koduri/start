@@ -13,16 +13,19 @@ Runs in the weekly pipeline (after collection) and full pipeline.
 import json
 import logging
 import os
-import smtplib
 from datetime import datetime, timezone, timedelta
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from pathlib import Path
 
 from agents.base import AgentResult, BaseAgent
 from db.connection import get_connection
 from db import schema
 from config import get_project_root
+from utils.email_queue import (
+    queue_bulk,
+    get_active_recipients,
+    render_template,
+    plain_from_html,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -103,10 +106,10 @@ class ReportGeneratorAgent(BaseAgent):
                      datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")),
                 )
 
-            # Optional email delivery
+            # Queue email delivery (sent asynchronously by email_worker)
             sent_to = []
-            if email_config.get("enabled") and email_config.get("smtp_host"):
-                sent_to = self._email_report(email_config, md_content, report_type, now_str)
+            if email_config.get("enabled"):
+                sent_to = self._queue_report_email(md_content, report_type, now_str)
                 cursor.execute(
                     """INSERT INTO generated_reports (report_type, format, file_path,
                        sent_to, status, record_count, generated_at)
@@ -418,56 +421,53 @@ class ReportGeneratorAgent(BaseAgent):
             "</body>\n</html>"
         )
 
-    # ── Email delivery ──
+    # ── Email delivery (queued) ──
 
-    def _email_report(self, email_config: dict, md_content: str,
-                      report_type: str, now_str: str) -> list[str]:
-        """Send report via email to Pro/Enterprise license holders."""
-        sent_to = []
-        smtp_host = email_config.get("smtp_host")
-        smtp_port = email_config.get("smtp_port", 587)
-        smtp_user = email_config.get("smtp_user")
-        smtp_password = email_config.get("smtp_password")
-        from_addr = email_config.get("from_address", smtp_user or "reports@localhost")
-
+    def _queue_report_email(self, md_content: str,
+                             report_type: str, now_str: str) -> list[str]:
+        """Queue report email for Pro/Enterprise users. Sent asynchronously by email_worker."""
         try:
-            conn2 = get_connection()
-            cursor = conn2.cursor()
-            cursor.execute(
-                """SELECT email FROM user_licenses
-                   WHERE tier IN ('pro', 'enterprise') AND status = 'active' AND email IS NOT NULL"""
-            )
-            recipients = [r["email"] for r in cursor.fetchall()]
-            conn2.close()
+            recipients = get_active_recipients()
+            emails = [r["email"] for r in recipients if r.get("email")]
         except Exception:
-            recipients = []
+            emails = []
 
-        if not recipients:
-            _logger.info("ReportGeneratorAgent: No Pro/Enterprise recipients found for email delivery")
-            return sent_to
+        if not emails:
+            _logger.info("ReportGeneratorAgent: No active recipients for email delivery")
+            return []
 
+        # Build HTML using the report template (falls back to _convert_to_html)
         try:
+            html_content = render_template("report.html", {
+                "header_title": report_type.replace("_", " ").title(),
+                "header_subtitle": now_str,
+                "intro_text": f"Here is your {report_type.replace('_', ' ')} from the Opportunity Intelligence Platform.",
+                "sections": [],  # sections rendered from markdown below
+                "dashboard_url": "https://github.com/gokul-koduri/start",
+                "unsubscribe_url": "https://github.com/gokul-koduri/start#email-preferences",
+                "preferences_url": "https://github.com/gokul-koduri/start#email-preferences",
+            })
+        except Exception:
             html_content = self._convert_to_html(md_content)
 
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = f"[Startup Research] {report_type.replace('_', ' ').title()} — {now_str}"
-            msg["From"] = from_addr
-            msg["To"] = ", ".join(recipients)
+        subject = f"[OIP] {report_type.replace('_', ' ').title()} — {now_str}"
 
-            msg.attach(MIMEText(md_content, "plain"))
-            msg.attach(MIMEText(html_content, "html"))
-
-            server = smtplib.SMTP(smtp_host, smtp_port, timeout=30)
-            server.starttls()
-            if smtp_user and smtp_password:
-                server.login(smtp_user, smtp_password)
-            server.sendmail(from_addr, recipients, msg.as_string())
-            server.quit()
-
-            sent_to = recipients
-            _logger.info("ReportGeneratorAgent: Report emailed to %d recipients", len(recipients))
-
+        try:
+            queued_ids = queue_bulk(
+                emails,
+                subject=subject,
+                email_type="report",
+                plain_body=md_content,
+                html_body=html_content,
+                priority=5,
+                related_id=report_type,
+                metadata={"report_type": report_type, "generated_at": now_str},
+            )
+            _logger.info(
+                "ReportGeneratorAgent: Queued %d report emails (type=%s)",
+                len(queued_ids), report_type,
+            )
+            return emails
         except Exception as e:
-            _logger.error("ReportGeneratorAgent: Email delivery failed: %s", e)
-
-        return sent_to
+            _logger.error("ReportGeneratorAgent: Email queue failed: %s", e)
+            return []

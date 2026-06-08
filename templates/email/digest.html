@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+
+<p>Here's your {{ period_label }} summary from the Opportunity Intelligence Platform.</p>
+
+<!-- Stats row -->
+<table width="100%" cellpadding="0" cellspacing="0" style="margin: 16px 0;">
+  <tr>
+    <td width="33%" style="padding-right: 8px;">
+      <div class="card">
+        <div class="card-title">Failed Startups</div>
+        <div class="card-value">{{ total_startups }}</div>
+      </div>
+    </td>
+    <td width="33%" style="padding-right: 8px;">
+      <div class="card">
+        <div class="card-title">New Articles</div>
+        <div class="card-value">{{ news_count }}</div>
+      </div>
+    </td>
+    <td width="33%">
+      <div class="card">
+        <div class="card-title">High-Value Opps</div>
+        <div class="card-value">{{ high_value_count }}</div>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<!-- Top Failure Reasons -->
+{% if top_failures %}
+<h2>Top Failure Reasons</h2>
+<table class="data-table">
+  <thead>
+    <tr><th>Category</th><th>Count</th></tr>
+  </thead>
+  <tbody>
+    {% for f in top_failures %}
+    <tr><td>{{ f.category }}</td><td>{{ f.count }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<!-- Active Alerts -->
+{% if alerts %}
+<h2>Active Alerts</h2>
+{% for a in alerts %}
+<div class="card" style="margin-bottom: 8px;">
+  <span class="badge badge-{{ a.priority_class }}">{{ a.priority }}</span>
+  <strong>{{ a.title }}</strong>
+  {% if a.savings %}<span style="color: #16a34a; font-size: 13px; margin-left: 8px;">~{{ a.savings }}% savings</span>{% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- Collection Health -->
+{% if collection_runs %}
+<h2>Collection Health</h2>
+<table class="data-table">
+  <thead>
+    <tr><th>Collector</th><th>Records</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {% for r in collection_runs %}
+    <tr>
+      <td>{{ r.collector }}</td>
+      <td>{{ r.records }}</td>
+      <td>{{ r.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<a href="{{ dashboard_url }}" class="cta-button">View Full Dashboard</a>
+
+{% endblock %}

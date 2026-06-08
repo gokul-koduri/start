@@ -1114,6 +1114,43 @@ if HAS_FASTAPI:
         except Exception:
             pass
 
+        # MySQL LIKE fallback when no search backends are available
+        if not results:
+            try:
+                conn = get_connection()
+                with conn.cursor() as cur:
+                    like = f"%{q}%"
+                    cur.execute(
+                        """SELECT id, name, sector, country, failure_reason,
+                                  failure_category, year_founded, year_shutdown,
+                                  funding_description
+                           FROM failed_startups
+                           WHERE name LIKE %s OR sector LIKE %s
+                              OR failure_reason LIKE %s OR country LIKE %s
+                           ORDER BY notable DESC, COALESCE(funding_raised_usd, 0) DESC
+                           LIMIT %s""",
+                        (like, like, like, like, limit),
+                    )
+                    rows = cur.fetchall()
+                    for row in rows:
+                        results.append({
+                            "id": str(row.get("id", "")),
+                            "score": 1.0,
+                            "source": "mysql_fulltext",
+                            "highlights": {"name": row.get("name", ""), "sector": row.get("sector", "")},
+                            "search_engine": "mysql",
+                            "name": row.get("name", ""),
+                            "sector": row.get("sector", ""),
+                            "country": row.get("country", ""),
+                            "failure_reason": row.get("failure_reason", ""),
+                            "failure_category": row.get("failure_category", ""),
+                            "year_founded": row.get("year_founded"),
+                            "year_shutdown": row.get("year_shutdown"),
+                            "funding_description": row.get("funding_description", ""),
+                        })
+            except Exception:
+                pass
+
         if not results:
             return {
                 "query": q,

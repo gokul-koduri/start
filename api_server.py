@@ -62,10 +62,11 @@ if HAS_FASTAPI:
         version="1.0.0",
     )
 
-    # CORS — allow dashboard to call API
+    # CORS — allow dashboard to call API (restrict in production via CORS_ORIGIN env var)
+    _cors_origin = os.environ.get("CORS_ORIGIN", "*")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=[_cors_origin],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -95,6 +96,36 @@ if HAS_FASTAPI:
             return response
 
     app.add_middleware(SecurityHeadersMiddleware)
+
+    # ── Input Sanitization (T-010) ──
+    import html
+    from starlette.requests import Request
+
+    class InputSanitizerMiddleware(BaseHTTPMiddleware):
+        """Reject oversized payloads and strip HTML from query params."""
+        MAX_BODY_SIZE = 1_000_000  # 1 MB
+
+        async def dispatch(self, request: Request, call_next):
+            # Block oversized request bodies
+            if request.method in ("POST", "PUT", "PATCH"):
+                content_length = request.headers.get("content-length")
+                if content_length and int(content_length) > self.MAX_BODY_SIZE:
+                    return JSONResponse(
+                        status_code=413,
+                        content={"detail": "Request body too large (max 1 MB)"},
+                    )
+            # Sanitize query parameters (strip HTML tags)
+            for key in list(request.query_params.keys()):
+                val = request.query_params[key]
+                sanitized = html.escape(val)
+                if sanitized != val:
+                    return JSONResponse(
+                        status_code=400,
+                        content={"detail": f"HTML detected in query parameter '{key}'"},
+                    )
+            return await call_next(request)
+
+    app.add_middleware(InputSanitizerMiddleware)
 
     # ── Rate Limiting (T-059) ──
     try:
@@ -2333,6 +2364,17 @@ def main():
 
     setup_logging()
     _logger = logging.getLogger("api_server")
+
+    # ── Startup secrets validation (T-010) ──
+    _required_secrets = ["MYSQL_PASSWORD", "JWT_SECRET"]
+    _missing = [s for s in _required_secrets if not os.environ.get(s)]
+    if _missing:
+        _logger.warning(
+            "⚠ Missing required environment variables: %s. "
+            "Set these in .env before deploying to production.",
+            ", ".join(_missing),
+        )
+
     _logger.info("Starting API server on http://%s:%d", args.host, args.port)
     _logger.info("Dashboard:  http://%s:%d/", args.host, args.port)
     _logger.info("API docs:   http://%s:%d/docs", args.host, args.port)

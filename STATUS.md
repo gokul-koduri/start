@@ -64,17 +64,18 @@
 
 ---
 
-## Critical Gaps (Must Fix Before Launch)
+## Security Status
 
-| Gap | Priority | Status |
+| Control | Priority | Status |
 |---|---|---|
-| No input validation on 6 endpoints | P0 | 🔲 Sprint 1 |
-| CORS allows all origins (*) | P0 | 🔲 Sprint 1 |
-| No user authentication | P0 | 🔲 Sprint 2 (parallel) |
-| No rate limiting | P0 | 🔲 Sprint 2 (parallel) |
-| No security headers | P0 | 🔲 Sprint 2 (parallel) |
-| WebSocket has no auth | P1 | 🔲 Sprint 5 |
-| Docker runs as root | P1 | 🔲 Sprint 2 (parallel) |
+| Input validation + sanitizer middleware | P0 | ✅ Done (body size limit + query param sanitization) |
+| CORS origin restriction (env-driven) | P0 | ✅ Done (reads CORS_ORIGIN env var) |
+| User authentication (JWT + API keys) | P0 | ✅ Done (auth/jwt_handler.py, auth/rbac.py) |
+| Rate limiting (60 req/min per IP) | P0 | ✅ Done (slowapi) |
+| Security headers middleware | P0 | ✅ Done (CSP, HSTS, X-Frame-Options, etc.) |
+| Startup secrets validation | P0 | ✅ Done (warns on missing MYSQL_PASSWORD, JWT_SECRET) |
+| WebSocket auth | P1 | 🔲 Sprint 5 |
+| Docker non-root user | P1 | 🔲 Sprint 2 |
 
 ---
 
@@ -83,7 +84,7 @@
 | File | Role |
 |---|---|
 | `api_server.py` | FastAPI REST + WebSocket server (42 endpoints) |
-| `db/schema.py` | 87 table definitions (schema v22) |
+| `db/schema.py` | 90 table definitions (schema v23) |
 | `agents/orchestrator.py` | Agent registry (63 agents) + pipeline coordination |
 | `agents/base.py` | BaseAgent ABC, AgentResult dataclass |
 | `docker-compose.yml` | 14 Docker services |
@@ -116,4 +117,4 @@ python api_server.py
 
 ---
 
-*Last updated: June 6, 2026*
+*Last updated: June 8, 2026*

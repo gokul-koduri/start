@@ -962,9 +962,9 @@ Phase 6:  6.1 → 6.2 → 6.3 → 6.4 → 6.5 → {6.7, 6.8, 6.9, 6.10}
 |---|---|
 | **GitHub launch** | Publish repo with full README, 35 agents, 12 collectors, 467 tests |
 | **Product Hunt launch** | "The open-source Crunchbase alternative" — target #1 product of the day |
-| **Hacker News** | Show HN post — "I built an open-source market intelligence platform" |
+| **Hacker News** | Show HN post — "We built an open-source market intelligence platform" |
 | **Reddit** | Posts on r/Entrepreneur, r/startups, r/SaaS, r/datascience, r/MachineLearning |
-| **Dev.to / Medium** | Technical blog posts: "How I built 50 AI agents for startup intelligence" |
+| **Dev.to / Medium** | Technical blog posts: "How we built 50 AI agents for startup intelligence" |
 | **Twitter/X** | Daily insights from the platform — "Startup failure pattern of the week" |
 | **YouTube** | Demo videos: 10-minute walkthroughs of dashboard, API, agents |
 | **Conference talks** | PyCon, AI/ML conferences, startup events |

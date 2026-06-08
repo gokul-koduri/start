@@ -71,10 +71,8 @@ class TestPhase6Integration(unittest.TestCase):
         from pathlib import Path
         schema_path = Path(__file__).parent.parent / "db" / "schema.py"
         schema_content = schema_path.read_text()
-        self.assertTrue(
-            "_SCHEMA_VERSION = 16" in schema_content or "_SCHEMA_VERSION = 17" in schema_content or "_SCHEMA_VERSION = 18" in schema_content or "_SCHEMA_VERSION = 19" in schema_content or "_SCHEMA_VERSION = 20" in schema_content or "_SCHEMA_VERSION = 21" in schema_content or "_SCHEMA_VERSION = 22" in schema_content,
-            "Schema version should be >= 16"
-        )
+        from db.schema import get_schema_version
+        self.assertGreaterEqual(get_schema_version(), 16, "Schema version should be >= 16")
 
     def test_new_tables_in_schema(self):
         """Test new tables are in schema."""

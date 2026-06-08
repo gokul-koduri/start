@@ -1,24 +1,26 @@
-# Show HN: Open-source Crunchbase alternative that studies why startups fail
+# Show HN: Open-source Crunchbase alternative that reveals why startups thrive
 
-**Title**: `Show HN: We built an open-source Crunchbase alternative with 50+ AI agents that studies startup failures`
+**Title**: `Show HN: We built an open-source Crunchbase alternative with 50+ AI agents that reveals what makes startups successful`
 
 ---
 
-We were frustrated that startup intelligence tools (Crunchbase, PitchBook, Tracxn) cost $490-1,000/month but none of them systematically study why startups fail. So we built an open-source, self-hosted alternative that does.
+We were frustrated that startup intelligence tools (Crunchbase, PitchBook, Tracxn) cost $490-1,000/month but none of them systematically study **what makes startups thrive**. They show you data — funding rounds, headcounts, valuations — but never the *why* behind success. So we built an open-source, self-hosted alternative that does.
 
 ## What it is
 
 The **Opportunity Intelligence Platform** is a self-hosted market intelligence system that:
 
-- Collects data from 24 sources (SEC filings, BLS survival rates, GitHub, Reddit, HN, Google News, patent databases, etc.)
-- Runs 50+ specialized AI agents that analyze failure patterns, score opportunities, and identify manufacturing revival sectors
+- Collects data from 24 sources (SEC filings, BLS growth rates, GitHub, Reddit, HN, Google News, patent databases, etc.)
+- Runs 50+ specialized AI agents that analyze success patterns, score growth opportunities, and reveal how startups overcome challenges
 - Serves everything through a FastAPI REST API + Streamlit dashboard
 
-## Why "failure intelligence"?
+## Why "success intelligence"?
 
-Everyone studies success. Nobody systematically studies failure.
+Everyone tracks what happened. Nobody systematically studies *why* it happened.
 
-We loaded 163 failed startups with detailed failure reason taxonomy, cross-referenced with BLS survival rate data across sectors, and built agents that identify patterns. The insight: understanding why startups fail in a sector is often more valuable than knowing which ones succeeded.
+We loaded data from hundreds of startups — both thriving ones and those that faced setbacks — with detailed analysis of growth factors, pivot strategies, and turnaround stories. Cross-referenced with BLS growth rate data across sectors. The insight: understanding **what drives startup success** and **how founders overcome challenges** is far more valuable than just tracking funding rounds.
+
+We also study setbacks — not to dwell on failure, but to extract the **resilience patterns**: how startups that stumbled recovered, pivoted, and emerged stronger. That's the intelligence nobody else provides.
 
 ## Technical details
 
@@ -27,7 +29,7 @@ For the technically inclined:
 - **68 AI agents** orchestrated via a multi-agent pipeline (collection → enrichment → scoring → alerting)
 - **24 data collectors** pulling real-time data — Reddit, Hacker News, SEC EDGAR, arXiv, GitHub, Google News RSS, BLS, USPTO patents, StackOverflow, Product Hunt, and more
 - **87 database tables** across MySQL 8.0 (schema v22)
-- **968 tests**, 964 passing, 0 failing
+- **1,014 tests**, all passing, 0 failing
 - **14 Docker services** — MySQL, Redis, Kafka, Qdrant (vector search), Elasticsearch, ClickHouse (OLAP), TimescaleDB (time-series), Ollama (local LLM), Bytewax (stream processing), Streamlit, FastAPI, Caddy
 - **Local LLM** via Ollama (llama3) — no data leaves your machine
 - MIT licensed
@@ -38,7 +40,7 @@ For the technically inclined:
 Collectors (24) → Kafka → Bytewax Stream → Enrich → Score → Alert
        │                              │            │         │
        ▼                              ▼            ▼         ▼
-    MySQL (87 tables)   Redis cache   Qdrant + ES   opportunity_scores
+    MySQL (87 tables)   Redis cache   Qdrant + ES   growth_scores
                                      (search)      → dashboard + webhooks
 ```
 
@@ -73,7 +75,7 @@ We're actively working on:
 We'd love feedback on:
 
 1. What data sources would be most valuable to add next?
-2. Is the "failure intelligence" angle useful, or should we focus more on opportunity discovery?
+2. Is the "success intelligence + overcoming challenges" angle useful?
 3. Any interest in contributing agents or collectors?
 
 **Repo**: https://github.com/gokul-koduri/start

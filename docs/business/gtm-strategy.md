@@ -286,9 +286,9 @@ MONTH 4-6: Community Building
    - "YC companies use OIP" = massive credibility
    
    Cold email to YC partner:
-   "Hey [name], I built an open-source tool that monitors
+   "Hey [name], we built an open-source tool that monitors
     your batch companies' health signals in real-time.
-    It detects distress signals 2-4 weeks before failure.
+    It detects growth signals 2-4 weeks before major opportunities.
     Free for YC companies. Can I demo it for you?"
 
 4. HACKATHON PROGRAM
@@ -306,7 +306,7 @@ MONTH 4-6: Community Building
 ```
 DAILY:
   - 1 tweet with data insight from OIP
-    "We analyzed 500 failed startups. Top cause: supply chain (35%).
+    "We analyzed 500 thriving startups. Top success factor: team resilience (35%).
      Here's the full breakdown: [chart]"
   - Target: 1,000+ impressions per tweet
 
@@ -497,7 +497,7 @@ TIER 5: ACCELERATORS & INCUBATORS
   - Y Combinator, Techstars, 500 Startups
   - 500+ accelerators globally
   
-  Play: "Automated portfolio health monitoring + failure prediction"
+  Play: "Automated portfolio health monitoring + growth prediction"
   
   Average deal: $1,000/mo ($12K/yr)
 ```
@@ -636,7 +636,7 @@ MOVE 3: OIP DATASET ON KAGGLE
   
   → Thousands of data scientists use it
   → Papers published using OIP data
-  → Kaggle competition: "Predict startup failure"
+  → Kaggle competition: "Predict startup success"
   → Name recognition goes through the roof
 
 MOVE 4: OIP API AS INFRASTRUCTURE
@@ -859,7 +859,7 @@ KILLER MOVE 1: THE "OIP 500" LIST
 
 KILLER MOVE 2: "OIP GUARANTEE"
 ─────────────────────────────────
-  "If our risk score said 0.2 (low risk) and the startup failed
+  "If our growth score said 85+ (high potential) and the startup didn't thrive
    within 12 months, we'll refund your Pro subscription"
   
   Why this works:
@@ -889,7 +889,7 @@ KILLER MOVE 3: FREE FOR DEVELOPING COUNTRIES
 KILLER MOVE 4: OPEN MODEL WEIGHTS
 ───────────────────────────────────
   Publish our trained ML models on Hugging Face:
-  - "oip-risk-scorer-v1" (startup failure prediction)
+  - "oip-growth-scorer-v1" (startup success prediction)
   - "oip-sentiment-v1" (startup news sentiment)
   - "oip-entity-resolver-v1" (company name matching)
   
@@ -907,7 +907,7 @@ KILLER MOVE 5: THE "LIVE PREDICTION" STUNT
   At a major conference:
   1. Pick 10 well-known startups
   2. Show OIP's risk scores LIVE on stage
-  3. Predict which will fail in 12 months
+  3. Predict which will thrive in 12 months
   4. Publish predictions publicly
   5. Come back next year and show results
   

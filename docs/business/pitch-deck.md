@@ -8,14 +8,15 @@
 
 ### Startup Intelligence Is Broken
 
-- **90% of startups fail**, but data on *why* is scattered and inaccessible
-- **Crunchbase = $490/mo**, PitchBook = $1,000+/mo, Tracxn = $500+/mo
+- **90% of startups fail**, but more importantly — **what about the 10% that succeed?** Nobody systematically studies what they do differently
+- **Crunchbase = $490/mo**, PitchBook = $1,000+/mo, Tracxn = $500+/mo — and they only show data, never *insights*
 - **No open-source alternative exists**
-- **Failure data is ignored** — everyone studies success, nobody studies failure
-- **Manufacturing revival = $1T+ opportunity** (reshoring, CHIPS Act, Make in India) — no platform addresses this
+- **Success factors are ignored** — everyone tracks funding rounds, nobody tracks *why* some startups thrive
+- **Resilience patterns are invisible** — startups that overcome setbacks have valuable lessons, but nobody captures them
+- **Manufacturing growth = $1T+ opportunity** (reshoring, CHIPS Act, Make in India) — no platform addresses this
 - **Market signals are fragmented** across 20+ sources — no single tool connects the dots
 
-**A founder in Ohio launches a manufacturing startup. They don't know 3 similar startups failed there. They don't know Texas has 3x better survival rate. They fail in 18 months. This was preventable.**
+**A founder in Ohio launches a manufacturing startup. They don't know 3 similar startups in their area overcame supply chain challenges and thrived. They don't know Texas has 3x better growth rate for their sector. They miss the opportunity. This was preventable.**
 
 ---
 
@@ -28,12 +29,12 @@ A **self-hosted platform** that:
 | What | How |
 |---|---|
 | Monitors **24+ data sources** in real-time | Reddit, GitHub, SEC filings, patents, job boards, news |
-| Runs **50+ specialized AI agents** | Failure patterns, risk scoring, opportunity discovery |
+| Runs **50+ specialized AI agents** | Success patterns, growth scoring, opportunity discovery, resilience analysis |
 | Scores opportunities with **explainable ML** | Every score shows *why* — feature attribution |
 | Maps relationships in a **knowledge graph** | 12 entity types, 20+ relationship types |
 | Surfaces intelligence via **dashboards + APIs + webhooks** | Real-time alerts to Slack, Discord, email |
 
-**One sentence:** The open-source, self-hosted Crunchbase that studies failure, finds opportunities, and never sleeps.
+**One sentence:** The open-source, self-hosted Crunchbase that reveals what makes startups thrive, shows how to overcome challenges, and never sleeps.
 
 ---
 
@@ -88,7 +89,7 @@ Input:  "I want to start an AI chip company"
 Output:
 ├── 23 similar startups failed globally (here are the patterns)
 ├── 4 succeeded (here's what they did differently)
-├── Key failure: supply chain dependency on single supplier
+├── Key challenge overcome: supply chain dependency → diversified suppliers
 ├── India has semiconductor subsidy (50% capex support)
 ├── Best timing: Q2 2027 (fab capacity coming online)
 ├── 3 potential cofounders in your network
@@ -154,17 +155,19 @@ Alert received (real-time):
 | Cost | $490/mo | $1,000+/mo | $500+/mo | **Free** |
 | Self-hosted | ❌ | ❌ | ❌ | **✅** |
 | AI agents | 0 | 0 | 0 | **50+** |
-| Failure analysis | ❌ | Limited | ❌ | **Core** |
+| Success factor analysis | ❌ | Limited | ❌ | **Core** |
+| Overcoming challenges | ❌ | ❌ | ❌ | **Core** |
+| Growth pattern detection | ❌ | ❌ | ❌ | **Core** |
 | Explainable ML | ❌ | ❌ | ❌ | **✅** |
 | Knowledge graph | ❌ | Limited | ❌ | **12 entities** |
 | Real-time streaming | ❌ | ❌ | ❌ | **Kafka** |
-| Manufacturing focus | ❌ | ❌ | ❌ | **Unique** |
+| Manufacturing growth | ❌ | ❌ | ❌ | **Unique** |
 | Open source | ❌ | ❌ | ❌ | **MIT License** |
 
 ### Three Moats
 
-1. **Failure intelligence** — Largest open database of why startups fail (nobody else does this)
-2. **Manufacturing revival** — Completely untapped niche ($1T+ opportunity)
+1. **Success factor intelligence** — Largest open database of what makes startups thrive (nobody else does this)
+2. **Overcoming challenges** — How startups navigate setbacks and emerge stronger (unique resilience analysis)
 3. **Multi-agent architecture** — 50+ specialized agents are extremely hard to replicate
 
 ---
@@ -311,11 +314,11 @@ Add: Sales team (2-3), Customer success (2), Marketing (2), Engineering (3-4)
 |---|---|
 | **GitHub** | Publish open-source repo → target 1,000 stars |
 | **Product Hunt** | "The open-source Crunchbase alternative" → #1 of the day |
-| **Hacker News** | Show HN → "I built an open-source market intelligence platform" |
+| **Hacker News** | Show HN → "We built an open-source market intelligence platform" |
 | **Reddit** | r/Entrepreneur, r/startups, r/SaaS, r/datascience, r/MachineLearning |
-| **Twitter/X** | Daily insights — "Startup failure pattern of the week" |
+| **Twitter/X** | Daily insights — "Startup success factor of the week" |
 | **YouTube** | 10-min demo videos |
-| **Dev.to / Medium** | "How I built 50 AI agents for startup intelligence" |
+| **Dev.to / Medium** | "How we built 50 AI agents for startup intelligence" |
 | **Conferences** | PyCon, startup events, AI/ML meetups |
 
 ### Phase B: Revenue (Months 6-12)
@@ -358,8 +361,8 @@ Add: Sales team (2-3), Customer success (2), Marketing (2), Engineering (3-4)
    50+ specialized agents vs. zero from competitors
    → Not just data — intelligence and analysis
 
-4. FAILURE INTELLIGENCE
-   The only platform that systematically studies failure
+4. SUCCESS INTELLIGENCE
+   The only platform that systematically studies what makes startups thrive
    → Unique dataset nobody else has
 
 5. OPEN SOURCE
@@ -421,9 +424,9 @@ YEAR 7-8:  Standard → Default tool in business schools → $25M ARR
 YEAR 9-10: Global → "Stock market for startups" → $50M+ ARR
 
 THE MISSION:
-Democratize startup intelligence.
-Everyone, everywhere, deserves to know why startups fail
-and where the next opportunities are.
+Democratize startup success intelligence.
+Everyone, everywhere, deserves to know what makes startups thrive,
+how to overcome challenges, and where the next opportunities are.
 ```
 
 ---

@@ -1,6 +1,6 @@
-# 🏭 Startup Research Report
+# 🚀 Startup Research Report
 
-> AI-powered market intelligence platform that studies **failed startups** and identifies **manufacturing revival opportunities**. Automated data collection, multi-agent analysis, and live dashboard reporting.
+> AI-powered market intelligence platform that uncovers **why startups thrive**, identifies **key success factors**, and reveals **how founders overcome challenges to achieve growth**. Automated data collection, multi-agent analysis, and live dashboard reporting.
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)
@@ -37,14 +37,15 @@
 
 This platform automates the entire lifecycle of startup research:
 
-1. **Collect** — Scrape and ingest data from government databases, news feeds, and startup failure databases
-2. **Analyze** — Run specialized AI agents for pattern detection, survival analysis, and opportunity discovery
+1. **Collect** — Scrape and ingest data from government databases, news feeds, startup success stories, and challenge-overcoming case studies
+2. **Analyze** — Run specialized AI agents for success pattern detection, growth analysis, and opportunity discovery
 3. **Report** — Generate comprehensive Markdown reports and an interactive HTML dashboard
 4. **Publish** — Auto-deploy to GitHub Pages via CI/CD
 
 The core research focus areas are:
-- **Why startups fail** — common failure patterns across industries and geographies
-- **Manufacturing revival** — opportunities to restart failed manufacturing ventures
+- **Why startups thrive** — success patterns, growth factors, and winning strategies across industries and geographies
+- **Overcoming challenges** — how startups navigate setbacks, pivot from failures, and emerge stronger
+- **Manufacturing revival** — opportunities to restart and scale manufacturing ventures in reshoring hotspots
 - **Global market viability** — sector-by-sector analysis across 10+ international markets
 - **Investment intelligence** — whale investor tracking, reshoring trends, and funding patterns
 
@@ -73,12 +74,12 @@ The core research focus areas are:
 
 ## Features
 
-- **🤖 24+ Specialized AI Agents** — failure patterns, survival analysis, revival opportunities, geographic strategy, whale investors, knowledge graph, and more
+- **🤖 24+ Specialized AI Agents** — success patterns, growth analysis, revival opportunities, geographic strategy, whale investors, knowledge graph, and more
 - **📰 Multi-Source Data Collection** — BLS, Google News, TechCrunch, Failory, Reshoring PDFs
 - **📊 Interactive Dashboard** — dark mode, mobile responsive, collapsible sections, search
 - **💬 AI Analyst Chat** — ask natural language questions about the data
 - **🌍 Global Market Viability** — 420+ sector evaluations across 10 international markets
-- **🔗 Knowledge Graph** — entity relationships between startups, founders, investors, and failure patterns
+- **🔗 Knowledge Graph** — entity relationships between startups, founders, investors, and success patterns
 - **📈 LLM Infrastructure** — pricing tracking, benchmarking, portfolio allocation, and cost optimization
 - **🔔 Alert System** — email and webhook notifications for price changes, data freshness, and pipeline failures
 - **📄 Automated Reports** — weekly digest and monthly deep dive reports with optional email delivery
@@ -101,9 +102,9 @@ Startup_Research_Report/
 │   ├── dashboard.py                 # HTML dashboard agent
 │   ├── git_publisher.py             # GitHub Pages publisher
 │   ├── ai_analyst_agent.py          # Natural language Q&A
-│   ├── failure_pattern_agent.py     # Failure pattern detection
-│   ├── survival_analysis_agent.py   # Statistical survival rates
-│   ├── revival_opportunity_agent.py # Revival opportunity finder
+│   ├── success_pattern_agent.py     # Success pattern detection
+│   ├── growth_analysis_agent.py     # Growth & survival rate analysis
+│   ├── revival_opportunity_agent.py # Revival & turnaround opportunity finder
 │   ├── geographic_strategy_agent.py # Location-based insights
 │   ├── news_intelligence_agent.py   # News monitoring & analysis
 │   ├── whale_investor_agent.py      # Large investor tracking
@@ -112,7 +113,7 @@ Startup_Research_Report/
 │   ├── global_market_viability_agent.py  # Global market analysis
 │   ├── knowledge_graph_agent.py     # Entity relationship mapping
 │   ├── internet_research.py         # Web research agent
-│   ├── risk_scorer.py               # Predictive failure risk scoring
+│   ├── risk_scorer.py               # Predictive success & risk scoring
 │   ├── report_generator_agent.py    # Scheduled HTML/MD reports
 │   ├── alert_dispatcher_agent.py    # Email/Slack/Discord alerts
 │   ├── llm_pricing_agent.py         # LLM cost tracking
@@ -326,9 +327,10 @@ python run_agent.py --pipeline daily --force       # Force report generation
 
 ```bash
 # Ask a question about the data
-python run_agent.py --chat "What are the top failure reasons for EV startups?"
-python run_agent.py --chat "Which manufacturing sectors have the best revival opportunities?"
-python run_agent.py --chat "Compare failure rates between US and European startups"
+python run_agent.py --chat "What are the key success factors for thriving EV startups?"
+python run_agent.py --chat "Which manufacturing sectors have the best growth opportunities?"
+python run_agent.py --chat "How do successful startups overcome early-stage challenges?"
+python run_agent.py --chat "Compare growth rates between US and European startups"
 ```
 
 ### Dashboard
@@ -352,10 +354,10 @@ The interactive HTML dashboard is generated by the dashboard agent and deployed 
 
 | Source                    | Type       | Data                                              |
 |---------------------------|------------|---------------------------------------------------|
-| **BLS (Bureau of Labor Statistics)** | API + Downloads | Business survival rates, establishment births/deaths by NAICS code |
-| **Google News RSS**       | RSS Feed   | Startup failure, bankruptcy, and shutdown news     |
+| **BLS (Bureau of Labor Statistics)** | API + Downloads | Business survival & growth rates, establishment births/deaths by NAICS code |
+| **Google News RSS**       | RSS Feed   | Startup growth, funding, success stories, and market trends  |
 | **TechCrunch RSS**        | RSS Feed   | Startup and tech industry news                     |
-| **Failory**               | Web Scrape | Failed startup profiles, reasons, and metadata     |
+| **Failory**               | Web Scrape | Startup post-mortems, turnaround stories, and lessons learned    |
 | **Reshoring Initiative**  | PDF        | Manufacturing reshoring statistics and case studies |
 | **CrunchBase**            | API        | Structured funding data (16 manufacturing industries) |
 
@@ -371,9 +373,9 @@ The interactive HTML dashboard is generated by the dashboard agent and deployed 
 | **Dashboard**                | Builds interactive HTML dashboard with charts               |
 | **Git Publisher**            | Commits and deploys to GitHub Pages                         |
 | **AI Analyst**               | Natural language Q&A over the research data                 |
-| **Failure Pattern**          | Detects common failure patterns across startups             |
-| **Survival Analysis**        | Statistical analysis of startup survival rates              |
-| **Revival Opportunity**      | Identifies opportunities to revive failed startups          |
+| **Success Pattern**          | Detects common success patterns and growth drivers across startups     |
+| **Growth Analysis**          | Statistical analysis of startup survival, growth, and scaling rates    |
+| **Revival Opportunity**      | Identifies opportunities to revive and turn around startups that overcame setbacks |
 | **Geographic Strategy**      | Location-based market analysis and recommendations          |
 | **News Intelligence**        | Monitors and categorizes startup news                       |
 | **Whale Investor**           | Tracks mega-investments and greenfield manufacturing deals  |
@@ -382,7 +384,7 @@ The interactive HTML dashboard is generated by the dashboard agent and deployed 
 | **Global Market Viability**  | 420+ sector evaluations across 10 international markets     |
 | **Knowledge Graph**          | Maps entity relationships (startups, founders, investors)   |
 | **Internet Research**        | Discovers new data sources and research material            |
-| **Risk Scorer**              | Predictive failure risk scoring (0.0–1.0) for startups      |
+| **Risk Scorer**              | Predictive success & risk scoring (0.0–1.0) with growth potential     |
 | **Report Generator**         | Scheduled HTML/Markdown report generation + email delivery  |
 | **Alert Dispatcher**         | Email, Slack, Discord, and custom webhook notifications     |
 | **LLM Pricing**              | Tracks LLM API pricing across providers                     |
@@ -438,7 +440,7 @@ GET  /api/survival-rates        → BLS survival rate data
 GET  /api/revival-opportunities → Revival industry data
 GET  /api/alerts                → Active alerts
 GET  /api/pipeline-runs         → Pipeline execution history
-GET  /api/risk-scores           → Startup failure risk scores
+GET  /api/risk-scores           → Startup growth & risk scores
 POST /api/score                 → On-demand risk scoring
 GET  /api/knowledge-graph       → Knowledge graph entities + relationships
 POST /api/license/validate      → Validate license key
@@ -499,7 +501,7 @@ Generated reports are committed to the repository and include:
 
 | Report                                            | Description                                      | Size   |
 |---------------------------------------------------|--------------------------------------------------|--------|
-| `Failed_Startups_Manufacturing_Revival_Report.md` | Comprehensive failure analysis & revival playbook | ~55 KB |
+| `Startup_Success_Manufacturing_Revival_Report.md` | Success patterns, growth strategies & revival playbook | ~55 KB |
 | `Global_Market_Viability.md`                      | 420 sector evaluations across 10 markets         | ~60 KB |
 | `Market_Correlation_Analysis.md`                  | Cross-sector market correlation study             | ~7 KB  |
 

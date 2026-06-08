@@ -1,7 +1,7 @@
 # 🗺️ Opportunity Intelligence Platform — Master Roadmap
 
 > Open-source, real-time, multi-agent alternative to Crunchbase / PitchBook / Tracxn
-> Self-hosted. 62 agents. 26 collectors. 76 tables. 207 Python files.
+> Self-hosted. 67 agents. 25 collectors. 87 tables. 244 Python files. 968 tests.
 
 ---
 

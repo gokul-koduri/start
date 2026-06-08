@@ -135,11 +135,12 @@ class TestTwitterCollectorConfig:
 class TestTwitterCollectorScoring:
     def test_recent_with_signals(self):
         c = TwitterCollector(config={})
+        # Use today's date so the recency bonus applies (< 72h)
         tweet = _make_tweet_dict(
-            published_date=(datetime.now(timezone.utc) - timedelta(hours=6)).strftime("%Y-%m-%d"))
+            published_date=datetime.now(timezone.utc).strftime("%Y-%m-%d"))
         signals = [{"keyword": "funding", "category": "funding"}]
         score = c._compute_score(tweet, signals, [])
-        # signals(+30) + <24h(+25) = 55
+        # signals(+30) + recent_today(+25) = 55
         assert score == 55
 
     def test_old_no_signals(self):

@@ -41,17 +41,17 @@ phases:
     status: complete
 project:
   name: Opportunity Intelligence Platform
-  python_file_count: 142
+  python_file_count: 244
   repo_path: /Users/kodurigokul/Desktop/Startup_Research_Report
-  schema_version: 15
+  schema_version: 22
   target:
-    agents: 50
-    api_endpoints: 40
-    collectors: 24
-    db_tables: 65
+    agents: 70
+    api_endpoints: 50
+    collectors: 30
+    db_tables: 90
     docker_services: 18
-    tests: 400
-  test_count: 632
+    tests: 1000
+  test_count: 968
 schema_version: 1
 sessions:
   '4.1':

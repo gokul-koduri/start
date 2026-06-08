@@ -25,8 +25,8 @@
 | T-004 | Create daily backup cron job | 1 | P0 | TODO |
 | T-005 | Test backup/restore scripts | 1 | P0 | TODO |
 | T-006 | Verify all Docker services start | 1 | P0 | TODO |
-| T-007 | Fix 12 failing tests in test_semantic_search.py | 2 | P0 | TODO |
-| T-008 | Fix 125 pytest warnings | 2 | P1 | TODO |
+| T-007 | Fix 12 failing tests in test_semantic_search.py | 2 | P0 | ✅ DONE |
+| T-008 | Fix 125 pytest warnings | 2 | P1 | ✅ DONE (0 warnings) |
 | T-009 | Create .env.example with all variables | 1 | P0 | TODO |
 | T-010 | Add startup secrets validation | 1 | P0 | TODO |
 | T-011 | Load seed data into MySQL | 2 | P0 | TODO |

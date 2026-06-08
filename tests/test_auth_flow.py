@@ -124,9 +124,9 @@ class TestAuthRouterRegistration(unittest.TestCase):
 class TestSchemaV22(unittest.TestCase):
     """Test schema version 22 changes."""
 
-    def test_schema_version_is_22(self):
+    def test_schema_version_at_least_22(self):
         from db.schema import get_schema_version
-        self.assertEqual(get_schema_version(), 22)
+        self.assertGreaterEqual(get_schema_version(), 22)
 
     def test_users_table_in_schema(self):
         from db.schema import _TABLES

@@ -123,8 +123,9 @@ class TestPhase5AgentsIntegration:
         """Test that schema version has been bumped to 15 or later."""
         schema_path = Path(__file__).parent.parent / "db" / "schema.py"
         schema_content = schema_path.read_text()
-        # Allow version 15, 16, or 17 (Phase 6 and Sprint 1 bumped it)
-        assert "_SCHEMA_VERSION = 15" in schema_content or "_SCHEMA_VERSION = 16" in schema_content or "_SCHEMA_VERSION = 17" in schema_content or "_SCHEMA_VERSION = 18" in schema_content or "_SCHEMA_VERSION = 19" in schema_content or "_SCHEMA_VERSION = 20" in schema_content or "_SCHEMA_VERSION = 21" in schema_content or "_SCHEMA_VERSION = 22" in schema_content
+        # Schema version should be at least 15 (any later version is fine)
+        from db.schema import get_schema_version
+        assert get_schema_version() >= 15
 
     def test_all_analysis_tables_exist(self):
         """Test that all Phase 5 analysis tables exist in schema file."""

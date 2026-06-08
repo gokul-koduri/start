@@ -500,6 +500,26 @@ services:
           memory: 128M
           cpus: "0.25"
 
+  email-worker:
+    build: .
+    container_name: startup-research-email-worker
+    restart: unless-stopped
+    command: python -m agents.email_worker --loop --interval 30 --batch-size 50
+    env_file: .env.docker
+    depends_on:
+      mysql:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+    healthcheck:
+      test: ["CMD", "python", "-c", "from utils.email_queue import queue_stats; print(queue_stats())"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
 volumes:
   mysql_data:
   ollama_data:

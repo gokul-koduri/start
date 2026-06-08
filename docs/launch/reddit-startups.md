@@ -1,12 +1,12 @@
 # r/startups Post
 
-**Title**: `Free open-source tool that analyzes why startups fail and finds revival opportunities — no API keys needed`
+**Title**: `Free open-source tool that reveals what makes startups thrive and how founders overcome challenges — no API keys needed`
 
 ---
 
 ## TL;DR
 
-We built a free, open-source tool that studies why startups fail and identifies opportunities in manufacturing and other sectors. It runs entirely on your machine — no API keys, no cloud accounts, no monthly fees.
+We built a free, open-source tool that studies **what makes startups successful**, identifies growth opportunities, and reveals how founders overcome challenges and setbacks. It runs entirely on your machine — no API keys, no cloud accounts, no monthly fees.
 
 **Repo**: https://github.com/gokul-koduri/start
 
@@ -15,25 +15,27 @@ We built a free, open-source tool that studies why startups fail and identifies 
 Two things bothered us about the startup intelligence landscape:
 
 1. **It's expensive.** Crunchbase is $490/month. PitchBook is $1,000+/month. Tracxn is $500+/month. Most founders can't justify that spend.
-2. **Nobody studies failure.** Every platform tracks funding, acquisitions, and success stories. But 90% of startups fail, and understanding why is arguably more valuable than tracking the ones that made it.
+2. **Nobody studies success factors.** Every platform tracks funding, acquisitions, and basic metrics. But nobody analyzes *why* some startups thrive while others don't. Nobody reveals the growth patterns, the resilience strategies, or how founders navigate challenges and come out stronger.
 
 ## What We Built
 
 The **Opportunity Intelligence Platform** — a self-hosted, open-source alternative that:
 
-- Collects data from 24 sources (SEC filings, BLS survival rates, Reddit, HN, GitHub, Google News, patent databases, Product Hunt, and more)
-- Runs 50+ AI agents that analyze failure patterns, score opportunities, and track market trends
+- Collects data from 24 sources (SEC filings, BLS growth rates, Reddit, HN, GitHub, Google News, patent databases, Product Hunt, and more)
+- Runs 50+ AI agents that analyze success patterns, score growth opportunities, and track how startups overcome challenges
 - Gives you an interactive dashboard and API to query everything
 - Runs locally with Ollama (llama3) — your data never leaves your machine
 
 ## How Founders Can Use It
 
-**Avoid failure patterns in your sector.** Ask the AI analyst questions like:
-- "Why do most EV startups fail?"
-- "What are the common failure reasons for SaaS startups in healthcare?"
-- "Which manufacturing sectors have the highest survival rates?"
+**Learn what makes startups thrive in your sector.** Ask the AI analyst questions like:
+- "What are the key success factors for thriving EV startups?"
+- "How do successful SaaS founders overcome early growth challenges?"
+- "Which manufacturing sectors have the highest growth potential?"
 
-**Find revival opportunities.** The platform identifies sectors where startups previously failed but conditions have changed — reshoring, CHIPS Act funding, supply chain shifts.
+**Discover comeback strategies.** The platform analyzes how startups that faced setbacks pivoted, adapted, and emerged stronger. Learn from their resilience patterns.
+
+**Find growth opportunities.** The platform identifies sectors with the best conditions for startup success — reshoring hotspots, funding-friendly regions, underserved markets.
 
 **Track your market in real-time.** 24 collectors pull data continuously so you see news, discussions, and trends as they happen.
 
@@ -61,18 +63,19 @@ docker compose up -d
 
 | Feature | What It Does |
 |---|---|
-| **Startup Search** | Search across 163 failed startups with failure reason taxonomy |
-| **Failure Analysis** | Pattern analysis by sector, geography, and timeframe |
-| **Opportunity Scoring** | Ranked opportunities with explainable scores |
-| **AI Chat** | Ask questions about startup failures and opportunities |
+| **Startup Search** | Search across startups with success factor analysis and growth taxonomy |
+| **Success Pattern Analysis** | Pattern analysis of what drives growth by sector, geography, and timeframe |
+| **Challenge Navigation** | How startups overcome setbacks — pivot strategies, turnaround stories, resilience patterns |
+| **Opportunity Scoring** | Ranked growth opportunities with explainable scores |
+| **AI Chat** | Ask questions about startup success factors and growth strategies |
 | **News Collection** | Real-time from 24 sources (Google News, TechCrunch, Reddit, HN, SEC, etc.) |
-| **BLS Survival Data** | Bureau of Labor Statistics survival rates by sector |
-| **Manufacturing Revival** | Reshoring data, CHIPS Act opportunities, geographic hotspots |
+| **BLS Growth Data** | Bureau of Labor Statistics survival & growth rates by sector |
+| **Manufacturing Growth** | Reshoring data, CHIPS Act opportunities, geographic growth hotspots |
 | **API** | 42 REST endpoints for programmatic access |
 
 ## Why Open Source
 
-We believe startup intelligence shouldn't be locked behind $500+/month paywalls. The data is out there — SEC filings are public, BLS data is public, news is public. We're just connecting the dots.
+We believe startup intelligence shouldn't be locked behind $500+/month paywalls. The data is out there — SEC filings are public, BLS data is public, news is public. We're just connecting the dots and revealing the success patterns.
 
 The entire platform is MIT licensed. Fork it, modify it, build on it.
 
@@ -82,7 +85,7 @@ The entire platform is MIT licensed. Fork it, modify it, build on it.
 - 68 AI agents + 7 dev team agents
 - 24 data collectors
 - 87 database tables
-- 968 tests (0 failing)
+- 1,014 tests (0 failing)
 - 14 Docker services
 
 ## What We Need From You

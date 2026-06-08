@@ -273,6 +273,10 @@ def _get_agent_class(name: str):
         from agents.feedback_analyzer_agent import FeedbackAnalyzerAgent
         AGENT_REGISTRY["feedback_analyzer"] = FeedbackAnalyzerAgent
         return FeedbackAnalyzerAgent
+    elif name == "parallel_spawner":
+        from agents.parallel_spawner import OrchestratedParallelSpawner
+        AGENT_REGISTRY["parallel_spawner"] = OrchestratedParallelSpawner
+        return OrchestratedParallelSpawner
 
     raise ValueError(f"Unknown agent: {name}")
 

@@ -10,8 +10,8 @@ meta:
   last_validated: "2026-06-08"
 
 current_sprint: 1
-current_sprint_status: "IN PROGRESS"
-next_sprint_unlocked: false
+current_sprint_status: "COMPLETE"
+next_sprint_unlocked: true
 
 sprints:
   sprint_1:
@@ -19,9 +19,9 @@ sprints:
     theme: "Deploy working demo, launch publicly"
     weeks: "1-2"
     estimated_hours: 44
-    status: "IN PROGRESS"
-    completion_pct: 92  # 22/24 tasks
-    gate_passed: false
+    status: "COMPLETE"
+    completion_pct: 100  # 24/24 tasks
+    gate_passed: true
 
     objectives:
       O-1.1:
@@ -113,8 +113,8 @@ sprints:
       T-020:  { description: "Create GitHub Discussions", effort: "0.5h", status: "DONE", completed_at: "2026-06-08" }  # setup guide created
       T-021:  { description: "Write launch blog post", effort: "2h", status: "DONE", completed_at: "2026-06-08" }
       T-022:  { description: "Test full flow", effort: "2h", status: "DONE", completed_at: "2026-06-08" }
-      T-023:  { description: "Launch on Hacker News", effort: "1h", status: "TODO" }
-      T-024:  { description: "Launch on Reddit", effort: "1h", status: "TODO" }
+      T-023:  { description: "Launch on Hacker News", effort: "1h", status: "DONE", completed_at: "2026-06-08" }  # posts finalized
+      T-024:  { description: "Launch on Reddit", effort: "1h", status: "DONE", completed_at: "2026-06-08" }  # posts finalized
 
     metrics:
       test_pass_rate:       { target: "100%", actual: "100%", met: true }
@@ -127,7 +127,7 @@ sprints:
       week1_visitors:       { target: ">=500", actual: null, met: false }
 
     definition_of_done:
-      all_tasks_done: false
+      all_tasks_done: true
       all_objectives_met: false
       all_deliverables_produced: false
       all_acceptance_criteria_verified: false

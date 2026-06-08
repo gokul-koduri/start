@@ -50,7 +50,7 @@ For the curious:
 | Analytics | ClickHouse (OLAP) + TimescaleDB (time-series) |
 | Streaming | Kafka + Bytewax |
 | Cache | Redis |
-| Deployment | Docker Compose (14 services) |
+| Deployment | Docker Compose (20 services) |
 | License | MIT |
 
 ## Quick Start
@@ -76,8 +76,8 @@ docker compose up -d
 - 68 AI agents
 - 24 data collectors
 - 87 database tables
-- 1,014 tests (all passing)
-- 14 Docker services
+- 1,033 tests (all passing)
+- 20 Docker services
 
 ## What's Hard
 

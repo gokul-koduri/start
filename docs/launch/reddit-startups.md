@@ -85,8 +85,8 @@ The entire platform is MIT licensed. Fork it, modify it, build on it.
 - 68 AI agents + 7 dev team agents
 - 24 data collectors
 - 87 database tables
-- 1,014 tests (0 failing)
-- 14 Docker services
+- 1,033 tests (0 failing)
+- 20 Docker services
 
 ## What We Need From You
 

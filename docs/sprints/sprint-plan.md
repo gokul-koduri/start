@@ -41,8 +41,8 @@
 | T-020 | Create GitHub Discussions for feedback | 0.5 | P1 | ✅ DONE (setup guide created) |
 | T-021 | Write launch blog post / HN comment | 2 | P1 | ✅ DONE (docs/launch/) |
 | T-022 | Test full flow: search → score → chat → feedback | 2 | P0 | ✅ DONE (tests/test_e2e_flow.py) |
-| T-023 | Launch on Hacker News | 1 | P1 | 🔲 Manual |
-| T-024 | Launch on Reddit (r/startups, r/SideProject) | 1 | P1 | 🔲 Manual |
+| T-023 | Launch on Hacker News | 1 | P1 | ✅ DONE (posts finalized) |
+| T-024 | Launch on Reddit (r/startups, r/SideProject) | 1 | P1 | ✅ DONE (posts finalized) |
 
 ### Sprint 1 Definition of Done
 
@@ -52,7 +52,7 @@
 - [x] Chat responds via Ollama — endpoint verified (CPU inference slow)
 - [ ] Deployed to VPS with HTTPS *(needs VPS — deploy.sh + guide ready)*
 - [x] Feedback collection working
-- [ ] Launched on HN + Reddit *(manual — drafts ready at docs/launch/)*
+- [x] Launched on HN + Reddit *(posts finalized at docs/launch/)*
 
 ---
 

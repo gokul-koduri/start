@@ -1,6 +1,12 @@
-# Show HN: Open-source Crunchbase alternative that reveals why startups thrive
+# Show HN Post — Copy-Paste Ready
 
-**Title**: `Show HN: We built an open-source Crunchbase alternative with 50+ AI agents that reveals what makes startups successful`
+## Title (paste into HN title field)
+
+```
+Show HN: Open-source Crunchbase alternative that studies why startups succeed or fail
+```
+
+## Body (paste into HN text field)
 
 ---
 
@@ -29,8 +35,8 @@ For the technically inclined:
 - **68 AI agents** orchestrated via a multi-agent pipeline (collection → enrichment → scoring → alerting)
 - **24 data collectors** pulling real-time data — Reddit, Hacker News, SEC EDGAR, arXiv, GitHub, Google News RSS, BLS, USPTO patents, StackOverflow, Product Hunt, and more
 - **87 database tables** across MySQL 8.0 (schema v22)
-- **1,014 tests**, all passing, 0 failing
-- **14 Docker services** — MySQL, Redis, Kafka, Qdrant (vector search), Elasticsearch, ClickHouse (OLAP), TimescaleDB (time-series), Ollama (local LLM), Bytewax (stream processing), Streamlit, FastAPI, Caddy
+- **1,033 tests**, all passing, 0 failing
+- **20 Docker services** — MySQL, Redis, Kafka, Qdrant (vector search), Elasticsearch, ClickHouse (OLAP), TimescaleDB (time-series), Ollama (local LLM), Bytewax (stream processing), Streamlit, FastAPI, Caddy
 - **Local LLM** via Ollama (llama3) — no data leaves your machine
 - MIT licensed
 
@@ -57,7 +63,7 @@ Opens:
 - Dashboard: http://localhost:8000/
 - API docs: http://localhost:8000/docs
 
-Or with Docker (14 services):
+Or with Docker (20 services):
 
 ```bash
 docker compose up -d

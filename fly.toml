@@ -1,0 +1,50 @@
+# fly.toml — Fly.io deployment for Opportunity Intelligence Platform
+# Deploy: fly deploy
+# App URL: https://startup-intel.fly.dev
+
+app = "startup-intel"
+primary_region = "sjc"
+
+[build]
+  dockerfile = "fly.Dockerfile"
+
+[env]
+  MYSQL_HOST = "localhost"
+  MYSQL_PORT = "3306"
+  MYSQL_USER = "root"
+  MYSQL_DATABASE = "startup_research"
+  LOG_LEVEL = "INFO"
+  CORS_ORIGIN = "*"
+
+[deploy]
+  strategy = "immediate"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[http_service.concurrency]
+  type = "requests"
+  hard_limit = 100
+  soft_limit = 50
+
+[checks]
+  [checks.health]
+    grace_period = "30s"
+    interval = "15s"
+    method = "get"
+    path = "/api/health"
+    port = 8000
+    timeout = "5s"
+
+[mounts]
+  source = "data"
+  destination = "/data"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

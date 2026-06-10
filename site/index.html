@@ -3,2889 +3,1139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Opportunity Intelligence Platform — Live Dashboard</title>
+<title>Opportunity Intelligence Platform — Project Visualization</title>
 <style>
 /* ── Base theme ── */
 :root {
-  --bg: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --text: #212529;
-  --text-secondary: #6c757d;
-  --border: #dee2e6;
-  --accent: #0d6efd;
-  --accent-light: #e7f1ff;
-  --success: #198754;
-  --danger: #dc3545;
-  --warning: #ffc107;
-  --sidebar-width: 280px;
-  --header-height: 60px;
+  --bg: #add8e3;
+  --bg-secondary: #9cc8d8;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f4f8;
+  --text: #1e293b;
+  --text-secondary: #475569;
+  --text-dim: #64748b;
+  --border: #c8d8e0;
+  --accent: #6366f1;
+  --accent-glow: rgba(99,102,241,0.3);
+  --cyan: #06b6d4;
+  --green: #10b981;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --purple: #a855f7;
+  --pink: #ec4899;
+  --sidebar-width: 260px;
+  --header-height: 56px;
+  --gradient-1: linear-gradient(135deg, #6366f1, #06b6d4);
+  --gradient-2: linear-gradient(135deg, #10b981, #06b6d4);
+  --gradient-3: linear-gradient(135deg, #f59e0b, #ef4444);
 }
-/* ── Dark theme (manual toggle) ── */
-[data-theme="dark"] {
-  --bg: #1a1a2e;
-  --bg-secondary: #16213e;
-  --text: #e8e8e8;
-  --text-secondary: #a0a0a0;
-  --border: #2a2a4a;
-  --accent: #4dabf7;
-  --accent-light: #1a2a4a;
-  --success: #51cf66;
-  --danger: #ff6b6b;
-  --warning: #ffd43b;
-}
-/* ── Dark theme (auto-detect fallback) ── */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --bg: #1a1a2e;
-    --bg-secondary: #16213e;
-    --text: #e8e8e8;
-    --text-secondary: #a0a0a0;
-    --border: #2a2a4a;
-    --accent: #4dabf7;
-    --accent-light: #1a2a4a;
-    --success: #51cf66;
-    --danger: #ff6b6b;
-    --warning: #ffd43b;
-  }
-}
-/* ── Smooth scroll + header offset ── */
-html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + 16px); }
 * { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.5;
+  overflow-x: hidden;
 }
+
+/* ── Background grid ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: -1;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
 /* ── Header ── */
 .header {
   position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
-  background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+  background: rgba(173,216,227,0.92); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
   display: flex; align-items: center; padding: 0 24px; z-index: 100;
-  backdrop-filter: blur(10px); gap: 8px;
 }
-.header h1 { font-size: 18px; font-weight: 600; white-space: nowrap; }
-.header .meta { margin-left: auto; font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
-/* ── Hamburger (mobile) ── */
-.hamburger {
-  display: none; background: none; border: none; cursor: pointer;
-  padding: 8px; flex-direction: column; gap: 4px;
+.header .logo {
+  display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px;
+  white-space: nowrap;
 }
-.hamburger span {
-  display: block; width: 20px; height: 2px;
-  background: var(--text); transition: all 0.3s;
+.header .logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+.header .tabs {
+  display: flex; gap: 4px; margin-left: 32px;
 }
-.hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
-.hamburger.active span:nth-child(2) { opacity: 0; }
-.hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
-/* ── Sidebar overlay (mobile) ── */
-.sidebar-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.5); z-index: 90;
+.header .tab {
+  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; color: var(--text-secondary);
+  border: none; background: none;
 }
-.sidebar-overlay.active { display: block; }
-/* ── Search ── */
-.search-container {
-  position: relative; margin-left: 16px;
-  display: flex; align-items: center;
+.header .tab:hover { color: #1e293b; background: rgba(255,255,255,0.5); }
+.header .tab.active { color: #fff; background: #4f46e5; }
+.header .meta { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--text-dim); }
+.header .meta .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(16,185,129,0); }
 }
-.search-container input {
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: 6px; padding: 6px 28px 6px 12px;
-  color: var(--text); font-size: 13px; width: 180px;
-  outline: none; transition: width 0.3s, border-color 0.2s;
-}
-.search-container input:focus { border-color: var(--accent); width: 260px; }
-.search-clear {
-  position: absolute; right: 8px; cursor: pointer;
-  color: var(--text-secondary); font-size: 16px;
-  display: none; line-height: 1;
-}
-.search-clear.visible { display: block; }
-.search-dimmed { opacity: 0.25; transition: opacity 0.2s; }
-/* ── Theme toggle ── */
-.theme-toggle {
-  background: none; border: 1px solid var(--border);
-  border-radius: 6px; padding: 4px 8px; cursor: pointer;
-  color: var(--text); font-size: 18px; margin-left: 8px;
-  transition: background 0.2s;
-}
-.theme-toggle:hover { background: var(--accent-light); }
-[data-theme="dark"] .theme-icon { transform: rotate(180deg); }
-.theme-icon { display: inline-block; transition: transform 0.3s; }
+
 /* ── Sidebar ── */
 .sidebar {
   position: fixed; top: var(--header-height); left: 0;
   width: var(--sidebar-width); height: calc(100vh - var(--header-height));
-  background: var(--bg-secondary); border-right: 1px solid var(--border);
+  background: #9cc8d8; border-right: 1px solid #b8d0da;
   overflow-y: auto; padding: 16px 0;
-  transition: transform 0.3s ease;
 }
+.sidebar .section { padding: 8px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-top: 8px; }
 .sidebar a {
-  display: block; padding: 8px 20px; color: var(--text-secondary);
-  text-decoration: none; font-size: 13px; border-left: 3px solid transparent;
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 16px 7px 20px; color: var(--text-secondary);
+  text-decoration: none; font-size: 13px; border-left: 2px solid transparent;
   transition: all 0.15s;
 }
-.sidebar a:hover { color: var(--accent); background: var(--accent-light); }
-.sidebar a.h2 { padding-left: 32px; font-weight: 600; color: var(--text); }
-.sidebar a.h3 { padding-left: 48px; }
+.sidebar a:hover { color: var(--text); background: rgba(99,102,241,0.08); border-left-color: var(--accent); }
+.sidebar a .icon { font-size: 14px; width: 20px; text-align: center; }
+
 /* ── Main ── */
 .main {
   margin-left: var(--sidebar-width); margin-top: var(--header-height);
-  padding: 32px 40px; max-width: 960px;
+  padding: 28px 32px; min-height: calc(100vh - var(--header-height));
 }
-/* ── Stats cards ── */
-.stats-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px; margin-bottom: 32px;
+
+/* ── Page sections ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── Cards ── */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px; margin-bottom: 20px;
+  transition: border-color 0.2s;
 }
-.stat-card {
-  background: var(--bg-secondary); border: 1px solid var(--border);
-  border-radius: 8px; padding: 20px; text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
-  position: relative; overflow: hidden;
+.card:hover { border-color: var(--accent); }
+.card h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.card h3 .badge {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
 }
-.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-.stat-card .icon { font-size: 24px; margin-bottom: 6px; display: block; }
-.stat-card .value { font-size: 32px; font-weight: 700; }
-.stat-card .label {
-  font-size: 12px; color: var(--text-secondary); margin-top: 4px;
-  text-transform: uppercase; letter-spacing: 0.5px;
+.badge-green { background: rgba(16,185,129,0.2); color: #059669; }
+.badge-blue { background: rgba(99,102,241,0.15); color: #4f46e5; }
+.badge-red { background: rgba(239,68,68,0.15); color: #dc2626; }
+.badge-amber { background: rgba(245,158,11,0.15); color: #d97706; }
+.badge-purple { background: rgba(168,85,247,0.15); color: #9333ea; }
+
+/* ── Stats ── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; margin-bottom: 24px;
 }
-.stat-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+.stat-box {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; position: relative; overflow: hidden;
 }
-.stat-card.accent-blue .value { color: #0d6efd; }
-.stat-card.accent-blue::before { background: #0d6efd; }
-.stat-card.accent-red .value { color: #dc3545; }
-.stat-card.accent-red::before { background: #dc3545; }
-.stat-card.accent-green .value { color: #198754; }
-.stat-card.accent-green::before { background: #198754; }
-.stat-card.accent-amber .value { color: #fd7e14; }
-.stat-card.accent-amber::before { background: #fd7e14; }
+.stat-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.stat-box.c1::before { background: var(--gradient-1); }
+.stat-box.c2::before { background: var(--gradient-2); }
+.stat-box.c3::before { background: var(--gradient-3); }
+.stat-box .val { font-size: 28px; font-weight: 800; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stat-box .lbl { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+/* ── Architecture Diagram ── */
+.arch-container {
+  position: relative; width: 100%; min-height: 600px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.arch-svg { width: 100%; height: auto; }
+
+/* ── Module grid ── */
+.module-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.module-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; cursor: pointer;
+  transition: all 0.2s; position: relative; overflow: hidden;
+}
+.module-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.module-card .mc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.module-card .mc-icon {
+  width: 36px; height: 36px; border-radius: 8px; display: flex;
+  align-items: center; justify-content: center; font-size: 18px;
+  background: rgba(99,102,241,0.1); flex-shrink: 0;
+}
+.module-card .mc-name { font-size: 14px; font-weight: 600; }
+.module-card .mc-count { font-size: 11px; color: var(--text-dim); }
+.module-card .mc-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
+.module-card .mc-files { font-size: 11px; color: var(--accent); margin-top: 8px; }
+.module-card .mc-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; }
+
+/* ── Data flow ── */
+.flow-container {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.flow-row {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.flow-node {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 14px; font-size: 12px;
+  display: flex; align-items: center; gap: 6px; white-space: nowrap;
+  transition: all 0.2s;
+}
+.flow-node:hover { border-color: var(--accent); }
+.flow-node .dot { width: 6px; height: 6px; border-radius: 50%; }
+.flow-arrow { color: var(--text-dim); font-size: 16px; }
+
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { padding: 8px 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+td { padding: 8px 12px; border-bottom: 1px solid rgba(42,52,84,0.5); }
+tr:hover td { background: rgba(99,102,241,0.04); }
+
 /* ── Charts ── */
-.chart-container {
-  background: var(--bg-secondary); border: 1px solid var(--border);
-  border-radius: 8px; padding: 20px; margin-bottom: 24px;
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.chart-box {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px;
 }
-.chart-container h3 { margin-bottom: 12px; font-size: 16px; }
-.charts-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px;
-}
+.chart-box h3 { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
 @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
-/* ── Content ── */
-h1 { font-size: 28px; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
-h2 { font-size: 22px; margin: 28px 0 12px; color: var(--accent); }
-h3 { font-size: 18px; margin: 20px 0 8px; }
-p { margin: 8px 0; }
-ul, ol { margin: 8px 0 8px 24px; }
-li { margin: 4px 0; }
-strong { color: var(--accent); }
-table {
-  width: 100%; border-collapse: collapse; margin: 16px 0;
-  font-size: 14px;
+
+/* ── Section titles ── */
+.section-title {
+  font-size: 18px; font-weight: 700; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
 }
-th, td {
-  padding: 10px 12px; text-align: left; border: 1px solid var(--border);
+.section-title .line { flex: 1; height: 1px; background: var(--border); }
+
+/* ── Tab content panels for original dashboard ── */
+.report-content { max-width: 900px; }
+.report-content h1 { font-size: 24px; margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
+.report-content h2 { font-size: 18px; margin: 20px 0 10px; color: var(--accent); }
+.report-content h3 { font-size: 15px; margin: 16px 0 8px; }
+.report-content p { margin: 6px 0; font-size: 14px; }
+.report-content ul, .report-content ol { margin: 6px 0 6px 20px; }
+.report-content li { margin: 3px 0; font-size: 14px; }
+.report-content strong { color: var(--accent); }
+.report-content table { font-size: 12px; margin: 12px 0; }
+.report-content th { background: rgba(99,102,241,0.1); }
+.report-content td, .report-content th { padding: 6px 8px; border: 1px solid var(--border); }
+.report-content blockquote {
+  border-left: 3px solid var(--accent); padding: 10px 16px; margin: 12px 0;
+  background: rgba(99,102,241,0.05); border-radius: 0 8px 8px 0; font-size: 13px;
 }
-th {
-  background: var(--accent-light); font-weight: 600;
-  position: sticky; top: 0;
-}
-tr:nth-child(even) { background: var(--bg-secondary); }
-tr:hover { background: var(--accent-light); }
-code {
-  background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px;
-  font-size: 13px;
-}
-blockquote {
-  border-left: 4px solid var(--accent); padding: 12px 20px; margin: 16px 0;
-  background: var(--accent-light); border-radius: 0 8px 8px 0;
-}
-hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
-/* ── Collapsible sections ── */
-h2.collapsible {
-  cursor: pointer; user-select: none;
-  position: relative; padding-right: 30px;
-}
+.report-content hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.report-content code { background: var(--bg-card); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+.report-content a { color: var(--cyan); text-decoration: none; }
+.report-content a:hover { text-decoration: underline; }
+
+/* ── Collapsible ── */
+h2.collapsible { cursor: pointer; user-select: none; position: relative; padding-right: 24px; }
 h2.collapsible::after {
   content: ''; position: absolute; right: 4px; top: 50%;
-  border: solid var(--accent); border-width: 0 2px 2px 0;
-  padding: 4px; display: inline-block;
-  transform: translateY(-65%) rotate(-135deg);
-  transition: transform 0.2s;
+  border: solid var(--accent); border-width: 0 2px 2px 0; padding: 4px;
+  transform: translateY(-65%) rotate(-135deg); transition: transform 0.2s;
 }
-h2.collapsible.collapsed::after {
-  transform: translateY(-35%) rotate(45deg);
-}
+h2.collapsible.collapsed::after { transform: translateY(-35%) rotate(45deg); }
 .section-content { transition: max-height 0.3s ease, opacity 0.2s; overflow: hidden; }
 .section-content.collapsed { max-height: 0 !important; opacity: 0; }
-/* ── Styled TOC ── */
-h2#table-of-contents + ol {
-  background: var(--bg-secondary); border: 1px solid var(--border);
-  border-radius: 8px; padding: 20px 20px 20px 40px;
-  margin: 16px 0; column-count: 2; column-gap: 24px;
-}
-h2#table-of-contents + ol li { margin: 6px 0; break-inside: avoid; }
-h2#table-of-contents + ol a { color: var(--accent); text-decoration: none; }
-h2#table-of-contents + ol a:hover { text-decoration: underline; }
+
 /* ── Back to top ── */
 .back-to-top {
   position: fixed; bottom: 24px; right: 24px;
-  width: 44px; height: 44px; border-radius: 50%;
-  background: var(--accent); color: white; border: none;
-  cursor: pointer; font-size: 18px; z-index: 80;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--accent); color: #fff; border: none;
+  cursor: pointer; font-size: 16px; z-index: 80;
   opacity: 0; transform: translateY(20px);
   transition: opacity 0.3s, transform 0.3s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 .back-to-top.visible { opacity: 1; transform: translateY(0); }
-.back-to-top:hover { opacity: 0.9; transform: translateY(-2px); }
-/* ── Print ── */
-@media print {
-  .sidebar, .header, .back-to-top { display: none; }
-  .main { margin: 0; padding: 0; }
-}
-/* ── Mobile ── */
-@media (max-width: 768px) {
-  .hamburger { display: flex; }
-  .sidebar {
-    transform: translateX(-100%); z-index: 95;
-  }
-  .sidebar.open { transform: translateX(0); }
-  .main { margin-left: 0; padding: 20px; }
-  .search-container input { width: 120px; }
-  .search-container input:focus { width: 160px; }
-  h2#table-of-contents + ol { column-count: 1; }
-}
-/* ── Tier badge ── */
-.tier-badge {
-  display: inline-block; padding: 2px 10px; border-radius: 12px;
-  font-size: 11px; font-weight: 600; cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-.tier-badge.free { background: var(--border); color: var(--text-secondary); }
-.tier-badge.pro { background: var(--accent); color: white; }
-.tier-badge.enterprise { background: #6f42c1; color: white; }
-/* ── Gated content ── */
-.gated-content { display: none; }
-.gated-content.unlocked { display: block; }
-/* ── Pro lock overlay ── */
-.pro-lock-overlay {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 200px; padding: 40px 20px; text-align: center;
-  background: var(--bg-secondary); border: 2px dashed var(--border);
-  border-radius: 12px; margin: 16px 0;
-}
-.pro-lock-overlay .lock-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
-.pro-lock-overlay h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
-.pro-lock-overlay p { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; max-width: 400px; }
-.pro-lock-overlay .upgrade-btn {
-  display: inline-block; padding: 8px 20px; border-radius: 8px;
-  background: var(--accent); color: white; font-weight: 600; font-size: 14px;
-  text-decoration: none; transition: background 0.2s; border: none; cursor: pointer;
-}
-.pro-lock-overlay .upgrade-btn:hover { opacity: 0.9; }
-/* ── Pricing cards ── */
-.pricing-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 24px; margin: 32px 0;
-}
-.pricing-card {
-  background: var(--bg-secondary); border: 2px solid var(--border);
-  border-radius: 12px; padding: 32px 24px; text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s; position: relative;
-}
-.pricing-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
-.pricing-card.featured { border-color: var(--accent); }
-.pricing-card.featured::before {
-  content: 'MOST POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-  background: var(--accent); color: white; padding: 2px 12px; border-radius: 10px;
-  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
-}
-.pricing-card .price { font-size: 48px; font-weight: 800; margin: 16px 0 4px; }
-.pricing-card .price small { font-size: 16px; font-weight: 400; color: var(--text-secondary); }
-.pricing-card .tier-name { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 8px; }
-.pricing-card .features { text-align: left; margin: 24px 0; }
-.pricing-card .features li {
-  padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
-  list-style: none; padding-left: 20px; position: relative;
-}
-.pricing-card .features li::before {
-  content: '\2713'; position: absolute; left: 0; color: var(--success); font-weight: bold;
-}
-.pricing-card .cta-btn {
-  display: block; padding: 12px 24px; border-radius: 8px;
-  font-weight: 600; font-size: 15px; text-decoration: none;
-  cursor: pointer; transition: all 0.2s; border: 2px solid;
-}
-.pricing-card .cta-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
-.pricing-card .cta-btn.primary:hover { opacity: 0.9; }
-.pricing-card .cta-btn.secondary { background: transparent; color: var(--accent); border-color: var(--accent); }
-.pricing-card .cta-btn.secondary:hover { background: var(--accent-light); }
-.pricing-card .cta-btn.current { background: var(--border); color: var(--text-secondary); border-color: var(--border); cursor: default; }
-/* ── Modal ── */
-.modal-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6); z-index: 200;
-  justify-content: center; align-items: center;
-}
-.modal-overlay.active { display: flex; }
-.modal {
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: 12px; padding: 32px; max-width: 440px; width: 90%;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.2); position: relative;
-}
-.modal h2 { font-size: 20px; margin-bottom: 8px; color: var(--text); }
-.modal p { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
-.modal input[type="text"] {
-  width: 100%; padding: 10px 14px; border: 1px solid var(--border);
-  border-radius: 8px; font-size: 15px; font-family: monospace;
-  background: var(--bg-secondary); color: var(--text); outline: none;
-  margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
-}
-.modal input[type="text"]:focus { border-color: var(--accent); }
-.modal .modal-actions { display: flex; gap: 8px; }
-.modal .modal-actions button {
-  flex: 1; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 600;
-  cursor: pointer; border: none; transition: all 0.2s;
-}
-.modal .modal-actions .btn-activate { background: var(--accent); color: white; }
-.modal .modal-actions .btn-activate:hover { opacity: 0.9; }
-.modal .modal-actions .btn-cancel { background: var(--border); color: var(--text); }
-.modal .modal-actions .btn-cancel:hover { background: var(--bg-secondary); }
-.modal .modal-close {
-  position: absolute; top: 12px; right: 16px; background: none; border: none;
-  font-size: 20px; cursor: pointer; color: var(--text-secondary);
-}
-.modal .error-msg { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: 4px; }
-.modal .purchase-link { display: block; margin-top: 12px; font-size: 13px; }
-.modal .purchase-link a { color: var(--accent); text-decoration: underline; }
-@media (max-width: 768px) {
-  .pricing-grid { grid-template-columns: 1fr; }
-}
-</style>
-<!-- Plausible Analytics (privacy-friendly, no cookies) -->
-<!-- Set PLAUSIBLE_DOMAIN env var to your domain, e.g. analytics.example.com -->
-<!-- <script defer data-domain="" src="https://plausible.io/js/script.js"></script> -->
 
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 16px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .module-grid { grid-template-columns: 1fr; }
+  .header .tabs { display: none; }
+}
+
+/* ── Animations ── */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+/* ── Agent tag ── */
+.agent-tag {
+  display: inline-block; padding: 2px 8px; border-radius: 6px;
+  font-size: 10px; font-weight: 600; margin: 2px;
+}
+.tag-data { background: rgba(6,182,212,0.12); color: var(--cyan); }
+.tag-ai { background: rgba(168,85,247,0.12); color: var(--purple); }
+.tag-infra { background: rgba(245,158,11,0.12); color: var(--amber); }
+.tag-core { background: rgba(99,102,241,0.12); color: var(--accent); }
+.tag-output { background: rgba(16,185,129,0.12); color: var(--green); }
+
+/* ── Live indicator ── */
+.live-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); margin-right: 4px;
+  animation: pulse 2s infinite;
+}
+
+/* ── Search ── */
+.search-box {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px; color: var(--text);
+  font-size: 13px; outline: none; width: 200px;
+  transition: border-color 0.2s, width 0.3s;
+}
+.search-box:focus { border-color: var(--accent); width: 280px; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
 </head>
 <body>
+
 <div class="header">
-  <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">
-    <span></span><span></span><span></span>
-  </button>
-  <h1>Opportunity Intelligence Platform — Live Dashboard</h1>
-  <div class="search-container">
-    <input type="text" id="searchInput" placeholder="Search report..." autocomplete="off" />
-    <span class="search-clear" id="searchClear">&times;</span>
+  <div class="logo"><span class="dot"></span> OIP — Startup Intelligence</div>
+  <div class="tabs">
+    <button class="tab active" data-page="overview">Overview</button>
+    <button class="tab" data-page="architecture">Architecture</button>
+    <button class="tab" data-page="agents">Agents</button>
+    <button class="tab" data-page="data">Data & APIs</button>
+    <button class="tab" data-page="report">Report</button>
   </div>
-  <span class="tier-badge free" id="tierBadge" onclick="showTierAction()">FREE</span>
-  <span class="meta">Updated: June 06, 2026 at 04:41 UTC</span>
-  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
-    <span class="theme-icon" id="themeIcon">&#9788;</span>
-  </button>
+  <div class="meta">
+    <span><span class="pulse"></span> Live</span>
+    <span id="lastUpdated">Loading...</span>
+    <input type="text" class="search-box" id="globalSearch" placeholder="Search modules, agents..." />
+  </div>
 </div>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <nav class="sidebar">
-<a href="#gmv-monitoring" class="h2">Global Market Viability Analysis</a>
-<a href="#gmv-charts" class="h2">Market Viability Charts</a>
-<a href="#table-of-contents" class="h2">TABLE OF CONTENTS</a>
-<a href="#part-1-failed-startups-that-got-seed-funding-part-1" class="h2">Part 1: Failed Startups That Got Seed Funding</a>
-<a href="#part-1a-united-states-global-part-1a" class="h3">Part 1A: United States &amp; Global</a>
-<a href="#the-big-picture" class="h3">The Big Picture</a>
-<a href="#notable-failed-startups-20232025-with-funding" class="h3">Notable Failed Startups (2023–2025) With Funding</a>
-<a href="#top-reasons-startups-fail-cb-insights-data" class="h3">Top Reasons Startups Fail (CB Insights Data)</a>
-<a href="#failed-ideas-that-got-funding-patterns-to-learn-from" class="h3">Failed Ideas That Got Funding — Patterns to Learn From</a>
-<a href="#key-lessons-for-new-founders" class="h3">Key Lessons for New Founders</a>
-<a href="#manufacturing-specific-startup-failures-2024-2025-manufacturing-specific-failures" class="h3">Manufacturing-Specific Startup Failures (2024-2025)</a>
-<a href="#part-1b-india-startup-failures-part-1b" class="h3">Part 1B: India — Startup Failures</a>
-<a href="#part-1c-china-startup-failures-part-1c" class="h3">Part 1C: China — Startup Failures</a>
-<a href="#part-1d-europe-startup-failures-part-1d" class="h3">Part 1D: Europe — Startup Failures</a>
-<a href="#part-1e-africa-startup-failures-part-1e" class="h3">Part 1E: Africa — Startup Failures</a>
-<a href="#part-1f-manufacturing-specific-failure-rate-statistics-patterns-part-1f" class="h2">Part 1F: Manufacturing-Specific Failure Rate Statistics &amp; Patterns</a>
-<a href="#the-scale-of-manufacturing-startup-failures" class="h3">The Scale of Manufacturing Startup Failures</a>
-<a href="#why-manufacturing-startups-fail-root-cause-analysis" class="h3">Why Manufacturing Startups Fail: Root Cause Analysis</a>
-<a href="#key-insight-the-pilot-to-scale-chasm" class="h3">Key Insight: The &ldquo;Pilot-to-Scale&rdquo; Chasm</a>
-<a href="#part-2-closed-manufacturing-units-5-years-with-revival-potential-part-2" class="h2">Part 2: Closed Manufacturing Units (5+ Years) With Revival Potential</a>
-<a href="#the-reshoring-mega-trend" class="h3">The Reshoring Mega-Trend</a>
-<a href="#latest-reshoring-data" class="h3">Latest Reshoring Data</a>
-<a href="#industries-with-revival-potential" class="h3">Industries With Revival Potential</a>
-<a href="#geographic-hotspots-for-revival" class="h3">Geographic Hotspots for Revival</a>
-<a href="#part-3-where-failed-startup-ideas-meet-manufacturing-revival-part-3" class="h2">Part 3: Where Failed Startup Ideas Meet Manufacturing Revival</a>
-<a href="#high-potential-intersections" class="h3">High-Potential Intersections</a>
-<a href="#part-4-actionable-opportunities-part-4" class="h2">Part 4: Actionable Opportunities</a>
-<a href="#ideas-worth-exploring-based-on-research" class="h3">Ideas Worth Exploring (Based on Research)</a>
-<a href="#data-driven-opportunities-from-collected-data" class="h3">Data-Driven Opportunities (from collected data)</a>
-<a href="#news-monitoring-manufacturing-startup-failures-news" class="h2">News Monitoring: Manufacturing &amp; Startup Failures</a>
-<a href="#coverage-summary" class="h3">Coverage Summary</a>
-<a href="#articles-by-source" class="h3">Articles by Source</a>
-<a href="#recent-manufacturing-startup-failures-news" class="h3">Recent Manufacturing Startup Failures (News)</a>
-<a href="#identified-startup-names-in-news" class="h3">Identified Startup Names in News</a>
-<a href="#methodology-methodology" class="h2">Methodology</a>
-<a href="#research-approach" class="h3">Research Approach</a>
-<a href="#data-freshness" class="h3">Data Freshness</a>
-<a href="#data-sources" class="h3">Data Sources</a>
-<a href="#sources-sources" class="h2">Sources</a>
-<a href="#failory" class="h3">Failory</a>
-<a href="#llm-infrastructure" class="h2">LLM Infrastructure</a>
-<a href="#ollama-usage" class="h2">Ollama Usage &amp; Cost Equivalence</a>
+  <div class="section">Navigation</div>
+  <a href="#" onclick="showPage('overview')"><span class="icon">📊</span> Overview</a>
+  <a href="#" onclick="showPage('architecture')"><span class="icon">🏗️</span> Architecture</a>
+  <a href="#" onclick="showPage('agents')"><span class="icon">🤖</span> All Agents</a>
+  <a href="#" onclick="showPage('data')"><span class="icon">📡</span> Data & APIs</a>
+  <a href="#" onclick="showPage('report')"><span class="icon">📄</span> Research Report</a>
+
+  <div class="section">External</div>
+  <a href="/docs" target="_blank"><span class="icon">📖</span> API Docs (Swagger)</a>
+  <a href="/redoc" target="_blank"><span class="icon">📚</span> API Docs (ReDoc)</a>
+
+  <div class="section">Quick Stats</div>
+  <div style="padding: 8px 16px;">
+    <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 4px;">System Health</div>
+    <div id="sidebarHealth" style="font-size: 13px; color: var(--green);">● Connected</div>
+    <div style="margin-top: 12px; font-size: 12px; color: var(--text-dim); margin-bottom: 4px;">DB Status</div>
+    <div id="sidebarDb" style="font-size: 13px; color: var(--green);">● MySQL Online</div>
+    <div style="margin-top: 12px; font-size: 12px; color: var(--text-dim); margin-bottom: 4px;">LLM</div>
+    <div id="sidebarLLM" style="font-size: 13px; color: var(--green);">● Ollama Online</div>
+  </div>
 </nav>
+
 <div class="main">
-<div class="stats-grid">
-<div class="stat-card accent-blue"><span class="icon">&#128640;</span><div class="value">163</div><div class="label">Total Startups Tracked</div></div>
-<div class="stat-card accent-red"><span class="icon">&#9888;</span><div class="value">44</div><div class="label">Manufacturing Failures</div></div>
-<div class="stat-card accent-green"><span class="icon">&#128240;</span><div class="value">943</div><div class="label">News Articles</div></div>
-<div class="stat-card accent-amber"><span class="icon">&#128202;</span><div class="value">488</div><div class="label">Mfg-Related News</div></div>
-</div>
-    <div class="stats-grid" style="margin-top: 24px; border-top: 2px solid var(--border); padding-top: 24px;">
-      <div class="stat-card accent-blue">
-        <span class="icon">&#127760;</span>
-        <div class="value">420/420</div>
-        <div class="label">Evaluations Done</div>
-      </div>
-      <div class="stat-card accent-green">
-        <span class="icon">&#128200;</span>
-        <div class="value">6.8/10</div>
-        <div class="label">Avg Viability Score</div>
-      </div>
-      <div class="stat-card accent-amber">
-        <span class="icon">&#127919;</span>
-        <div class="value">8/10</div>
-        <div class="label">Top Opportunity</div>
-        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">E-commerce in China</div>
-      </div>
-      <div class="stat-card accent-red">
-        <span class="icon">&#128269;</span>
-        <div class="value">45</div>
-        <div class="label">Company Deep-Dives</div>
-      </div>
+
+  <!-- ════════════════════ OVERVIEW PAGE ════════════════════ -->
+  <div class="page active" id="page-overview">
+    <div class="section-title">
+      <span>🚀 Project Overview</span>
+      <span class="line"></span>
+      <span style="font-size:12px;color:var(--text-dim);font-weight:400;">Opportunity Intelligence Platform</span>
     </div>
-    <div style="margin-bottom: 24px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <h2 id="gmv-monitoring" style="margin:0;font-size:14px;font-weight:600;">Global Market Viability Analysis</h2>
-        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">COMPLETE</span>
-      </div>
-      <div style="background:var(--border);border-radius:8px;height:12px;overflow:hidden;">
-        <div style="height:100%;width:100.0%;background:#10B981;border-radius:8px;transition:width 0.5s;"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-top:4px;">
-        <span>42 sectors analyzed</span>
-        <span>100.0%</span>
-        <span>Last: 2026-06-02T21:47</span>
-      </div>
+
+    <div class="stats-row" id="overviewStats">
+      <div class="stat-box c1"><div class="val" id="ov-startups">—</div><div class="lbl">Startups Tracked</div></div>
+      <div class="stat-box c2"><div class="val" id="ov-news">—</div><div class="lbl">News Articles</div></div>
+      <div class="stat-box c1"><div class="val" id="ov-agents">70</div><div class="lbl">AI Agents</div></div>
+      <div class="stat-box c3"><div class="val" id="ov-collectors">22</div><div class="lbl">Data Collectors</div></div>
+      <div class="stat-box c2"><div class="val" id="ov-apis">20+</div><div class="lbl">API Endpoints</div></div>
+      <div class="stat-box c1"><div class="val" id="ov-tests">90+</div><div class="lbl">Test Files</div></div>
     </div>
-    
-<div class="charts-grid"><div class="chart-container"><h3>Failure by Category</h3><canvas id="categoryChart"></canvas></div><div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div><div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div></div><h2 id="gmv-charts" style="font-size:16px;font-weight:700;margin:0 0 12px 0;color:var(--text);">Market Viability Charts</h2><div class="charts-grid"><div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div><div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div></div><div class="chart-container" style="position:relative;height:300px;"><canvas id="revenueChart"></canvas></div>
 
-    <div class="stats-grid" style="margin-top: 24px; border-top: 2px solid var(--border); padding-top: 24px;">
-      <div class="stat-card accent-blue">
-        <span class="icon">&#127760;</span>
-        <div class="value">420/420</div>
-        <div class="label">Evaluations Done</div>
-      </div>
-      <div class="stat-card accent-green">
-        <span class="icon">&#128200;</span>
-        <div class="value">6.8/10</div>
-        <div class="label">Avg Viability Score</div>
-      </div>
-      <div class="stat-card accent-amber">
-        <span class="icon">&#127919;</span>
-        <div class="value">8/10</div>
-        <div class="label">Top Opportunity</div>
-        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">E-commerce in China</div>
-      </div>
-      <div class="stat-card accent-red">
-        <span class="icon">&#128269;</span>
-        <div class="value">45</div>
-        <div class="label">Company Deep-Dives</div>
-      </div>
+    <!-- Architecture Mini-Diagram -->
+    <div class="card" style="margin-bottom: 20px;">
+      <h3>🏗️ System Architecture <span class="badge badge-blue">Live</span></h3>
+      <svg viewBox="0 0 1000 320" class="arch-svg" style="width:100%;">
+        <!-- Background -->
+        <defs>
+          <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6366f1" stop-opacity="0.8"/><stop offset="100%" stop-color="#06b6d4" stop-opacity="0.8"/></linearGradient>
+          <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#10b981" stop-opacity="0.8"/><stop offset="100%" stop-color="#06b6d4" stop-opacity="0.8"/></linearGradient>
+          <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f59e0b" stop-opacity="0.8"/><stop offset="100%" stop-color="#ef4444" stop-opacity="0.8"/></linearGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#64748b"/></marker>
+        </defs>
+
+        <!-- Data Sources Layer -->
+        <text x="20" y="24" fill="#64748b" font-size="11" font-weight="600">DATA SOURCES</text>
+        <rect x="20" y="32" width="120" height="40" rx="8" fill="#1a2035" stroke="#2a3454" stroke-width="1"/>
+        <text x="80" y="56" fill="#06b6d4" font-size="11" text-anchor="middle">Failory Scraper</text>
+        <rect x="155" y="32" width="120" height="40" rx="8" fill="#1a2035" stroke="#2a3454" stroke-width="1"/>
+        <text x="215" y="56" fill="#06b6d4" font-size="11" text-anchor="middle">Google News RSS</text>
+        <rect x="290" y="32" width="120" height="40" rx="8" fill="#1a2035" stroke="#2a3454" stroke-width="1"/>
+        <text x="350" y="56" fill="#06b6d4" font-size="11" text-anchor="middle">TechCrunch RSS</text>
+        <rect x="425" y="32" width="100" height="40" rx="8" fill="#1a2035" stroke="#2a3454" stroke-width="1"/>
+        <text x="475" y="56" fill="#06b6d4" font-size="11" text-anchor="middle">BLS Public API</text>
+        <rect x="540" y="32" width="100" height="40" rx="8" fill="#1a2035" stroke="#2a3454" stroke-width="1"/>
+        <text x="590" y="56" fill="#06b6d4" font-size="11" text-anchor="middle">SEC EDGAR</text>
+        <rect x="655" y="32" width="100" height="40" rx="8" fill="#1a2035" stroke="#2a3454" stroke-width="1"/>
+        <text x="705" y="56" fill="#06b6d4" font-size="11" text-anchor="middle">GitHub Trends</text>
+        <rect x="770" y="32" width="100" height="40" rx="8" fill="#1a2035" stroke="#2a3454" stroke-width="1"/>
+        <text x="820" y="56" fill="#06b6d4" font-size="11" text-anchor="middle">Reddit Stream</text>
+        <rect x="885" y="32" width="95" height="40" rx="8" fill="#1a2035" stroke="#2a3454" stroke-width="1"/>
+        <text x="932" y="56" fill="#06b6d4" font-size="11" text-anchor="middle">+14 More</text>
+
+        <!-- Arrows: Sources → Processing -->
+        <line x1="80" y1="72" x2="500" y2="115" stroke="#64748b" stroke-width="1" marker-end="url(#arrowhead)" opacity="0.4"/>
+        <line x1="350" y1="72" x2="500" y2="115" stroke="#64748b" stroke-width="1" marker-end="url(#arrowhead)" opacity="0.4"/>
+        <line x1="820" y1="72" x2="500" y2="115" stroke="#64748b" stroke-width="1" marker-end="url(#arrowhead)" opacity="0.4"/>
+
+        <!-- Processing Layer -->
+        <text x="20" y="112" fill="#64748b" font-size="11" font-weight="600">PROCESSING</text>
+        <rect x="300" y="100" width="400" height="44" rx="10" fill="url(#g1)" filter="url(#glow)" opacity="0.9"/>
+        <text x="500" y="126" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">🤖 70 AI Agents · NLP Pipeline · ML Scoring</text>
+
+        <!-- Arrow: Processing → DB -->
+        <line x1="500" y1="144" x2="500" y2="178" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Storage Layer -->
+        <text x="20" y="192" fill="#64748b" font-size="11" font-weight="600">STORAGE</text>
+        <rect x="300" y="178" width="180" height="40" rx="8" fill="#1a2035" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="390" y="202" fill="#a855f7" font-size="12" font-weight="600" text-anchor="middle">🗄️ MySQL Database</text>
+        <rect x="500" y="178" width="200" height="40" rx="8" fill="#1a2035" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="600" y="202" fill="#a855f7" font-size="12" font-weight="600" text-anchor="middle">🧠 Ollama (Local LLM)</text>
+
+        <!-- Arrow: DB → API -->
+        <line x1="390" y1="218" x2="500" y2="258" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <line x1="600" y1="218" x2="500" y2="258" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Presentation Layer -->
+        <text x="20" y="270" fill="#64748b" font-size="11" font-weight="600">PRESENTATION</text>
+        <rect x="150" y="258" width="180" height="44" rx="10" fill="#1a2035" stroke="#10b981" stroke-width="1.5"/>
+        <text x="240" y="284" fill="#10b981" font-size="12" font-weight="600" text-anchor="middle">🌐 FastAPI Server :8000</text>
+        <rect x="355" y="258" width="150" height="44" rx="10" fill="#1a2035" stroke="#10b981" stroke-width="1.5"/>
+        <text x="430" y="284" fill="#10b981" font-size="12" font-weight="600" text-anchor="middle">📊 Live Dashboard</text>
+        <rect x="530" y="258" width="150" height="44" rx="10" fill="#1a2035" stroke="#10b981" stroke-width="1.5"/>
+        <text x="605" y="284" fill="#10b981" font-size="12" font-weight="600" text-anchor="middle">📱 Next.js Frontend</text>
+        <rect x="705" y="258" width="130" height="44" rx="10" fill="#1a2035" stroke="#10b981" stroke-width="1.5"/>
+        <text x="770" y="284" fill="#10b981" font-size="12" font-weight="600" text-anchor="middle">📡 WebSocket</text>
+        <rect x="860" y="258" width="120" height="44" rx="10" fill="#1a2035" stroke="#10b981" stroke-width="1.5"/>
+        <text x="920" y="284" fill="#10b981" font-size="12" font-weight="600" text-anchor="middle">📧 Email Digest</text>
+      </svg>
     </div>
-    <div style="margin-bottom: 24px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <h2 id="gmv-monitoring" style="margin:0;font-size:14px;font-weight:600;">Global Market Viability Analysis</h2>
-        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">COMPLETE</span>
-      </div>
-      <div style="background:var(--border);border-radius:8px;height:12px;overflow:hidden;">
-        <div style="height:100%;width:100.0%;background:#10B981;border-radius:8px;transition:width 0.5s;"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-top:4px;">
-        <span>42 sectors analyzed</span>
-        <span>100.0%</span>
-        <span>Last: 2026-06-02T21:47</span>
-      </div>
-    </div>
-    <h2 id="gmv-charts" style="font-size:16px;font-weight:700;margin:0 0 12px 0;color:var(--text);">Market Viability Charts</h2><div class="charts-grid"><div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div><div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div></div><h1 id="research-report-failed-startups-revival-ready-manufacturing-industries">Research Report: Failed Startups &amp; Revival-Ready Manufacturing Industries</h1>
-<hr />
-<h2 id="table-of-contents">TABLE OF CONTENTS</h2>
-<ol>
-<li><a href="#part-1">Part 1: Failed Startups That Got Seed Funding</a></li>
-<li><a href="#part-1a">1A: United States &amp; Global</a></li>
-<li><a href="#manufacturing-specific-failures">1A-Extra: Manufacturing-Specific Startup Failures (2024-2025)</a></li>
-<li><a href="#part-1b">1B: India</a></li>
-<li><a href="#part-1c">1C: China</a></li>
-<li><a href="#part-1d">1D: Europe</a></li>
-<li><a href="#part-1e">1E: Africa &amp; Emerging Markets</a></li>
-<li><a href="#part-1f">1F: Manufacturing Failure Rate Statistics &amp; Patterns</a></li>
-<li><a href="#part-2">Part 2: Closed Manufacturing Units with Revival Potential</a></li>
-<li><a href="#part-3">Cross-Reference: Where Failed Startup Ideas Meet Manufacturing Revival</a></li>
-<li><a href="#part-4">Actionable Opportunities</a>
-4a. <a href="#news">News Monitoring: Manufacturing &amp; Startup Failures</a></li>
-<li><a href="#methodology">Methodology</a></li>
-<li><a href="#sources">Sources</a></li>
-</ol>
-<hr />
-<h2 id="part-1-failed-startups-that-got-seed-funding-part-1">Part 1: Failed Startups That Got Seed Funding </h2>
-<h3 id="part-1a-united-states-global-part-1a">Part 1A: United States &amp; Global </h3>
-<h3 id="the-big-picture">The Big Picture</h3>
-<ul>
-<li><strong>104 tracked US/Global tech startups in the database</strong></li>
-<li><strong>28 are manufacturing-specific</strong> (26.9%)</li>
-<li><strong>2025 is the most recent shutdown year with data</strong></li>
-</ul>
-<h3 id="notable-failed-startups-20232025-with-funding">Notable Failed Startups (2023–2025) With Funding</h3>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Startup</th>
-<th>Sector</th>
-<th>Funding Raised</th>
-<th>Year Shutdown</th>
-<th>Primary Failure Reason</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td><strong>Northvolt</strong></td>
-<td>Battery Manufacturing</td>
-<td>$14B+</td>
-<td>2024</td>
-<td>Production delays, cost overruns, cancelled orders</td>
-</tr>
-<tr>
-<td>2</td>
-<td><strong>Byju&rsquo;s</strong></td>
-<td>EdTech</td>
-<td>~$5.4B+ (valued at $22B)</td>
-<td>2024</td>
-<td>Financial mismanagement, aggressive acquisition spree</td>
-</tr>
-<tr>
-<td>3</td>
-<td><strong>Fisker</strong></td>
-<td>EV/Automotive</td>
-<td>~$1B+</td>
-<td>2024</td>
-<td>Poor product quality, failed to compete with Tesla</td>
-</tr>
-<tr>
-<td>4</td>
-<td><strong>Bird</strong></td>
-<td>Micro-mobility</td>
-<td>~$776M (unicorn at $2.4B)</td>
-<td>2024</td>
-<td>Unit economics failure, regulatory issues</td>
-</tr>
-<tr>
-<td>5</td>
-<td><strong>Veev</strong></td>
-<td>PropTech/Construction</td>
-<td>~$600M+</td>
-<td>2024</td>
-<td>Supply chain costs, market downturn in real estate</td>
-</tr>
-<tr>
-<td>6</td>
-<td><strong>EasyKnock</strong></td>
-<td>Proptech</td>
-<td>$455M</td>
-<td>2024</td>
-<td>Market conditions, financial model unsustainability</td>
-</tr>
-<tr>
-<td>7</td>
-<td><strong>Rad Power Bikes</strong></td>
-<td>Mobility/EV</td>
-<td>~$300M+</td>
-<td>2024</td>
-<td>Supply chain, cash flow issues</td>
-</tr>
-<tr>
-<td>8</td>
-<td><strong>Tally</strong></td>
-<td>Fintech</td>
-<td>~$87M</td>
-<td>2024</td>
-<td>Debt consolidation market challenges</td>
-</tr>
-<tr>
-<td>9</td>
-<td><strong>Mindstrong</strong></td>
-<td>Healthtech</td>
-<td>Significant VC backing</td>
-<td>2024</td>
-<td>Business model issues in digital health</td>
-</tr>
-<tr>
-<td>10</td>
-<td><strong>Tessera</strong></td>
-<td>Biotech/Genomics</td>
-<td>Well-funded</td>
-<td>2024</td>
-<td>Technical/scientific challenges</td>
-</tr>
-</tbody>
-</table>
-<h3 id="top-reasons-startups-fail-cb-insights-data">Top Reasons Startups Fail (CB Insights Data)</h3>
-<table>
-<thead>
-<tr>
-<th>Rank</th>
-<th>Reason</th>
-<th>% of Failures</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>No market need / Poor product-market fit</td>
-<td>42.0%</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Ran out of cash</td>
-<td>38.0%</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Not the right team</td>
-<td>23.0%</td>
-</tr>
-<tr>
-<td>4</td>
-<td>Got outcompeted</td>
-<td>20.0%</td>
-</tr>
-<tr>
-<td>5</td>
-<td>Pricing/cost issues</td>
-<td>18.0%</td>
-</tr>
-<tr>
-<td>6</td>
-<td>Poor product</td>
-<td>17.0%</td>
-</tr>
-<tr>
-<td>7</td>
-<td>No viable business model</td>
-<td>17.0%</td>
-</tr>
-<tr>
-<td>8</td>
-<td>Ineffective marketing</td>
-<td>14.0%</td>
-</tr>
-<tr>
-<td>9</td>
-<td>Ignored customer needs</td>
-<td>14.0%</td>
-</tr>
-</tbody>
-</table>
-<h3 id="failed-ideas-that-got-funding-patterns-to-learn-from">Failed Ideas That Got Funding — Patterns to Learn From</h3>
-<table>
-<thead>
-<tr>
-<th>Idea Category</th>
-<th>Examples</th>
-<th>Why It Failed</th>
-<th>Market Reality</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>AI Wrapper Apps</td>
-<td>Numerous seed-stage AI startups (2023-24)</td>
-<td>Made obsolete by OpenAI/Google free features</td>
-<td>AI commoditization kills thin wrappers</td>
-</tr>
-<tr>
-<td>Ultra-fast grocery delivery</td>
-<td>Gorillas, Getir, Jokr (~$3B+ combined)</td>
-<td>Unit economics impossible at 10-min delivery</td>
-<td>Customers tolerate 30-min delivery</td>
-</tr>
-<tr>
-<td>Web3/Crypto Infrastructure</td>
-<td>Hundreds of seed-funded projects (2021-22)</td>
-<td>Market crashed, no real demand</td>
-<td>Crypto utility remains niche</td>
-</tr>
-<tr>
-<td>B2B SaaS for Niche Markets</td>
-<td>Many seed-stage startups</td>
-<td>Market too small for venture returns</td>
-<td>Not every vertical needs venture-scale SaaS</td>
-</tr>
-<tr>
-<td>Consumer Social Apps</td>
-<td>Numerous post-TikTok clones</td>
-<td>User retention near-zero</td>
-<td>Social is winner-take-all</td>
-</tr>
-<tr>
-<td>Micro-mobility sharing</td>
-<td>Bird, Lime (near-death)</td>
-<td>Unit economics never worked</td>
-<td>E-scooters as a service is structurally flawed</td>
-</tr>
-<tr>
-<td>AI Wrapper Apps</td>
-<td>Numerous seed-stage AI startups (2023-24)</td>
-<td>Made obsolete by OpenAI/Google free features</td>
-<td>AI commoditization kills thin wrappers</td>
-</tr>
-<tr>
-<td>Ultra-fast grocery delivery</td>
-<td>Gorillas, Getir, Jokr (~$3B+ combined)</td>
-<td>Unit economics impossible at 10-min delivery</td>
-<td>Customers tolerate 30-min delivery</td>
-</tr>
-<tr>
-<td>Web3/Crypto Infrastructure</td>
-<td>Hundreds of seed-funded projects (2021-22)</td>
-<td>Market crashed, no real demand</td>
-<td>Crypto utility remains niche</td>
-</tr>
-<tr>
-<td>B2B SaaS for Niche Markets</td>
-<td>Many seed-stage startups</td>
-<td>Market too small for venture returns</td>
-<td>Not every vertical needs venture-scale SaaS</td>
-</tr>
-<tr>
-<td>Consumer Social Apps</td>
-<td>Numerous post-TikTok clones</td>
-<td>User retention near-zero</td>
-<td>Social is winner-take-all</td>
-</tr>
-<tr>
-<td>Micro-mobility sharing</td>
-<td>Bird, Lime (near-death)</td>
-<td>Unit economics never worked</td>
-<td>E-scooters as a service is structurally flawed</td>
-</tr>
-<tr>
-<td>AI Wrapper Apps</td>
-<td>Numerous seed-stage AI startups (2023-24)</td>
-<td>Made obsolete by OpenAI/Google free features</td>
-<td>AI commoditization kills thin wrappers</td>
-</tr>
-<tr>
-<td>Ultra-fast grocery delivery</td>
-<td>Gorillas, Getir, Jokr (~$3B+ combined)</td>
-<td>Unit economics impossible at 10-min delivery</td>
-<td>Customers tolerate 30-min delivery</td>
-</tr>
-<tr>
-<td>Web3/Crypto Infrastructure</td>
-<td>Hundreds of seed-funded projects (2021-22)</td>
-<td>Market crashed, no real demand</td>
-<td>Crypto utility remains niche</td>
-</tr>
-<tr>
-<td>B2B SaaS for Niche Markets</td>
-<td>Many seed-stage startups</td>
-<td>Market too small for venture returns</td>
-<td>Not every vertical needs venture-scale SaaS</td>
-</tr>
-<tr>
-<td>Consumer Social Apps</td>
-<td>Numerous post-TikTok clones</td>
-<td>User retention near-zero</td>
-<td>Social is winner-take-all</td>
-</tr>
-<tr>
-<td>Micro-mobility sharing</td>
-<td>Bird, Lime (near-death)</td>
-<td>Unit economics never worked</td>
-<td>E-scooters as a service is structurally flawed</td>
-</tr>
-</tbody>
-</table>
-<h3 id="key-lessons-for-new-founders">Key Lessons for New Founders</h3>
-<ol>
-<li><strong>Validate demand BEFORE building</strong> — 42% fail because nobody wants the product</li>
-<li><strong>Run lean</strong> — don&rsquo;t assume Series A will arrive (85% don&rsquo;t raise it)</li>
-<li><strong>Build financial discipline early</strong> — proper books, unit economics from day one</li>
-<li><strong>Growth on borrowed money != product-market fit</strong></li>
-<li><strong>Have a clear shutdown plan</strong> — know what happens to IP, employees, obligations</li>
-<li><strong>Don&rsquo;t compete with platforms that can ship your feature for free</strong> (critical for AI startups)</li>
-</ol>
-<h3 id="manufacturing-specific-startup-failures-2024-2025-manufacturing-specific-failures">Manufacturing-Specific Startup Failures (2024-2025) </h3>
-<p>Manufacturing startups face uniquely brutal economics: long R&amp;D cycles, massive capital requirements, hardware reliability challenges, and the &ldquo;pilot-to-scale&rdquo; gap.</p>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Startup</th>
-<th>Manufacturing Sub-Sector</th>
-<th>Funding</th>
-<th>Shutdown Year</th>
-<th>Primary Failure Reason</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td><strong>Wusheng Semiconductor</strong></td>
-<td>Semiconductor Manufacturing</td>
-<td>Registered ¥10B ($1.4B)</td>
-<td>2025</td>
-<td>Chip investment bubble burst</td>
-</tr>
-<tr>
-<td>2</td>
-<td><strong>BluSmart</strong></td>
-<td>EV Manufacturing</td>
-<td>~$100M+</td>
-<td>2025</td>
-<td>Ran out of funds</td>
-</tr>
-<tr>
-<td>3</td>
-<td><strong>BCN3D</strong></td>
-<td>3D Printing</td>
-<td>~€50M+ raised</td>
-<td>2025</td>
-<td>Voluntary bankruptcy; market oversaturation</td>
-</tr>
-<tr>
-<td>4</td>
-<td><strong>Black Buffalo 3D</strong></td>
-<td>Construction 3D Printing</td>
-<td>Significant funding</td>
-<td>2025</td>
-<td>Chapter 11 bankruptcy; market failed to materialize</td>
-</tr>
-<tr>
-<td>5</td>
-<td><strong>Northvolt</strong></td>
-<td>Battery Cell Manufacturing</td>
-<td>$14B+</td>
-<td>2024</td>
-<td>Production delays, cost overruns, cancelled orders</td>
-</tr>
-<tr>
-<td>6</td>
-<td><strong>Northvolt</strong></td>
-<td>Battery Cell Manufacturing</td>
-<td>$14B+</td>
-<td>2024</td>
-<td>Production delays, cost overruns, cancelled BMW/VW</td>
-</tr>
-<tr>
-<td>7</td>
-<td><strong>Desktop Metal</strong></td>
-<td>3D Printing / Additive Mfg</td>
-<td>~$6B (SPAC valuation)</td>
-<td>2024</td>
-<td>SPAC overvaluation, inability to achieve profitability</td>
-</tr>
-<tr>
-<td>8</td>
-<td><strong>Katerra</strong></td>
-<td>Modular Construction</td>
-<td>$2B+</td>
-<td>2024</td>
-<td>Overambitious vertical integration</td>
-</tr>
-<tr>
-<td>9</td>
-<td><strong>Royole Technology</strong></td>
-<td>Display Manufacturing</td>
-<td>~$2B+</td>
-<td>2024</td>
-<td>Could not mass-produce flexible displays</td>
-</tr>
-<tr>
-<td>10</td>
-<td><strong>Byton</strong></td>
-<td>EV Manufacturing</td>
-<td>¥8.4B (~$1.2B+)</td>
-<td>2024</td>
-<td>Burned cash without delivering mass-market car</td>
-</tr>
-<tr>
-<td>11</td>
-<td><strong>Fisker</strong></td>
-<td>EV Manufacturing</td>
-<td>~$1B+</td>
-<td>2024</td>
-<td>Poor product quality, failed to compete with Tesla</td>
-</tr>
-<tr>
-<td>12</td>
-<td><strong>Veev</strong></td>
-<td>Modular Construction</td>
-<td>~$600M+</td>
-<td>2024</td>
-<td>Supply chain costs, market downturn in real estate</td>
-</tr>
-<tr>
-<td>13</td>
-<td><strong>Rad Power Bikes</strong></td>
-<td>E-bike Manufacturing</td>
-<td>~$300M+</td>
-<td>2024</td>
-<td>Supply chain, cash flow issues</td>
-</tr>
-<tr>
-<td>14</td>
-<td><strong>54gene</strong></td>
-<td>Biomanufacturing</td>
-<td>~$45M</td>
-<td>2024</td>
-<td>Business model issues; board disputes</td>
-</tr>
-<tr>
-<td>15</td>
-<td><strong>RoboTire</strong></td>
-<td>Robotics / Automotive Service</td>
-<td>$30M+</td>
-<td>2024</td>
-<td>Automated tire changing economics did not work at scale</td>
-</tr>
-<tr>
-<td>16</td>
-<td><strong>Vreal</strong></td>
-<td>Entertainment</td>
-<td>$15M</td>
-<td>2024</td>
-<td>Bad Timing</td>
-</tr>
-<tr>
-<td>17</td>
-<td><strong>HiPhi / Human Horizons</strong></td>
-<td>EV Manufacturing</td>
-<td>Hundreds of millions</td>
-<td>2024</td>
-<td>Production halt; bankruptcy restructuring</td>
-</tr>
-<tr>
-<td>18</td>
-<td><strong>Hengchi</strong></td>
-<td>EV Manufacturing</td>
-<td>Tens of billions (Evergrande)</td>
-<td>2024</td>
-<td>Evergrande debt crisis consumed subsidiary</td>
-</tr>
-<tr>
-<td>19</td>
-<td><strong>Neta Auto</strong></td>
-<td>EV Manufacturing</td>
-<td>Top-seller status</td>
-<td>2024</td>
-<td>Bankruptcy restructuring</td>
-</tr>
-<tr>
-<td>20</td>
-<td><strong>Dextrous Robotics</strong></td>
-<td>Robotics / Material Handling</td>
-<td>Well-funded</td>
-<td>2024</td>
-<td>Robotics pilot could not scale to commercial deployment</td>
-</tr>
-<tr>
-<td>21</td>
-<td><strong>WM Motor</strong></td>
-<td>EV Manufacturing</td>
-<td>¥30B+ (~$4B+)</td>
-<td>2023</td>
-<td>Collapsed under debt</td>
-</tr>
-<tr>
-<td>22</td>
-<td><strong>Quibi</strong></td>
-<td>Entertainment</td>
-<td>$1.8B</td>
-<td>2020</td>
-<td>Multiple Reasons</td>
-</tr>
-<tr>
-<td>23</td>
-<td><strong>HubHaus</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$13.4M</td>
-<td>2020</td>
-<td>Bad Timing</td>
-</tr>
-<tr>
-<td>24</td>
-<td><strong>Anki</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$182M</td>
-<td>2019</td>
-<td>Lack of Funds</td>
-</tr>
-<tr>
-<td>25</td>
-<td><strong>Munchery</strong></td>
-<td>Food &amp; Beverage</td>
-<td>$125.4M</td>
-<td>2019</td>
-<td>Multiple Reasons</td>
-</tr>
-<tr>
-<td>26</td>
-<td><strong>Seven Dreamers Laboratories</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$95M</td>
-<td>2019</td>
-<td>Poor Product</td>
-</tr>
-<tr>
-<td>27</td>
-<td><strong>Aria Insights</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$39M</td>
-<td>2019</td>
-<td>Multiple Reasons</td>
-</tr>
-<tr>
-<td>28</td>
-<td><strong>MatterFab</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$13.2M</td>
-<td>2019</td>
-<td>Bad Business Model</td>
-</tr>
-<tr>
-<td>29</td>
-<td><strong>Navdy</strong></td>
-<td>Transportation</td>
-<td>$41.8M</td>
-<td>2018</td>
-<td>Multiple Reasons</td>
-</tr>
-<tr>
-<td>30</td>
-<td><strong>ChaCha</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$96M</td>
-<td>2016</td>
-<td>Competition</td>
-</tr>
-<tr>
-<td>31</td>
-<td><strong>Skully</strong></td>
-<td>Transportation</td>
-<td>$15M</td>
-<td>2016</td>
-<td>Mismanagement of Funds</td>
-</tr>
-<tr>
-<td>32</td>
-<td><strong>DotCloud</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$13.7M</td>
-<td>2016</td>
-<td>Mismanagement of Funds</td>
-</tr>
-<tr>
-<td>33</td>
-<td><strong>RethinkDB</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$12.2M</td>
-<td>2016</td>
-<td>Lack of PMF</td>
-</tr>
-<tr>
-<td>34</td>
-<td><strong>Parse</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$7M</td>
-<td>2016</td>
-<td>Acquisition Flu</td>
-</tr>
-<tr>
-<td>35</td>
-<td><strong>Fuhu</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$66.2M</td>
-<td>2015</td>
-<td>Mismanagement of Funds</td>
-</tr>
-<tr>
-<td>36</td>
-<td><strong>QBotix</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$23.5M</td>
-<td>2015</td>
-<td>Competition</td>
-</tr>
-<tr>
-<td>37</td>
-<td><strong>FoundationDB</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$22.7M</td>
-<td>2015</td>
-<td>Acquisition Flu</td>
-</tr>
-<tr>
-<td>38</td>
-<td><strong>Zirtual</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$5.5M</td>
-<td>2015</td>
-<td>Mismanagement of Funds</td>
-</tr>
-<tr>
-<td>39</td>
-<td><strong>Circa</strong></td>
-<td>Entertainment</td>
-<td>$4.7M</td>
-<td>2015</td>
-<td>Lack of Funds</td>
-</tr>
-<tr>
-<td>40</td>
-<td><strong>Wattage</strong></td>
-<td>Software &amp; Hardware</td>
-<td>$200K</td>
-<td>2015</td>
-<td>No Market Need</td>
-</tr>
-<tr>
-<td>41</td>
-<td><strong>Lumos</strong></td>
-<td>Software &amp; Hardware</td>
-<td>No Data</td>
-<td>2015</td>
-<td>Lack of Experience</td>
-</tr>
-<tr>
-<td>42</td>
-<td><strong>Selltag</strong></td>
-<td>e-Commerce</td>
-<td>€325K</td>
-<td>2015</td>
-<td>Failure to Pivot</td>
-</tr>
-<tr>
-<td>43</td>
-<td><strong>Berg</strong></td>
-<td>Design</td>
-<td>$1.3M</td>
-<td>2014</td>
-<td>No Market Need</td>
-</tr>
-<tr>
-<td>44</td>
-<td><strong>SchoolGennie</strong></td>
-<td>Education</td>
-<td>N/A</td>
-<td>2014</td>
-<td>Lack of Experience</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Common manufacturing failure patterns:</strong> Capital intensity and long cash conversion cycles make manufacturing startups highly vulnerable to funding downturns. The SPAC era (2020-2021) was particularly damaging. The &ldquo;pilot-to-scale&rdquo; chasm is another recurring theme.</p>
-<h3 id="part-1b-india-startup-failures-part-1b">Part 1B: India — Startup Failures </h3>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Startup</th>
-<th>Sector</th>
-<th>Funding Raised</th>
-<th>Year Shutdown</th>
-<th>Primary Failure Reason</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td><strong>Good Glamm Group</strong></td>
-<td>Beauty/D2C</td>
-<td>~$500M+</td>
-<td>2025</td>
-<td>Major layoffs and restructuring</td>
-</tr>
-<tr>
-<td>2</td>
-<td><strong>Hike</strong></td>
-<td>Social/Chat</td>
-<td>~$260M+</td>
-<td>2025</td>
-<td>Pivoted multiple times; never found PMF</td>
-</tr>
-<tr>
-<td>3</td>
-<td><strong>BluSmart</strong></td>
-<td>EV Ride-Hailing</td>
-<td>~$100M+</td>
-<td>2025</td>
-<td>Ran out of funds</td>
-</tr>
-<tr>
-<td>4</td>
-<td><strong>Byju&rsquo;s</strong></td>
-<td>EdTech</td>
-<td>~$5.4B+</td>
-<td>2024</td>
-<td>Financial mismanagement, aggressive acquisition spree, governance</td>
-</tr>
-<tr>
-<td>5</td>
-<td><strong>BharatPe</strong></td>
-<td>Fintech/Payments</td>
-<td>~$600M+</td>
-<td>2024</td>
-<td>Corporate governance scandal</td>
-</tr>
-<tr>
-<td>6</td>
-<td><strong>Dunzo</strong></td>
-<td>Quick Commerce</td>
-<td>~$500M+</td>
-<td>2024</td>
-<td>Burn rate exceeded revenue; pivoted too many times</td>
-</tr>
-<tr>
-<td>7</td>
-<td><strong>Zilingo</strong></td>
-<td>Fashion-tech</td>
-<td>~$300M+</td>
-<td>2024</td>
-<td>Corporate governance issues, auditor disputes</td>
-</tr>
-<tr>
-<td>8</td>
-<td><strong>Trell</strong></td>
-<td>Content/Social Commerce</td>
-<td>$45M</td>
-<td>2024</td>
-<td>Alleged misuse of funds</td>
-</tr>
-<tr>
-<td>9</td>
-<td><strong>Paytm Mall</strong></td>
-<td>E-commerce</td>
-<td>Backed by Paytm/SoftBank</td>
-<td>2024</td>
-<td>Could not build sustainable moat</td>
-</tr>
-</tbody>
-</table>
-<h3 id="part-1c-china-startup-failures-part-1c">Part 1C: China — Startup Failures </h3>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Startup</th>
-<th>Sector</th>
-<th>Funding Raised</th>
-<th>Year Shutdown</th>
-<th>Primary Failure Reason</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td><strong>Wusheng Semiconductor</strong></td>
-<td>Semiconductors</td>
-<td>Registered ¥10B ($1.4B)</td>
-<td>2025</td>
-<td>Chip investment bubble burst</td>
-</tr>
-<tr>
-<td>2</td>
-<td><strong>Royole Technology</strong></td>
-<td>Flexible Display</td>
-<td>~$2B+</td>
-<td>2024</td>
-<td>Could not mass-produce flexible displays</td>
-</tr>
-<tr>
-<td>3</td>
-<td><strong>Byton</strong></td>
-<td>EV</td>
-<td>¥8.4B (~$1.2B+)</td>
-<td>2024</td>
-<td>Burned cash without delivering mass-market car</td>
-</tr>
-<tr>
-<td>4</td>
-<td><strong>HiPhi / Human Horizons</strong></td>
-<td>Premium EV</td>
-<td>Hundreds of millions</td>
-<td>2024</td>
-<td>Production halt; bankruptcy restructuring</td>
-</tr>
-<tr>
-<td>5</td>
-<td><strong>Neta Auto</strong></td>
-<td>EV</td>
-<td>Top-seller status</td>
-<td>2024</td>
-<td>Bankruptcy restructuring</td>
-</tr>
-<tr>
-<td>6</td>
-<td><strong>Hengchi</strong></td>
-<td>EV</td>
-<td>Tens of billions (Evergrande)</td>
-<td>2024</td>
-<td>Evergrande debt crisis consumed subsidiary</td>
-</tr>
-<tr>
-<td>7</td>
-<td><strong>WM Motor</strong></td>
-<td>EV</td>
-<td>¥30B+ (~$4B+)</td>
-<td>2023</td>
-<td>Collapsed under debt</td>
-</tr>
-</tbody>
-</table>
-<h3 id="part-1d-europe-startup-failures-part-1d">Part 1D: Europe — Startup Failures </h3>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Startup</th>
-<th>Sector</th>
-<th>Funding Raised</th>
-<th>Year Shutdown</th>
-<th>Primary Failure Reason</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td><strong>Northvolt</strong></td>
-<td>Battery Manufacturing</td>
-<td>$14B+</td>
-<td>2024</td>
-<td>Production delays, cost overruns, cancelled BMW/VW</td>
-</tr>
-<tr>
-<td>2</td>
-<td><strong>Getir</strong></td>
-<td>Quick Commerce</td>
-<td>~$2B+</td>
-<td>2024</td>
-<td>Global quick commerce collapse</td>
-</tr>
-<tr>
-<td>3</td>
-<td><strong>Gorillas</strong></td>
-<td>Quick Commerce</td>
-<td>~$1.3B</td>
-<td>2024</td>
-<td>Unit economics impossible</td>
-</tr>
-<tr>
-<td>4</td>
-<td><strong>Jokr</strong></td>
-<td>Quick Commerce</td>
-<td>~$170M</td>
-<td>2023</td>
-<td>Merged into Getir (which also collapsed)</td>
-</tr>
-</tbody>
-</table>
-<h3 id="part-1e-africa-startup-failures-part-1e">Part 1E: Africa — Startup Failures </h3>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Startup</th>
-<th>Sector</th>
-<th>Funding Raised</th>
-<th>Year Shutdown</th>
-<th>Primary Failure Reason</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td><strong>54gene</strong></td>
-<td>Healthtech/Genomics</td>
-<td>~$45M</td>
-<td>2024</td>
-<td>Business model issues; board disputes</td>
-</tr>
-<tr>
-<td>2</td>
-<td><strong>Lipa Later</strong></td>
-<td>BNPL/Fintech</td>
-<td>~$20M+</td>
-<td>2024</td>
-<td>Mounting debts; failed to secure funding</td>
-</tr>
-<tr>
-<td>3</td>
-<td><strong>Sendy</strong></td>
-<td>Logistics</td>
-<td>~$20M+</td>
-<td>2024</td>
-<td>Failed to achieve profitability</td>
-</tr>
-<tr>
-<td>4</td>
-<td><strong>Zumi</strong></td>
-<td>E-commerce</td>
-<td>~$7M</td>
-<td>2023</td>
-<td>Could not compete with Jumia</td>
-</tr>
-</tbody>
-</table>
-<h2 id="part-1f-manufacturing-specific-failure-rate-statistics-patterns-part-1f">Part 1F: Manufacturing-Specific Failure Rate Statistics &amp; Patterns </h2>
-<h3 id="the-scale-of-manufacturing-startup-failures">The Scale of Manufacturing Startup Failures</h3>
-<ul>
-<li><strong>~41.2% of manufacturing startups fail</strong> within 5 years (BLS Business Employment Dynamics data)</li>
-<li><strong>2 out of 3 digital manufacturing pilots fail to scale</strong> beyond pilot stage (McKinsey / Industry 4.0 survey data)</li>
-</ul>
-<h3 id="why-manufacturing-startups-fail-root-cause-analysis">Why Manufacturing Startups Fail: Root Cause Analysis</h3>
-<table>
-<thead>
-<tr>
-<th>Failure Category</th>
-<th>Description</th>
-<th>% of Mfg Failures (est.)</th>
-<th>Examples</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Capital Intensity</td>
-<td>Hardware requires 5-10x more capital than software; runway evaporates</td>
-<td>~35%</td>
-<td>Northvolt ($14B), Katerra ($2B)</td>
-</tr>
-<tr>
-<td>Capital Intensity</td>
-<td>Hardware requires 5-10x more capital than software; runway evaporates</td>
-<td>~35%</td>
-<td>Northvolt ($14B), Katerra ($2B)</td>
-</tr>
-<tr>
-<td>Capital Intensity</td>
-<td>Hardware requires 5-10x more capital than software; runway evaporates</td>
-<td>~35%</td>
-<td>Northvolt ($14B), Katerra ($2B)</td>
-</tr>
-<tr>
-<td>Pilot-to-Scale Gap</td>
-<td>Technology works in lab/pilot but fails at commercial volume</td>
-<td>~25%</td>
-<td>Dextrous Robotics, RoboTire, 10+ robotics cos</td>
-</tr>
-<tr>
-<td>Pilot-to-Scale Gap</td>
-<td>Technology works in lab/pilot but fails at commercial volume</td>
-<td>~25%</td>
-<td>Dextrous Robotics, RoboTire, 10+ robotics cos</td>
-</tr>
-<tr>
-<td>Pilot-to-Scale Gap</td>
-<td>Technology works in lab/pilot but fails at commercial volume</td>
-<td>~25%</td>
-<td>Dextrous Robotics, RoboTire, 10+ robotics cos</td>
-</tr>
-<tr>
-<td>Supply Chain Disruption</td>
-<td>COVID-era supply shocks, tariff uncertainty, single-source dependency</td>
-<td>~20%</td>
-<td>Veev, Rad Power Bikes</td>
-</tr>
-<tr>
-<td>Supply Chain Disruption</td>
-<td>COVID-era supply shocks, tariff uncertainty, single-source dependency</td>
-<td>~20%</td>
-<td>Veev, Rad Power Bikes</td>
-</tr>
-<tr>
-<td>Supply Chain Disruption</td>
-<td>COVID-era supply shocks, tariff uncertainty, single-source dependency</td>
-<td>~20%</td>
-<td>Veev, Rad Power Bikes</td>
-</tr>
-<tr>
-<td>SPAC Overvaluation</td>
-<td>Went public at inflated valuations via SPAC, then collapsed</td>
-<td>~15%</td>
-<td>Desktop Metal, multiple EV companies</td>
-</tr>
-<tr>
-<td>SPAC Overvaluation</td>
-<td>Went public at inflated valuations via SPAC, then collapsed</td>
-<td>~15%</td>
-<td>Desktop Metal, multiple EV companies</td>
-</tr>
-<tr>
-<td>SPAC Overvaluation</td>
-<td>Went public at inflated valuations via SPAC, then collapsed</td>
-<td>~15%</td>
-<td>Desktop Metal, multiple EV companies</td>
-</tr>
-<tr>
-<td>Market Timing</td>
-<td>Correct thesis but too early</td>
-<td>~10%</td>
-<td>Black Buffalo 3D (construction 3D printing)</td>
-</tr>
-<tr>
-<td>Market Timing</td>
-<td>Correct thesis but too early</td>
-<td>~10%</td>
-<td>Black Buffalo 3D (construction 3D printing)</td>
-</tr>
-<tr>
-<td>Market Timing</td>
-<td>Correct thesis but too early</td>
-<td>~10%</td>
-<td>Black Buffalo 3D (construction 3D printing)</td>
-</tr>
-</tbody>
-</table>
-<h3 id="key-insight-the-pilot-to-scale-chasm">Key Insight: The &ldquo;Pilot-to-Scale&rdquo; Chasm</h3>
-<p>The single most distinctive pattern in manufacturing startup failures is the gap between successful pilot/prototype and commercial-scale deployment. Software startups can iterate after launch; manufacturing startups must get it right <em>before</em> scale because physical production is unforgiving.</p>
-<h2 id="part-2-closed-manufacturing-units-5-years-with-revival-potential-part-2">Part 2: Closed Manufacturing Units (5+ Years) With Revival Potential </h2>
-<h3 id="the-reshoring-mega-trend">The Reshoring Mega-Trend</h3>
-<ul>
-<li>Tariffs, supply chain fragility, and geopolitical risk are driving <strong>manufacturing back to the U.S. and allied nations</strong></li>
-<li><strong>CHIPS Act</strong> ($52B) and <strong>Inflation Reduction Act (IRA)</strong> ($369B) are creating massive incentives</li>
-<li><strong>22 million people needed</strong> for new U.S. factories but only <strong>7.2 million unemployed</strong> — automation is essential</li>
-</ul>
-<h3 id="latest-reshoring-data">Latest Reshoring Data</h3>
-<ul>
-<li><strong>CHIPS Act ($52B); IRA ($369B)</strong> (2024)</li>
-</ul>
-<h3 id="industries-with-revival-potential">Industries With Revival Potential</h3>
-<h4 id="semiconductor-fabrication">Semiconductor Fabrication</h4>
-<ul>
-<li><strong>When it died:</strong> 1990s-2000s</li>
-<li><strong>Why it&rsquo;s back:</strong> AI boom demand, CHIPS Act funding, national security</li>
-<li><strong>Closed sites:</strong> Former Intel, AMD, Motorola fabs</li>
-<li><strong>Market fit:</strong> Global semiconductor market projected at $1T+ by 2030</li>
-</ul>
-<h4 id="battery-cell-manufacturing">Battery Cell Manufacturing</h4>
-<ul>
-<li><strong>When it died:</strong> 2000s</li>
-<li><strong>Why it&rsquo;s back:</strong> EV demand surge, IRA incentives, supply chain security</li>
-<li><strong>Closed sites:</strong> Former chemical plants, auto parts factories</li>
-<li><strong>Market fit:</strong> U.S. EV battery demand to reach 500GWh+ by 2030</li>
-</ul>
-<h4 id="solar-panel-component-manufacturing">Solar Panel &amp; Component Manufacturing</h4>
-<ul>
-<li><strong>When it died:</strong> 2010s</li>
-<li><strong>Why it&rsquo;s back:</strong> Tariffs on Chinese panels, IRA tax credits</li>
-<li><strong>Closed sites:</strong> Former electronics factories</li>
-<li><strong>Market fit:</strong> U.S. solar installations growing 30%+ annually</li>
-</ul>
-<h4 id="textile-apparel-manufacturing">Textile &amp; Apparel Manufacturing</h4>
-<ul>
-<li><strong>When it died:</strong> 1997-2009</li>
-<li><strong>Why it&rsquo;s back:</strong> Rising overseas wages, nearshoring, automation</li>
-<li><strong>Closed sites:</strong> Historic mills across NC, SC, GA, AL</li>
-<li><strong>Market fit:</strong> Fast-fashion logistics + tariff avoidance</li>
-</ul>
-<h4 id="pharmaceutical-biomanufacturing">Pharmaceutical &amp; Biomanufacturing</h4>
-<ul>
-<li><strong>When it died:</strong> 2000s</li>
-<li><strong>Why it&rsquo;s back:</strong> COVID vulnerabilities, Biosecure Act, onshoring</li>
-<li><strong>Closed sites:</strong> Former pharma plants in NJ, PA, PR</li>
-<li><strong>Market fit:</strong> U.S. pharma market &gt;$550B</li>
-</ul>
-<h4 id="steel-primary-metals">Steel &amp; Primary Metals</h4>
-<ul>
-<li><strong>When it died:</strong> 1980s-2000s</li>
-<li><strong>Why it&rsquo;s back:</strong> Infrastructure spending, tariff protections, green steel</li>
-<li><strong>Closed sites:</strong> Former steel mills in Rust Belt</li>
-<li><strong>Market fit:</strong> Infrastructure + reshoring = sustained demand</li>
-</ul>
-<h3 id="geographic-hotspots-for-revival">Geographic Hotspots for Revival</h3>
-<table>
-<thead>
-<tr>
-<th>Region</th>
-<th>Closed Facilities</th>
-<th>Revival Potential</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Rust Belt (OH, PA, IN, MI)</td>
-<td>Steel mills, auto plants, heavy manufacturing</td>
-<td>EV, battery, green steel</td>
-</tr>
-<tr>
-<td>Southeast (NC, SC, GA, AL)</td>
-<td>Textile mills, furniture factories</td>
-<td>Advanced textiles, EV supply chain</td>
-</tr>
-<tr>
-<td>Sun Belt (AZ, TX, NV)</td>
-<td>Electronics assembly, aerospace</td>
-<td>Semiconductors, data centers, solar</td>
-</tr>
-<tr>
-<td>Northeast (NJ, NY, PA)</td>
-<td>Pharma, chemical plants</td>
-<td>Biomanufacturing, pharma API</td>
-</tr>
-<tr>
-<td>Pacific Northwest (WA, OR)</td>
-<td>Paper mills, aluminum smelters</td>
-<td>Green manufacturing, bio-products</td>
-</tr>
-<tr>
-<td>Puerto Rico</td>
-<td>Pharma manufacturing</td>
-<td>Biomanufacturing, medical devices</td>
-</tr>
-</tbody>
-</table>
-<h2 id="part-3-where-failed-startup-ideas-meet-manufacturing-revival-part-3">Part 3: Where Failed Startup Ideas Meet Manufacturing Revival </h2>
-<h3 id="high-potential-intersections">High-Potential Intersections</h3>
-<table>
-<thead>
-<tr>
-<th>Failed Startup Category</th>
-<th>Manufacturing Revival Match</th>
-<th>Opportunity</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Software &amp; Hardware</strong> (Aria Insights, DotCloud, Anki, QBotix, Seven Dreamers Laboratories, ChaCha, Foun&hellip;)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>EV Manufacturing</strong> (HiPhi / Human Horizons, Neta Auto, Hengchi, Byton, WM Motor, BluSmart, Fisker)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Entertainment</strong> (Vreal, Quibi, Circa)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Battery Cell Manufacturing</strong> (Northvolt, Northvolt)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Modular Construction</strong> (Katerra, Veev)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Transportation</strong> (Navdy, Skully)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>3D Printing</strong> (BCN3D)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>3D Printing / Additive Mfg</strong> (Desktop Metal)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Biomanufacturing</strong> (54gene)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Construction 3D Printing</strong> (Black Buffalo 3D)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Design</strong> (Berg)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Display Manufacturing</strong> (Royole Technology)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>E-bike Manufacturing</strong> (Rad Power Bikes)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>e-Commerce</strong> (Selltag)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Education</strong> (SchoolGennie)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Food &amp; Beverage</strong> (Munchery)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Robotics / Automotive Service</strong> (RoboTire)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Robotics / Material Handling</strong> (Dextrous Robotics)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-<tr>
-<td><strong>Semiconductor Manufacturing</strong> (Wusheng Semiconductor)</td>
-<td>Closed specialty manufacturing facilities</td>
-<td>Learn from failures, apply to revival opportunities</td>
-</tr>
-</tbody>
-</table>
-<h2 id="part-4-actionable-opportunities-part-4">Part 4: Actionable Opportunities </h2>
-<h3 id="ideas-worth-exploring-based-on-research">Ideas Worth Exploring (Based on Research)</h3>
-<ol>
-<li><strong>Convert closed textile mills into advanced materials manufacturing</strong> — carbon fiber, technical textiles for EVs and aerospace</li>
-<li><strong>Repurpose closed auto plants for EV battery recycling</strong> — 10M+ EV batteries will need recycling by 2030</li>
-<li><strong>Turn closed pharma plants into API manufacturing for generic drugs</strong> — U.S. imports 87% of APIs; Biosecure Act will force change</li>
-<li><strong>Convert closed steel mills into green hydrogen production</strong> — hydrogen steel requires existing industrial infrastructure</li>
-<li><strong>Use closed electronics factories for edge computing hardware assembly</strong> — AI needs physical compute closer to users</li>
-<li><strong>Repurpose closed paper mills into sustainable packaging/bioproducts</strong> — plastic replacement demand is massive</li>
-<li><strong>Convert closed warehouse/distribution centers into automated micro-fulfillment</strong> — e-commerce demand keeps growing</li>
-<li><strong>Turn former chemical plants into rare earth processing facilities</strong> — DOE grants available; strategic necessity</li>
-</ol>
-<h3 id="data-driven-opportunities-from-collected-data">Data-Driven Opportunities (from collected data)</h3>
-<ul>
-<li><strong>44 manufacturing startup failures</strong> in database suggest clear patterns to avoid</li>
-<li><strong>229 recent news articles</strong> about manufacturing startup failures signal active market churn</li>
-</ul>
-<h2 id="news-monitoring-manufacturing-startup-failures-news">News Monitoring: Manufacturing &amp; Startup Failures </h2>
-<h3 id="coverage-summary">Coverage Summary</h3>
-<ul>
-<li><strong>943</strong> articles collected from Google News and TechCrunch RSS feeds</li>
-<li><strong>488</strong> mention manufacturing (51.7%)</li>
-<li><strong>454</strong> mention startup failures (48.1%)</li>
-<li><strong>229</strong> are in the intersection (manufacturing + failure)</li>
-</ul>
-<h3 id="articles-by-source">Articles by Source</h3>
-<table>
-<thead>
-<tr>
-<th>Source</th>
-<th>Articles</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>google_news</td>
-<td>863</td>
-</tr>
-<tr>
-<td>techcrunch</td>
-<td>80</td>
-</tr>
-</tbody>
-</table>
-<h3 id="recent-manufacturing-startup-failures-news">Recent Manufacturing Startup Failures (News)</h3>
-<p><strong>[] I&rsquo;m 40 and $300,000 in debt after my startup failed. I&rsquo;m living on $10 a day in South Korea. - Business Insider</strong>
-- <em>Business Insider</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMihgFBVV95cUxPZGlaN1pZbTA4X0FvNGtibUdEa1ZLMlgyVk5xY3UzUTVwVTdVZVlidS1aT2.
-- <a href="https://news.google.com/rss/articles/CBMihgFBVV95cUxPZGlaN1pZbTA4X0FvNGtibUdEa1ZLMlgyVk5xY3UzUTVwVTdVZVlidS1aT213LTlYQ0xFTlJ2RENEVDduOTJQRFlFR3cydmZPNHppdVR0VHVLLVRYR0ttN1ZRaXJXamZZMUgwOXUwNWxmUVVJaEtNMWZlRE1fNGEyVzJFdkhmdw?oc=5">Read more</a></p>
-<p><strong>[] The Startup Where You Worked Failed. Your Career Should Be Fine. - WSJ</strong>
-- <em>WSJ</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMihAFBVV95cUxPVHRONzQzck5lMnA4T3FUY1lTMUNMUmJwRVVDUHdzalFVOGoyZGhaUDU3SH.
-- <a href="https://news.google.com/rss/articles/CBMihAFBVV95cUxPVHRONzQzck5lMnA4T3FUY1lTMUNMUmJwRVVDUHdzalFVOGoyZGhaUDU3SHJyWVR5dUgxUHZOREVHVS1qNmhTU1NPZFpnUTJ4M1dYRnFfbnBzRjdQamNUWTltMjBzLXk2YlNwTElfdmFYaUFOX0RqZ2U4S25WRF9XSkVxbUQ?oc=5">Read more</a></p>
-<p><strong>[] 10 years after Richmond super startup failed, creditors recoup $100 million - Richmond Times-Dispatch</strong>
-- <em>Richmond Times-Dispatch</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMilAFBVV95cUxQM3FCdThLc3VEcWxkVHNiajU3V1RkSFR4TkJEaUlkanV4Rnh6bTdMb3EzMk.
-- <a href="https://news.google.com/rss/articles/CBMilAFBVV95cUxQM3FCdThLc3VEcWxkVHNiajU3V1RkSFR4TkJEaUlkanV4Rnh6bTdMb3EzMkhZNGdhQnpReVZEa0k0T2ZtTjF5N29GdXJTQ3dzM1BCdDQ2WmlUOEVPS1Q5TmlxTzM5X1Y4bmt1Yzd5ck1HZnRlbE84cjd1RW9pczh3Mk92N3ZMakR1ejNSaEFIak5vR3ZS?oc=5">Read more</a></p>
-<p><strong>[] Bollinger Is Selling Off Its Last 20 Trucks As EV Startup Failed - AUTOJOSH</strong>
-- <em>AUTOJOSH</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMijwFBVV95cUxPWW5EOGRfdHJmdTFNTGptUndHSmRzNF9kMEt4Z2xBeXAzeXRoUGZoMFJYeF.
-- <a href="https://news.google.com/rss/articles/CBMijwFBVV95cUxPWW5EOGRfdHJmdTFNTGptUndHSmRzNF9kMEt4Z2xBeXAzeXRoUGZoMFJYeFltMWI3ZTVLX09xWVVNS3ZFRFpxZUQtZ1MxdmRKMXdfRUd0WWlVMFIwNnZBdllLSmtPbXVvUl9VandxenRKbGswbEpNQ1FtVDhIa0Y3SklkTnAxSVIzalFkMXVWbw?oc=5">Read more</a></p>
-<p><strong>[] AI startup founded by U of T alumni to revive failed drug candidates: The Globe and Mail - University of Toronto</strong>
-- <em>University of Toronto</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMipgFBVV95cUxNYm1Xd1U5aGRQNDhkTWE1U3pPSDNVWWNiXzBsN1lvRjNVRkZXMVBMUUEwdn.
-- <a href="https://news.google.com/rss/articles/CBMipgFBVV95cUxNYm1Xd1U5aGRQNDhkTWE1U3pPSDNVWWNiXzBsN1lvRjNVRkZXMVBMUUEwdnlSRFhrdVBvdUxHRmlpT3VPaVJVa2xldjJTZ2dsM0FjVW9BcGtyUnc2cjJ6VWUzc0lYQ0t4N1NmXzEwNng2RW9SallHSWtrOEpOUkI1UWxVMGxrNkdkbDhZQUxvM3ViX2ZOS2hraUhpanh1bEJ0N25GUzhR?oc=5">Read more</a></p>
-<p><strong>[] He quit GTBank, his startup failed: This founder reinvented himself to an exit and venture scale in the diaspora - Techpoint Africa</strong>
-- <em>Techpoint Africa</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMickFVX3lxTE90ODJxS0xKeVYzSGkxT1pGNVd2U2xRaW9kcXRZeG5nRzY3YlN1NWJQQTlEcF.
-- <a href="https://news.google.com/rss/articles/CBMickFVX3lxTE90ODJxS0xKeVYzSGkxT1pGNVd2U2xRaW9kcXRZeG5nRzY3YlN1NWJQQTlEcFVTTDJZVkIyRHRpTDNnajdhc0NFVHZqZ2l6NjNtZ1dBbHp0c0lvZk40SnZfX0FSQzk4S0owajViZUR2MVNXdw?oc=5">Read more</a></p>
-<p><strong>[] Guess Which Failed EV Startup’s Prototype Is Now On Facebook Marketplace - The Autopian</strong>
-- <em>The Autopian</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiogFBVV95cUxObV9XYjNrT0RrbWlfbklVV1gwbnpYUVRBcWctRHFvOWN0cXVnam9ybEtFc3.
-- <a href="https://news.google.com/rss/articles/CBMiogFBVV95cUxObV9XYjNrT0RrbWlfbklVV1gwbnpYUVRBcWctRHFvOWN0cXVnam9ybEtFc3RFcVh1Z2htaVRDS3ZMWjRMZHBZLVp1eXp4ZzJvT2tRbnRSZGExc3JZTDgxejBZQ09RSHdlQ3pjYkxnLWRxZWV1b05fbVBlNlZoVm1XbWxNWk0yWmRZY3pyMFp1NEVtLVd0RWxucFhvUDdXVnF4MUE?oc=5">Read more</a></p>
-<p><strong>[] My First Startup Failed. It Was an Important Step in Discovering My Real Passion. - inc.com</strong>
-- <em>inc.com</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiywFBVV95cUxQTWphVkF5Q3JOTm85WEtwQ0ExNFRmQUYyV1llRzhxcVJSMncyRDVvV3NWQT.
-- <a href="https://news.google.com/rss/articles/CBMiywFBVV95cUxQTWphVkF5Q3JOTm85WEtwQ0ExNFRmQUYyV1llRzhxcVJSMncyRDVvV3NWQTRaVmFkS1l3QmFnd0pUWWxYUWJYcTZqS0pxWEZXR2t6blRqMmhxbE13U09xN2NTSVVoUFBKeVFWcVMtRTdtM2hXeldHZm1iVTJURFRQXzRENUtSMk1DUzljRW1iOUhSNlNybzcyMFVub3lNTVpRQ3BheUg3em10blR3SzNrd1o3ZUxFbGs0SzF0eDNKbDdSRjZpZGEzMHhqZw?oc=5">Read more</a></p>
-<p><strong>[] Couple lost Rs 21 lakh when their startup failed. 6 years later, they sold it for Rs 209 crore - Moneycontrol.com</strong>
-- <em>Moneycontrol.com</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMi4AFBVV95cUxQaGVfSGt4ZUhmU2h1bmRueW9oTGZJNVZoODg0bEZyTWc1MF93S1ZsckRuSz.
-- <a href="https://news.google.com/rss/articles/CBMi4AFBVV95cUxQaGVfSGt4ZUhmU2h1bmRueW9oTGZJNVZoODg0bEZyTWc1MF93S1ZsckRuSzBqQkFSdTVqY3FTQTNLblVidU9rZ2xyZmtZTi1ra0tUMGNDQllFNnh4a2VzeTFTcEZqZC1Tel9hUTNZMkQzMmlWdWVqZGo0b2JFQ0RvVklJaXJPdTltN05SODhGcTFZeWtRdG9nNV9hWklDS2x6cFdjNVA1eThST0NQaWRFUVNGdW9CNGF5cVkyWEdxTnR4d0Z0b3ZwS05OTTBpVk9fR0R0ZldJUUEyQThXNVdBVNIB5gFBVV95cUxPc1ZTYktleEhISnBwQ3RFTXdKR0NiYVRUblhEeURSUWJLb0FDX05SalNfa0pYWFBfWFZlNlozbHNKTTh4ZUNSWFZodDYtTS11X2Jqb2thOW84enJtMFU4b2lhbkVsYnZzbFF0V0RWTzFtN19TbGYzZEN6dlU4bzhTVUxnRjM3cTVTbXNxMkh5eVE4QTlneVVYVFJKb2d1bXBndDFjN3dCdERmbHVsNVh5LUhaeUE3akQyV1l1SHp0N1UwYURaY1dpN1JTWXdZcGNaV205ZG1jMmdmVEZoUURlQlExMlFfZw?oc=5">Read more</a></p>
-<p><strong>[] 5 Critical Lessons I Learned From My Failed Startup - inc.com</strong>
-- <em>inc.com</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMilAFBVV95cUxOZ2ZEVlVvS0lsWkpjYWhmRTAtdHdNZmQ4WHJ3bEFPTnAtZy1zcDhEZDlaST.
-- <a href="https://news.google.com/rss/articles/CBMilAFBVV95cUxOZ2ZEVlVvS0lsWkpjYWhmRTAtdHdNZmQ4WHJ3bEFPTnAtZy1zcDhEZDlaSTRZbDVJeWF3N2Foc2FhUmE0WFNpNm1nRlBTTWN0OEExaGN2V0Mwdmp3enN1MUd5aVdnbElZSmt4M1MzRUI0cTY4aVRObGg2SUZYcEs5V2JkRldMZDhnU3VZcDR3Q3RMS3ht?oc=5">Read more</a></p>
-<p><strong>[] EV Truck Startups That Failed - CarBuzz</strong>
-- <em>CarBuzz</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiWEFVX3lxTE92T2hGOGtWZk1wTG5TVzIzMlZNSndfWTRUT1hreS1mMHNyajZHTGR5WkhuLT.
-- <a href="https://news.google.com/rss/articles/CBMiWEFVX3lxTE92T2hGOGtWZk1wTG5TVzIzMlZNSndfWTRUT1hreS1mMHNyajZHTGR5WkhuLTNSazVSVTB1T0FWTTJXTUs1bzg2T0JRSWZXVXBIZGhtMlE5S0s?oc=5">Read more</a></p>
-<p><strong>[] 2025 will likely be another brutal year of failed startups, data suggests - TechCrunch</strong>
-- <em>TechCrunch</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiqwFBVV95cUxOemgycWU1dldwd3VBYm9ZRjdYWDBfZDRZQTZzTHNRWGVZODkwdGFpM0dmT0.
-- <a href="https://news.google.com/rss/articles/CBMiqwFBVV95cUxOemgycWU1dldwd3VBYm9ZRjdYWDBfZDRZQTZzTHNRWGVZODkwdGFpM0dmT0VyNHBoRVQzNUJtdmliYXpVQTlSeHlEVzlOaGk5UnAxTzV6NV9NRGtjS2lSUlhfWU9udWZHd2k2UVFDS0ZyU3VuM1pxU1NOVzRycU5Rd3dsTUlQOUFkNzlEcWxLbDlfVFpjcExnbHB4eDVpbHdyZkk4NUxZdW1nVEk?oc=5">Read more</a></p>
-<p><strong>[] Nobody is shocked that this Kenyan food delivery startup failed after one year - qz.com</strong>
-- <em>qz.com</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMijwFBVV95cUxPMUpDN2hFUFI2UU9rQm9qLWJ6VmlhM3lhSUtWVjZSM1ZCN0UzVDZLOGNpVn.
-- <a href="https://news.google.com/rss/articles/CBMijwFBVV95cUxPMUpDN2hFUFI2UU9rQm9qLWJ6VmlhM3lhSUtWVjZSM1ZCN0UzVDZLOGNpVnRCWGNTVlpiTGt5TDJXcEVpQngzekdvQ25ZVnEwekw2d18taTNaSmo5Q0NlZDhEX3UzbmJrZkRScmJKaEVhXzJ1X2UwZ20zNkw2WlBmSzRyYkNrVGxoNU4xT0drbw?oc=5">Read more</a></p>
-<p><strong>[] 19 Failed Startups with Legal Challenges - Failory</strong>
-- <em>Failory</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiakFVX3lxTFA3TlR0TGFWQzd6ZnVQei1ubndFdk85ZVV6eGR2a3FXVEVmMnlZNDNxR0kyQi.
-- <a href="https://news.google.com/rss/articles/CBMiakFVX3lxTFA3TlR0TGFWQzd6ZnVQei1ubndFdk85ZVV6eGR2a3FXVEVmMnlZNDNxR0kyQi1KV0Y3bmpxUmZDREVfOF9hZFpzdk1YbXQ5Z1lnU0Fqc3Nxd1JyRjFLZFhJQXE2blBuMmlHbWc?oc=5">Read more</a></p>
-<p><strong>[] The Bright Side to a Failed Startup - LatamList</strong>
-- <em>LatamList</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiakFVX3lxTE16alZUenRVRE5ZcVNjOTVVRGpmTTV2RG5kQjhfVFYxNWp4bXkyUDM2QUc4Sz.
-- <a href="https://news.google.com/rss/articles/CBMiakFVX3lxTE16alZUenRVRE5ZcVNjOTVVRGpmTTV2RG5kQjhfVFYxNWp4bXkyUDM2QUc4SzdxZlBUQm9DNE1HWUE1TUhpWmlaN3YxWXBtUGNaUUNpMDZlSUxFRm9lNVUtVDZiTnlrd3Fsb0HSAW9BVV95cUxQdGhZWWZ0SHhUSVRjWHVNUlFlSlFic0dzbUVwN3o3aDFwY0VfSEFSRmxHOVpXR3M4eU5yZzNzc1hDUFQ3UmZYRWJJOTVjNlRIWEVwM0ZYRjhFR3VsLUo1XzFyV2p2ZFF4b043Z0pScTA?oc=5">Read more</a></p>
-<p><strong>[] I helped launch an &lsquo;Uber for lawn care&rsquo; startup that failed miserably. This is exactly how I knew when to give up — and how we were able to pivot to launching a multimillion-dollar company within the same year. - Business Insider</strong>
-- <em>Business Insider</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiogFBVV95cUxQVDFDX0Z5YThsUWQtdm9vZVR3MFU3MFprcmhnS1dFMDFrVjlBY05keVRkV0.
-- <a href="https://news.google.com/rss/articles/CBMiogFBVV95cUxQVDFDX0Z5YThsUWQtdm9vZVR3MFU3MFprcmhnS1dFMDFrVjlBY05keVRkV0pvcXdNZVo5VEZoN2UyRm9Xbk9vcDJUcGVaNmNyWVI5eE44YlZuNVIzUlNhdFVOVFRTRzVNTDVDcmtkQ01paDdtZjJnUUpwaUh1V1ZyY2hlUnZPZ0puTXhENTZQQVU5ZmhYNDJ3bF9hZjFWOFZ4SEE?oc=5">Read more</a></p>
-<p><strong>[] Two of his startups failed. Now, this 30-year-old just bagged $32 million for his company - CNBC</strong>
-- <em>CNBC</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMirAFBVV95cUxPTXAtV0RhRnlldU9INFhRWkhBSUR0OFY3S3NmUkVQVF83dlRhemdpWHRLbm.
-- <a href="https://news.google.com/rss/articles/CBMirAFBVV95cUxPTXAtV0RhRnlldU9INFhRWkhBSUR0OFY3S3NmUkVQVF83dlRhemdpWHRLbmxFTkc0QTZVMnBUS0FMM0IwVmdnTmZheTcxSkg3eEVndTNFQ0NpNDFxcHpXWHBNOFdHaUJHVG5wdlBldVotZHMzdFVPOW9MMGxCWkpiX21vck5CX0ozaW56WWR5ODZlSzJDaTN1MXJwZnM0SDNpYlZYVG82Yk9TbG5M0gGyAUFVX3lxTE9NTUZObV9FUHN3cEdsSGRzSFkwTll1RVRsWVlCUUZqSklWTWhsUXJJZHl6TTk1UW81ZFp5S0ZSZGJlUklmNkVhUGtaaUtfRHA5ZzJGWjd0Z3ZiTFpyaTd4TWhDdUFEbEZBZXNicmpZV3RqNGFiRFc3bjBzWUNSZlVFQmR6X0tKaG5zRFZ6U05WRGtsc2xYdzN2WFNkRHBodkFtNlFkblZSeDAyczlKbXlaLWc?oc=5">Read more</a></p>
-<p><strong>[] Morrow Batteries Bankruptcy &amp; Why Battery Startups Are Failing - Battery Technology</strong>
-- <em>Battery Technology</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMivwFBVV95cUxQemw5VkxpRXBNU01qRGx4dlVlb0JsQ3ozSnc5dlRGVFMwLXQxaFJRcHRneX.
-- <a href="https://news.google.com/rss/articles/CBMivwFBVV95cUxQemw5VkxpRXBNU01qRGx4dlVlb0JsQ3ozSnc5dlRGVFMwLXQxaFJRcHRneXZUWG1DY3NXYTdsUV9PQkFRdGQ4dkRwMjRYSllkdFMtY1ZJVjZoMFVrdjg3eDA4MmJDdDNmODVFR0NESHByMVJUekFmM0ItbzNaelloMUxOTkNPa1JFV2ZrY2VVbzhFSzJtMU1od1gyS3BwZ3pqeVJkcm5HY25GVHVZV091cW5iend2cDl5VkdDT1AtSQ?oc=5">Read more</a></p>
-<p><strong>[] Window coating startup buys failed Tesla supplier&rsquo;s Michigan plant for new HQ - Crain&rsquo;s Detroit Business</strong>
-- <em>Crain&rsquo;s Detroit Business</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMiowFBVV95cUxOMkR0XzhabEJGUXNrR2szZlFLbEpnLWtzWEtFSlUzSkVOQ2ZHLTd2dXo2M1.
-- <a href="https://news.google.com/rss/articles/CBMiowFBVV95cUxOMkR0XzhabEJGUXNrR2szZlFLbEpnLWtzWEtFSlUzSkVOQ2ZHLTd2dXo2M1FDS2JvVkhmYVNUTnFWck9YazIyWFBsRGdtV1o0dlZYYkNHM1drOGo3S2IySmdIM09ieDFZVVhXaHpuUVVXWk54VlY3MWt1bGZ4dUZnSEhQSUlLWV9ZMi1RdjNySWg3M2Z4N0V4LUFrZl9QczNsZU4w?oc=5">Read more</a></p>
-<p><strong>[] Fisker files for U.S. bankruptcy after cash burn, quality issues with Ocean crossover - Automotive News</strong>
-- <em>Automotive News</em> — &lt;a href=&rdquo;https://news.google.com/rss/articles/CBMimAFBVV95cUxQTjdGcXFsUDFjR0NlWnlQUWljYWlhMklaeUNYQmlkdHBSNUs4NlVNZVB0bU.
-- <a href="https://news.google.com/rss/articles/CBMimAFBVV95cUxQTjdGcXFsUDFjR0NlWnlQUWljYWlhMklaeUNYQmlkdHBSNUs4NlVNZVB0bUhuUzc0a0FMa0IzZkQzRm9jdzdNWHRBWElGUW55bTBQMWZoVHJ3T1gyTFg1UTBMWGpaUXZIZVhCTS1QcXhHUGpnZmJMa0QzYUptOW9MbXgtanFKNnpjU1VYbU9qSWs5QU5ubDJ3Xw?oc=5">Read more</a></p>
-<h3 id="identified-startup-names-in-news">Identified Startup Names in News</h3>
-<table>
-<thead>
-<tr>
-<th>Startup</th>
-<th>Article</th>
-<th>Source</th>
-<th>Date</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>debt after my startup</td>
-<td><a href="https://news.google.com/rss/articles/CBMihgFBVV95cUxPZGlaN1pZbTA4X0FvNGtibUdEa1ZLMlgyVk5xY3UzUTVwVTdVZVlidS1aT213LTlYQ0xFTlJ2RENEVDduOTJQRFlFR3cydmZPNHppdVR0VHVLLVRYR0ttN1ZRaXJXamZZMUgwOXUwNWxmUVVJaEtNMWZlRE1fNGEyVzJFdkhmdw?oc=5">I&rsquo;m 40 and $300,000 in debt after my startup faile&hellip;</a></td>
-<td>Business Insider</td>
-<td></td>
-</tr>
-<tr>
-<td>Analyses on Why they</td>
-<td><a href="https://news.google.com/rss/articles/CBMiW0FVX3lxTE50Q3dMMkJSRFRZa2ktS3lKWVRuRnNRYnd4ckUyWUcwY0x2YXdud3lraFpoWFM1bUtybFN5X1RqX3RlR2N1VFVDU2Y0RnBSV3p3Mm5CeG11NmpxSDQ?oc=5">17 Failed Indian Startups &amp; Analyses on Why they F&hellip;</a></td>
-<td>Failory</td>
-<td></td>
-</tr>
-<tr>
-<td>Startup Where You Worked</td>
-<td><a href="https://news.google.com/rss/articles/CBMihAFBVV95cUxPVHRONzQzck5lMnA4T3FUY1lTMUNMUmJwRVVDUHdzalFVOGoyZGhaUDU3SHJyWVR5dUgxUHZOREVHVS1qNmhTU1NPZFpnUTJ4M1dYRnFfbnBzRjdQamNUWTltMjBzLXk2YlNwTElfdmFYaUFOX0RqZ2U4S25WRF9XSkVxbUQ?oc=5">The Startup Where You Worked Failed. Your Career S&hellip;</a></td>
-<td>WSJ</td>
-<td></td>
-</tr>
-<tr>
-<td>after Richmond super startup</td>
-<td><a href="https://news.google.com/rss/articles/CBMilAFBVV95cUxQM3FCdThLc3VEcWxkVHNiajU3V1RkSFR4TkJEaUlkanV4Rnh6bTdMb3EzMkhZNGdhQnpReVZEa0k0T2ZtTjF5N29GdXJTQ3dzM1BCdDQ2WmlUOEVPS1Q5TmlxTzM5X1Y4bmt1Yzd5ck1HZnRlbE84cjd1RW9pczh3Mk92N3ZMakR1ejNSaEFIak5vR3ZS?oc=5">10 years after Richmond super startup failed, cred&hellip;</a></td>
-<td>Richmond Times-Dispatch</td>
-<td></td>
-</tr>
-<tr>
-<td>Trucks As EV Startup</td>
-<td><a href="https://news.google.com/rss/articles/CBMijwFBVV95cUxPWW5EOGRfdHJmdTFNTGptUndHSmRzNF9kMEt4Z2xBeXAzeXRoUGZoMFJYeFltMWI3ZTVLX09xWVVNS3ZFRFpxZUQtZ1MxdmRKMXdfRUd0WWlVMFIwNnZBdllLSmtPbXVvUl9VandxenRKbGswbEpNQ1FtVDhIa0Y3SklkTnAxSVIzalFkMXVWbw?oc=5">Bollinger Is Selling Off Its Last 20 Trucks As EV &hellip;</a></td>
-<td>AUTOJOSH</td>
-<td></td>
-</tr>
-<tr>
-<td>startup that</td>
-<td><a href="https://news.google.com/rss/articles/CBMijgFBVV95cUxQMVJLSjF6SHItR2dZTGoxbWRRQ2lNMWh4X1lBdHRvdlZaWGtxN0t1XzYwQW1FamppZlkyWmZ2N1hVanR2emstWGNfcjJuSHJ6OVJyX016cmhrWkthUGt5RGJLUV9Qa0QyNVFHM01iNUZvOS00ckphVXgxTlplNm9ad3cxT1ZxUUVUQ01wdnpB?oc=5">The all-AI startup that failed: A cautionary case &hellip;</a></td>
-<td>The American Genius</td>
-<td></td>
-</tr>
-<tr>
-<td>Famous Entrepreneurs Who</td>
-<td><a href="https://news.google.com/rss/articles/CBMirAFBVV95cUxNVmdxNDBsTFBIaEpvcTFDTkFIcXc2TWZvYVgtWWlkSW1qa0dsSTNXT3JKUmpPU2xfc1dFa3QxNHNBZk05M2FibGpxMmdTUjNVVWhReGpuUWN0MXBhSmtWTVZ4WkVfbTV4UFdiUmNpRERXdEpEanJmUVJocWZacWFzM2Y3RzhqV01SNXFiZHZDaTRVUWQyR1U5WC1iOVAtakY4REJzaVJMOTZFVy1f?oc=5">Famous Entrepreneurs Who Failed Before They Succee&hellip;</a></td>
-<td>Business.com</td>
-<td></td>
-</tr>
-<tr>
-<td>alumni to revive</td>
-<td><a href="https://news.google.com/rss/articles/CBMipgFBVV95cUxNYm1Xd1U5aGRQNDhkTWE1U3pPSDNVWWNiXzBsN1lvRjNVRkZXMVBMUUEwdnlSRFhrdVBvdUxHRmlpT3VPaVJVa2xldjJTZ2dsM0FjVW9BcGtyUnc2cjJ6VWUzc0lYQ0t4N1NmXzEwNng2RW9SallHSWtrOEpOUkI1UWxVMGxrNkdkbDhZQUxvM3ViX2ZOS2hraUhpanh1bEJ0N25GUzhR?oc=5">AI startup founded by U of T alumni to revive fail&hellip;</a></td>
-<td>University of Toronto</td>
-<td></td>
-</tr>
-<tr>
-<td>Famous Founders Who</td>
-<td><a href="https://news.google.com/rss/articles/CBMiqgFBVV95cUxQQUlnZDFpSzgyZDVBdmtUTXV3SWczLUxJcG9mMzVkNWRzUUtDMWhDUmZMYjJSYXJ0VlhpQ2VlTnMtdE1KVU8tQlhGM29vM2N5aHF5elZfU09nX2IyMTdSUTVnUW1sbkRuQm1HMW10eENOZUhFUkRDOGM2OVllQXhwWW1DZ2RITElVeU1ySVREeFE0MndUUEZrRmpEWDF4NVNRRVRWYmNLeTBCdw?oc=5">5 Famous Founders Who Failed—Then Built Billion-Do&hellip;</a></td>
-<td>inc.com</td>
-<td></td>
-</tr>
-<tr>
-<td>his startup</td>
-<td><a href="https://news.google.com/rss/articles/CBMickFVX3lxTE90ODJxS0xKeVYzSGkxT1pGNVd2U2xRaW9kcXRZeG5nRzY3YlN1NWJQQTlEcFVTTDJZVkIyRHRpTDNnajdhc0NFVHZqZ2l6NjNtZ1dBbHp0c0lvZk40SnZfX0FSQzk4S0owajViZUR2MVNXdw?oc=5">He quit GTBank, his startup failed: This founder r&hellip;</a></td>
-<td>Techpoint Africa</td>
-<td></td>
-</tr>
-<tr>
-<td>Guess Which</td>
-<td><a href="https://news.google.com/rss/articles/CBMiogFBVV95cUxObV9XYjNrT0RrbWlfbklVV1gwbnpYUVRBcWctRHFvOWN0cXVnam9ybEtFc3RFcVh1Z2htaVRDS3ZMWjRMZHBZLVp1eXp4ZzJvT2tRbnRSZGExc3JZTDgxejBZQ09RSHdlQ3pjYkxnLWRxZWV1b05fbVBlNlZoVm1XbWxNWk0yWmRZY3pyMFp1NEVtLVd0RWxucFhvUDdXVnF4MUE?oc=5">Guess Which Failed EV Startup’s Prototype Is Now O&hellip;</a></td>
-<td>The Autopian</td>
-<td></td>
-</tr>
-<tr>
-<td>Tech startups that</td>
-<td><a href="https://news.google.com/rss/articles/CBMivgFBVV95cUxOR1hZbzJJVUpkN0o5eDlQMXJEZ0xNSjFiNzY0VzFJd04tQWRFQ2duTnQ4bVVKWFJCUzAzZXRzNnZfaF80WjhhcWh5YmhlVjIyMTltWU4zd1owUmJZQ2VSal9ZNUtqSDNBb0U5Y2RzQ1RIUVpVU2ZialZaVXRyaC11dzViejg5a21EcWh6SEZNVThlOUxncVFxQlc4Y1dlQ0VFQWxWYWNlU0tHN09CSkNpOWlQYlBvd3hIYjBXd2530gHDAUFVX3lxTFBlaUNjQVU0dUtvY3FJOXUxYzRpUjFWeGdfekFxWTFoYWhDbFo0a0kzdWRHLTNacWVDdXBuN2paWUNndEF1UV9udXUzOE9vZzZXN210UDBRUmt5aTRWaHNIamhReEw5OUtMYWwtNXFMVTBQM3ZyWjJNZ3JlRDViZHVPVmlXdHY4V254Y2EtUFktNUJkXzZQZFd6TWFTbmxhbWF5TVRCcHhObFdKRG84eERsbzdLc2dpc0ZNbEtVWFh2eGVxUQ?oc=5">Tech startups that closed down in 2025 - The Times&hellip;</a></td>
-<td>The Times of India</td>
-<td></td>
-</tr>
-<tr>
-<td>Startups That</td>
-<td><a href="https://news.google.com/rss/articles/CBMickFVX3lxTE1sVUs4NlpzdGpnTU9Ib1dHOEloM2NRMkVCSl9lQkhFaDRmWEl3enB1eC1RX29BMHRsVTNaM0Y1NTNuRnJPLXR0VThpRXZIeFR6YzM0U3k3UGp0X0xDWVJaMC1jUllLZk01X2QwbTJHQzJuUQ?oc=5">From Burn To Breakdown: 25 Startups That Shut Down&hellip;</a></td>
-<td>Inc42</td>
-<td></td>
-</tr>
-<tr>
-<td>Where Redfin And Zillow</td>
-<td><a href="https://news.google.com/rss/articles/CBMi0AFBVV95cUxONWpvWXNiQjJ4b3RDdmR6X213akpMdXktYVRiYk9YNVhmSFJwZXNRMlRKcVN2Z0F5MTJCNHpNVEZjOWYyRzZEUi1qdElWX2czcnBGb0s4ZmZ4VWRQcXEwZUE4dFJta3A1Q2NoZTU3VGxwb3ZDeS0teE1ZUmlWYkJLMHRuWGRWdnFWSFo0Z3lPMDNoTDhBSm9ldkVRVE5oMFRNRmowQW9vRjM4S18tT3hQV1F5MG1zUjFzbkZESFF1RTRxNy1FOEs3OHNLZ1NhZWJR?oc=5">Can This Viral Real Estate Startup Succeed Where R&hellip;</a></td>
-<td>Forbes</td>
-<td></td>
-</tr>
-<tr>
-<td>Your Startup</td>
-<td><a href="https://news.google.com/rss/articles/CBMigwFBVV95cUxPdjVJUDdCc3JSMEYxc2NPR0l5YTNKWXZzTlpfT1hWSEQ4Q09HakZJZGdSZTJ1dGZGcmh6WFZ0Rl9mc2NiSGwtMHVUVG00U0tUVTJzSEk2RzZLcWtCREd2UTV0Y2p3bVdvbXo1OUtFaUd0el9Wa05XeUdzZUNSRXktRnlsUQ?oc=5">Your Startup Failed And Now You’re Looking For A J&hellip;</a></td>
-<td>Crunchbase News</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<h2 id="methodology-methodology">Methodology </h2>
-<h3 id="research-approach">Research Approach</h3>
-<p>This report was compiled using a <strong>two-pronged research approach</strong>:</p>
-<p><strong>Prong A: Failed Manufacturing Startups (2024-2025)</strong>
-- Deep-dive into manufacturing-specific startup failures across sub-sectors
-- Focus on companies that raised significant venture or SPAC capital ($10M+) and subsequently failed
-- Data sources: Failory scraper (400+ profiles), Google News RSS, TechCrunch RSS</p>
-<p><strong>Prong B: Manufacturing Revival &amp; Reshoring</strong>
-- Latest reshoring statistics, government incentive programs, Industry 4.0 adoption
-- Data sources: BLS Public API (survival rates), Reshoring Initiative PDF reports</p>
-<h3 id="data-freshness">Data Freshness</h3>
-<table>
-<thead>
-<tr>
-<th>Collector</th>
-<th>Last Run</th>
-<th>Status</th>
-<th>Records</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>newsletter</td>
-<td>2026-06-06T04:40:20</td>
-<td>partial</td>
-<td>0</td>
-</tr>
-<tr>
-<td>regulatory</td>
-<td>2026-06-06T04:40:13</td>
-<td>partial</td>
-<td>0</td>
-</tr>
-<tr>
-<td>npm_pypi</td>
-<td>2026-06-06T04:40:10</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>stackoverflow</td>
-<td>2026-06-06T04:40:03</td>
-<td>partial</td>
-<td>0</td>
-</tr>
-<tr>
-<td>twitter</td>
-<td>2026-06-06T04:39:25</td>
-<td>partial</td>
-<td>0</td>
-</tr>
-<tr>
-<td>website_monitor</td>
-<td>2026-06-06T04:39:25</td>
-<td>partial</td>
-<td>0</td>
-</tr>
-<tr>
-<td>producthunt</td>
-<td>2026-06-06T04:39:25</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>arxiv</td>
-<td>2026-06-06T04:39:12</td>
-<td>success</td>
-<td>200</td>
-</tr>
-<tr>
-<td>opencorporates</td>
-<td>2026-06-06T04:39:12</td>
-<td>failed</td>
-<td>0</td>
-</tr>
-<tr>
-<td>hn_live</td>
-<td>2026-06-06T04:39:07</td>
-<td>success</td>
-<td>59</td>
-</tr>
-</tbody>
-</table>
-<h3 id="data-sources">Data Sources</h3>
-<table>
-<thead>
-<tr>
-<th>Source</th>
-<th>Records</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>failory</td>
-<td>123</td>
-</tr>
-<tr>
-<td>manual</td>
-<td>40</td>
-</tr>
-</tbody>
-</table>
-<h2 id="sources-sources">Sources </h2>
-<h3 id="failory">Failory</h3>
-<ul>
-<li><a href="https://www.failory.com/cemetery/dazo">https://www.failory.com/cemetery/dazo</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/frankly">https://www.failory.com/cemetery/frankly</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/hotelsaroundyou">https://www.failory.com/cemetery/hotelsaroundyou</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/koinex">https://www.failory.com/cemetery/koinex</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/lumos">https://www.failory.com/cemetery/lumos</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/peppertap">https://www.failory.com/cemetery/peppertap</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/roomstonite">https://www.failory.com/cemetery/roomstonite</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/schoolgennie">https://www.failory.com/cemetery/schoolgennie</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/stayzilla">https://www.failory.com/cemetery/stayzilla</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/zoomo">https://www.failory.com/cemetery/zoomo</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/aria-insights">https://www.failory.com/cemetery/aria-insights</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/berg">https://www.failory.com/cemetery/berg</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/dinnr">https://www.failory.com/cemetery/dinnr</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/eventvue">https://www.failory.com/cemetery/eventvue</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/moped">https://www.failory.com/cemetery/moped</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/polimobile">https://www.failory.com/cemetery/polimobile</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/quibi">https://www.failory.com/cemetery/quibi</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/shipitwise">https://www.failory.com/cemetery/shipitwise</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/sip">https://www.failory.com/cemetery/sip</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/teebeedee">https://www.failory.com/cemetery/teebeedee</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/teforia">https://www.failory.com/cemetery/teforia</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/vreal">https://www.failory.com/cemetery/vreal</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/wattage">https://www.failory.com/cemetery/wattage</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/kno">https://www.failory.com/cemetery/kno</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/rafter">https://www.failory.com/cemetery/rafter</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/tutorspree">https://www.failory.com/cemetery/tutorspree</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/dinner-lab">https://www.failory.com/cemetery/dinner-lab</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/dotcloud">https://www.failory.com/cemetery/dotcloud</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/mailbox">https://www.failory.com/cemetery/mailbox</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/scalefactor">https://www.failory.com/cemetery/scalefactor</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/shuddle">https://www.failory.com/cemetery/shuddle</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/transpose">https://www.failory.com/cemetery/transpose</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/flowtab">https://www.failory.com/cemetery/flowtab</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/juicero">https://www.failory.com/cemetery/juicero</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/kitchit">https://www.failory.com/cemetery/kitchit</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/maple">https://www.failory.com/cemetery/maple</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/munchery">https://www.failory.com/cemetery/munchery</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/spoonrocket">https://www.failory.com/cemetery/spoonrocket</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/sprig">https://www.failory.com/cemetery/sprig</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/take-eat-easy">https://www.failory.com/cemetery/take-eat-easy</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/37coins">https://www.failory.com/cemetery/37coins</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/call9">https://www.failory.com/cemetery/call9</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/digg">https://www.failory.com/cemetery/digg</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/fab">https://www.failory.com/cemetery/fab</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/layervault">https://www.failory.com/cemetery/layervault</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/monitor110">https://www.failory.com/cemetery/monitor110</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/optier">https://www.failory.com/cemetery/optier</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/totsy">https://www.failory.com/cemetery/totsy</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/turntable-fm">https://www.failory.com/cemetery/turntable-fm</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/vine">https://www.failory.com/cemetery/vine</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/wantful">https://www.failory.com/cemetery/wantful</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/crowdmix">https://www.failory.com/cemetery/crowdmix</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/grooveshark">https://www.failory.com/cemetery/grooveshark</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/radar-radio">https://www.failory.com/cemetery/radar-radio</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/rdio">https://www.failory.com/cemetery/rdio</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/sharingear">https://www.failory.com/cemetery/sharingear</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/stereomood">https://www.failory.com/cemetery/stereomood</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/anki">https://www.failory.com/cemetery/anki</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/qbotix">https://www.failory.com/cemetery/qbotix</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/seven-dreamers-laboratories">https://www.failory.com/cemetery/seven-dreamers-laboratories</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/admazely">https://www.failory.com/cemetery/admazely</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/appiterate">https://www.failory.com/cemetery/appiterate</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/argyle-social">https://www.failory.com/cemetery/argyle-social</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/arsdigita">https://www.failory.com/cemetery/arsdigita</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/beepi">https://www.failory.com/cemetery/beepi</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/bitpass">https://www.failory.com/cemetery/bitpass</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/brisk">https://www.failory.com/cemetery/brisk</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/chacha">https://www.failory.com/cemetery/chacha</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/delicious">https://www.failory.com/cemetery/delicious</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/flud">https://www.failory.com/cemetery/flud</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/foundationdb">https://www.failory.com/cemetery/foundationdb</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/friendster">https://www.failory.com/cemetery/friendster</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/fuhu">https://www.failory.com/cemetery/fuhu</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/hubhaus">https://www.failory.com/cemetery/hubhaus</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/kiko">https://www.failory.com/cemetery/kiko</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/matterfab">https://www.failory.com/cemetery/matterfab</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/myspace">https://www.failory.com/cemetery/myspace</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/navdy">https://www.failory.com/cemetery/navdy</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/netscape">https://www.failory.com/cemetery/netscape</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/parse">https://www.failory.com/cemetery/parse</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/pixate">https://www.failory.com/cemetery/pixate</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/poliana">https://www.failory.com/cemetery/poliana</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/postrocket">https://www.failory.com/cemetery/postrocket</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/reach-ly">https://www.failory.com/cemetery/reach-ly</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/rethinkdb">https://www.failory.com/cemetery/rethinkdb</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/rewardme">https://www.failory.com/cemetery/rewardme</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/salorix">https://www.failory.com/cemetery/salorix</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/selltag">https://www.failory.com/cemetery/selltag</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/shipbeat">https://www.failory.com/cemetery/shipbeat</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/sidecar">https://www.failory.com/cemetery/sidecar</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/skully">https://www.failory.com/cemetery/skully</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/springpad">https://www.failory.com/cemetery/springpad</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/sunrise">https://www.failory.com/cemetery/sunrise</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/theranos">https://www.failory.com/cemetery/theranos</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/verelo">https://www.failory.com/cemetery/verelo</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/higear">https://www.failory.com/cemetery/higear</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/karhoo">https://www.failory.com/cemetery/karhoo</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/leap-transit">https://www.failory.com/cemetery/leap-transit</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/shyp">https://www.failory.com/cemetery/shyp</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/stratolaunch">https://www.failory.com/cemetery/stratolaunch</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/wow-air">https://www.failory.com/cemetery/wow-air</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/circleback-lending">https://www.failory.com/cemetery/circleback-lending</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/sellanapp">https://www.failory.com/cemetery/sellanapp</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/tilt">https://www.failory.com/cemetery/tilt</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/wesabe">https://www.failory.com/cemetery/wesabe</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/99dresses">https://www.failory.com/cemetery/99dresses</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/circa">https://www.failory.com/cemetery/circa</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/desti">https://www.failory.com/cemetery/desti</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/utrip">https://www.failory.com/cemetery/utrip</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/zirtual">https://www.failory.com/cemetery/zirtual</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/auctionata">https://www.failory.com/cemetery/auctionata</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/lookery">https://www.failory.com/cemetery/lookery</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/gowalla">https://www.failory.com/cemetery/gowalla</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/hitmeup">https://www.failory.com/cemetery/hitmeup</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/secret">https://www.failory.com/cemetery/secret</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/yik-yak">https://www.failory.com/cemetery/yik-yak</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/alikolo">https://www.failory.com/cemetery/alikolo</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/design-inc">https://www.failory.com/cemetery/design-inc</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/dopplr">https://www.failory.com/cemetery/dopplr</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/formspring">https://www.failory.com/cemetery/formspring</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/laurel-wolf">https://www.failory.com/cemetery/laurel-wolf</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/move-loot">https://www.failory.com/cemetery/move-loot</a> (1 records)</li>
-<li><a href="https://www.failory.com/cemetery/zulily">https://www.failory.com/cemetery/zulily</a> (1 records)</li>
-</ul>
-<hr />
-<p><em>Report generated on 2026-06-06 04:41 UTC from the Startup Research automated data collection system.</em></p>
-<p><em>Database contains: 163 startups, 943 news articles, 31 BLS data points.</em></p>
-<p><em>This report uses a two-pronged research approach: </em><em>Prong A</em><em> (Failed Manufacturing Startups 2024-2025) and </em><em>Prong B</em><em> (Manufacturing Revival &amp; Reshoring). See <a href="#methodology">Methodology</a> section for full details.</em></p>
-    <div style="margin-top: 32px; border-top: 2px solid var(--border); padding-top: 24px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h2 id="llm-infrastructure" style="margin:0;font-size:20px;font-weight:700;color:var(--text);">LLM Infrastructure</h2>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">ONLINE</span>
-          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">FAST &middot; 100.0 tok/s</span>
-        </div>
-      </div>
 
-      <div class="stats-grid">
-        <div class="stat-card accent-blue">
-          <span class="icon">&#129302;</span>
-          <div class="value">llama3.2</div>
-          <div class="label">Active Model</div>
-        </div>
-        <div class="stat-card accent-green">
-          <span class="icon">&#128202;</span>
-          <div class="value">1.2B</div>
-          <div class="label">Parameters</div>
-        </div>
-        <div class="stat-card accent-amber">
-          <span class="icon">&#128451;</span>
-          <div class="value">0 MB</div>
-          <div class="label">VRAM Usage</div>
-        </div>
-        <div class="stat-card accent-red">
-          <span class="icon">&#9201;</span>
-          <div class="value">0.02s</div>
-          <div class="label">Inference Latency</div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">2 tokens generated</div>
-        </div>
-      </div>
-
-      <div style="margin-top:20px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border);overflow:hidden;">
-        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;color:var(--text);">
-          Model Specifications
-        </div>
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <tr>
-            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);width:35%;">Family</td>
-            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;">Llama</td>
-          </tr>
-          <tr>
-            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);">Format</td>
-            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;">GGUF</td>
-          </tr>
-          <tr>
-            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);">Quantization</td>
-            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;">Q8_0</td>
-          </tr>
-          <tr>
-            <td style="padding:8px 16px;border-bottom:1px solid var(--border);color:var(--text-secondary);">API Endpoint</td>
-            <td style="padding:8px 16px;border-bottom:1px solid var(--border);font-weight:500;font-family:monospace;font-size:12px;">http://localhost:11434</td>
-          </tr>
-          <tr>
-            <td style="padding:8px 16px;color:var(--text-secondary);">License</td>
-            <td style="padding:8px 16px;font-weight:500;font-size:12px;">LLAMA 3.2 COMMUNITY LICENSE AGREEMENT
-Llama 3.2 Version Release Date: September 25, 2024
-
-“Agreement” means the terms an</td>
-          </tr>
-        </table>
-      </div>
-
-      <div style="margin-top:16px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border);overflow:hidden;">
-        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;color:var(--text);">
-          Available Models
-        </div>
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead>
-            <tr style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;">
-              <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Model</th>
-              <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Size</th>
-              <th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            
-        <tr>
-          <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500;">llama3.2:1b</td>
-          <td style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary);">1.2 GB</td>
-          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;background:#10B981;color:white;margin-left:6px;">LOADED</span></td>
-        </tr>
-        <tr>
-          <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500;">llama3:latest</td>
-          <td style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary);">4.3 GB</td>
-          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);font-size:12px;">Available</span></td>
-        </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    
-    <div style="margin-top: 32px; border-top: 2px solid var(--border); padding-top: 24px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <h2 id="ollama-usage" style="margin:0;font-size:20px;font-weight:700;color:var(--text);">Ollama Usage &amp; Cost Equivalence</h2>
-        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">TRACKING</span>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card accent-blue">
-          <span class="icon">&#128256;</span>
-          <div class="value">116</div>
-          <div class="label">Total Tokens</div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">
-            105 in / 11 out
+    <!-- Two column: Data Flow + Module Summary -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+      <div class="card">
+        <h3>📡 Data Collection Pipeline <span class="badge badge-green">22 Collectors</span></h3>
+        <div class="flow-container">
+          <div class="flow-row">
+            <div class="flow-node"><span class="dot" style="background:#06b6d4"></span> Failory</div>
+            <div class="flow-node"><span class="dot" style="background:#06b6d4"></span> Crunchbase</div>
+            <div class="flow-node"><span class="dot" style="background:#06b6d4"></span> Google News</div>
+          </div>
+          <div class="flow-row"><span class="flow-arrow">↓</span></div>
+          <div class="flow-row">
+            <div class="flow-node"><span class="dot" style="background:#6366f1"></span> TechCrunch RSS</div>
+            <div class="flow-node"><span class="dot" style="background:#6366f1"></span> BLS Public API</div>
+            <div class="flow-node"><span class="dot" style="background:#6366f1"></span> SEC EDGAR</div>
+          </div>
+          <div class="flow-row"><span class="flow-arrow">↓</span></div>
+          <div class="flow-row">
+            <div class="flow-node"><span class="dot" style="background:#a855f7"></span> GitHub Trends</div>
+            <div class="flow-node"><span class="dot" style="background:#a855f7"></span> Reddit Stream</div>
+            <div class="flow-node"><span class="dot" style="background:#a855f7"></span> arXiv Papers</div>
+          </div>
+          <div class="flow-row"><span class="flow-arrow">↓</span></div>
+          <div class="flow-row">
+            <div class="flow-node"><span class="dot" style="background:#f59e0b"></span> Product Hunt</div>
+            <div class="flow-node"><span class="dot" style="background:#f59e0b"></span> Stack Overflow</div>
+            <div class="flow-node"><span class="dot" style="background:#f59e0b"></span> +12 more</div>
+          </div>
+          <div class="flow-row"><span class="flow-arrow">⬇</span></div>
+          <div class="flow-row">
+            <div class="flow-node" style="border-color:var(--accent);"><span class="dot" style="background:#6366f1"></span> 🗄️ MySQL + NLP Processing → Dashboard</div>
           </div>
         </div>
-        <div class="stat-card accent-green">
-          <span class="icon">&#128640;</span>
-          <div class="value">5</div>
-          <div class="label">Inferences</div>
-        </div>
-        <div class="stat-card accent-amber">
-          <span class="icon">&#128176;</span>
-          <div class="value">$0.00</div>
-          <div class="label">Max Equivalent Cost</div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">If hosted on most expensive</div>
-        </div>
-        <div class="stat-card accent-red">
-          <span class="icon">&#127775;</span>
-          <div class="value">$0.00</div>
-          <div class="label">Actual Cost</div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Self-hosted via Ollama</div>
-        </div>
       </div>
 
-      
-    </div>
-    <div class="gated-content" data-tier="pro">
-<div id="revenue-monitoring" class="dashboard-section">
-  <h2 class="section-title" style="display:flex;align-items:center;gap:8px;"><span class="tier-badge pro-badge">PRO</span> Revenue Monitoring</h2>
-  <div class="stats-grid">
-    <div class="stat-card"><div class="stat-value">$0.00</div><div class="stat-label">Total Revenue</div></div>
-    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Active Licenses</div></div>
-    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Pro Users</div></div>
-    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Enterprise Users</div></div>
-  </div>
-  <h3>Tier Distribution</h3>
-  <table class="data-table">
-    <thead><tr><th>Tier</th><th>Users</th><th>Share</th></tr></thead>
-    <tbody>
-      <tr><td>Free</td><td>0</td><td>0.0%</td></tr>
-      <tr><td>Pro</td><td>0</td><td>0.0%</td></tr>
-      <tr><td>Enterprise</td><td>0</td><td>0.0%</td></tr>
-    </tbody>
-  </table>
-</div>
-
-</div>
-
-    <div class="gated-content" data-tier="pro" id="pro-opportunity-deep-dives">
-      <div class="pro-lock-overlay">
-        <span class="lock-icon">&#128274;</span>
-        <h3>Opportunity Deep Dives</h3>
-        <p>AI-powered sector analysis, scored opportunities, and competitive landscape — available with Pro.</p>
-        <button class="upgrade-btn" onclick="showTierAction()">Upgrade to Pro</button>
-      </div>
-    </div>
-    
-
-    <div id="pricing" style="margin-top:48px;padding-top:32px;border-top:2px solid var(--border);">
-      <h2 style="text-align:center;font-size:24px;margin-bottom:8px;">Choose Your Plan</h2>
-      <p style="text-align:center;color:var(--text-secondary);font-size:14px;margin-bottom:32px;">
-        From failed startups to found opportunities. Unlock the full platform.
-      </p>
-
-      <div class="pricing-grid">
-        <!-- Free -->
-        <div class="pricing-card">
-          <div class="tier-name">Free</div>
-          <div class="price">${0}<small>/forever</small></div>
-          <ul class="features"><li>Failure Database</li>
-<li>News Monitoring</li>
-<li>Manufacturing Survival</li>
-<li>Llm Pricing</li>
-<li>Basic Search</li>
-<li>Public Reports</li>
-</ul>
-          <a class="cta-btn current" href="javascript:void(0)">Current</a>
+      <div class="card">
+        <h3>📦 Project Modules <span class="badge badge-purple">15 Modules</span></h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          <span class="agent-tag tag-core">agents/ (70 files)</span>
+          <span class="agent-tag tag-data">collectors/ (22 files)</span>
+          <span class="agent-tag tag-ai">nlp/ (5 files)</span>
+          <span class="agent-tag tag-data">db/ (6 files)</span>
+          <span class="agent-tag tag-infra">config/ (3 files)</span>
+          <span class="agent-tag tag-infra">auth/ (6 files)</span>
+          <span class="agent-tag tag-core">api/ (7 files)</span>
+          <span class="agent-tag tag-data">scoring/ (6 files)</span>
+          <span class="agent-tag tag-ai">stream/ (5 files)</span>
+          <span class="agent-tag tag-infra">utils/ (7 files)</span>
+          <span class="agent-tag tag-output">report/ (1 file)</span>
+          <span class="agent-tag tag-infra">monitoring/ (3 files)</span>
+          <span class="agent-tag tag-output">webhooks/ (3 files)</span>
+          <span class="agent-tag tag-infra">scripts/ (16 files)</span>
+          <span class="agent-tag tag-infra">tests/ (90+ files)</span>
         </div>
-
-        <!-- Pro (featured) -->
-        <div class="pricing-card featured">
-          <div class="tier-name">Pro</div>
-          <div class="price">${49}<small>/month</small></div>
-          <ul class="features"><li>Ai Analyst</li>
-<li>Unlimited Search</li>
-<li>Opportunity Reports</li>
-<li>Opportunity Deep Dives</li>
-<li>Industry Intelligence</li>
-<li>Llm Portfolio</li>
-<li>Llm Benchmarks</li>
-<li>Llm Cost Optimizer</li>
-<li>Alert System</li>
-</ul>
-          <a class="cta-btn primary" href="javascript:void(0)" onclick="showTierAction()">Get Pro</a>
-        </div>
-
-        <!-- Enterprise -->
-        <div class="pricing-card">
-          <div class="tier-name">Enterprise</div>
-          <div class="price">${1,000}<small>/month</small></div>
-          <ul class="features"><li>Api Access</li>
-<li>Custom Monitoring</li>
-<li>Internal Reports</li>
-<li>Consulting Support</li>
-<li>Priority Support</li>
-<li>White Label</li>
-<li>Bulk Export</li>
-</ul>
-          <a class="cta-btn secondary" href="mailto:contact@oplatform.dev?subject=Enterprise%20Inquiry">Contact Us</a>
+        <div style="margin-top: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <div style="width: 8px; height: 8px; border-radius: 2px; background: #6366f1;"></div>
+            <span style="font-size: 12px; color: var(--text-secondary);">Core — Agents, API, Config</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <div style="width: 8px; height: 8px; border-radius: 2px; background: #06b6d4;"></div>
+            <span style="font-size: 12px; color: var(--text-secondary);">Data — Collectors, DB, Scoring</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <div style="width: 8px; height: 8px; border-radius: 2px; background: #a855f7;"></div>
+            <span style="font-size: 12px; color: var(--text-secondary);">AI — NLP, Stream Processing</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <div style="width: 8px; height: 8px; border-radius: 2px; background: #f59e0b;"></div>
+            <span style="font-size: 12px; color: var(--text-secondary);">Infra — Auth, Utils, Monitoring</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 8px; height: 8px; border-radius: 2px; background: #10b981;"></div>
+            <span style="font-size: 12px; color: var(--text-secondary);">Output — Reports, Webhooks</span>
+          </div>
         </div>
       </div>
     </div>
-    
-</div>
-<!-- Activation Modal -->
-<div class="modal-overlay" id="activateOverlay">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">&times;</button>
-    <h2>Activate Pro Access</h2>
-    <p>Enter your license key to unlock premium features.</p>
-    <input type="text" id="licenseKeyInput" placeholder="PRO-XXXX-XXXX-XXXX" autocomplete="off" />
-    <div class="error-msg" id="licenseError"></div>
-    <div class="modal-actions">
-      <button class="btn-activate" onclick="activateLicense()">Activate</button>
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+
+    <!-- Charts row -->
+    <div class="charts-grid">
+      <div class="chart-box"><h3>Failure by Category</h3><canvas id="categoryChart"></canvas></div>
+      <div class="chart-box"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div>
+      <div class="chart-box"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div>
+      <div class="chart-box"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div>
     </div>
-    <div class="purchase-link" id="purchaseLink">
-      <a href="#" target="_blank" id="purchaseUrl">Purchase a Pro license</a>
+
+    <!-- Pipeline Status -->
+    <div class="card">
+      <h3><span class="live-dot"></span> Recent Pipeline Runs <span class="badge badge-blue">Live Data</span></h3>
+      <div id="pipelineTable">
+        <table>
+          <thead><tr><th>Pipeline</th><th>Agent</th><th>Status</th><th>Records</th><th>Time</th></tr></thead>
+          <tbody id="pipelineBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
+
+  <!-- ════════════════════ ARCHITECTURE PAGE ════════════════════ -->
+  <div class="page" id="page-architecture">
+    <div class="section-title">
+      <span>🏗️ Project Architecture</span>
+      <span class="line"></span>
+    </div>
+
+    <div class="card">
+      <h3>Full Stack Overview</h3>
+      <div class="flow-container" style="gap: 8px;">
+        <div class="flow-row" style="justify-content: center;">
+          <div class="flow-node" style="background: rgba(99,102,241,0.15); border-color: var(--accent); padding: 12px 20px;">
+            <span style="font-size: 20px;">🌐</span>
+            <div><div style="font-weight: 600;">Presentation Layer</div><div style="font-size: 11px; color: var(--text-dim);">Next.js Dashboard · Static HTML Site · Streamlit</div></div>
+          </div>
+        </div>
+        <div class="flow-row" style="justify-content: center;"><span class="flow-arrow">↕ REST API + WebSocket</span></div>
+        <div class="flow-row" style="justify-content: center;">
+          <div class="flow-node" style="background: rgba(16,185,129,0.15); border-color: var(--green); padding: 12px 20px;">
+            <span style="font-size: 20px;">⚙️</span>
+            <div><div style="font-weight: 600;">API Layer — FastAPI + Uvicorn</div><div style="font-size: 11px; color: var(--text-dim);">20+ Endpoints · CORS · Security Headers · Auth (JWT + API Keys)</div></div>
+          </div>
+        </div>
+        <div class="flow-row" style="justify-content: center;"><span class="flow-arrow">↕</span></div>
+        <div class="flow-row" style="justify-content: center; gap: 16px; flex-wrap: wrap;">
+          <div class="flow-node" style="background: rgba(168,85,247,0.15); border-color: var(--purple); padding: 10px 16px;">
+            <span>🤖</span>
+            <div><div style="font-weight: 600;">AI Agent System</div><div style="font-size: 10px; color: var(--text-dim);">70 Specialized Agents</div></div>
+          </div>
+          <div class="flow-node" style="background: rgba(168,85,247,0.15); border-color: var(--purple); padding: 10px 16px;">
+            <span>🧠</span>
+            <div><div style="font-weight: 600;">NLP Pipeline</div><div style="font-size: 10px; color: var(--text-dim);">NER · Embeddings · Classification</div></div>
+          </div>
+          <div class="flow-node" style="background: rgba(168,85,247,0.15); border-color: var(--purple); padding: 10px 16px;">
+            <span>📊</span>
+            <div><div style="font-weight: 600;">ML Scoring</div><div style="font-size: 10px; color: var(--text-dim);">Risk · Anomaly · Composite</div></div>
+          </div>
+          <div class="flow-node" style="background: rgba(168,85,247,0.15); border-color: var(--purple); padding: 10px 16px;">
+            <span>📡</span>
+            <div><div style="font-weight: 600;">Stream Processing</div><div style="font-size: 10px; color: var(--text-dim);">Real-time Score Deltas</div></div>
+          </div>
+        </div>
+        <div class="flow-row" style="justify-content: center;"><span class="flow-arrow">↕</span></div>
+        <div class="flow-row" style="justify-content: center; gap: 16px;">
+          <div class="flow-node" style="background: rgba(6,182,212,0.15); border-color: var(--cyan); padding: 10px 16px;">
+            <span>📡</span>
+            <div><div style="font-weight: 600;">22 Data Collectors</div><div style="font-size: 10px; color: var(--text-dim);">RSS · Scrapers · APIs</div></div>
+          </div>
+          <div class="flow-node" style="background: rgba(245,158,11,0.15); border-color: var(--amber); padding: 10px 16px;">
+            <span>🗄️</span>
+            <div><div style="font-weight: 600;">MySQL Database</div><div style="font-size: 10px; color: var(--text-dim);">163 Startups · 943 Articles</div></div>
+          </div>
+          <div class="flow-node" style="background: rgba(239,68,68,0.15); border-color: var(--red); padding: 10px 16px;">
+            <span>🦙</span>
+            <div><div style="font-weight: 600;">Ollama (Local LLM)</div><div style="font-size: 10px; color: var(--text-dim);">Llama 3.2 · 1.2B Params</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Directory Tree -->
+    <div class="card">
+      <h3>📁 Directory Structure</h3>
+      <pre style="font-size: 12px; line-height: 1.6; color: var(--text-secondary); font-family: 'SF Mono', 'Fira Code', monospace; overflow-x: auto;">
+Startup_Research_Report/
+├── 🤖 agents/              <span style="color:#a855f7">70 AI agents — orchestrator, ML, NLP, scoring, research</span>
+├── 📡 collectors/          <span style="color:#06b6d4">22 data collectors — web, API, RSS scrapers</span>
+├── 🗄️ db/                  <span style="color:#f59e0b">Database layer — MySQL schema, dedup, graph, vector</span>
+├── 🧠 nlp/                 <span style="color:#a855f7">NLP pipeline — NER, embeddings, classification</span>
+├── 📊 scoring/             <span style="color:#10b981">Scoring engine — risk, anomaly, composite, time-decay</span>
+├── 📡 stream/              <span style="color:#a855f7">Stream processing — real-time score updates</span>
+├── ⚙️ api/                 <span style="color:#6366f1">API v2 — auth, export, webhooks, signals</span>
+├── 🔐 auth/                <span style="color:#f59e0b">Authentication — JWT, API keys, RBAC, tenants</span>
+├── 📦 config/              <span style="color:#f59e0b">Configuration — settings, logging</span>
+├── 📋 report/              <span style="color:#10b981">Report generation</span>
+├── 🔧 utils/               <span style="color:#f59e0b">Utilities — HTTP client, rate limiter, sanitizer</span>
+├── 📈 monitoring/          <span style="color:#f59e0b">Health checks, metrics</span>
+├── 🔗 webhooks/            <span style="color:#10b981">Webhook dispatching</span>
+├── 📜 scripts/             <span style="color:#f59e0b">Ops scripts — backup, scheduler, health, setup</span>
+├── 🧪 tests/               <span style="color:#10b981">90+ test files — unit, integration, e2e</span>
+├── 🌐 site/                <span style="color:#6366f1">Static dashboard (this page!)</span>
+├── 📱 dashboard/           <span style="color:#6366f1">Next.js frontend (React + Tailwind)</span>
+├── 📧 templates/           <span style="color:#10b981">Email templates — alerts, digest, reports</span>
+├── 🐳 Dockerfile           <span style="color:#f59e0b">Container build</span>
+├── 🐳 docker-compose.yml   <span style="color:#f59e0b">Full stack deployment</span>
+├── ⚡ api_server.py         <span style="color:#6366f1">FastAPI main server (2,300+ lines)</span>
+├── 📖 docs/                 <span style="color:#f59e0b">Engineering docs, ADRs, business plans</span>
+└── 📋 requirements.txt     <span style="color:#f59e0b">Python dependencies</span>
+      </pre>
+    </div>
+
+    <!-- Tech Stack -->
+    <div class="card">
+      <h3>⚡ Technology Stack</h3>
+      <table>
+        <thead><tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Backend</td><td>Python 3 · FastAPI · Uvicorn</td><td>REST API server</td></tr>
+          <tr><td>Database</td><td>MySQL 8</td><td>Primary data store</td></tr>
+          <tr><td>AI/LLM</td><td>Ollama · Llama 3.2 (1.2B)</td><td>Local AI inference</td></tr>
+          <tr><td>NLP</td><td>spaCy · Custom NER Pipeline</td><td>Entity extraction, text classification</td></tr>
+          <tr><td>ML</td><td>scikit-learn · XGBoost</td><td>Risk scoring, failure prediction</td></tr>
+          <tr><td>Frontend</td><td>Next.js · React · Tailwind CSS</td><td>Interactive dashboard</td></tr>
+          <tr><td>Visualization</td><td>Chart.js</td><td>Charts and graphs</td></tr>
+          <tr><td>Auth</td><td>JWT · API Keys · RBAC</td><td>Authentication & authorization</td></tr>
+          <tr><td>DevOps</td><td>Docker · GitHub Actions · Caddy</td><td>CI/CD, containerization, reverse proxy</td></tr>
+          <tr><td>Testing</td><td>pytest (90+ test files)</td><td>Unit, integration, e2e tests</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════════════════════ AGENTS PAGE ════════════════════ -->
+  <div class="page" id="page-agents">
+    <div class="section-title">
+      <span>🤖 AI Agent System</span>
+      <span class="line"></span>
+      <span style="font-size:12px;color:var(--text-dim);font-weight:400;">70 Specialized Agents</span>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box c1"><div class="val">70</div><div class="lbl">Total Agents</div></div>
+      <div class="stat-box c2"><div class="val">12</div><div class="lbl">Categories</div></div>
+      <div class="stat-box c1"><div class="val">1</div><div class="lbl">Orchestrator</div></div>
+      <div class="stat-box c3"><div class="val">70</div><div class="lbl">Python Modules</div></div>
+    </div>
+
+    <div class="module-grid" id="agentGrid"></div>
+  </div>
+
+  <!-- ════════════════════ DATA & APIs PAGE ════════════════════ -->
+  <div class="page" id="page-data">
+    <div style="background:transparent;border-radius:16px;padding:32px;margin:-28px -32px;min-height:calc(100vh - var(--header-height));">
+
+    <!-- Hero Banner -->
+    <div style="background:linear-gradient(135deg,#6366f1 0%,#06b6d4 50%,#10b981 100%);border-radius:16px;padding:40px 36px;margin-bottom:28px;color:#fff;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.08);"></div>
+      <div style="position:absolute;bottom:-60px;right:80px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.05);"></div>
+      <div style="font-size:32px;font-weight:800;margin-bottom:4px;">📡 API Explorer</div>
+      <div style="font-size:15px;opacity:0.9;margin-bottom:20px;">Opportunity Intelligence Platform — All endpoints, live & interactive</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);border-radius:10px;padding:12px 20px;min-width:120px;">
+          <div style="font-size:24px;font-weight:800;" id="data-startups">—</div>
+          <div style="font-size:11px;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px;">Startups</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);border-radius:10px;padding:12px 20px;min-width:120px;">
+          <div style="font-size:24px;font-weight:800;" id="data-news">—</div>
+          <div style="font-size:11px;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px;">News Articles</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);border-radius:10px;padding:12px 20px;min-width:120px;">
+          <div style="font-size:24px;font-weight:800;" id="data-bls">—</div>
+          <div style="font-size:11px;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px;">BLS Data Points</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);border-radius:10px;padding:12px 20px;min-width:120px;">
+          <div style="font-size:24px;font-weight:800;">20+</div>
+          <div style="font-size:11px;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px;">API Endpoints</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.18);backdrop-filter:blur(8px);border-radius:10px;padding:12px 20px;min-width:120px;">
+          <div style="font-size:24px;font-weight:800;">22</div>
+          <div style="font-size:11px;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px;">Data Collectors</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Links Row -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:28px;">
+      <a href="/docs" target="_blank" style="text-decoration:none;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:12px;transition:all 0.2s;color:#1e293b;" onmouseover="this.style.boxShadow='0 4px 12px rgba(99,102,241,0.15)';this.style.borderColor='#6366f1'" onmouseout="this.style.boxShadow='none';this.style.borderColor='#e2e8f0'">
+        <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;font-size:22px;">📖</div>
+        <div><div style="font-weight:700;font-size:14px;">Swagger UI</div><div style="font-size:12px;color:#64748b;">Interactive API documentation</div></div>
+      </a>
+      <a href="/redoc" target="_blank" style="text-decoration:none;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:12px;transition:all 0.2s;color:#1e293b;" onmouseover="this.style.boxShadow='0 4px 12px rgba(6,182,212,0.15)';this.style.borderColor='#06b6d4'" onmouseout="this.style.boxShadow='none';this.style.borderColor='#e2e8f0'">
+        <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:22px;">📚</div>
+        <div><div style="font-weight:700;font-size:14px;">ReDoc</div><div style="font-size:12px;color:#64748b;">Clean API reference docs</div></div>
+      </a>
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:12px;transition:all 0.2s;color:#1e293b;" onmouseover="this.style.boxShadow='0 4px 12px rgba(16,185,129,0.15)';this.style.borderColor='#10b981'" onmouseout="this.style.boxShadow='none';this.style.borderColor='#e2e8f0'">
+        <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#10b981,#34d399);display:flex;align-items:center;justify-content:center;font-size:22px;">🔌</div>
+        <div><div style="font-weight:700;font-size:14px;">WebSocket</div><div style="font-size:12px;color:#64748b;">ws://localhost:8000/ws/live</div></div>
+      </div>
+    </div>
+
+    <!-- GET Endpoints Section -->
+    <div style="margin-bottom:12px;font-size:13px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:1px;">GET Endpoints — Click to test live</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-bottom:32px;" id="getEndpointsGrid"></div>
+
+    <!-- POST Endpoints Section -->
+    <div style="margin-bottom:12px;font-size:13px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:1px;">POST Endpoints</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-bottom:32px;" id="postEndpointsGrid"></div>
+
+    <!-- Data Collectors Section -->
+    <div style="margin-bottom:12px;font-size:13px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:1px;">📡 Data Collectors (22 Sources)</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;" id="collectorsGrid"></div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════ REPORT PAGE ════════════════════ -->
+  <div class="page" id="page-report">
+    <div class="section-title">
+      <span>📄 Research Report</span>
+      <span class="line"></span>
+    </div>
+    <div class="report-content" id="reportContent">
+      <p style="color:var(--text-dim);font-size:14px;">Loading report data from API...</p>
+    </div>
+  </div>
+
 </div>
+
 <button class="back-to-top" id="backToTop" aria-label="Back to top">&#9650;</button>
-<script>
-// ── Hamburger menu (mobile) ──
-(function() {
-  var btn = document.getElementById('hamburgerBtn');
-  var sidebar = document.querySelector('.sidebar');
-  var overlay = document.getElementById('sidebarOverlay');
-  function toggleMenu() {
-    btn.classList.toggle('active');
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('active');
-  }
-  btn.addEventListener('click', toggleMenu);
-  overlay.addEventListener('click', toggleMenu);
-  sidebar.querySelectorAll('a').forEach(function(link) {
-    link.addEventListener('click', function() {
-      if (sidebar.classList.contains('open')) toggleMenu();
-    });
-  });
-})();
 
-// ── Dark mode toggle ──
-(function() {
-  var toggle = document.getElementById('themeToggle');
-  var icon = document.getElementById('themeIcon');
-  var html = document.documentElement;
-  function applyTheme(theme) {
-    if (theme === 'dark') {
-      html.setAttribute('data-theme', 'dark');
-      icon.innerHTML = '&#9790;';
-    } else {
-      html.removeAttribute('data-theme');
-      icon.innerHTML = '&#9788;';
-    }
-  }
-  var saved = localStorage.getItem('dashboard-theme');
-  if (saved) applyTheme(saved);
-  toggle.addEventListener('click', function() {
-    var isDark = html.getAttribute('data-theme') === 'dark';
-    var next = isDark ? 'light' : 'dark';
-    applyTheme(next);
-    localStorage.setItem('dashboard-theme', next);
-  });
-})();
-
-// ── Client-side search ──
-(function() {
-  var input = document.getElementById('searchInput');
-  var clear = document.getElementById('searchClear');
-  var main = document.querySelector('.main');
-  var sections = [];
-  var debounceTimer;
-  function buildSections() {
-    var headings = main.querySelectorAll('h2, h3');
-    sections = [];
-    headings.forEach(function(h) {
-      var content = [];
-      var sibling = h.nextElementSibling;
-      while (sibling && sibling.tagName !== 'H2' && sibling.tagName !== 'H3') {
-        content.push(sibling);
-        sibling = sibling.nextElementSibling;
-      }
-      sections.push({ heading: h, content: content });
-    });
-  }
-  function doSearch(query) {
-    if (!sections.length) buildSections();
-    var q = query.toLowerCase().trim();
-    if (!q) {
-      main.querySelectorAll('.search-dimmed').forEach(function(el) {
-        el.classList.remove('search-dimmed');
-      });
-      return;
-    }
-    sections.forEach(function(sec) {
-      var text = sec.heading.textContent.toLowerCase();
-      var contentText = sec.content.map(function(el) {
-        return el.textContent.toLowerCase();
-      }).join(' ');
-      var matches = (text + ' ' + contentText).indexOf(q) !== -1;
-      sec.heading.classList.toggle('search-dimmed', !matches);
-      sec.content.forEach(function(el) {
-        el.classList.toggle('search-dimmed', !matches);
-      });
-    });
-  }
-  input.addEventListener('input', function() {
-    clear.classList.toggle('visible', input.value.length > 0);
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(function() { doSearch(input.value); }, 200);
-  });
-  clear.addEventListener('click', function() {
-    input.value = '';
-    clear.classList.remove('visible');
-    doSearch('');
-    input.focus();
-  });
-})();
-
-// ── Collapsible sections ──
-(function() {
-  var main = document.querySelector('.main');
-  var h2s = main.querySelectorAll('h2');
-  h2s.forEach(function(h2) {
-    if (h2.id === 'table-of-contents') return;
-    h2.classList.add('collapsible');
-    var wrapper = document.createElement('div');
-    wrapper.className = 'section-content';
-    var sibling = h2.nextElementSibling;
-    while (sibling && sibling.tagName !== 'H2') {
-      var next = sibling.nextElementSibling;
-      wrapper.appendChild(sibling);
-      sibling = next;
-    }
-    h2.parentNode.insertBefore(wrapper, h2.nextSibling);
-    h2.addEventListener('click', function() {
-      h2.classList.toggle('collapsed');
-      wrapper.classList.toggle('collapsed');
-    });
-  });
-})();
-
-// ── Back to top button ──
-(function() {
-  var btn = document.getElementById('backToTop');
-  window.addEventListener('scroll', function() {
-    btn.classList.toggle('visible', window.scrollY > 400);
-  });
-  btn.addEventListener('click', function() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-})();
-
-// ── Tier gate system ──
-(function() {
-  var tierBadge = document.getElementById('tierBadge');
-  var activateOverlay = document.getElementById('activateOverlay');
-  var licenseInput = document.getElementById('licenseKeyInput');
-  var licenseError = document.getElementById('licenseError');
-  var purchaseUrl = document.getElementById('purchaseUrl');
-  var _licenseData = null;
-  var _currentTier = 'free';
-
-  function hashKey(key) {
-    var hash = 0;
-    for (var i = 0; i < key.length; i++) {
-      var c = key.charCodeAt(i);
-      hash = ((hash << 5) - hash) + c;
-      hash |= 0;
-    }
-    // SHA-256 via SubtleCrypto (async, fallback to simple hash)
-    return key; // Pass raw key — validation uses hashed allowlist on server
-  }
-
-  async function sha256(str) {
-    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-  }
-
-  function updateBadge(tier) {
-    _currentTier = tier;
-    tierBadge.textContent = tier.toUpperCase();
-    tierBadge.className = 'tier-badge ' + tier;
-  }
-
-  function unlockContent(tier) {
-    var tiers = ['pro'];
-    if (tier === 'enterprise') tiers.push('enterprise');
-    tiers.forEach(function(t) {
-      document.querySelectorAll('.gated-content[data-tier="' + t + '"]').forEach(function(el) {
-        el.classList.add('unlocked');
-      });
-    });
-  }
-
-  async function validateAndActivate(key) {
-    try {
-      var resp = await fetch('licenses.json');
-      if (!resp.ok) return false;
-      var data = await resp.json();
-      _licenseData = data;
-      var hashedKey = await sha256(key);
-      return data.keys && data.keys.indexOf(hashedKey) !== -1;
-    } catch(e) {
-      return false;
-    }
-  }
-
-  async function initTierGate() {
-    var savedKey = localStorage.getItem('opl_license_key');
-    if (savedKey) {
-      var valid = await validateAndActivate(savedKey);
-      if (valid) {
-        updateBadge(savedKey.startsWith('ENT') ? 'enterprise' : 'pro');
-        unlockContent(_currentTier);
-      } else {
-        localStorage.removeItem('opl_license_key');
-      }
-    }
-    // Load purchase URL from licenses.json
-    try {
-      if (!_licenseData) {
-        var resp = await fetch('licenses.json');
-        _licenseData = await resp.json();
-      }
-      if (_licenseData && _licenseData.stripe_urls) {
-        if (_licenseData.stripe_urls.pro) purchaseUrl.href = _licenseData.stripe_urls.pro;
-      }
-    } catch(e) {}
-  }
-
-  window.activateLicense = async function() {
-    var key = licenseInput.value.trim().toUpperCase();
-    licenseError.textContent = '';
-    if (!key) { licenseError.textContent = 'Please enter a license key.'; return; }
-    if (!key.match(/^(PRO|ENT)-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
-      licenseError.textContent = 'Invalid format. Expected: PRO-XXXX-XXXX-XXXX';
-      return;
-    }
-    var valid = await validateAndActivate(key);
-    if (valid) {
-      localStorage.setItem('opl_license_key', key);
-      var tier = key.startsWith('ENT') ? 'enterprise' : 'pro';
-      updateBadge(tier);
-      unlockContent(tier);
-      closeModal();
-    } else {
-      licenseError.textContent = 'Invalid or expired license key.';
-    }
-  };
-
-  window.closeModal = function() {
-    activateOverlay.classList.remove('active');
-    licenseInput.value = '';
-    licenseError.textContent = '';
-  };
-
-  window.showTierAction = function() {
-    if (_currentTier === 'free') {
-      var pricingSection = document.getElementById('pricing');
-      if (pricingSection) pricingSection.scrollIntoView({ behavior: 'smooth' });
-      else activateOverlay.classList.add('active');
-    } else {
-      activateOverlay.classList.add('active');
-      document.querySelector('.modal h2').textContent = 'License Active — ' + _currentTier.toUpperCase();
-      document.getElementById('licenseKeyInput').value = localStorage.getItem('opl_license_key') || '';
-    }
-  };
-
-  activateOverlay.addEventListener('click', function(e) {
-    if (e.target === activateOverlay) closeModal();
-  });
-
-  licenseInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') window.activateLicense();
-  });
-
-  initTierGate();
-})();
-</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
-
-        Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-        Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim();
-        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0,0,0,0.85)';
-        Chart.defaults.plugins.tooltip.padding = 12;
-        Chart.defaults.plugins.tooltip.cornerRadius = 8;
-        Chart.defaults.animation.duration = 800;
-        Chart.defaults.animation.easing = 'easeOutQuart';
-        
-            new Chart(document.getElementById('categoryChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: ["Unknown", "no_market_need", "ran_out_of_cash", "poor_product", "capital_intensity", "no_business_model", "pilot_to_scale_gap", "governance"],
-                    datasets: [{ data: [108, 10, 10, 7, 5, 5, 5, 4],
-                        backgroundColor: ['#3B82F6','#EF4444','#10B981','#F59E0B','#8B5CF6','#F97316','#14B8A6','#EC4899']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16 } },
-                        tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }
-                    }
-                }
-            });
-            
-            new Chart(document.getElementById('yearChart'), {
-                type: 'bar',
-                data: {
-                    labels: ["2016", "2017", "2018", "2019", "2020", "2023", "2024", "2025"],
-                    datasets: [{ label: 'Startups Failed', data: [24, 13, 4, 12, 3, 3, 37, 6],
-                        backgroundColor: '#3B82F6', borderRadius: 4, maxBarThickness: 40
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }
-                    },
-                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(128,128,128,0.1)' } } }
-                }
-            });
-            
-            new Chart(document.getElementById('survivalChart'), {
-                type: 'line',
-                data: {
-                    labels: ["1994", "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"],
-                    datasets: [
-                        { label: '1-Year Survival %', data: [82.8, 82.4, 80.8, 81.4, 82.2, 82.6, 81.8, 77.8, 79.4, 80.4, 82.1, 83.8, 82.8, 82.1, 77.4, 76.6, 80.7, 81.3, 82.1, 82.6, 87.4, 89.8, 88.6, 91.1, 84.2, 82.3, 86.2, 83.2, 83.0, 82.0, 80.1], borderColor: '#3B82F6',
-                           backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3, pointRadius: 3 },
-                        { label: '5-Year Survival %', data: [53.0, 52.4, 50.9, 49.7, 48.4, 48.3, 47.3, 49.5, 51.1, 52.3, 51.6, 51.2, 49.4, 48.8, 48.1, 50.5, 54.0, 55.2, 57.4, 57.7, 60.4, 61.0, 61.3, 61.7, 57.6, 57.4, 58.4], borderColor: '#EF4444',
-                           backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3, pointRadius: 3 }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }
-                    },
-                    scales: {
-                        y: { beginAtZero: false, grid: { color: 'rgba(128,128,128,0.1)' } }
-                    }
-                }
-            });
-            
-            new Chart(document.getElementById('regionChart'), {
-                type: 'bar',
-                data: {
-                    labels: ["US & Global", "Europe", "India", "China", "Africa", "Other", "Asia-Pacific"],
-                    datasets: [{ label: 'Startups', data: [104, 22, 19, 7, 4, 4, 3],
-                        backgroundColor: '#10B981', borderRadius: 4, maxBarThickness: 24
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { backgroundColor: 'rgba(0,0,0,0.85)', padding: 12, cornerRadius: 8 }
-                    },
-                    scales: { x: { beginAtZero: true, grid: { color: 'rgba(128,128,128,0.1)' } } }
-                }
-            });
-            
-        new Chart(document.getElementById('gmvCountryChart'), {
-            type: 'bar',
-            data: {
-                labels: ["United Kingdom", "Germany", "Southeast Asia (Indo", "India", "Japan", "United States", "China", "Brazil", "Middle East (UAE, Sa", "Africa (Nigeria, Ken"],
-                datasets: [{
-                    label: 'Avg Viability /10',
-                    data: [7.4, 7.1, 7.1, 7.0, 6.9, 6.8, 6.8, 6.7, 6.7, 6.2],
-                    backgroundColor: function(ctx) {
-                        var v = ctx.raw;
-                        if (v >= 7) return '#10B981';
-                        if (v >= 5) return '#F59E0B';
-                        return '#EF4444';
-                    },
-                    borderRadius: 4,
-                    maxBarThickness: 30
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            afterLabel: function(ctx) {
-                                var cnts = [42, 42, 42, 42, 41, 42, 41, 42, 42, 42];
-                                return cnts[ctx.dataIndex] + ' evaluations';
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true, max: 10,
-                        title: { display: true, text: 'Viability Score' },
-                        grid: { color: 'rgba(128,128,128,0.1)' }
-                    }
-                }
-            }
-        });
-        
-        new Chart(document.getElementById('gmvGoNoGo'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Go', 'Cautious', 'No-Go'],
-                datasets: [{ data: [3, 41, 0],
-                    backgroundColor: ['#10B981', '#F59E0B', '#EF4444']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16 } }
-                }
-            }
-        });
-
-</script>
-
-<!-- Help Widget -->
-<style>
-.help-fab {
-  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-  width: 52px; height: 52px; border-radius: 50%;
-  background: var(--accent); color: #fff; border: none;
-  font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.2);
-  transition: transform .2s, box-shadow .2s;
+// ═══════════════════════════════════════════
+// PAGE NAVIGATION
+// ═══════════════════════════════════════════
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.header .tab').forEach(t => t.classList.remove('active'));
+  const page = document.getElementById('page-' + pageId);
+  if (page) page.classList.add('active');
+  document.querySelector('.tab[data-page="'+pageId+'"]').classList.add('active');
 }
-.help-fab:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,.3); }
-.help-modal {
-  display: none; position: fixed; bottom: 90px; right: 24px; z-index: 9998;
-  width: 340px; max-height: 480px; overflow-y: auto;
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.15);
-  padding: 24px; font-family: -apple-system, sans-serif;
+document.querySelectorAll('.header .tab').forEach(tab => {
+  tab.addEventListener('click', () => showPage(tab.dataset.page));
+});
+
+// ═══════════════════════════════════════════
+// LIVE DATA FETCHING
+// ═══════════════════════════════════════════
+const API = '';
+async function fetchJSON(url) {
+  try { const r = await fetch(API + url); return await r.json(); } catch(e) { console.warn('Fetch failed:', url, e); return null; }
 }
-.help-modal.open { display: block; }
-.help-modal h3 { margin: 0 0 12px; font-size: 16px; color: var(--text); }
-.help-modal .faq-item { margin-bottom: 10px; }
-.help-modal .faq-q { font-weight: 600; color: var(--text); font-size: 13px; }
-.help-modal .faq-a { color: var(--text-secondary); font-size: 12px; margin-top: 2px; }
-.help-modal a { color: var(--accent); text-decoration: none; }
-.help-modal a:hover { text-decoration: underline; }
-</style>
-<button class="help-fab" id="helpFab" title="Help (?)">?</button>
-<div class="help-modal" id="helpModal">
-  <h3>Quick Help</h3>
-  <div class="faq-item"><div class="faq-q">How do I search for startups?</div><div class="faq-a">Use the search bar at the top — type a company name, sector, or failure reason.</div></div>
-  <div class="faq-item"><div class="faq-q">What does the risk score mean?</div><div class="faq-a">Scores range 0-1: low (0-.3), moderate (.3-.5), high (.5-.7), critical (.7-1.0).</div></div>
-  <div class="faq-item"><div class="faq-q">Can I export the data?</div><div class="faq-a">Yes — use the API at <code>/api/v2/export</code> or the CSV download on the dashboard.</div></div>
-  <div class="faq-item"><div class="faq-q">How often is data updated?</div><div class="faq-a">The pipeline runs daily at 8 AM UTC, collecting from 15+ data sources.</div></div>
-  <div class="faq-item"><div class="faq-q">Where can I report issues?</div><div class="faq-a"><a href="https://github.com/gokul-koduri/startup-research/issues" target="_blank">GitHub Issues</a> or use the feedback button below.</div></div>
-  <hr style="border-color:var(--border);margin:12px 0">
-  <a href="https://github.com/gokul-koduri/startup-research/issues/new" target="_blank">Report a Bug</a> &middot;
-  <a href="mailto:feedback@example.com?subject=Feedback">Send Feedback</a>
-</div>
-<script>
-(function(){
-  var fab=document.getElementById('helpFab'), modal=document.getElementById('helpModal');
-  fab.addEventListener('click',function(){ modal.classList.toggle('open'); });
-  document.addEventListener('keydown',function(e){ if(e.key==='?'){ e.preventDefault(); modal.classList.toggle('open'); }});
-  document.addEventListener('click',function(e){ if(!fab.contains(e.target)&&!modal.contains(e.target)) modal.classList.remove('open'); });
+
+async function loadDashboard() {
+  // Stats
+  const stats = await fetchJSON('/api/stats');
+  if (stats) {
+    document.getElementById('ov-startups').textContent = stats.failed_startups;
+    document.getElementById('ov-news').textContent = stats.news_articles;
+    document.getElementById('data-startups').textContent = stats.failed_startups;
+    document.getElementById('data-news').textContent = stats.news_articles;
+    document.getElementById('data-bls').textContent = stats.bls_survival_rates;
+  }
+
+  // Health
+  const health = await fetchJSON('/api/health');
+  if (health) {
+    document.getElementById('sidebarHealth').innerHTML = health.status === 'healthy' ? '<span style="color:#10b981">● Healthy</span>' : '<span style="color:#ef4444">● Issues</span>';
+    document.getElementById('sidebarDb').innerHTML = health.database === 'connected' ? '<span style="color:#10b981">● MySQL Connected</span>' : '<span style="color:#ef4444">● DB Offline</span>';
+  }
+
+  // Pipeline runs
+  const runs = await fetchJSON('/api/pipeline-runs');
+  if (runs && runs.results) {
+    const tbody = document.getElementById('pipelineBody');
+    tbody.innerHTML = runs.results.slice(0, 10).map(r => {
+      const statusColor = r.status === 'success' ? '#10b981' : r.status === 'failed' ? '#ef4444' : '#f59e0b';
+      return `<tr>
+        <td style="font-size:12px;">${r.pipeline_name}</td>
+        <td style="font-size:12px;">${r.agent_name}</td>
+        <td><span style="color:${statusColor};font-size:12px;font-weight:600;">${r.status}</span></td>
+        <td style="font-size:12px;">${r.records_affected}</td>
+        <td style="font-size:11px;color:var(--text-dim);">${new Date(r.started_at).toLocaleString()}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Timestamp
+  document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+}
+
+// ═══════════════════════════════════════════
+// AGENTS GRID
+// ═══════════════════════════════════════════
+const agentCategories = [
+  { name: 'Orchestration & Dev', icon: '🎯', color: '#6366f1', agents: ['orchestrator', 'parallel_spawner', 'product_manager_agent', 'software_engineer_agent', 'qa_engineer_agent', 'ux_designer_agent', 'devops_engineer_agent', 'solution_architect_agent', 'dashboard_agent'] },
+  { name: 'Data Collection', icon: '📡', color: '#06b6d4', agents: ['collection_agent', 'internet_research_agent'] },
+  { name: 'AI & NLP', icon: '🧠', color: '#a855f7', agents: ['ai_analyst_agent', 'intent_classifier_agent', 'semantic_search_agent', 'nlp_enrichment_agent', 'topic_modeling_agent', 'trend_detector_agent', 'sentiment_agent', 'span_agent'] },
+  { name: 'ML & Scoring', icon: '📊', color: '#10b981', agents: ['ml_predictor_agent', 'ml_trainer_agent', 'risk_scorer_agent', 'opportunity_scorer_agent', 'composite_scorer', 'anomaly_detector', 'feature_attribution'] },
+  { name: 'Analysis', icon: '🔬', color: '#f59e0b', agents: ['failure_pattern_agent', 'cohort_analysis_agent', 'correlation_agent', 'survival_analysis_agent', 'competitive_landscape_agent', 'market_sizing_agent', 'sector_rotation_agent', 'timing_agent'] },
+  { name: 'Research', icon: '🔎', color: '#ec4899', agents: ['founder_background_agent', 'technology_stack_agent', 'moat_analyzer_agent', 'whale_investor_agent', 'geographic_strategy_agent', 'global_market_viability_agent', 'revival_opportunity_agent', 'news_intelligence_agent'] },
+  { name: 'Knowledge Graph', icon: '🕸️', color: '#06b6d4', agents: ['knowledge_graph_agent', 'entity_resolver_agent', 'relationship_extractor_agent', 'graph_traversal_agent', 'community_detector_agent', 'temporal_graph_agent', 'influence_propagation_agent'] },
+  { name: 'LLM Management', icon: '🦙', color: '#ef4444', agents: ['model_manager_agent', 'llm_benchmark_agent', 'llm_portfolio_agent', 'llm_pricing_agent', 'llm_cost_optimizer_agent', 'ollama_usage_tracker_agent'] },
+  { name: 'Alerts & Output', icon: '🔔', color: '#10b981', agents: ['alert_dispatcher_agent', 'email_digest_agent', 'email_worker', 'report_agent', 'report_generator_agent', 'feed_generator_agent', 'export_agent'] },
+  { name: 'Monitoring', icon: '📈', color: '#f59e0b', agents: ['pipeline_health_agent', 'project_monitor_agent', 'data_quality_agent', 'feedback_analyzer_agent', 'cost_tracking_agent'] },
+  { name: 'Integrations', icon: '🔗', color: '#a855f7', agents: ['slack_integration_agent', 'git_publisher_agent', 'license_agent', 'stripe_webhook_agent'] },
+  { name: 'Opportunity Pipeline', icon: '💡', color: '#6366f1', agents: ['opportunity_pipeline_agent', 'business_analyst_agent'] },
+];
+
+// ═══════════════════════════════════════════
+// DATA PAGE - Light theme endpoint cards
+// ═══════════════════════════════════════════
+function renderDataPage() {
+  var getEndpoints = [
+    { name: "Health Check", emoji: "\u{1f49a}", path: "/api/health", desc: "Confirms server & DB connectivity", color: "#10b981", tags: ["Read-only", "Live"] },
+    { name: "Database Statistics", emoji: "\u{1f4ca}", path: "/api/stats", desc: "Full summary of all tracked data", color: "#6366f1", tags: ["Read-only", "Live"] },
+    { name: "Failed Startups", emoji: "\u{1f680}", path: "/api/startups", desc: "List with sector, region, year filters", color: "#f59e0b", tags: ["Filterable", "Popular"] },
+    { name: "Startup Detail", emoji: "\u{1f50d}", path: "/api/startups/{id}", desc: "Single startup with full details", color: "#f59e0b", tags: ["Dynamic ID"] },
+    { name: "News Articles", emoji: "\u{1f4f0}", path: "/api/news", desc: "Recent news from Google News & TechCrunch", color: "#06b6d4", tags: ["Filterable", "Live"] },
+    { name: "News Sentiment", emoji: "\u{1f3ad}", path: "/api/news/sentiment", desc: "Sentiment distribution across articles", color: "#06b6d4", tags: ["Analytics"] },
+    { name: "Risk Scores", emoji: "\u26a0\ufe0f", path: "/api/risk-scores", desc: "ML-generated risk scores for startups", color: "#ef4444", tags: ["ML-Powered"] },
+    { name: "Survival Rates", emoji: "\u{1f4c8}", path: "/api/survival-rates", desc: "BLS business survival statistics", color: "#10b981", tags: ["BLS Data"] },
+    { name: "Revival Opportunities", emoji: "\u{1f3ed}", path: "/api/revival-opportunities", desc: "Industries with manufacturing revival potential", color: "#10b981", tags: ["Strategic"] },
+    { name: "Available Models", emoji: "\u{1f999}", path: "/api/models", desc: "List available Ollama LLM models", color: "#a855f7", tags: ["Ollama"] },
+    { name: "Token Usage", emoji: "\u{1f522}", path: "/api/models/token-usage", desc: "Ollama token usage statistics", color: "#a855f7", tags: ["Monitoring"] },
+    { name: "Active Alerts", emoji: "\u{1f514}", path: "/api/alerts", desc: "Current active system alerts", color: "#ef4444", tags: ["Real-time"] },
+    { name: "Pipeline Runs", emoji: "\u2699\ufe0f", path: "/api/pipeline-runs", desc: "Recent pipeline execution history", color: "#6366f1", tags: ["History"] },
+    { name: "Trained ML Models", emoji: "\u{1f9e0}", path: "/api/ml/models", desc: "List trained ML models", color: "#ec4899", tags: ["ML"] },
+    { name: "Unified Search", emoji: "\u{1f50e}", path: "/api/search", desc: "Semantic, fulltext & hybrid search", color: "#6366f1", tags: ["Semantic + Fulltext", "Popular"] },
+    { name: "Entity Connections", emoji: "\u{1f578}\ufe0f", path: "/api/entities/{name}/connections", desc: "Knowledge graph connections", color: "#06b6d4", tags: ["Graph"] },
+  ];
+
+  var postEndpoints = [
+    { name: "AI Chat Analyst", emoji: "\u{1f4ac}", path: "/api/chat", desc: "Natural language query via Ollama LLM", color: "#7c3aed", tags: ["AI-Powered", "Popular"], curl: "curl -X POST /api/chat\n-H Content-Type: application/json\n-d {message: Why did Northvolt fail?}" },
+    { name: "Score a Startup", emoji: "\u{1f3af}", path: "/api/score", desc: "ML + heuristic scoring for any startup", color: "#d97706", tags: ["Scoring"], curl: "curl -X POST /api/score\n-H Content-Type: application/json\n-d {startup_id: 1}" },
+    { name: "ML Predict Failure", emoji: "\u{1f9e0}", path: "/api/ml/predict", desc: "Predict failure probability with trained model", color: "#db2777", tags: ["ML Inference"], curl: "curl -X POST /api/ml/predict\n-H Content-Type: application/json\n-d {features: ...}" },
+    { name: "Train ML Model", emoji: "\u{1f3cb}\ufe0f", path: "/api/ml/train", desc: "Trigger ML model training on collected data", color: "#db2777", tags: ["ML Training"], curl: "curl -X POST /api/ml/train\n-H Content-Type: application/json\n-d {model_type: xgboost}" },
+    { name: "Pull Model", emoji: "\u{1f4e6}", path: "/api/models/pull", desc: "Download a new GGUF model to Ollama", color: "#7c3aed", tags: ["Ollama"], curl: "curl -X POST /api/models/pull\n-H Content-Type: application/json\n-d {name: llama3.2}" },
+  ];
+
+  var collectors = [
+    { name: "Failory Scraper", emoji: "\u{1f310}", bg: "#ecfeff", tag: "Web scraping" },
+    { name: "Crunchbase", emoji: "\u{1f4b0}", bg: "#ecfeff", tag: "Funding data" },
+    { name: "Google News RSS", emoji: "\u{1f4f0}", bg: "#ecfeff", tag: "News aggregator" },
+    { name: "TechCrunch RSS", emoji: "\u26a1", bg: "#ecfeff", tag: "Tech news" },
+    { name: "BLS Public API", emoji: "\u{1f4ca}", bg: "#ecfdf5", tag: "Survival stats" },
+    { name: "SEC EDGAR", emoji: "\u{1f4cb}", bg: "#ecfdf5", tag: "SEC filings" },
+    { name: "GitHub Trends", emoji: "\u{1f419}", bg: "#eef2ff", tag: "Repo activity" },
+    { name: "GitHub Deep", emoji: "\u{1f50d}", bg: "#eef2ff", tag: "Deep analysis" },
+    { name: "Reddit Stream", emoji: "\u{1f916}", bg: "#faf5ff", tag: "Real-time posts" },
+    { name: "HN Live", emoji: "\u{1f7e0}", bg: "#faf5ff", tag: "Hacker News" },
+    { name: "arXiv Papers", emoji: "\u{1f4c4}", bg: "#fffbeb", tag: "Research papers" },
+    { name: "Product Hunt", emoji: "\u{1f680}", bg: "#fffbeb", tag: "Product launches" },
+    { name: "Stack Overflow", emoji: "\u{1f4bb}", bg: "#fffbeb", tag: "Dev trends" },
+    { name: "OpenCorporates", emoji: "\u{1f3db}\ufe0f", bg: "#fdf2f8", tag: "Company data" },
+    { name: "Patent Collector", emoji: "\u{1f4dc}", bg: "#fdf2f8", tag: "Patent filings" },
+    { name: "Regulatory", emoji: "\u2696\ufe0f", bg: "#fdf2f8", tag: "Regulations" },
+    { name: "Social Media", emoji: "\u{1f4f1}", bg: "#fef2f2", tag: "Social signals" },
+    { name: "Twitter", emoji: "\u{1f426}", bg: "#fef2f2", tag: "Tweets" },
+    { name: "Website Monitor", emoji: "\u{1f441}\ufe0f", bg: "#fef2f2", tag: "Site changes" },
+    { name: "Newsletter", emoji: "\u{1f4e7}", bg: "#ecfeff", tag: "Email digests" },
+    { name: "NPM/PyPI Trends", emoji: "\u{1f4e6}", bg: "#ecfeff", tag: "Package trends" },
+    { name: "Job Postings", emoji: "\u{1f4bc}", bg: "#ecfeff", tag: "Hiring data" },
+    { name: "Funding Events", emoji: "\u{1f4b8}", bg: "#ecfdf5", tag: "VC rounds" },
+    { name: "Reshoring PDF", emoji: "\u{1f4cb}", bg: "#ecfdf5", tag: "Gov reports" },
+  ];
+
+  function tagStyle(tag) {
+    if (tag === "Popular") return "background:#fefce8;color:#a16207;";
+    if (tag === "Live") return "background:#f0fdf4;color:#15803d;";
+    return "background:#f1f5f9;color:#64748b;";
+  }
+
+  function makeCard(ep, isPost) {
+    var lightBg = ep.color + "10";
+    var gradEnd = ep.color + "cc";
+    var testPath = ep.path.indexOf("{") >= 0 ? "" : ep.path.split("?")[0];
+    var resultId = ep.path.replace(/[\/{}]/g, "_").replace(/^_+|_+$/g, "") + "Result";
+    var clickAttr = testPath ? " data-href=\"" + testPath + "\" data-rid=\"" + resultId + "\"" : "";
+    var cursorCSS = testPath ? "cursor:pointer;" : "";
+    var curlHTML = ep.curl ? "<div style=\"margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px;font-family:monospace;font-size:10px;color:#64748b;white-space:pre-wrap;\">" + ep.curl + "</div>" : "";
+    var resultDiv = "<div id=\"" + resultId + "\" style=\"margin-top:8px;font-size:11px;color:" + ep.color + ";display:none;\"></div>";
+    var tagsHTML = "";
+    for (var i = 0; i < ep.tags.length; i++) {
+      if (i === 0) {
+        tagsHTML += "<span style=\"font-size:11px;color:#64748b;\">" + ep.tags[i] + "</span>";
+      } else {
+        tagsHTML += "<span style=\"margin-left:auto;" + tagStyle(ep.tags[i]) + "font-size:10px;padding:2px 6px;border-radius:4px;\">" + ep.tags[i] + "</span>";
+      }
+    }
+    return "<div class=\"ep-card\" style=\"background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;" + cursorCSS + "transition:all 0.2s;position:relative;overflow:hidden;\" " + clickAttr + ">" +
+      "<div style=\"position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg," + ep.color + "," + gradEnd + ");\"></div>" +
+      "<div style=\"display:flex;align-items:center;gap:8px;margin-bottom:8px;\">" +
+        "<span style=\"background:" + lightBg + ";color:" + ep.color + ";font-size:10px;font-weight:700;padding:3px 10px;border-radius:6px;\">" + (isPost ? "POST" : "GET") + "</span>" +
+        tagsHTML +
+      "</div>" +
+      "<div style=\"font-weight:700;font-size:14px;color:#1e293b;margin-bottom:2px;\">" + ep.emoji + " " + ep.name + "</div>" +
+      "<div style=\"font-family:monospace;font-size:12px;color:" + ep.color + ";background:" + lightBg + ";padding:4px 8px;border-radius:4px;margin-bottom:6px;\">" + ep.path + "</div>" +
+      "<div style=\"font-size:12px;color:#64748b;\">" + ep.desc + "</div>" +
+      curlHTML +
+      resultDiv +
+    "</div>";
+  }
+
+  var getHTML = "";
+  for (var i = 0; i < getEndpoints.length; i++) { getHTML += makeCard(getEndpoints[i], false); }
+  document.getElementById("getEndpointsGrid").innerHTML = getHTML;
+
+  var postHTML = "";
+  for (var i = 0; i < postEndpoints.length; i++) { postHTML += makeCard(postEndpoints[i], true); }
+  document.getElementById("postEndpointsGrid").innerHTML = postHTML;
+
+  var collHTML = "";
+  for (var i = 0; i < collectors.length; i++) {
+    var c = collectors[i];
+    collHTML += "<div style=\"background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;\">" +
+      "<div style=\"width:32px;height:32px;border-radius:8px;background:" + c.bg + ";display:flex;align-items:center;justify-content:center;font-size:16px;\">" + c.emoji + "</div>" +
+      "<div><div style=\"font-weight:600;font-size:12px;color:#1e293b;\">" + c.name + "</div><div style=\"font-size:10px;color:#64748b;\">" + c.tag + "</div></div>" +
+    "</div>";
+  }
+  document.getElementById("collectorsGrid").innerHTML = collHTML;
+
+  // Attach click handlers to testable cards
+  var cards = document.querySelectorAll(".ep-card[data-href]");
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].addEventListener("click", (function(card) {
+      return function() {
+        var href = card.getAttribute("data-href");
+        var rid = card.getAttribute("data-rid");
+        var el = document.getElementById(rid);
+        if (!el) return;
+        el.style.display = "block";
+        el.textContent = "\u23f3 Fetching...";
+        fetch(href).then(function(r){ return r.json(); }).then(function(data){
+          var s = JSON.stringify(data);
+          el.textContent = "\u2705 " + (s.length > 200 ? s.substring(0, 200) + "..." : s);
+        }).catch(function(e){
+          el.textContent = "\u274c Error: " + e.message;
+        });
+      };
+    })(cards[i]));
+  }
+}
+
+async function testEndpoint(path, resultId) {
+  var el = document.getElementById(resultId);
+  if (!el) return;
+  el.style.display = 'block';
+  el.innerHTML = '⏳ Fetching...';
+  try {
+    var r = await fetch(path);
+    var data = await r.json();
+    var str = JSON.stringify(data, null, 0);
+    el.innerHTML = '✅ ' + (str.length > 200 ? str.substring(0, 200) + '...' : str);
+  } catch(e) {
+    el.innerHTML = '❌ Error: ' + e.message;
+  }
+}
+
+function renderAgentGrid() {
+  const grid = document.getElementById('agentGrid');
+  grid.innerHTML = agentCategories.map(cat => `
+    <div class="module-card">
+      <div class="mc-header">
+        <div class="mc-icon" style="background:${cat.color}22;">${cat.icon}</div>
+        <div>
+          <div class="mc-name">${cat.name}</div>
+          <div class="mc-count">${cat.agents.length} agent${cat.agents.length > 1 ? 's' : ''}</div>
+        </div>
+      </div>
+      <div class="mc-desc" style="display:flex;flex-wrap:wrap;gap:4px;">
+        ${cat.agents.slice(0, 6).map(a => `<span class="agent-tag" style="background:${cat.color}18;color:${cat.color}">${a.replace(/_/g, ' ').replace(/ agent$/, '')}</span>`).join('')}
+        ${cat.agents.length > 6 ? `<span class="agent-tag" style="background:${cat.color}18;color:${cat.color}">+${cat.agents.length - 6} more</span>` : ''}
+      </div>
+      <div class="mc-bar" style="background:${cat.color};"></div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════
+// REPORT PAGE
+// ═══════════════════════════════════════════
+async function loadReport() {
+  const el = document.getElementById('reportContent');
+  try {
+    const resp = await fetch('/api/stats');
+    const stats = await resp.json();
+    el.innerHTML = `
+      <h1>Research Report: Failed Startups & Revival-Ready Manufacturing Industries</h1>
+      <hr />
+      <h2>Database Statistics</h2>
+      <table>
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Total Failed Startups</td><td><strong>${stats.failed_startups}</strong></td></tr>
+          <tr><td>News Articles</td><td><strong>${stats.news_articles}</strong></td></tr>
+          <tr><td>BLS Data Points</td><td><strong>${stats.bls_survival_rates}</strong></td></tr>
+          <tr><td>Revival Industries</td><td><strong>${stats.revival_industries}</strong></td></tr>
+          <tr><td>Geographic Hotspots</td><td><strong>${stats.geographic_hotspots}</strong></td></tr>
+        </tbody>
+      </table>
+      <hr />
+      <h2>Report Sections</h2>
+      <p>The full research report contains analysis of failed startups across 6 regions, manufacturing failure patterns, revival opportunities, and actionable insights.</p>
+      <ul>
+        <li><strong>Part 1A:</strong> United States & Global — ${Math.round(stats.failed_startups * 0.64)} tracked startups</li>
+        <li><strong>Part 1B:</strong> India — Startup failures in the Indian ecosystem</li>
+        <li><strong>Part 1C:</strong> China — EV and semiconductor manufacturing failures</li>
+        <li><strong>Part 1D:</strong> Europe — Quick commerce and battery failures</li>
+        <li><strong>Part 1E:</strong> Africa — Emerging market startup failures</li>
+        <li><strong>Part 1F:</strong> Manufacturing failure rate statistics &amp; patterns</li>
+        <li><strong>Part 2:</strong> Closed manufacturing units with revival potential</li>
+        <li><strong>Part 3:</strong> Cross-reference — Where failed ideas meet manufacturing revival</li>
+        <li><strong>Part 4:</strong> Actionable opportunities based on research</li>
+      </ul>
+      <hr />
+      <h2>Top Failed Startups (by Funding)</h2>
+      <p>Use the <code>/api/startups</code> endpoint to explore the full database of ${stats.failed_startups} failed startups with filters for sector, region, year, and funding.</p>
+      <hr />
+      <h2>News Monitoring</h2>
+      <p>${stats.news_articles} articles collected from Google News and TechCrunch RSS feeds. ${stats.news_articles > 400 ? 'Over 400' : stats.news_articles} articles tracked covering manufacturing and startup failures.</p>
+      <hr />
+      <p style="font-size:12px;color:var(--text-dim);">Report generated from the Startup Research automated data collection system.</p>
+    `;
+  } catch(e) {
+    el.innerHTML = '<p style="color:var(--red)">Failed to load report data. Make sure the API server is running.</p>';
+  }
+}
+
+// ═══════════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════════
+function initCharts() {
+  Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+  Chart.defaults.color = '#94a3b8';
+  Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0,0,0,0.9)';
+  Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.plugins.tooltip.cornerRadius = 8;
+  Chart.defaults.animation.duration = 800;
+
+  const gridColor = 'rgba(42,52,84,0.5)';
+
+  // Category chart
+  new Chart(document.getElementById('categoryChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ["Unknown", "No Market Need", "Ran Out of Cash", "Poor Product", "Capital Intensity", "No Business Model", "Pilot-to-Scale Gap", "Governance"],
+      datasets: [{ data: [108, 10, 10, 7, 5, 5, 5, 4],
+        backgroundColor: ['#6366f1','#ef4444','#10b981','#f59e0b','#a855f7','#f97316','#06b6d4','#ec4899'],
+        borderWidth: 0
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 11 } } } } }
+  });
+
+  // Year chart
+  new Chart(document.getElementById('yearChart'), {
+    type: 'bar',
+    data: {
+      labels: ["2016", "2017", "2018", "2019", "2020", "2023", "2024", "2025"],
+      datasets: [{ label: 'Startups Failed', data: [24, 13, 4, 12, 3, 3, 37, 6],
+        backgroundColor: '#6366f1', borderRadius: 4, maxBarThickness: 32
+      }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } } }
+  });
+
+  // Region chart
+  new Chart(document.getElementById('regionChart'), {
+    type: 'bar',
+    data: {
+      labels: ["US & Global", "Europe", "India", "China", "Africa", "Other", "Asia-Pacific"],
+      datasets: [{ label: 'Startups', data: [104, 22, 19, 7, 4, 4, 3],
+        backgroundColor: '#06b6d4', borderRadius: 4, maxBarThickness: 20
+      }]
+    },
+    options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: gridColor } }, y: { grid: { display: false } } } }
+  });
+
+  // Survival chart
+  new Chart(document.getElementById('survivalChart'), {
+    type: 'line',
+    data: {
+      labels: ["1994","1995","1996","1997","1998","1999","2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020","2021","2022","2023","2024"],
+      datasets: [
+        { label: '1-Year Survival %', data: [82.8,82.4,80.8,81.4,82.2,82.6,81.8,77.8,79.4,80.4,82.1,83.8,82.8,82.1,77.4,76.6,80.7,81.3,82.1,82.6,87.4,89.8,88.6,91.1,84.2,82.3,86.2,83.2,83.0,82.0,80.1], borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', fill: true, tension: 0.3, pointRadius: 2 },
+        { label: '5-Year Survival %', data: [53.0,52.4,50.9,49.7,48.4,48.3,47.3,49.5,51.1,52.3,51.6,51.2,49.4,48.8,48.1,50.5,54.0,55.2,57.4,57.7,60.4,61.0,61.3,61.7,57.6,57.4,58.4], borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', fill: true, tension: 0.3, pointRadius: 2 }
+      ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12 } } }, scales: { y: { grid: { color: gridColor } }, x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } } } }
+  });
+}
+
+// ═══════════════════════════════════════════
+// BACK TO TOP
+// ═══════════════════════════════════════════
+(function() {
+  var btn = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() { btn.classList.toggle('visible', window.scrollY > 400); });
+  btn.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
 })();
-</script>
 
+// ═══════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════
+document.getElementById('globalSearch').addEventListener('input', function(e) {
+  const q = e.target.value.toLowerCase();
+  if (!q) return;
+  // Quick search: navigate to matching page
+  const pages = { 'agent': 'agents', 'arch': 'architecture', 'api': 'data', 'collector': 'data', 'report': 'report', 'chart': 'overview' };
+  for (const [key, page] of Object.entries(pages)) {
+    if (q.includes(key)) { showPage(page); return; }
+  }
+});
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  renderDataPage();
+  renderAgentGrid();
+  initCharts();
+  loadDashboard();
+  loadReport();
+});
+</script>
 </body>
 </html>

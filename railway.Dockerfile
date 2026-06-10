@@ -20,6 +20,9 @@ RUN pip install --no-cache-dir -r requirements.txt \
 # Copy project files
 COPY . .
 
+# Ensure dashboard HTML is included (site/ may be gitignored)
+COPY site/index.html /app/site/index.html
+
 # Make scripts executable
 RUN chmod +x scripts/railway-start.sh
 

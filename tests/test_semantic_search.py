@@ -17,6 +17,7 @@ import pytest
 class TestVectorStore:
     def test_init_defaults(self):
         from db.vector_store import VectorStore
+
         store = VectorStore()
         assert store._url == "http://localhost:6333"
         assert store._collection == "startup_signals"
@@ -25,18 +26,21 @@ class TestVectorStore:
 
     def test_init_custom_config(self):
         from db.vector_store import VectorStore
+
         store = VectorStore({"url": "http://custom:6333", "collection_name": "custom"})
         assert store._url == "http://custom:6333"
         assert store._collection == "custom"
 
     def test_connect_import_error(self):
         from db.vector_store import VectorStore
+
         store = VectorStore()
         with patch.dict("sys.modules", {"qdrant_client": None}):
             assert store.connect() is False
 
     def test_connect_success(self):
         from db.vector_store import VectorStore
+
         store = VectorStore()
 
         # Simulate successful connection since qdrant_client may not be installed
@@ -46,12 +50,14 @@ class TestVectorStore:
 
     def test_search_disconnected(self):
         from db.vector_store import VectorStore
+
         store = VectorStore()
         results = store.search([0.0] * 384)
         assert results == []
 
     def test_search_by_text(self):
         from db.vector_store import VectorStore
+
         store = VectorStore()
 
         mock_gen = MagicMock()
@@ -68,6 +74,7 @@ class TestVectorStore:
 class TestSearchIndex:
     def test_init_defaults(self):
         from db.search_index import SearchIndex
+
         idx = SearchIndex()
         assert idx._url == "http://localhost:9200"
         assert idx._index == "startup_research"
@@ -75,12 +82,14 @@ class TestSearchIndex:
 
     def test_connect_import_error(self):
         from db.search_index import SearchIndex
+
         idx = SearchIndex()
         with patch.dict("sys.modules", {"elasticsearch": None}):
             assert idx.connect() is False
 
     def test_search_disconnected(self):
         from db.search_index import SearchIndex
+
         idx = SearchIndex()
         results = idx.search("test query")
         assert results == []
@@ -92,6 +101,7 @@ class TestSearchIndex:
 class TestDataClasses:
     def test_search_result_to_dict(self):
         from db.vector_store import SearchResult
+
         r = SearchResult(id="123", score=0.95, payload={"title": "Test"})
         d = r.to_dict()
         assert d["id"] == "123"
@@ -100,13 +110,20 @@ class TestDataClasses:
 
     def test_search_hit_to_dict(self):
         from db.search_index import SearchHit
-        h = SearchHit(id="456", score=8.5, source={"title": "Test"}, highlights={"title": ["<em>Test</em>"]})
+
+        h = SearchHit(
+            id="456",
+            score=8.5,
+            source={"title": "Test"},
+            highlights={"title": ["<em>Test</em>"]},
+        )
         d = h.to_dict()
         assert d["id"] == "456"
         assert d["highlights"]["title"][0] == "<em>Test</em>"
 
     def test_hybrid_result_to_dict(self):
         from db.search_index import HybridResult
+
         h = HybridResult(id="789", score=0.85, bm25_score=5.0, vector_score=0.92)
         d = h.to_dict()
         assert d["bm25_score"] == 5.0
@@ -119,12 +136,14 @@ class TestDataClasses:
 class TestEmbeddingGenerator:
     def test_init_does_not_load(self):
         from nlp.embedding_generator import EmbeddingGenerator
+
         gen = EmbeddingGenerator()
         assert not gen.is_loaded
         assert gen.dimension == 384
 
     def test_load_import_error(self):
         from nlp.embedding_generator import EmbeddingGenerator
+
         gen = EmbeddingGenerator()
         with patch.dict("sys.modules", {"sentence_transformers": None}):
             with pytest.raises(Exception):

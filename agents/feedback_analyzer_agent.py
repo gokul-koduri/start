@@ -56,7 +56,9 @@ class FeedbackAnalyzerAgent(BaseAgent):
                    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
                    GROUP BY rating ORDER BY rating"""
             )
-            rating_distribution = {str(r["rating"]): r["count"] for r in cursor.fetchall()}
+            rating_distribution = {
+                str(r["rating"]): r["count"] for r in cursor.fetchall()
+            }
 
             cursor.execute(
                 """SELECT COUNT(*) as cnt, AVG(rating) as avg
@@ -64,7 +66,9 @@ class FeedbackAnalyzerAgent(BaseAgent):
                    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"""
             )
             rating_row = cursor.fetchone()
-            avg_rating = float(rating_row["avg"]) if rating_row and rating_row["avg"] else 0.0
+            avg_rating = (
+                float(rating_row["avg"]) if rating_row and rating_row["avg"] else 0.0
+            )
             rating_count = rating_row["cnt"] if rating_row else 0
 
             # --- Score calibration gaps (user_score differs by >20 from AI score) ---

@@ -1,0 +1,53 @@
+name: Spike / Research
+description: Time-boxed research or exploration task
+labels: ["type/spike"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Research Question
+      description: What do we need to learn or decide?
+      placeholder: "Should we use Dagster or Prefect for pipeline orchestration?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context / Background
+      description: Why is this research needed? What decision depends on it?
+      placeholder: "We need an orchestrator for Phase 6. Dagster has native dbt support but Prefect has simpler API."
+    validations:
+      required: true
+
+  - type: textarea
+    id: approach
+    attributes:
+      label: Investigation Approach
+      description: How will you investigate? What will you build/compare?
+      placeholder: |
+        1. Build a prototype pipeline with each tool
+        2. Compare: ease of setup, scheduling, monitoring, community
+        3. Document ADR with recommendation
+
+  - type: dropdown
+    id: timebox
+    attributes:
+      label: Time Box
+      options:
+        - 2 hours
+        - 4 hours
+        - 1 day
+        - 2 days
+    validations:
+      required: true
+
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Expected Deliverables
+      description: What should come out of this spike?
+      placeholder: |
+        - ADR document (docs/adr/ADR-XXX.md)
+        - Working prototype in spike/ branch
+        - Recommendation in sprint review

@@ -24,6 +24,7 @@ class TestCompetitiveLandscapeAgent:
     def agent(self):
         """Create a CompetitiveLandscapeAgent instance."""
         from agents.competitive_landscape_agent import CompetitiveLandscapeAgent
+
         return CompetitiveLandscapeAgent(config={}, dry_run=False)
 
     def test_agent_name(self, agent):
@@ -42,7 +43,7 @@ class TestCompetitiveLandscapeAgent:
                 "sector": "SaaS",
                 "competitor_count": 45,
                 "avg_funding": 15_000_000,
-                "well_funded_count": 20
+                "well_funded_count": 20,
             }
         ]
 
@@ -51,13 +52,16 @@ class TestCompetitiveLandscapeAgent:
 
         mock_connection.cursor.side_effect = [
             sector_cursor,  # sector query
-            top_cursor,     # top competitors
+            top_cursor,  # top competitors
             sector_cursor,  # insert/delete
-            sector_cursor   # final
+            sector_cursor,  # final
         ]
 
-        with patch("agents.competitive_landscape_agent.get_connection", return_value=mock_connection):
-            with patch("agents.competitive_landscape_agent.schema") as mock_schema:
+        with patch(
+            "agents.competitive_landscape_agent.get_connection",
+            return_value=mock_connection,
+        ):
+            with patch("agents.competitive_landscape_agent.schema"):
                 result = agent.execute()
 
         assert result.status == "success"
@@ -68,7 +72,12 @@ class TestCompetitiveLandscapeAgent:
         # Fragmented market (50+ competitors)
         sector_cursor = MagicMock()
         sector_cursor.fetchall.return_value = [
-            {"sector": "SaaS", "competitor_count": 60, "avg_funding": 10_000_000, "well_funded_count": 30}
+            {
+                "sector": "SaaS",
+                "competitor_count": 60,
+                "avg_funding": 10_000_000,
+                "well_funded_count": 30,
+            }
         ]
 
         top_cursor = MagicMock()
@@ -78,10 +87,13 @@ class TestCompetitiveLandscapeAgent:
             sector_cursor,
             top_cursor,
             sector_cursor,
-            sector_cursor
+            sector_cursor,
         ]
 
-        with patch("agents.competitive_landscape_agent.get_connection", return_value=mock_connection):
+        with patch(
+            "agents.competitive_landscape_agent.get_connection",
+            return_value=mock_connection,
+        ):
             with patch("agents.competitive_landscape_agent.schema"):
                 result = agent.execute()
 
@@ -91,7 +103,12 @@ class TestCompetitiveLandscapeAgent:
         """Test high entry barriers for hard sectors."""
         sector_cursor = MagicMock()
         sector_cursor.fetchall.return_value = [
-            {"sector": "Semiconductors", "competitor_count": 15, "avg_funding": 50_000_000, "well_funded_count": 10}
+            {
+                "sector": "Semiconductors",
+                "competitor_count": 15,
+                "avg_funding": 50_000_000,
+                "well_funded_count": 10,
+            }
         ]
 
         top_cursor = MagicMock()
@@ -101,10 +118,13 @@ class TestCompetitiveLandscapeAgent:
             sector_cursor,
             top_cursor,
             sector_cursor,
-            sector_cursor
+            sector_cursor,
         ]
 
-        with patch("agents.competitive_landscape_agent.get_connection", return_value=mock_connection):
+        with patch(
+            "agents.competitive_landscape_agent.get_connection",
+            return_value=mock_connection,
+        ):
             with patch("agents.competitive_landscape_agent.schema"):
                 result = agent.execute()
 
@@ -114,7 +134,12 @@ class TestCompetitiveLandscapeAgent:
         """Test high rivalry with many competitors and funding."""
         sector_cursor = MagicMock()
         sector_cursor.fetchall.return_value = [
-            {"sector": "Fintech", "competitor_count": 55, "avg_funding": 20_000_000, "well_funded_count": 25}
+            {
+                "sector": "Fintech",
+                "competitor_count": 55,
+                "avg_funding": 20_000_000,
+                "well_funded_count": 25,
+            }
         ]
 
         top_cursor = MagicMock()
@@ -124,10 +149,13 @@ class TestCompetitiveLandscapeAgent:
             sector_cursor,
             top_cursor,
             sector_cursor,
-            sector_cursor
+            sector_cursor,
         ]
 
-        with patch("agents.competitive_landscape_agent.get_connection", return_value=mock_connection):
+        with patch(
+            "agents.competitive_landscape_agent.get_connection",
+            return_value=mock_connection,
+        ):
             with patch("agents.competitive_landscape_agent.schema"):
                 result = agent.execute()
 
@@ -138,12 +166,12 @@ class TestCompetitiveLandscapeAgent:
         sector_cursor = MagicMock()
         sector_cursor.fetchall.return_value = []
 
-        mock_connection.cursor.side_effect = [
-            sector_cursor,
-            sector_cursor
-        ]
+        mock_connection.cursor.side_effect = [sector_cursor, sector_cursor]
 
-        with patch("agents.competitive_landscape_agent.get_connection", return_value=mock_connection):
+        with patch(
+            "agents.competitive_landscape_agent.get_connection",
+            return_value=mock_connection,
+        ):
             with patch("agents.competitive_landscape_agent.schema"):
                 result = agent.execute()
 
@@ -154,7 +182,12 @@ class TestCompetitiveLandscapeAgent:
         """Test database insert and commit are called."""
         sector_cursor = MagicMock()
         sector_cursor.fetchall.return_value = [
-            {"sector": "AI", "competitor_count": 30, "avg_funding": 12_000_000, "well_funded_count": 15}
+            {
+                "sector": "AI",
+                "competitor_count": 30,
+                "avg_funding": 12_000_000,
+                "well_funded_count": 15,
+            }
         ]
 
         top_cursor = MagicMock()
@@ -164,12 +197,17 @@ class TestCompetitiveLandscapeAgent:
             sector_cursor,
             top_cursor,
             sector_cursor,
-            sector_cursor
+            sector_cursor,
         ]
 
-        with patch("agents.competitive_landscape_agent.get_connection", return_value=mock_connection):
+        with patch(
+            "agents.competitive_landscape_agent.get_connection",
+            return_value=mock_connection,
+        ):
             with patch("agents.competitive_landscape_agent.schema"):
-                result = agent.execute()
+                agent.execute()
 
-        sector_cursor.execute.assert_any_call("DELETE FROM analysis_competitive_landscape")
+        sector_cursor.execute.assert_any_call(
+            "DELETE FROM analysis_competitive_landscape"
+        )
         mock_connection.commit.assert_called()

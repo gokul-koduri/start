@@ -1,6 +1,5 @@
 """Tests for agents/timing_agent.py"""
 
-
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -23,6 +22,7 @@ class TestTimingAgent:
     @pytest.fixture
     def agent(self):
         from agents.timing_agent import TimingAgent
+
         return TimingAgent(config={}, dry_run=False)
 
     def test_agent_name(self, agent):
@@ -33,8 +33,8 @@ class TestTimingAgent:
         cursor.fetchall.return_value = [{"sector": "AI", "count": 10}]
         mock_connection.cursor.side_effect = [cursor, cursor, cursor]
 
-        with patch(f"agents.timing_agent.get_connection", return_value=mock_connection):
-            with patch(f"agents.timing_agent.schema"):
+        with patch("agents.timing_agent.get_connection", return_value=mock_connection):
+            with patch("agents.timing_agent.schema"):
                 result = agent.execute()
 
         assert result.status == "success"
@@ -44,8 +44,8 @@ class TestTimingAgent:
         cursor.fetchall.return_value = []
         mock_connection.cursor.side_effect = [cursor, cursor, cursor]
 
-        with patch(f"agents.timing_agent.get_connection", return_value=mock_connection):
-            with patch(f"agents.timing_agent.schema"):
+        with patch("agents.timing_agent.get_connection", return_value=mock_connection):
+            with patch("agents.timing_agent.schema"):
                 result = agent.execute()
 
         assert result.status == "success"

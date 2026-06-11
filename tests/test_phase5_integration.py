@@ -122,9 +122,10 @@ class TestPhase5AgentsIntegration:
     def test_schema_version_is_15(self):
         """Test that schema version has been bumped to 15 or later."""
         schema_path = Path(__file__).parent.parent / "db" / "schema.py"
-        schema_content = schema_path.read_text()
+        schema_path.read_text()
         # Schema version should be at least 15 (any later version is fine)
         from db.schema import get_schema_version
+
         assert get_schema_version() >= 15
 
     def test_all_analysis_tables_exist(self):
@@ -178,4 +179,6 @@ class TestPhase5AgentsIntegration:
 
         # Count how many are registered
         registered_count = sum(1 for name in phase5_agents if name in AGENT_REGISTRY)
-        assert registered_count == 16, f"Expected 16 Phase 5 agents, found {registered_count}"
+        assert (
+            registered_count == 16
+        ), f"Expected 16 Phase 5 agents, found {registered_count}"

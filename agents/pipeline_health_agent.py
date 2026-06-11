@@ -1,7 +1,6 @@
 """Pipeline health agent — monitors pipeline execution."""
 
 import logging
-from typing import Dict
 from agents.base import BaseAgent, AgentResult
 from datetime import datetime, timezone, timedelta
 
@@ -31,12 +30,18 @@ class PipelineHealthAgent(BaseAgent):
                    FROM agent_runs
                    WHERE started_at >= %s
                    GROUP BY status""",
-                ((datetime.now(timezone.utc) - timedelta(hours=24)).isoformat(),)
+                ((datetime.now(timezone.utc) - timedelta(hours=24)).isoformat(),),
             )
-            status_counts = {dict(r)["status"]: dict(r)["cnt"] for r in cursor.fetchall()}
+            status_counts = {
+                dict(r)["status"]: dict(r)["cnt"] for r in cursor.fetchall()
+            }
 
             total_runs = sum(status_counts.values())
-            success_rate = (status_counts.get("success", 0) / total_runs * 100) if total_runs > 0 else 0
+            success_rate = (
+                (status_counts.get("success", 0) / total_runs * 100)
+                if total_runs > 0
+                else 0
+            )
 
             cursor.close()
             conn.close()

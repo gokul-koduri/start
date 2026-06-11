@@ -8,6 +8,7 @@
 
 **Overall progress**: 100% built (6 of 6 phases complete)
 **Current sprint**: Sprint 1 — Launch MVP (Parallel plan: 12 hrs wall-clock)
+**Agile workflow**: [AGILE_WORKFLOW.md](AGILE_WORKFLOW.md) — ceremonies, DoD, velocity tracking
 **Bus factor**: 1 (Koduri Gokul, 40/40 commits)
 **Core mission**: Reveal why startups thrive, how they overcome challenges, and where growth opportunities are
 **Vision**: [`docs/product-vision.md`](docs/product-vision.md) — The user's experience
@@ -100,6 +101,15 @@
 ```bash
 # Start everything
 docker compose up -d
+
+# Agile ceremonies
+make sprint-status    # Current sprint status
+make sprint-plan      # Sprint planning
+make standup          # Daily standup
+make sprint-review    # Sprint review
+make sprint-retro     # Retrospective
+make sprint-gate      # Gate check (pass/fail)
+make sprint-metrics   # Velocity & metrics
 
 # Run AI dev team agents
 python run_agent.py --agent product_manager

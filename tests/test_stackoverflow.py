@@ -27,8 +27,8 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.stackoverflow_collector import StackOverflowCollector
-from collectors.base import CollectionResult
+from collectors.stackoverflow_collector import StackOverflowCollector  # noqa: E402
+from collectors.base import CollectionResult  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -38,24 +38,28 @@ for key, orig in _saved_db_modules.items():
         sys.modules.pop(key, None)
 
 
-def _make_so_item(question_id=78901234,
-                  title="How to deploy ML model on Kubernetes?",
-                  body="<p>I'm trying to deploy...</p>",
-                  score=42,
-                  answer_count=5,
-                  view_count=3200,
-                  tags=None,
-                  author="devuser",
-                  reputation=1500,
-                  is_answered=True,
-                  bounty_amount=0,
-                  link="https://stackoverflow.com/questions/78901234",
-                  creation_date=None):
+def _make_so_item(
+    question_id=78901234,
+    title="How to deploy ML model on Kubernetes?",
+    body="<p>I'm trying to deploy...</p>",
+    score=42,
+    answer_count=5,
+    view_count=3200,
+    tags=None,
+    author="devuser",
+    reputation=1500,
+    is_answered=True,
+    bounty_amount=0,
+    link="https://stackoverflow.com/questions/78901234",
+    creation_date=None,
+):
     """Build a mock Stack Exchange API item."""
     if tags is None:
         tags = ["kubernetes", "machine-learning", "docker"]
     if creation_date is None:
-        creation_date = int((datetime.now(timezone.utc) - timedelta(hours=12)).timestamp())
+        creation_date = int(
+            (datetime.now(timezone.utc) - timedelta(hours=12)).timestamp()
+        )
     return {
         "question_id": question_id,
         "title": title,
@@ -74,23 +78,27 @@ def _make_so_item(question_id=78901234,
 
 def _make_api_response(items=None, quota_remaining=298):
     """Build a mock Stack Exchange API JSON response."""
-    return json.dumps({
-        "items": items or [],
-        "has_more": False,
-        "quota_remaining": quota_remaining,
-    })
+    return json.dumps(
+        {
+            "items": items or [],
+            "has_more": False,
+            "quota_remaining": quota_remaining,
+        }
+    )
 
 
-def _make_so_post(title="How to deploy ML model on Kubernetes?",
-                  post_id=78901234,
-                  score=42,
-                  answer_count=5,
-                  tags=None,
-                  is_answered=True,
-                  bounty_amount=0,
-                  created_at=None,
-                  author_name="devuser",
-                  link="https://stackoverflow.com/questions/78901234"):
+def _make_so_post(
+    title="How to deploy ML model on Kubernetes?",
+    post_id=78901234,
+    score=42,
+    answer_count=5,
+    tags=None,
+    is_answered=True,
+    bounty_amount=0,
+    created_at=None,
+    author_name="devuser",
+    link="https://stackoverflow.com/questions/78901234",
+):
     """Build a parsed post dict matching _parse_item output."""
     if tags is None:
         tags = ["kubernetes", "machine-learning", "docker"]
@@ -163,7 +171,8 @@ class TestStackOverflowCollectorScoring:
         post = _make_so_post(
             score=60,
             answer_count=6,
-            created_at=datetime.now(timezone.utc) - timedelta(hours=6))
+            created_at=datetime.now(timezone.utc) - timedelta(hours=6),
+        )
         s = c._compute_score(post)
         # recency(<7d +35) + votes(>50 +25) + answered(+10) + tags(+10) + answers>5(+10) = 90
         assert s == 90.0
@@ -174,7 +183,8 @@ class TestStackOverflowCollectorScoring:
             score=2,
             is_answered=False,
             tags=["random", "unrelated"],
-            created_at=datetime.now(timezone.utc) - timedelta(days=120))
+            created_at=datetime.now(timezone.utc) - timedelta(days=120),
+        )
         s = c._compute_score(post)
         assert s == 0.0
 
@@ -186,7 +196,8 @@ class TestStackOverflowCollectorScoring:
             answer_count=0,
             is_answered=False,
             tags=["random"],
-            created_at=datetime.now(timezone.utc) - timedelta(days=120))
+            created_at=datetime.now(timezone.utc) - timedelta(days=120),
+        )
         s = c._compute_score(post)
         # bounty(+20) = 20
         assert s == 20.0
@@ -198,7 +209,8 @@ class TestStackOverflowCollectorScoring:
             answer_count=0,
             tags=["random"],
             bounty_amount=0,
-            created_at=datetime.now(timezone.utc) - timedelta(days=120))
+            created_at=datetime.now(timezone.utc) - timedelta(days=120),
+        )
         s = c._compute_score(post)
         # answered(+10) = 10
         assert s == 10.0
@@ -210,7 +222,8 @@ class TestStackOverflowCollectorScoring:
             is_answered=False,
             tags=["random"],
             bounty_amount=0,
-            created_at=datetime.now(timezone.utc) - timedelta(days=120))
+            created_at=datetime.now(timezone.utc) - timedelta(days=120),
+        )
         s = c._compute_score(post)
         # votes(>20 +15) = 15
         assert s == 15.0
@@ -221,7 +234,8 @@ class TestStackOverflowCollectorScoring:
             score=100,
             bounty_amount=200,
             created_at=datetime.now(timezone.utc) - timedelta(hours=1),
-            tags=["saas", "kubernetes"])
+            tags=["saas", "kubernetes"],
+        )
         s = c._compute_score(post)
         assert s <= 100.0
 
@@ -340,12 +354,16 @@ class TestStackOverflowCollectorIntegration:
         session = _make_mock_session([resp_json])
         mock_get_session.return_value = session
 
-        c = StackOverflowCollector(config={
-            "stackoverflow": {
-                "search_queries": [{"terms": "SaaS scaling", "tags": ["saas"], "min_score": 5}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = StackOverflowCollector(
+            config={
+                "stackoverflow": {
+                    "search_queries": [
+                        {"terms": "SaaS scaling", "tags": ["saas"], "min_score": 5}
+                    ],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -362,12 +380,16 @@ class TestStackOverflowCollectorIntegration:
         session = _make_mock_session([resp_json])
         mock_get_session.return_value = session
 
-        c = StackOverflowCollector(config={
-            "stackoverflow": {
-                "search_queries": [{"terms": "nonexistent", "tags": [], "min_score": 100}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = StackOverflowCollector(
+            config={
+                "stackoverflow": {
+                    "search_queries": [
+                        {"terms": "nonexistent", "tags": [], "min_score": 100}
+                    ],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -382,21 +404,25 @@ class TestStackOverflowCollectorIntegration:
     def test_collect_multiple_queries(self, mock_get_session, mock_time):
         item1 = _make_so_item(question_id=1, title="Q1")
         item2 = _make_so_item(question_id=2, title="Q2")
-        session = _make_mock_session([
-            _make_api_response([item1]),
-            _make_api_response([item2]),
-        ])
+        session = _make_mock_session(
+            [
+                _make_api_response([item1]),
+                _make_api_response([item2]),
+            ]
+        )
         mock_get_session.return_value = session
 
-        c = StackOverflowCollector(config={
-            "stackoverflow": {
-                "search_queries": [
-                    {"terms": "query1", "tags": [], "min_score": 0},
-                    {"terms": "query2", "tags": [], "min_score": 0},
-                ],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = StackOverflowCollector(
+            config={
+                "stackoverflow": {
+                    "search_queries": [
+                        {"terms": "query1", "tags": [], "min_score": 0},
+                        {"terms": "query2", "tags": [], "min_score": 0},
+                    ],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -412,12 +438,14 @@ class TestStackOverflowCollectorIntegration:
         session = _make_mock_session([_make_api_response([item])])
         mock_get_session.return_value = session
 
-        c = StackOverflowCollector(config={
-            "stackoverflow": {
-                "search_queries": [{"terms": "test", "tags": [], "min_score": 0}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = StackOverflowCollector(
+            config={
+                "stackoverflow": {
+                    "search_queries": [{"terms": "test", "tags": [], "min_score": 0}],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         call_count = {"n": 0}
 

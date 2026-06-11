@@ -1,7 +1,6 @@
 """Cost tracking agent — tracks API costs."""
 
 import logging
-from typing import Dict
 from agents.base import BaseAgent, AgentResult
 
 _logger = logging.getLogger(__name__)

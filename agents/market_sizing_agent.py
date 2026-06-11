@@ -102,18 +102,20 @@ class MarketSizingAgent(BaseAgent):
             else:
                 growth_rate = 0.08
 
-            market_estimates.append({
-                "sector": sector,
-                "market_size_usd": estimated_market_size,
-                "growth_rate": growth_rate,
-                "confidence_score": confidence,
-                "data_sources": {
-                    "failed_startups_count": failure_count,
-                    "total_funding_analyzed": total_funding,
-                    "multiplier_used": multiplier
-                },
-                "methodology": "funding_multiplier"
-            })
+            market_estimates.append(
+                {
+                    "sector": sector,
+                    "market_size_usd": estimated_market_size,
+                    "growth_rate": growth_rate,
+                    "confidence_score": confidence,
+                    "data_sources": {
+                        "failed_startups_count": failure_count,
+                        "total_funding_analyzed": total_funding,
+                        "multiplier_used": multiplier,
+                    },
+                    "methodology": "funding_multiplier",
+                }
+            )
 
         insights["market_estimates"] = market_estimates
 
@@ -135,16 +137,19 @@ class MarketSizingAgent(BaseAgent):
                     json.dumps(estimate["data_sources"]),
                     estimate["methodology"],
                     datetime.now(timezone.utc).isoformat(),
-                    estimate["data_sources"].get("failed_startups_count", 0)
-                )
+                    estimate["data_sources"].get("failed_startups_count", 0),
+                ),
             )
 
         conn.commit()
         cursor.close()
         conn.close()
 
-        _logger.info("MarketSizingAgent: Analyzed %d sectors, estimated %d market sizes",
-                     len(sector_failures), len(market_estimates))
+        _logger.info(
+            "MarketSizingAgent: Analyzed %d sectors, estimated %d market sizes",
+            len(sector_failures),
+            len(market_estimates),
+        )
 
         return AgentResult(
             agent_name=self.name,
@@ -154,6 +159,7 @@ class MarketSizingAgent(BaseAgent):
                 "market_estimates": len(market_estimates),
                 "records_affected": len(market_estimates),
                 "top_insight": f"Largest market: {market_estimates[0]['sector']} (${market_estimates[0]['market_size_usd']:,.0f})"
-                    if market_estimates else "No data",
+                if market_estimates
+                else "No data",
             },
         )

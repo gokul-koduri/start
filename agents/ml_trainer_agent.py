@@ -39,28 +39,74 @@ FEATURE_COLUMNS = [
 
 # Sector encoding — map sectors to numeric codes based on risk rank
 _SECTOR_ENCODING = {
-    "Cybersecurity": 1, "SaaS": 2, "AI/ML": 3, "Gaming": 4, "Fintech": 5,
-    "Biotech": 6, "E-commerce": 7, "Healthtech": 8, "Travel": 9, "PropTech": 10,
-    "Food Tech": 11, "Robotics": 12, "Construction": 13, "Social Media": 14,
-    "EdTech": 15, "3D Printing": 16, "Micro-mobility": 17, "EV/Automotive": 18,
-    "Battery Manufacturing": 19, "Crypto/Blockchain": 20,
+    "Cybersecurity": 1,
+    "SaaS": 2,
+    "AI/ML": 3,
+    "Gaming": 4,
+    "Fintech": 5,
+    "Biotech": 6,
+    "E-commerce": 7,
+    "Healthtech": 8,
+    "Travel": 9,
+    "PropTech": 10,
+    "Food Tech": 11,
+    "Robotics": 12,
+    "Construction": 13,
+    "Social Media": 14,
+    "EdTech": 15,
+    "3D Printing": 16,
+    "Micro-mobility": 17,
+    "EV/Automotive": 18,
+    "Battery Manufacturing": 19,
+    "Crypto/Blockchain": 20,
 }
 
 # Country risk index (lower = safer startup environment)
 _COUNTRY_RISK_INDEX = {
-    "US": 1.0, "United States": 1.0, "UK": 0.95, "United Kingdom": 0.95,
-    "Germany": 0.9, "Canada": 0.9, "Australia": 0.85, "France": 0.88,
-    "India": 1.15, "China": 1.1, "Brazil": 1.2, "Singapore": 0.85,
-    "Netherlands": 0.87, "Israel": 0.92, "Sweden": 0.85, "Japan": 0.88,
-    "South Korea": 0.9, "Ireland": 0.87, "Estonia": 0.9, "Global": 1.0,
+    "US": 1.0,
+    "United States": 1.0,
+    "UK": 0.95,
+    "United Kingdom": 0.95,
+    "Germany": 0.9,
+    "Canada": 0.9,
+    "Australia": 0.85,
+    "France": 0.88,
+    "India": 1.15,
+    "China": 1.1,
+    "Brazil": 1.2,
+    "Singapore": 0.85,
+    "Netherlands": 0.87,
+    "Israel": 0.92,
+    "Sweden": 0.85,
+    "Japan": 0.88,
+    "South Korea": 0.9,
+    "Ireland": 0.87,
+    "Estonia": 0.9,
+    "Global": 1.0,
 }
 
 # Manufacturing keywords for feature detection
 _MFG_KEYWORDS = [
-    "manufacturing", "factory", "production", "battery", "semiconductor",
-    "chip", "3d printing", "robotics", "ev", "electric vehicle", "automotive",
-    "supply chain", "fabrication", "assembly", "industrial", "steel",
-    "solar panel", "textile", "construction", "pharmaceutical",
+    "manufacturing",
+    "factory",
+    "production",
+    "battery",
+    "semiconductor",
+    "chip",
+    "3d printing",
+    "robotics",
+    "ev",
+    "electric vehicle",
+    "automotive",
+    "supply chain",
+    "fabrication",
+    "assembly",
+    "industrial",
+    "steel",
+    "solar panel",
+    "textile",
+    "construction",
+    "pharmaceutical",
 ]
 
 
@@ -182,7 +228,15 @@ def load_training_data_from_csv(csv_path: str) -> tuple[list[dict], list[int]]:
             label = 1  # default: failed
             for col in ("status", "label", "target", "state", "is_closed"):
                 val = row.get(col, "").strip().lower()
-                if val in ("0", "operating", "active", "open", "alive", "acquired", "ipo"):
+                if val in (
+                    "0",
+                    "operating",
+                    "active",
+                    "open",
+                    "alive",
+                    "acquired",
+                    "ipo",
+                ):
                     label = 0
                 elif val in ("1", "failed", "closed", "dead", "shutdown", "bankrupt"):
                     label = 1
@@ -190,13 +244,30 @@ def load_training_data_from_csv(csv_path: str) -> tuple[list[dict], list[int]]:
 
             # Map CSV columns to our feature format
             row_dict = {
-                "sector": row.get("sector") or row.get("industry") or row.get("category") or "",
+                "sector": row.get("sector")
+                or row.get("industry")
+                or row.get("category")
+                or "",
                 "manufacturing_sub_sector": row.get("subcategory") or "",
-                "country": row.get("country") or row.get("country_code") or row.get("hq") or "",
+                "country": row.get("country")
+                or row.get("country_code")
+                or row.get("hq")
+                or "",
                 "region": row.get("region") or "",
-                "funding_raised_usd": _parse_funding(row.get("funding") or row.get("funding_total_usd") or row.get("funding_raised") or "0"),
-                "year_founded": _parse_int(row.get("founded") or row.get("year_founded") or "2020"),
-                "year_shutdown": _parse_int(row.get("shutdown_year") or row.get("closed_year") or str(datetime.now().year)),
+                "funding_raised_usd": _parse_funding(
+                    row.get("funding")
+                    or row.get("funding_total_usd")
+                    or row.get("funding_raised")
+                    or "0"
+                ),
+                "year_founded": _parse_int(
+                    row.get("founded") or row.get("year_founded") or "2020"
+                ),
+                "year_shutdown": _parse_int(
+                    row.get("shutdown_year")
+                    or row.get("closed_year")
+                    or str(datetime.now().year)
+                ),
                 "failure_reason": row.get("failure_reason") or row.get("reason") or "",
             }
             features.append(_build_features(row_dict))
@@ -282,18 +353,23 @@ class MLTrainer:
                 results["errors"].append(
                     f"Insufficient training data: {len(all_features)} rows (need {self.min_samples})"
                 )
-                _logger.warning("Skipping ML training — only %d rows available", len(all_features))
+                _logger.warning(
+                    "Skipping ML training — only %d rows available", len(all_features)
+                )
                 return results
 
             # Build feature matrix
             import numpy as np
+
             X = np.array([[f[col] for col in FEATURE_COLUMNS] for f in all_features])
             y = np.array(all_labels, dtype=int)
 
             # For failure prediction, we need both classes.
             # If all labels are 1 (all failures), use synthetic negatives via risk scoring.
             if len(np.unique(y)) < 2:
-                _logger.info("All labels are failures — generating synthetic survival examples")
+                _logger.info(
+                    "All labels are failures — generating synthetic survival examples"
+                )
                 X, y = self._generate_synthetic_negatives(X, all_features, db_features)
 
             # Train Random Forest
@@ -350,11 +426,20 @@ class MLTrainer:
         try:
             from sklearn.ensemble import RandomForestClassifier
             from sklearn.model_selection import train_test_split
-            from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+            from sklearn.metrics import (
+                accuracy_score,
+                f1_score,
+                precision_score,
+                recall_score,
+            )
             import joblib
 
             X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=self.test_split, random_state=42, stratify=y,
+                X,
+                y,
+                test_size=self.test_split,
+                random_state=42,
+                stratify=y,
             )
 
             model = RandomForestClassifier(
@@ -371,8 +456,15 @@ class MLTrainer:
             metrics = {
                 "accuracy": round(accuracy_score(y_test, y_pred), 4),
                 "f1_score": round(f1_score(y_test, y_pred, average="weighted"), 4),
-                "precision": round(precision_score(y_test, y_pred, average="weighted", zero_division=0), 4),
-                "recall": round(recall_score(y_test, y_pred, average="weighted", zero_division=0), 4),
+                "precision": round(
+                    precision_score(
+                        y_test, y_pred, average="weighted", zero_division=0
+                    ),
+                    4,
+                ),
+                "recall": round(
+                    recall_score(y_test, y_pred, average="weighted", zero_division=0), 4
+                ),
             }
 
             model_path = self.model_dir / "startup_failure_rf.joblib"
@@ -400,11 +492,20 @@ class MLTrainer:
         try:
             from xgboost import XGBClassifier
             from sklearn.model_selection import train_test_split
-            from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+            from sklearn.metrics import (
+                accuracy_score,
+                f1_score,
+                precision_score,
+                recall_score,
+            )
             import joblib
 
             X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=self.test_split, random_state=42, stratify=y,
+                X,
+                y,
+                test_size=self.test_split,
+                random_state=42,
+                stratify=y,
             )
 
             model = XGBClassifier(
@@ -422,8 +523,15 @@ class MLTrainer:
             metrics = {
                 "accuracy": round(accuracy_score(y_test, y_pred), 4),
                 "f1_score": round(f1_score(y_test, y_pred, average="weighted"), 4),
-                "precision": round(precision_score(y_test, y_pred, average="weighted", zero_division=0), 4),
-                "recall": round(recall_score(y_test, y_pred, average="weighted", zero_division=0), 4),
+                "precision": round(
+                    precision_score(
+                        y_test, y_pred, average="weighted", zero_division=0
+                    ),
+                    4,
+                ),
+                "recall": round(
+                    recall_score(y_test, y_pred, average="weighted", zero_division=0), 4
+                ),
             }
 
             model_path = self.model_dir / "startup_failure_xgb.joblib"

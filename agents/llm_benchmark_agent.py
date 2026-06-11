@@ -11,7 +11,6 @@ Sources:
 Runs weekly via the ``weekly`` pipeline, after ``llm_pricing``.
 """
 
-import json
 import logging
 import re
 import urllib.request
@@ -29,81 +28,489 @@ _logger = logging.getLogger(__name__)
 # Source: artificialanalysis.ai leaderboards, official model reports.
 _STATIC_BENCHMARKS: list[dict] = [
     # ── OpenAI ──
-    {"provider": "openai", "model_name": "GPT-4.1", "benchmark_name": "MMLU", "benchmark_score": 88.7, "benchmark_category": "reasoning"},
-    {"provider": "openai", "model_name": "GPT-4.1", "benchmark_name": "HumanEval", "benchmark_score": 90.2, "benchmark_category": "coding"},
-    {"provider": "openai", "model_name": "GPT-4.1", "benchmark_name": "MATH", "benchmark_score": 83.5, "benchmark_category": "math"},
-    {"provider": "openai", "model_name": "GPT-4.1", "benchmark_name": "IFEval", "benchmark_score": 87.1, "benchmark_category": "instruction_following"},
-    {"provider": "openai", "model_name": "GPT-4.1 Mini", "benchmark_name": "MMLU", "benchmark_score": 82.3, "benchmark_category": "reasoning"},
-    {"provider": "openai", "model_name": "GPT-4.1 Mini", "benchmark_name": "HumanEval", "benchmark_score": 84.6, "benchmark_category": "coding"},
-    {"provider": "openai", "model_name": "GPT-4.1 Mini", "benchmark_name": "MATH", "benchmark_score": 76.8, "benchmark_category": "math"},
-    {"provider": "openai", "model_name": "GPT-4.1 Mini", "benchmark_name": "IFEval", "benchmark_score": 83.9, "benchmark_category": "instruction_following"},
-    {"provider": "openai", "model_name": "GPT-4.1 Nano", "benchmark_name": "MMLU", "benchmark_score": 72.1, "benchmark_category": "reasoning"},
-    {"provider": "openai", "model_name": "GPT-4.1 Nano", "benchmark_name": "HumanEval", "benchmark_score": 70.4, "benchmark_category": "coding"},
-    {"provider": "openai", "model_name": "GPT-4o", "benchmark_name": "MMLU", "benchmark_score": 87.2, "benchmark_category": "reasoning"},
-    {"provider": "openai", "model_name": "GPT-4o", "benchmark_name": "HumanEval", "benchmark_score": 88.5, "benchmark_category": "coding"},
-    {"provider": "openai", "model_name": "GPT-4o", "benchmark_name": "MATH", "benchmark_score": 78.4, "benchmark_category": "math"},
-    {"provider": "openai", "model_name": "GPT-4o-mini", "benchmark_name": "MMLU", "benchmark_score": 78.6, "benchmark_category": "reasoning"},
-    {"provider": "openai", "model_name": "GPT-4o-mini", "benchmark_name": "HumanEval", "benchmark_score": 80.1, "benchmark_category": "coding"},
-    {"provider": "openai", "model_name": "GPT-4o-mini", "benchmark_name": "MATH", "benchmark_score": 70.2, "benchmark_category": "math"},
-    {"provider": "openai", "model_name": "o3", "benchmark_name": "GPQA", "benchmark_score": 82.3, "benchmark_category": "reasoning"},
-    {"provider": "openai", "model_name": "o3", "benchmark_name": "HumanEval", "benchmark_score": 93.1, "benchmark_category": "coding"},
-    {"provider": "openai", "model_name": "o3", "benchmark_name": "MATH", "benchmark_score": 92.8, "benchmark_category": "math"},
-    {"provider": "openai", "model_name": "o3-mini", "benchmark_name": "GPQA", "benchmark_score": 75.4, "benchmark_category": "reasoning"},
-    {"provider": "openai", "model_name": "o3-mini", "benchmark_name": "HumanEval", "benchmark_score": 87.3, "benchmark_category": "coding"},
-    {"provider": "openai", "model_name": "o3-mini", "benchmark_name": "MATH", "benchmark_score": 85.2, "benchmark_category": "math"},
+    {
+        "provider": "openai",
+        "model_name": "GPT-4.1",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 88.7,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4.1",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 90.2,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4.1",
+        "benchmark_name": "MATH",
+        "benchmark_score": 83.5,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4.1",
+        "benchmark_name": "IFEval",
+        "benchmark_score": 87.1,
+        "benchmark_category": "instruction_following",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4.1 Mini",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 82.3,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4.1 Mini",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 84.6,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4.1 Mini",
+        "benchmark_name": "MATH",
+        "benchmark_score": 76.8,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4.1 Mini",
+        "benchmark_name": "IFEval",
+        "benchmark_score": 83.9,
+        "benchmark_category": "instruction_following",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4.1 Nano",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 72.1,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4.1 Nano",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 70.4,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4o",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 87.2,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4o",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 88.5,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4o",
+        "benchmark_name": "MATH",
+        "benchmark_score": 78.4,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4o-mini",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 78.6,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4o-mini",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 80.1,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "openai",
+        "model_name": "GPT-4o-mini",
+        "benchmark_name": "MATH",
+        "benchmark_score": 70.2,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "openai",
+        "model_name": "o3",
+        "benchmark_name": "GPQA",
+        "benchmark_score": 82.3,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "openai",
+        "model_name": "o3",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 93.1,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "openai",
+        "model_name": "o3",
+        "benchmark_name": "MATH",
+        "benchmark_score": 92.8,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "openai",
+        "model_name": "o3-mini",
+        "benchmark_name": "GPQA",
+        "benchmark_score": 75.4,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "openai",
+        "model_name": "o3-mini",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 87.3,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "openai",
+        "model_name": "o3-mini",
+        "benchmark_name": "MATH",
+        "benchmark_score": 85.2,
+        "benchmark_category": "math",
+    },
     # ── Anthropic ──
-    {"provider": "anthropic", "model_name": "Claude Sonnet 4.6", "benchmark_name": "MMLU", "benchmark_score": 89.1, "benchmark_category": "reasoning"},
-    {"provider": "anthropic", "model_name": "Claude Sonnet 4.6", "benchmark_name": "HumanEval", "benchmark_score": 92.4, "benchmark_category": "coding"},
-    {"provider": "anthropic", "model_name": "Claude Sonnet 4.6", "benchmark_name": "MATH", "benchmark_score": 84.7, "benchmark_category": "math"},
-    {"provider": "anthropic", "model_name": "Claude Sonnet 4.6", "benchmark_name": "IFEval", "benchmark_score": 91.3, "benchmark_category": "instruction_following"},
-    {"provider": "anthropic", "model_name": "Claude Opus 4.6", "benchmark_name": "GPQA", "benchmark_score": 80.6, "benchmark_category": "reasoning"},
-    {"provider": "anthropic", "model_name": "Claude Opus 4.6", "benchmark_name": "HumanEval", "benchmark_score": 94.2, "benchmark_category": "coding"},
-    {"provider": "anthropic", "model_name": "Claude Opus 4.6", "benchmark_name": "MATH", "benchmark_score": 90.1, "benchmark_category": "math"},
-    {"provider": "anthropic", "model_name": "Claude Haiku 4.5", "benchmark_name": "MMLU", "benchmark_score": 81.5, "benchmark_category": "reasoning"},
-    {"provider": "anthropic", "model_name": "Claude Haiku 4.5", "benchmark_name": "HumanEval", "benchmark_score": 82.8, "benchmark_category": "coding"},
-    {"provider": "anthropic", "model_name": "Claude Haiku 4.5", "benchmark_name": "MATH", "benchmark_score": 74.3, "benchmark_category": "math"},
+    {
+        "provider": "anthropic",
+        "model_name": "Claude Sonnet 4.6",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 89.1,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "anthropic",
+        "model_name": "Claude Sonnet 4.6",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 92.4,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "anthropic",
+        "model_name": "Claude Sonnet 4.6",
+        "benchmark_name": "MATH",
+        "benchmark_score": 84.7,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "anthropic",
+        "model_name": "Claude Sonnet 4.6",
+        "benchmark_name": "IFEval",
+        "benchmark_score": 91.3,
+        "benchmark_category": "instruction_following",
+    },
+    {
+        "provider": "anthropic",
+        "model_name": "Claude Opus 4.6",
+        "benchmark_name": "GPQA",
+        "benchmark_score": 80.6,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "anthropic",
+        "model_name": "Claude Opus 4.6",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 94.2,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "anthropic",
+        "model_name": "Claude Opus 4.6",
+        "benchmark_name": "MATH",
+        "benchmark_score": 90.1,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "anthropic",
+        "model_name": "Claude Haiku 4.5",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 81.5,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "anthropic",
+        "model_name": "Claude Haiku 4.5",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 82.8,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "anthropic",
+        "model_name": "Claude Haiku 4.5",
+        "benchmark_name": "MATH",
+        "benchmark_score": 74.3,
+        "benchmark_category": "math",
+    },
     # ── Google ──
-    {"provider": "google", "model_name": "Gemini 2.5 Pro", "benchmark_name": "MMLU", "benchmark_score": 90.3, "benchmark_category": "reasoning"},
-    {"provider": "google", "model_name": "Gemini 2.5 Pro", "benchmark_name": "HumanEval", "benchmark_score": 88.7, "benchmark_category": "coding"},
-    {"provider": "google", "model_name": "Gemini 2.5 Pro", "benchmark_name": "MATH", "benchmark_score": 87.2, "benchmark_category": "math"},
-    {"provider": "google", "model_name": "Gemini 2.5 Pro", "benchmark_name": "IFEval", "benchmark_score": 88.5, "benchmark_category": "instruction_following"},
-    {"provider": "google", "model_name": "Gemini 2.5 Flash", "benchmark_name": "MMLU", "benchmark_score": 84.6, "benchmark_category": "reasoning"},
-    {"provider": "google", "model_name": "Gemini 2.5 Flash", "benchmark_name": "HumanEval", "benchmark_score": 82.1, "benchmark_category": "coding"},
-    {"provider": "google", "model_name": "Gemini 2.5 Flash", "benchmark_name": "MATH", "benchmark_score": 79.4, "benchmark_category": "math"},
-    {"provider": "google", "model_name": "Gemini 2.0 Flash-Lite", "benchmark_name": "MMLU", "benchmark_score": 74.2, "benchmark_category": "reasoning"},
-    {"provider": "google", "model_name": "Gemini 2.0 Flash-Lite", "benchmark_name": "HumanEval", "benchmark_score": 71.8, "benchmark_category": "coding"},
-    {"provider": "google", "model_name": "Gemini 2.0 Flash-Lite", "benchmark_name": "MATH", "benchmark_score": 68.3, "benchmark_category": "math"},
+    {
+        "provider": "google",
+        "model_name": "Gemini 2.5 Pro",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 90.3,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "google",
+        "model_name": "Gemini 2.5 Pro",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 88.7,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "google",
+        "model_name": "Gemini 2.5 Pro",
+        "benchmark_name": "MATH",
+        "benchmark_score": 87.2,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "google",
+        "model_name": "Gemini 2.5 Pro",
+        "benchmark_name": "IFEval",
+        "benchmark_score": 88.5,
+        "benchmark_category": "instruction_following",
+    },
+    {
+        "provider": "google",
+        "model_name": "Gemini 2.5 Flash",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 84.6,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "google",
+        "model_name": "Gemini 2.5 Flash",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 82.1,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "google",
+        "model_name": "Gemini 2.5 Flash",
+        "benchmark_name": "MATH",
+        "benchmark_score": 79.4,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "google",
+        "model_name": "Gemini 2.0 Flash-Lite",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 74.2,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "google",
+        "model_name": "Gemini 2.0 Flash-Lite",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 71.8,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "google",
+        "model_name": "Gemini 2.0 Flash-Lite",
+        "benchmark_name": "MATH",
+        "benchmark_score": 68.3,
+        "benchmark_category": "math",
+    },
     # ── DeepSeek ──
-    {"provider": "deepseek", "model_name": "DeepSeek V3.2", "benchmark_name": "MMLU", "benchmark_score": 85.7, "benchmark_category": "reasoning"},
-    {"provider": "deepseek", "model_name": "DeepSeek V3.2", "benchmark_name": "HumanEval", "benchmark_score": 86.3, "benchmark_category": "coding"},
-    {"provider": "deepseek", "model_name": "DeepSeek V3.2", "benchmark_name": "MATH", "benchmark_score": 82.1, "benchmark_category": "math"},
-    {"provider": "deepseek", "model_name": "DeepSeek-R1", "benchmark_name": "GPQA", "benchmark_score": 78.9, "benchmark_category": "reasoning"},
-    {"provider": "deepseek", "model_name": "DeepSeek-R1", "benchmark_name": "HumanEval", "benchmark_score": 89.4, "benchmark_category": "coding"},
-    {"provider": "deepseek", "model_name": "DeepSeek-R1", "benchmark_name": "MATH", "benchmark_score": 90.7, "benchmark_category": "math"},
+    {
+        "provider": "deepseek",
+        "model_name": "DeepSeek V3.2",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 85.7,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "deepseek",
+        "model_name": "DeepSeek V3.2",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 86.3,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "deepseek",
+        "model_name": "DeepSeek V3.2",
+        "benchmark_name": "MATH",
+        "benchmark_score": 82.1,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "deepseek",
+        "model_name": "DeepSeek-R1",
+        "benchmark_name": "GPQA",
+        "benchmark_score": 78.9,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "deepseek",
+        "model_name": "DeepSeek-R1",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 89.4,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "deepseek",
+        "model_name": "DeepSeek-R1",
+        "benchmark_name": "MATH",
+        "benchmark_score": 90.7,
+        "benchmark_category": "math",
+    },
     # ── Meta ──
-    {"provider": "meta", "model_name": "Llama 4 Maverick (hosted)", "benchmark_name": "MMLU", "benchmark_score": 83.4, "benchmark_category": "reasoning"},
-    {"provider": "meta", "model_name": "Llama 4 Maverick (hosted)", "benchmark_name": "HumanEval", "benchmark_score": 80.2, "benchmark_category": "coding"},
-    {"provider": "meta", "model_name": "Llama 4 Maverick (hosted)", "benchmark_name": "MATH", "benchmark_score": 75.6, "benchmark_category": "math"},
-    {"provider": "meta", "model_name": "Llama 4 Scout (hosted)", "benchmark_name": "MMLU", "benchmark_score": 79.8, "benchmark_category": "reasoning"},
-    {"provider": "meta", "model_name": "Llama 4 Scout (hosted)", "benchmark_name": "HumanEval", "benchmark_score": 76.1, "benchmark_category": "coding"},
-    {"provider": "meta", "model_name": "Llama 4 Scout (hosted)", "benchmark_name": "MATH", "benchmark_score": 72.4, "benchmark_category": "math"},
+    {
+        "provider": "meta",
+        "model_name": "Llama 4 Maverick (hosted)",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 83.4,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "meta",
+        "model_name": "Llama 4 Maverick (hosted)",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 80.2,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "meta",
+        "model_name": "Llama 4 Maverick (hosted)",
+        "benchmark_name": "MATH",
+        "benchmark_score": 75.6,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "meta",
+        "model_name": "Llama 4 Scout (hosted)",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 79.8,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "meta",
+        "model_name": "Llama 4 Scout (hosted)",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 76.1,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "meta",
+        "model_name": "Llama 4 Scout (hosted)",
+        "benchmark_name": "MATH",
+        "benchmark_score": 72.4,
+        "benchmark_category": "math",
+    },
     # ── Mistral ──
-    {"provider": "mistral", "model_name": "Mistral Large", "benchmark_name": "MMLU", "benchmark_score": 81.2, "benchmark_category": "reasoning"},
-    {"provider": "mistral", "model_name": "Mistral Large", "benchmark_name": "HumanEval", "benchmark_score": 79.8, "benchmark_category": "coding"},
-    {"provider": "mistral", "model_name": "Mistral Large", "benchmark_name": "MATH", "benchmark_score": 73.5, "benchmark_category": "math"},
-    {"provider": "mistral", "model_name": "Mistral Medium", "benchmark_name": "MMLU", "benchmark_score": 77.6, "benchmark_category": "reasoning"},
-    {"provider": "mistral", "model_name": "Mistral Medium", "benchmark_name": "HumanEval", "benchmark_score": 75.3, "benchmark_category": "coding"},
-    {"provider": "mistral", "model_name": "Mistral Small 3", "benchmark_name": "MMLU", "benchmark_score": 73.9, "benchmark_category": "reasoning"},
-    {"provider": "mistral", "model_name": "Mistral Small 3", "benchmark_name": "HumanEval", "benchmark_score": 71.2, "benchmark_category": "coding"},
+    {
+        "provider": "mistral",
+        "model_name": "Mistral Large",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 81.2,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "mistral",
+        "model_name": "Mistral Large",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 79.8,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "mistral",
+        "model_name": "Mistral Large",
+        "benchmark_name": "MATH",
+        "benchmark_score": 73.5,
+        "benchmark_category": "math",
+    },
+    {
+        "provider": "mistral",
+        "model_name": "Mistral Medium",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 77.6,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "mistral",
+        "model_name": "Mistral Medium",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 75.3,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "mistral",
+        "model_name": "Mistral Small 3",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 73.9,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "mistral",
+        "model_name": "Mistral Small 3",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 71.2,
+        "benchmark_category": "coding",
+    },
     # ── xAI ──
-    {"provider": "xai", "model_name": "Grok 3", "benchmark_name": "MMLU", "benchmark_score": 86.8, "benchmark_category": "reasoning"},
-    {"provider": "xai", "model_name": "Grok 3", "benchmark_name": "HumanEval", "benchmark_score": 83.5, "benchmark_category": "coding"},
-    {"provider": "xai", "model_name": "Grok 3", "benchmark_name": "MATH", "benchmark_score": 80.1, "benchmark_category": "math"},
+    {
+        "provider": "xai",
+        "model_name": "Grok 3",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 86.8,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "xai",
+        "model_name": "Grok 3",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 83.5,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "xai",
+        "model_name": "Grok 3",
+        "benchmark_name": "MATH",
+        "benchmark_score": 80.1,
+        "benchmark_category": "math",
+    },
     # ── Cohere ──
-    {"provider": "cohere", "model_name": "Command R+", "benchmark_name": "MMLU", "benchmark_score": 75.4, "benchmark_category": "reasoning"},
-    {"provider": "cohere", "model_name": "Command R+", "benchmark_name": "HumanEval", "benchmark_score": 68.2, "benchmark_category": "coding"},
-    {"provider": "cohere", "model_name": "Command R", "benchmark_name": "MMLU", "benchmark_score": 70.8, "benchmark_category": "reasoning"},
-    {"provider": "cohere", "model_name": "Command R", "benchmark_name": "HumanEval", "benchmark_score": 63.5, "benchmark_category": "coding"},
+    {
+        "provider": "cohere",
+        "model_name": "Command R+",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 75.4,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "cohere",
+        "model_name": "Command R+",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 68.2,
+        "benchmark_category": "coding",
+    },
+    {
+        "provider": "cohere",
+        "model_name": "Command R",
+        "benchmark_name": "MMLU",
+        "benchmark_score": 70.8,
+        "benchmark_category": "reasoning",
+    },
+    {
+        "provider": "cohere",
+        "model_name": "Command R",
+        "benchmark_name": "HumanEval",
+        "benchmark_score": 63.5,
+        "benchmark_category": "coding",
+    },
 ]
 
 # Scrape targets (best-effort)
@@ -179,7 +586,9 @@ class LLMBenchmarkAgent(BaseAgent):
         # Best-effort scrape for updates
         scraped = self._scrape_artificialanalysis(timeout)
         if scraped:
-            _logger.info("LLMBenchmarkAgent: Got %d scraped benchmark entries", len(scraped))
+            _logger.info(
+                "LLMBenchmarkAgent: Got %d scraped benchmark entries", len(scraped)
+            )
             # Merge: scraped data overrides static baseline for matching models
             scraped_by_key = {
                 (r["provider"], r["model_name"], r["benchmark_name"]): r
@@ -188,11 +597,18 @@ class LLMBenchmarkAgent(BaseAgent):
             for i, b in enumerate(all_benchmarks):
                 key = (b["provider"], b["model_name"], b["benchmark_name"])
                 if key in scraped_by_key:
-                    all_benchmarks[i]["benchmark_score"] = scraped_by_key[key]["benchmark_score"]
+                    all_benchmarks[i]["benchmark_score"] = scraped_by_key[key][
+                        "benchmark_score"
+                    ]
                     if "speed_tokens_per_sec" in scraped_by_key[key]:
-                        all_benchmarks[i]["speed_tokens_per_sec"] = scraped_by_key[key]["speed_tokens_per_sec"]
+                        all_benchmarks[i]["speed_tokens_per_sec"] = scraped_by_key[key][
+                            "speed_tokens_per_sec"
+                        ]
             # Also add any new entries not in static baseline
-            existing_keys = {(b["provider"], b["model_name"], b["benchmark_name"]) for b in all_benchmarks}
+            existing_keys = {
+                (b["provider"], b["model_name"], b["benchmark_name"])
+                for b in all_benchmarks
+            }
             for r in scraped:
                 key = (r["provider"], r["model_name"], r["benchmark_name"])
                 if key not in existing_keys:
@@ -200,6 +616,7 @@ class LLMBenchmarkAgent(BaseAgent):
 
         if delay > 0:
             import time
+
             time.sleep(delay)
 
         # Upsert into database
@@ -208,7 +625,9 @@ class LLMBenchmarkAgent(BaseAgent):
         total = len(all_benchmarks)
         _logger.info(
             "LLMBenchmarkAgent: Done — %d benchmark entries (%d new, %d updated)",
-            total, inserted, updated,
+            total,
+            inserted,
+            updated,
         )
 
         return AgentResult(
@@ -229,10 +648,13 @@ class LLMBenchmarkAgent(BaseAgent):
         today = date.today().isoformat()
 
         try:
-            req = urllib.request.Request(url, headers={
-                "User-Agent": "StartupResearchBot/1.0 (educational research project)",
-                "Accept": "text/html,application/xhtml+xml",
-            })
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "User-Agent": "StartupResearchBot/1.0 (educational research project)",
+                    "Accept": "text/html,application/xhtml+xml",
+                },
+            )
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 html = resp.read().decode("utf-8", errors="ignore")
         except Exception as e:
@@ -242,15 +664,16 @@ class LLMBenchmarkAgent(BaseAgent):
         # Parse model data from HTML
         # Look for model names, quality scores, and speed data in table rows/divs
         # artificialanalysis.ai renders data in a specific HTML structure
-        blocks = re.split(r'<tr|</tr|<div|</div', html)
+        blocks = re.split(r"<tr|</tr|<div|</div", html)
 
         # Try to find score patterns near model names
         for block in blocks[:500]:
             # Look for model-like names
             model_match = re.search(
-                r'(?:GPT-?4[\w.-]*|Claude[\s\w.-]*|Gemini[\s\w.-]*|DeepSeek[\s\w.-]*'
-                r'|Llama[\s\w.-]*|Mistral[\s\w.-]*|Grok[\s\w.-]*|Command[\sR\w.-]*)',
-                block, re.IGNORECASE,
+                r"(?:GPT-?4[\w.-]*|Claude[\s\w.-]*|Gemini[\s\w.-]*|DeepSeek[\s\w.-]*"
+                r"|Llama[\s\w.-]*|Mistral[\s\w.-]*|Grok[\s\w.-]*|Command[\sR\w.-]*)",
+                block,
+                re.IGNORECASE,
             )
             if not model_match:
                 continue
@@ -259,10 +682,14 @@ class LLMBenchmarkAgent(BaseAgent):
             normalized = _normalize_model_name(raw_name)
 
             # Try to extract numeric scores (percentages or decimal scores)
-            scores = re.findall(r'(\d+\.?\d*)\s*(?:%|/100|score)?', block)
+            scores = re.findall(r"(\d+\.?\d*)\s*(?:%|/100|score)?", block)
 
             # Look for speed indicators (tokens/sec or tok/s)
-            speed_match = re.search(r'(\d+\.?\d*)\s*(?:tok(?:ens)?/s|t/s|tokens per sec)', block, re.IGNORECASE)
+            speed_match = re.search(
+                r"(\d+\.?\d*)\s*(?:tok(?:ens)?/s|t/s|tokens per sec)",
+                block,
+                re.IGNORECASE,
+            )
             speed = float(speed_match.group(1)) if speed_match else None
 
             # Look for benchmark category indicators
@@ -281,16 +708,18 @@ class LLMBenchmarkAgent(BaseAgent):
                     # Determine likely benchmark name from context
                     benchmark_name = self._detect_benchmark_name(block, category)
 
-                    results.append({
-                        "provider": provider,
-                        "model_name": normalized,
-                        "benchmark_name": benchmark_name,
-                        "benchmark_score": round(score_val, 1),
-                        "benchmark_category": category,
-                        "speed_tokens_per_sec": speed,
-                        "source_url": url,
-                        "benchmarked_at": today,
-                    })
+                    results.append(
+                        {
+                            "provider": provider,
+                            "model_name": normalized,
+                            "benchmark_name": benchmark_name,
+                            "benchmark_score": round(score_val, 1),
+                            "benchmark_category": category,
+                            "speed_tokens_per_sec": speed,
+                            "source_url": url,
+                            "benchmarked_at": today,
+                        }
+                    )
                 except (ValueError, IndexError):
                     continue
 
@@ -336,11 +765,18 @@ class LLMBenchmarkAgent(BaseAgent):
         """Detect specific benchmark name from context."""
         lower = block.lower()
         benchmarks_by_priority = [
-            ("mmlu", "MMLU"), ("gpqa", "GPQA"), ("arc", "ARC-Challenge"),
-            ("humaneval", "HumanEval"), ("mbpp", "MBPP"), ("swe-bench", "SWE-bench"),
-            ("math", "MATH"), ("gsm8k", "GSM8K"),
-            ("ifeval", "IFEval"), ("mt-bench", "MT-Bench"),
-            ("longbench", "LongBench"), ("ruler", "RULER"),
+            ("mmlu", "MMLU"),
+            ("gpqa", "GPQA"),
+            ("arc", "ARC-Challenge"),
+            ("humaneval", "HumanEval"),
+            ("mbpp", "MBPP"),
+            ("swe-bench", "SWE-bench"),
+            ("math", "MATH"),
+            ("gsm8k", "GSM8K"),
+            ("ifeval", "IFEval"),
+            ("mt-bench", "MT-Bench"),
+            ("longbench", "LongBench"),
+            ("ruler", "RULER"),
         ]
         for kw, name in benchmarks_by_priority:
             if kw in lower:

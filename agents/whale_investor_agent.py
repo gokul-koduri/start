@@ -22,27 +22,71 @@ SEARCH_USER_AGENT = (
 
 # Keywords that indicate whale investor activity
 INVESTOR_KEYWORDS = [
-    "private equity", "venture capital", "sovereign wealth fund",
-    "hedge fund", "institutional investor", "family office",
-    "pension fund", "endowment", "buyout", "acquisition",
-    "merger", "series a", "series b", "series c", "series d",
-    "funding round", "seed funding", "growth equity",
-    "distressed assets", "turnaround", "restructuring",
-    "portfolio company", "leveraged buyout", "lbo",
-    "m&a", "ma deal", "deal value", "deal size",
+    "private equity",
+    "venture capital",
+    "sovereign wealth fund",
+    "hedge fund",
+    "institutional investor",
+    "family office",
+    "pension fund",
+    "endowment",
+    "buyout",
+    "acquisition",
+    "merger",
+    "series a",
+    "series b",
+    "series c",
+    "series d",
+    "funding round",
+    "seed funding",
+    "growth equity",
+    "distressed assets",
+    "turnaround",
+    "restructuring",
+    "portfolio company",
+    "leveraged buyout",
+    "lbo",
+    "m&a",
+    "ma deal",
+    "deal value",
+    "deal size",
 ]
 
 # Keywords for large-scale manufacturing investment
 MANUFACTURING_INVEST_KEYWORDS = [
-    "semiconductor", "battery", "ev", "electric vehicle",
-    "solar", "pharma", "pharmaceutical", "steel", "biomanufacturing",
-    "chip", "fab", "fabrication", "gigafactory",
-    "reshoring", "onshoring", "nearshoring", "domestic manufacturing",
-    "chips act", "ira", "inflation reduction act",
-    "manufacturing hub", "industrial park", "production facility",
-    "greenfield", "new plant", "new factory", "mega project",
-    "groundbreaking", "new capacity", "capacity expansion",
-    "construction", "build-out", "facility investment",
+    "semiconductor",
+    "battery",
+    "ev",
+    "electric vehicle",
+    "solar",
+    "pharma",
+    "pharmaceutical",
+    "steel",
+    "biomanufacturing",
+    "chip",
+    "fab",
+    "fabrication",
+    "gigafactory",
+    "reshoring",
+    "onshoring",
+    "nearshoring",
+    "domestic manufacturing",
+    "chips act",
+    "ira",
+    "inflation reduction act",
+    "manufacturing hub",
+    "industrial park",
+    "production facility",
+    "greenfield",
+    "new plant",
+    "new factory",
+    "mega project",
+    "groundbreaking",
+    "new capacity",
+    "capacity expansion",
+    "construction",
+    "build-out",
+    "facility investment",
 ]
 
 # Regex patterns to extract dollar amounts
@@ -79,12 +123,15 @@ class WhaleInvestorAgent(BaseAgent):
 
     def execute(self, upstream_results: list | None = None) -> AgentResult:
         config = load_config()
-        queries = self.config.get("queries", [
-            "US manufacturing revival private equity acquisitions 2024 2025",
-            "semiconductor manufacturing sovereign wealth fund investment",
-            "battery cell manufacturing private equity deals 2025",
-            "CHIPS Act funded projects investors",
-        ])
+        queries = self.config.get(
+            "queries",
+            [
+                "US manufacturing revival private equity acquisitions 2024 2025",
+                "semiconductor manufacturing sovereign wealth fund investment",
+                "battery cell manufacturing private equity deals 2025",
+                "CHIPS Act funded projects investors",
+            ],
+        )
         max_results = self.config.get("max_results_per_query", 15)
         val_config = self.config.get("validation", {})
         timeout = val_config.get("timeout_seconds", 10)
@@ -93,7 +140,9 @@ class WhaleInvestorAgent(BaseAgent):
 
         # Load classification keywords for additional relevance
         classification = config.get("classification", {})
-        mfg_keywords = [k.lower() for k in classification.get("manufacturing_keywords", [])]
+        mfg_keywords = [
+            k.lower() for k in classification.get("manufacturing_keywords", [])
+        ]
 
         _logger.info("WhaleInvestorAgent: Running %d search queries", len(queries))
 
@@ -115,8 +164,16 @@ class WhaleInvestorAgent(BaseAgent):
                         discovered += 1
 
                         # Skip known domains we already scrape
-                        if any(d in url for d in ["failory.com", "bls.gov", "reshorenow.org",
-                                                   "techcrunch.com", "news.google.com"]):
+                        if any(
+                            d in url
+                            for d in [
+                                "failory.com",
+                                "bls.gov",
+                                "reshorenow.org",
+                                "techcrunch.com",
+                                "news.google.com",
+                            ]
+                        ):
                             continue
 
                         # Validate and score the URL
@@ -143,12 +200,16 @@ class WhaleInvestorAgent(BaseAgent):
                         all_findings.append(finding)
 
                 except Exception as e:
-                    _logger.warning("WhaleInvestorAgent: query '%s' failed: %s", query[:40], e)
+                    _logger.warning(
+                        "WhaleInvestorAgent: query '%s' failed: %s", query[:40], e
+                    )
                     errors.append(f"Query '{query[:40]}': {e}")
                     continue
 
             # Cross-reference with opportunity pipeline
-            cross_ref = self._cross_reference_opportunities(conn, all_findings, mfg_keywords)
+            cross_ref = self._cross_reference_opportunities(
+                conn, all_findings, mfg_keywords
+            )
 
             # Build insights
             insights = {
@@ -186,7 +247,9 @@ class WhaleInvestorAgent(BaseAgent):
 
         _logger.info(
             "WhaleInvestorAgent: discovered=%d, validated=%d, findings=%d",
-            discovered, validated, len(all_findings),
+            discovered,
+            validated,
+            len(all_findings),
         )
 
         return AgentResult(
@@ -240,7 +303,10 @@ class WhaleInvestorAgent(BaseAgent):
         return urls
 
     def _validate_url(
-        self, url: str, timeout: int, min_length: int,
+        self,
+        url: str,
+        timeout: int,
+        min_length: int,
     ) -> tuple[str, str | None, float]:
         """Validate a URL and score its investor relevance.
 
@@ -250,7 +316,9 @@ class WhaleInvestorAgent(BaseAgent):
 
         try:
             response = requests.head(
-                url, timeout=timeout, allow_redirects=True,
+                url,
+                timeout=timeout,
+                allow_redirects=True,
                 headers={"User-Agent": SEARCH_USER_AGENT},
             )
             content_type = response.headers.get("Content-Type", "")
@@ -279,15 +347,22 @@ class WhaleInvestorAgent(BaseAgent):
             # Score based on investor + manufacturing keywords
             text_lower = content[:8000].lower()
 
-            investor_matches = sum(
-                1 for kw in INVESTOR_KEYWORDS if kw in text_lower
-            )
+            investor_matches = sum(1 for kw in INVESTOR_KEYWORDS if kw in text_lower)
             mfg_invest_matches = sum(
                 1 for kw in MANUFACTURING_INVEST_KEYWORDS if kw in text_lower
             )
 
-            investor_score = min(investor_matches / max(len(INVESTOR_KEYWORDS) * 0.15, 1), 1.0) * 0.5
-            mfg_score = min(mfg_invest_matches / max(len(MANUFACTURING_INVEST_KEYWORDS) * 0.15, 1), 1.0) * 0.5
+            investor_score = (
+                min(investor_matches / max(len(INVESTOR_KEYWORDS) * 0.15, 1), 1.0) * 0.5
+            )
+            mfg_score = (
+                min(
+                    mfg_invest_matches
+                    / max(len(MANUFACTURING_INVEST_KEYWORDS) * 0.15, 1),
+                    1.0,
+                )
+                * 0.5
+            )
 
             # Bonus for dollar amounts and specific investor names
             dollar_bonus = 0
@@ -298,13 +373,23 @@ class WhaleInvestorAgent(BaseAgent):
 
             # Bonus for specific high-value signals
             signal_bonus = 0
-            for signal in ["13f", "sec filing", "edgar", "holdings", "stake",
-                           "acquired", "portfolio", "fund size"]:
+            for signal in [
+                "13f",
+                "sec filing",
+                "edgar",
+                "holdings",
+                "stake",
+                "acquired",
+                "portfolio",
+                "fund size",
+            ]:
                 if signal in text_lower:
                     signal_bonus += 0.03
             signal_bonus = min(signal_bonus, 0.2)
 
-            relevance = min(investor_score + mfg_score + dollar_bonus + signal_bonus, 1.0)
+            relevance = min(
+                investor_score + mfg_score + dollar_bonus + signal_bonus, 1.0
+            )
 
             return source_type, content[:3000], relevance
 
@@ -340,10 +425,12 @@ class WhaleInvestorAgent(BaseAgent):
                         value_b = value / 1000
                     else:
                         value_b = 0
-                    info["dollar_amounts"].append({
-                        "text": match.group(0),
-                        "value_billions": round(value_b, 3),
-                    })
+                    info["dollar_amounts"].append(
+                        {
+                            "text": match.group(0),
+                            "value_billions": round(value_b, 3),
+                        }
+                    )
                 except ValueError:
                     pass
 
@@ -359,15 +446,33 @@ class WhaleInvestorAgent(BaseAgent):
 
         # Extract known investor firm names
         known_firms = [
-            "Blackstone", "KKR", "Carlyle Group", "Apollo Global",
-            "Bain Capital", "Goldman Sachs", "Morgan Stanley",
-            "TPG", "Warburg Pincus", "General Atlantic",
-            "Silver Lake", "Thoma Bravo", "Vista Equity",
-            "GlobalFoundries", "TSMC", "Intel Capital",
-            "CORE Industrial Partners", "SK Hynix",
-            "SoftBank", "Vision Fund", "Temasek",
-            "Mubadala", "PIF", "Public Investment Fund",
-            "GIC", "CPPIB", "CDPQ",
+            "Blackstone",
+            "KKR",
+            "Carlyle Group",
+            "Apollo Global",
+            "Bain Capital",
+            "Goldman Sachs",
+            "Morgan Stanley",
+            "TPG",
+            "Warburg Pincus",
+            "General Atlantic",
+            "Silver Lake",
+            "Thoma Bravo",
+            "Vista Equity",
+            "GlobalFoundries",
+            "TSMC",
+            "Intel Capital",
+            "CORE Industrial Partners",
+            "SK Hynix",
+            "SoftBank",
+            "Vision Fund",
+            "Temasek",
+            "Mubadala",
+            "PIF",
+            "Public Investment Fund",
+            "GIC",
+            "CPPIB",
+            "CDPQ",
         ]
         text_title = content[:5000]
         for firm in known_firms:
@@ -386,7 +491,10 @@ class WhaleInvestorAgent(BaseAgent):
         return info
 
     def _cross_reference_opportunities(
-        self, conn, findings: list[dict], mfg_keywords: list[str],
+        self,
+        conn,
+        findings: list[dict],
+        mfg_keywords: list[str],
     ) -> list[dict]:
         """Cross-reference findings with opportunity pipeline results.
 
@@ -456,7 +564,9 @@ class WhaleInvestorAgent(BaseAgent):
             for sector, sector_fs in sector_findings.items():
                 # Match if the sector keyword is in the opportunity text
                 # (e.g., "battery" matches "Battery Cell Manufacturing")
-                if sector in opp_text or any(word in opp_text for word in sector.split()):
+                if sector in opp_text or any(
+                    word in opp_text for word in sector.split()
+                ):
                     matched_sectors.append(sector)
                     matched_findings.extend(sector_fs)
                     for f in sector_fs:
@@ -472,16 +582,18 @@ class WhaleInvestorAgent(BaseAgent):
             whale_backed = bool(matched_investors) or total_dollar_value > 0
 
             if matched_sectors or matched_investors:
-                cross_ref.append({
-                    "opportunity": opp_name,
-                    "opportunity_type": opp.get("type", "unknown"),
-                    "opportunity_score": opp.get("opportunity_score", 0),
-                    "matched_sectors": matched_sectors,
-                    "matched_investors": matched_investors,
-                    "matched_finding_count": len(matched_findings),
-                    "total_dollar_value_billions": round(total_dollar_value, 2),
-                    "whale_backed": whale_backed,
-                })
+                cross_ref.append(
+                    {
+                        "opportunity": opp_name,
+                        "opportunity_type": opp.get("type", "unknown"),
+                        "opportunity_score": opp.get("opportunity_score", 0),
+                        "matched_sectors": matched_sectors,
+                        "matched_investors": matched_investors,
+                        "matched_finding_count": len(matched_findings),
+                        "total_dollar_value_billions": round(total_dollar_value, 2),
+                        "whale_backed": whale_backed,
+                    }
+                )
 
         return cross_ref
 

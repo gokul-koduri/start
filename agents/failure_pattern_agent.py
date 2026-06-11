@@ -145,8 +145,12 @@ class FailurePatternAgent(BaseAgent):
         cursor.close()
         conn.close()
 
-        _logger.info("FailurePatternAgent: Analyzed %d sectors, %d funding brackets, %d years",
-                     len(sector_clusters), len(funding_brackets), len(yearly_trends))
+        _logger.info(
+            "FailurePatternAgent: Analyzed %d sectors, %d funding brackets, %d years",
+            len(sector_clusters),
+            len(funding_brackets),
+            len(yearly_trends),
+        )
 
         return AgentResult(
             agent_name=self.name,
@@ -157,6 +161,7 @@ class FailurePatternAgent(BaseAgent):
                 "yearly_trends": len(yearly_trends),
                 "records_affected": len(sector_clusters) + len(funding_brackets),
                 "top_insight": f"Top sector: {sector_clusters[0]['sector']} ({sector_clusters[0]['count']} failures)"
-                    if sector_clusters else "No data",
+                if sector_clusters
+                else "No data",
             },
         )

@@ -8,7 +8,9 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-def get_entity_connections(entity_name: str, max_depth: int = 2) -> List[Dict[str, Any]]:
+def get_entity_connections(
+    entity_name: str, max_depth: int = 2
+) -> List[Dict[str, Any]]:
     """Get connections for an entity from the knowledge graph.
 
     Args:
@@ -25,7 +27,7 @@ def get_entity_connections(entity_name: str, max_depth: int = 2) -> List[Dict[st
     # Get entity ID
     cursor.execute(
         """SELECT id FROM kg_entities WHERE normalized_name = %s LIMIT 1""",
-        (entity_name.lower(),)
+        (entity_name.lower(),),
     )
     entity_row = cursor.fetchone()
     if not entity_row:
@@ -43,17 +45,19 @@ def get_entity_connections(entity_name: str, max_depth: int = 2) -> List[Dict[st
            JOIN kg_entities e ON r.target_entity_id = e.id
            WHERE r.source_entity_id = %s
            LIMIT 100""",
-        (entity_id,)
+        (entity_id,),
     )
 
     connections = []
     for row in cursor.fetchall():
-        connections.append({
-            "target_entity": row.get("target_name", ""),
-            "relationship_type": row.get("relationship_type", ""),
-            "weight": row.get("weight", 0.0),
-            "entity_type_id": row.get("entity_type_id", 0)
-        })
+        connections.append(
+            {
+                "target_entity": row.get("target_name", ""),
+                "relationship_type": row.get("relationship_type", ""),
+                "weight": row.get("weight", 0.0),
+                "entity_type_id": row.get("entity_type_id", 0),
+            }
+        )
 
     cursor.close()
     conn.close()
@@ -84,18 +88,20 @@ def get_community_members(limit: int = 50) -> List[Dict[str, Any]]:
            GROUP BY e.id
            ORDER BY connection_count DESC
            LIMIT %s""",
-        (limit,)
+        (limit,),
     )
 
     entities = []
     for row in cursor.fetchall():
-        entities.append({
-            "id": row.get("id", 0),
-            "name": row.get("name", ""),
-            "entity_type_id": row.get("entity_type_id", 0),
-            "mention_count": row.get("mention_count", 0),
-            "connection_count": row.get("connection_count", 0)
-        })
+        entities.append(
+            {
+                "id": row.get("id", 0),
+                "name": row.get("name", ""),
+                "entity_type_id": row.get("entity_type_id", 0),
+                "mention_count": row.get("mention_count", 0),
+                "connection_count": row.get("connection_count", 0),
+            }
+        )
 
     cursor.close()
     conn.close()
@@ -121,7 +127,7 @@ def get_entity_centrality(entity_name: str) -> Optional[float]:
            FROM kg_relationships
            WHERE source_entity_id = (SELECT id FROM kg_entities WHERE normalized_name = %s)
               OR target_entity_id = (SELECT id FROM kg_entities WHERE normalized_name = %s)""",
-        (entity_name.lower(), entity_name.lower())
+        (entity_name.lower(), entity_name.lower()),
     )
 
     row = cursor.fetchone()

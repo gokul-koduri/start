@@ -1,12 +1,10 @@
 """API v2 Export router."""
 
-from typing import Optional
 from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 from db.connection import get_connection
 from db import schema
 import csv
-import json
 import io
 
 router = APIRouter(prefix="/v2/export", tags=["export"])
@@ -24,8 +22,12 @@ def export_csv(
 
     # Validate table name to prevent SQL injection
     valid_tables = [
-        "failed_startups", "news_articles", "opportunity_scores",
-        "raw_signals", "funding_events", "patent_filings"
+        "failed_startups",
+        "news_articles",
+        "opportunity_scores",
+        "raw_signals",
+        "funding_events",
+        "patent_filings",
     ]
     if table not in valid_tables:
         cursor.close()
@@ -51,7 +53,7 @@ def export_csv(
     return StreamingResponse(
         output,
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={table}_export.csv"}
+        headers={"Content-Disposition": f"attachment; filename={table}_export.csv"},
     )
 
 
@@ -67,8 +69,12 @@ def export_json(
 
     # Validate table name
     valid_tables = [
-        "failed_startups", "news_articles", "opportunity_scores",
-        "raw_signals", "funding_events", "patent_filings"
+        "failed_startups",
+        "news_articles",
+        "opportunity_scores",
+        "raw_signals",
+        "funding_events",
+        "patent_filings",
     ]
     if table not in valid_tables:
         cursor.close()
@@ -81,8 +87,4 @@ def export_json(
     cursor.close()
     conn.close()
 
-    return {
-        "table": table,
-        "count": len(rows),
-        "data": rows
-    }
+    return {"table": table, "count": len(rows), "data": rows}

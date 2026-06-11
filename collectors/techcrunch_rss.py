@@ -30,8 +30,12 @@ class TechCrunchRSSCollector(BaseCollector):
         feed_url = rss_config.get("url", "https://techcrunch.com/startups/feed/")
         classify_config = self.config.get("classification", {})
 
-        mfg_keywords = set(kw.lower() for kw in classify_config.get("manufacturing_keywords", []))
-        failure_keywords = set(kw.lower() for kw in classify_config.get("failure_keywords", []))
+        mfg_keywords = set(
+            kw.lower() for kw in classify_config.get("manufacturing_keywords", [])
+        )
+        failure_keywords = set(
+            kw.lower() for kw in classify_config.get("failure_keywords", [])
+        )
 
         session = get_http_session()
 
@@ -72,7 +76,9 @@ class TechCrunchRSSCollector(BaseCollector):
             # Classify
             combined_text = f"{title} {summary} {' '.join(tags)}".lower()
             is_mfg = 1 if any(kw in combined_text for kw in mfg_keywords) else 0
-            mentions_fail = 1 if any(kw in combined_text for kw in failure_keywords) else 0
+            mentions_fail = (
+                1 if any(kw in combined_text for kw in failure_keywords) else 0
+            )
 
             # Extract startup name (first capitalized phrase in title)
             startup_name = None
@@ -107,9 +113,17 @@ class TechCrunchRSSCollector(BaseCollector):
                        (title, url, source_name, source_feed, published_at, summary,
                         is_manufacturing, mentions_failure, startup_name_extracted)
                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                    (title, article_url, source_name, "techcrunch",
-                     pub_at, display_summary,
-                     is_mfg, mentions_fail, startup_name),
+                    (
+                        title,
+                        article_url,
+                        source_name,
+                        "techcrunch",
+                        pub_at,
+                        display_summary,
+                        is_mfg,
+                        mentions_fail,
+                        startup_name,
+                    ),
                 )
                 cursor.close()
                 conn.commit()

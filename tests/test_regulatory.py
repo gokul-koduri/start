@@ -26,8 +26,8 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.regulatory_collector import RegulatoryCollector
-from collectors.base import CollectionResult
+from collectors.regulatory_collector import RegulatoryCollector  # noqa: E402
+from collectors.base import CollectionResult  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -37,12 +37,14 @@ for key, orig in _saved_db_modules.items():
         sys.modules.pop(key, None)
 
 
-def _make_atom_entry(filing_id="0000320193-24-0001",
-                     filing_type="S-1",
-                     company_name="TechCorp AI Inc.",
-                     summary="Registration statement under the Securities Act of 1933",
-                     filed_date=None,
-                     link="https://www.sec.gov/Archives/edgar/data/320193/0000320193240001/"):
+def _make_atom_entry(
+    filing_id="0000320193-24-0001",
+    filing_type="S-1",
+    company_name="TechCorp AI Inc.",
+    summary="Registration statement under the Securities Act of 1933",
+    filed_date=None,
+    link="https://www.sec.gov/Archives/edgar/data/320193/0000320193240001/",
+):
     """Build a mock SEC EDGAR Atom XML entry element."""
     import xml.etree.ElementTree as ET
 
@@ -86,12 +88,14 @@ def _make_atom_entry(filing_id="0000320193-24-0001",
     return entry
 
 
-def _make_filing_dict(filing_id="0000320193-24-0001",
-                      filing_type="S-1",
-                      company_name="TechCorp AI Inc.",
-                      summary="Registration statement",
-                      filed_date=None,
-                      link="https://www.sec.gov/Archives/edgar/data/320193/"):
+def _make_filing_dict(
+    filing_id="0000320193-24-0001",
+    filing_type="S-1",
+    company_name="TechCorp AI Inc.",
+    summary="Registration statement",
+    filed_date=None,
+    link="https://www.sec.gov/Archives/edgar/data/320193/",
+):
     """Build a parsed filing dict matching _parse_entry output."""
     if filed_date is None:
         # Default to old date (NOT recent)
@@ -139,7 +143,7 @@ def _make_feed_xml(entries=None):
     root.set("xmlns", ns["atom"])
 
     # Add entries
-    for entry in (entries or []):
+    for entry in entries or []:
         root.append(entry)
 
     return ET.tostring(root, encoding="unicode")
@@ -164,8 +168,7 @@ class TestRegulatoryCollectorScoring:
     def test_s1_recent(self):
         c = RegulatoryCollector(config={})
         filing = _make_filing_dict(
-            filing_type="S-1",
-            filed_date=datetime.now(timezone.utc) - timedelta(days=3)
+            filing_type="S-1", filed_date=datetime.now(timezone.utc) - timedelta(days=3)
         )
         score = c._compute_score(filing)
         # S-1 (+30) + recent <7d (+20) = 50
@@ -175,7 +178,7 @@ class TestRegulatoryCollectorScoring:
         c = RegulatoryCollector(config={})
         filing = _make_filing_dict(
             filing_type="8-K",
-            filed_date=datetime.now(timezone.utc) - timedelta(days=15)
+            filed_date=datetime.now(timezone.utc) - timedelta(days=15),
         )
         score = c._compute_score(filing)
         # 8-K (+20) + recent <30d (+10) = 30
@@ -185,7 +188,7 @@ class TestRegulatoryCollectorScoring:
         c = RegulatoryCollector(config={})
         filing = _make_filing_dict(
             filing_type="SC 13D",
-            filed_date=datetime.now(timezone.utc) - timedelta(days=120)
+            filed_date=datetime.now(timezone.utc) - timedelta(days=120),
         )
         score = c._compute_score(filing)
         # SC 13D (+25) = 25
@@ -194,8 +197,7 @@ class TestRegulatoryCollectorScoring:
     def test_old_no_type(self):
         c = RegulatoryCollector(config={})
         filing = _make_filing_dict(
-            filing_type="",
-            filed_date=datetime.now(timezone.utc) - timedelta(days=120)
+            filing_type="", filed_date=datetime.now(timezone.utc) - timedelta(days=120)
         )
         score = c._compute_score(filing)
         assert score == 0.0
@@ -204,8 +206,7 @@ class TestRegulatoryCollectorScoring:
         c = RegulatoryCollector(config={})
         # Create a filing with max possible score
         filing = _make_filing_dict(
-            filing_type="S-1",
-            filed_date=datetime.now(timezone.utc) - timedelta(days=1)
+            filing_type="S-1", filed_date=datetime.now(timezone.utc) - timedelta(days=1)
         )
         score = c._compute_score(filing)
         # S-1 (+30) + recent <7d (+20) = 50 (not over 100)
@@ -301,14 +302,18 @@ class TestRegulatoryCollectorIntegration:
         feed_xml = _make_feed_xml([entry])
         session = _make_mock_session([feed_xml])
 
-        with patch("collectors.regulatory_collector.get_http_session", return_value=session):
-            c = RegulatoryCollector(config={
-                "regulatory": {
-                    "search_companies": [],
-                    "filing_types": ["8-K"],
-                    "min_delay_seconds": 0,
-                },
-            })
+        with patch(
+            "collectors.regulatory_collector.get_http_session", return_value=session
+        ):
+            c = RegulatoryCollector(
+                config={
+                    "regulatory": {
+                        "search_companies": [],
+                        "filing_types": ["8-K"],
+                        "min_delay_seconds": 0,
+                    },
+                }
+            )
 
             mock_conn = MagicMock()
             mock_cursor = MagicMock()
@@ -325,14 +330,18 @@ class TestRegulatoryCollectorIntegration:
         feed_xml = _make_feed_xml([])
         session = _make_mock_session([feed_xml])
 
-        with patch("collectors.regulatory_collector.get_http_session", return_value=session):
-            c = RegulatoryCollector(config={
-                "regulatory": {
-                    "search_companies": [],
-                    "filing_types": ["S-1"],
-                    "min_delay_seconds": 0,
-                },
-            })
+        with patch(
+            "collectors.regulatory_collector.get_http_session", return_value=session
+        ):
+            c = RegulatoryCollector(
+                config={
+                    "regulatory": {
+                        "search_companies": [],
+                        "filing_types": ["S-1"],
+                        "min_delay_seconds": 0,
+                    },
+                }
+            )
 
             mock_conn = MagicMock()
             mock_cursor = MagicMock()
@@ -347,20 +356,26 @@ class TestRegulatoryCollectorIntegration:
 
         entry1 = _make_atom_entry(filing_id="00001", company_name="Company1")
         entry2 = _make_atom_entry(filing_id="00002", company_name="Company2")
-        session = _make_mock_session([
-            _make_feed_xml([]),  # General feed empty
-            _make_feed_xml([entry1]),  # Company1
-            _make_feed_xml([entry2]),  # Company2
-        ])
+        session = _make_mock_session(
+            [
+                _make_feed_xml([]),  # General feed empty
+                _make_feed_xml([entry1]),  # Company1
+                _make_feed_xml([entry2]),  # Company2
+            ]
+        )
 
-        with patch("collectors.regulatory_collector.get_http_session", return_value=session):
-            c = RegulatoryCollector(config={
-                "regulatory": {
-                    "search_companies": ["Company1", "Company2"],
-                    "filing_types": ["S-1"],
-                    "min_delay_seconds": 0,
-                },
-            })
+        with patch(
+            "collectors.regulatory_collector.get_http_session", return_value=session
+        ):
+            c = RegulatoryCollector(
+                config={
+                    "regulatory": {
+                        "search_companies": ["Company1", "Company2"],
+                        "filing_types": ["S-1"],
+                        "min_delay_seconds": 0,
+                    },
+                }
+            )
 
             mock_conn = MagicMock()
             mock_cursor = MagicMock()
@@ -376,14 +391,18 @@ class TestRegulatoryCollectorIntegration:
         feed_xml = _make_feed_xml([entry])
         session = _make_mock_session([feed_xml])
 
-        with patch("collectors.regulatory_collector.get_http_session", return_value=session):
-            c = RegulatoryCollector(config={
-                "regulatory": {
-                    "search_companies": [],
-                    "filing_types": ["S-1"],
-                    "min_delay_seconds": 0,
-                },
-            })
+        with patch(
+            "collectors.regulatory_collector.get_http_session", return_value=session
+        ):
+            c = RegulatoryCollector(
+                config={
+                    "regulatory": {
+                        "search_companies": [],
+                        "filing_types": ["S-1"],
+                        "min_delay_seconds": 0,
+                    },
+                }
+            )
 
             call_count = {"n": 0}
 

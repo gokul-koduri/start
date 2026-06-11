@@ -57,7 +57,12 @@ TIER_FEATURES = {
 TIER_PRICING = {
     "free": {"price": 0, "currency": "USD", "period": "forever", "label": "Free"},
     "pro": {"price": 49, "currency": "USD", "period": "month", "label": "Pro"},
-    "enterprise": {"price": 1000, "currency": "USD", "period": "month", "label": "Enterprise"},
+    "enterprise": {
+        "price": 1000,
+        "currency": "USD",
+        "period": "month",
+        "label": "Enterprise",
+    },
 }
 
 # License key prefix per tier
@@ -131,8 +136,12 @@ class LicenseAgent(BaseAgent):
                         (key, default_tier, expires, now),
                     )
                     generated_keys.append(key)
-                    _logger.info("LicenseAgent: Generated key %s...%s for tier %s",
-                                 key[:8], key[-4:], default_tier)
+                    _logger.info(
+                        "LicenseAgent: Generated key %s...%s for tier %s",
+                        key[:8],
+                        key[-4:],
+                        default_tier,
+                    )
 
             # 2. Expire old keys
             cursor.execute(
@@ -152,11 +161,17 @@ class LicenseAgent(BaseAgent):
             active_licenses = cursor.fetchall()
 
             # 4. Count metrics
-            cursor.execute("SELECT COUNT(*) as cnt FROM user_licenses WHERE status = 'active' AND tier = 'free'")
+            cursor.execute(
+                "SELECT COUNT(*) as cnt FROM user_licenses WHERE status = 'active' AND tier = 'free'"
+            )
             free_count = cursor.fetchone()["cnt"]
-            cursor.execute("SELECT COUNT(*) as cnt FROM user_licenses WHERE status = 'active' AND tier = 'pro'")
+            cursor.execute(
+                "SELECT COUNT(*) as cnt FROM user_licenses WHERE status = 'active' AND tier = 'pro'"
+            )
             pro_count = cursor.fetchone()["cnt"]
-            cursor.execute("SELECT COUNT(*) as cnt FROM user_licenses WHERE status = 'active' AND tier = 'enterprise'")
+            cursor.execute(
+                "SELECT COUNT(*) as cnt FROM user_licenses WHERE status = 'active' AND tier = 'enterprise'"
+            )
             ent_count = cursor.fetchone()["cnt"]
             total_active = free_count + pro_count + ent_count
 
@@ -190,7 +205,10 @@ class LicenseAgent(BaseAgent):
 
         _logger.info(
             "LicenseAgent: Done — %d generated, %d active keys (%d pro, %d enterprise)",
-            len(generated_keys), total_active, pro_count, ent_count,
+            len(generated_keys),
+            total_active,
+            pro_count,
+            ent_count,
         )
 
         return AgentResult(
@@ -220,9 +238,9 @@ def generate_license(tier: str = "pro", expiry_days: int = 365) -> str:
         schema.init_schema(conn)
         cursor = conn.cursor()
 
-        expires = (
-            datetime.now(timezone.utc) + timedelta(days=expiry_days)
-        ).strftime("%Y-%m-%d %H:%M:%S")
+        expires = (datetime.now(timezone.utc) + timedelta(days=expiry_days)).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
         cursor.execute(
@@ -235,7 +253,9 @@ def generate_license(tier: str = "pro", expiry_days: int = 365) -> str:
         cursor.close()
         conn.close()
 
-        _logger.info("Generated license key: %s (tier=%s, expires=%dd)", key, tier, expiry_days)
+        _logger.info(
+            "Generated license key: %s (tier=%s, expires=%dd)", key, tier, expiry_days
+        )
     except Exception as e:
         _logger.error("Failed to store license key: %s", e)
 

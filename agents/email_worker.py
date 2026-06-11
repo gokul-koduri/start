@@ -69,7 +69,9 @@ def _build_mime(email_row: dict, cfg: dict) -> MIMEMultipart:
     if email_row.get("reply_to"):
         msg["Reply-To"] = email_row["reply_to"]
     msg["Date"] = formatdate(localtime=True)
-    msg["Message-ID"] = make_msgid(domain=cfg["from_address"].split("@")[-1] or "localhost")
+    msg["Message-ID"] = make_msgid(
+        domain=cfg["from_address"].split("@")[-1] or "localhost"
+    )
 
     # Plain text part
     msg.attach(MIMEText(email_row["plain_body"], "plain", "utf-8"))
@@ -79,8 +81,13 @@ def _build_mime(email_row: dict, cfg: dict) -> MIMEMultipart:
     return msg
 
 
-def _mark_status(conn, email_id: int, status: str, error: str | None = None,
-                 message_id: str | None = None) -> None:
+def _mark_status(
+    conn,
+    email_id: int,
+    status: str,
+    error: str | None = None,
+    message_id: str | None = None,
+) -> None:
     """Update email status and log the delivery event."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
@@ -107,8 +114,10 @@ def _mark_status(conn, email_id: int, status: str, error: str | None = None,
 
 def _schedule_retry(conn, email_id: int, attempts: int) -> None:
     """Calculate next retry with exponential backoff and update row."""
-    delay_minutes = min(2 ** attempts, 16)  # cap at 16 minutes
-    next_retry = datetime.now(timezone.utc) + __import__("datetime").timedelta(minutes=delay_minutes)
+    delay_minutes = min(2**attempts, 16)  # cap at 16 minutes
+    next_retry = datetime.now(timezone.utc) + __import__("datetime").timedelta(
+        minutes=delay_minutes
+    )
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     next_str = next_retry.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -130,8 +139,9 @@ def _schedule_retry(conn, email_id: int, attempts: int) -> None:
     conn.commit()
 
 
-def drain_queue(batch_size: int = _DEFAULT_BATCH_SIZE,
-                delay_between: float = _DEFAULT_DELAY) -> dict:
+def drain_queue(
+    batch_size: int = _DEFAULT_BATCH_SIZE, delay_between: float = _DEFAULT_DELAY
+) -> dict:
     """Drain the outbound_emails queue. Returns stats dict."""
     cfg = _get_smtp_config()
 
@@ -220,14 +230,20 @@ def drain_queue(batch_size: int = _DEFAULT_BATCH_SIZE,
                 conn.close()
 
             stats["sent"] += 1
-            _logger.info("drain_queue: Sent email id=%d to %s", email_id, email_row["recipient"])
+            _logger.info(
+                "drain_queue: Sent email id=%d to %s", email_id, email_row["recipient"]
+            )
 
         except smtplib.SMTPRecipientsRefused as e:
             # Hard bounce — suppress and mark dead
-            _logger.warning("drain_queue: Recipient refused %s: %s", email_row["recipient"], e)
+            _logger.warning(
+                "drain_queue: Recipient refused %s: %s", email_row["recipient"], e
+            )
             conn = get_connection()
             try:
-                _mark_status(conn, email_id, "dead", error=f"SMTPRecipientsRefused: {e}")
+                _mark_status(
+                    conn, email_id, "dead", error=f"SMTPRecipientsRefused: {e}"
+                )
                 # Auto-suppress
                 with conn.cursor() as cur:
                     cur.execute(
@@ -279,15 +295,21 @@ def drain_queue(batch_size: int = _DEFAULT_BATCH_SIZE,
 
     _logger.info(
         "drain_queue: Done — sent=%d failed=%d retried=%d dead=%d",
-        stats["sent"], stats["failed"], stats["retried"], stats["dead"],
+        stats["sent"],
+        stats["failed"],
+        stats["retried"],
+        stats["dead"],
     )
     return stats
 
 
-def run_loop(interval: int = _DEFAULT_LOOP_INTERVAL,
-             batch_size: int = _DEFAULT_BATCH_SIZE) -> None:
+def run_loop(
+    interval: int = _DEFAULT_LOOP_INTERVAL, batch_size: int = _DEFAULT_BATCH_SIZE
+) -> None:
     """Run the email worker in a continuous loop."""
-    _logger.info("email_worker: Starting loop (interval=%ds, batch=%d)", interval, batch_size)
+    _logger.info(
+        "email_worker: Starting loop (interval=%ds, batch=%d)", interval, batch_size
+    )
     while True:
         try:
             drain_queue(batch_size=batch_size)
@@ -306,8 +328,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Email worker — drains outbound queue")
     parser.add_argument("--loop", action="store_true", help="Run continuously")
-    parser.add_argument("--interval", type=int, default=30, help="Seconds between polls (default: 30)")
-    parser.add_argument("--batch-size", type=int, default=50, help="Emails per batch (default: 50)")
+    parser.add_argument(
+        "--interval", type=int, default=30, help="Seconds between polls (default: 30)"
+    )
+    parser.add_argument(
+        "--batch-size", type=int, default=50, help="Emails per batch (default: 50)"
+    )
     args = parser.parse_args()
 
     if args.loop:

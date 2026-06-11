@@ -13,46 +13,136 @@ Design choices:
 from __future__ import annotations
 
 import logging
-import re
 from dataclasses import dataclass
 
 _logger = logging.getLogger(__name__)
 
 # Seed technology terms for EntityRuler patterns
 _SEED_TECHNOLOGIES = [
-    "Python", "JavaScript", "TypeScript", "Rust", "Go", "Java", "C++",
-    "Kubernetes", "Docker", "Terraform", "React", "Vue.js", "Angular",
-    "TensorFlow", "PyTorch", "scikit-learn", "XGBoost", "LLM", "GPT",
-    "BERT", "Llama", "Stable Diffusion", "LangChain", "FastAPI", "Flask",
-    "PostgreSQL", "MongoDB", "Redis", "Kafka", "gRPC", "GraphQL",
-    "AWS", "Azure", "GCP", "Snowflake", "Databricks", "Spark",
-    "Arduino", "Raspberry Pi", "FPGA", "Verilog", "3D printing",
-    "semiconductor", "lithography", "photolithography", "nanotechnology",
-    "machine learning", "deep learning", "natural language processing",
-    "computer vision", "reinforcement learning", "edge computing",
-    "blockchain", "smart contracts", "zero-knowledge proofs",
-    "CRISPR", "synthetic biology", "genomics", "proteomics",
-    "autonomous driving", "lidar", "radar", "EV battery",
-    "SaaS", "PaaS", "IaaS", "API gateway", "microservices",
-    "robotics", "drone", "IoT", "5G", "Wi-Fi 7",
-    "cybersecurity", "encryption", "zero-trust", "identity management",
-    "Web3", "DeFi", "NFT", "metaverse",
+    "Python",
+    "JavaScript",
+    "TypeScript",
+    "Rust",
+    "Go",
+    "Java",
+    "C++",
+    "Kubernetes",
+    "Docker",
+    "Terraform",
+    "React",
+    "Vue.js",
+    "Angular",
+    "TensorFlow",
+    "PyTorch",
+    "scikit-learn",
+    "XGBoost",
+    "LLM",
+    "GPT",
+    "BERT",
+    "Llama",
+    "Stable Diffusion",
+    "LangChain",
+    "FastAPI",
+    "Flask",
+    "PostgreSQL",
+    "MongoDB",
+    "Redis",
+    "Kafka",
+    "gRPC",
+    "GraphQL",
+    "AWS",
+    "Azure",
+    "GCP",
+    "Snowflake",
+    "Databricks",
+    "Spark",
+    "Arduino",
+    "Raspberry Pi",
+    "FPGA",
+    "Verilog",
+    "3D printing",
+    "semiconductor",
+    "lithography",
+    "photolithography",
+    "nanotechnology",
+    "machine learning",
+    "deep learning",
+    "natural language processing",
+    "computer vision",
+    "reinforcement learning",
+    "edge computing",
+    "blockchain",
+    "smart contracts",
+    "zero-knowledge proofs",
+    "CRISPR",
+    "synthetic biology",
+    "genomics",
+    "proteomics",
+    "autonomous driving",
+    "lidar",
+    "radar",
+    "EV battery",
+    "SaaS",
+    "PaaS",
+    "IaaS",
+    "API gateway",
+    "microservices",
+    "robotics",
+    "drone",
+    "IoT",
+    "5G",
+    "Wi-Fi 7",
+    "cybersecurity",
+    "encryption",
+    "zero-trust",
+    "identity management",
+    "Web3",
+    "DeFi",
+    "NFT",
+    "metaverse",
 ]
 
 # Market segment patterns
 _MARKET_PATTERNS = [
-    {"label": "MARKET", "pattern": [{"LOWER": {"REGEX": r"(?:saas|paas|iaas|b2b|b2c|d2c)"}}]},
+    {
+        "label": "MARKET",
+        "pattern": [{"LOWER": {"REGEX": r"(?:saas|paas|iaas|b2b|b2c|d2c)"}}],
+    },
     {"label": "MARKET", "pattern": [{"LOWER": "market"}, {"IS_TITLE": True}]},
-    {"label": "MARKET", "pattern": [{"LOWER": {"REGEX": r"(?:fintech|healthtech|edtech|cleantech|agritech|proptech|legaltech|insurtech|regtech|retailtech|foodtech|biotech|medtech)"}}]},
-    {"label": "MARKET", "pattern": [{"LOWER": {"REGEX": r"(?:cybersecurity|ecommerce|e-commerce)"}}]},
-    {"label": "MARKET", "pattern": [{"LOWER": {"REGEX": r"(?:artificial intelligence|machine learning|deep learning|generative ai)"}}]},
+    {
+        "label": "MARKET",
+        "pattern": [
+            {
+                "LOWER": {
+                    "REGEX": r"(?:fintech|healthtech|edtech|cleantech|agritech|proptech|legaltech|insurtech|regtech|retailtech|foodtech|biotech|medtech)"
+                }
+            }
+        ],
+    },
+    {
+        "label": "MARKET",
+        "pattern": [{"LOWER": {"REGEX": r"(?:cybersecurity|ecommerce|e-commerce)"}}],
+    },
+    {
+        "label": "MARKET",
+        "pattern": [
+            {
+                "LOWER": {
+                    "REGEX": r"(?:artificial intelligence|machine learning|deep learning|generative ai)"
+                }
+            }
+        ],
+    },
 ]
 
 # Patent number patterns
 _PATENT_PATTERNS = [
     {"label": "PATENT", "pattern": [{"LOWER": "patent"}, {"SHAPE": "XXXXXXX"}]},
     {"label": "PATENT", "pattern": [{"TEXT": {"REGEX": r"US\d{6,}A\d?"}}]},
-    {"label": "PATENT", "pattern": [{"LOWER": "patent"}, {"LOWER": "no"}, {"SHAPE": "ddddd"}]},
+    {
+        "label": "PATENT",
+        "pattern": [{"LOWER": "patent"}, {"LOWER": "no"}, {"SHAPE": "ddddd"}],
+    },
     {"label": "PATENT", "pattern": [{"LOWER": "uspto"}, {"LOWER": "filing"}]},
 ]
 
@@ -138,6 +228,7 @@ class StartupNERPipeline:
 
         try:
             import spacy
+
             self._nlp = spacy.load(self._model_name)
             self._add_custom_entity_ruler()
             self._loaded = True
@@ -146,7 +237,8 @@ class StartupNERPipeline:
             _logger.error(
                 "StartupNERPipeline: model '%s' not found. "
                 "Run: python -m spacy download %s",
-                self._model_name, self._model_name,
+                self._model_name,
+                self._model_name,
             )
             raise
 
@@ -155,7 +247,9 @@ class StartupNERPipeline:
         return self._loaded and self._nlp is not None
 
     def extract_entities(
-        self, text: str, confidence_threshold: float = 0.7,
+        self,
+        text: str,
+        confidence_threshold: float = 0.7,
     ) -> list[NERResult]:
         """Extract named entities from text.
 
@@ -170,7 +264,9 @@ class StartupNERPipeline:
             return []
 
         self.load()
-        threshold = confidence_threshold or self._config.get("confidence_threshold", 0.7)
+        threshold = confidence_threshold or self._config.get(
+            "confidence_threshold", 0.7
+        )
 
         doc = self._nlp(text[:10_000])  # Truncate to avoid OOM on huge texts
         results = []
@@ -189,21 +285,27 @@ class StartupNERPipeline:
             end = min(len(text), ent.end_char + 50)
             context = text[start:end].strip()
 
-            results.append(NERResult(
-                name=ent.text.strip(),
-                label=kg_type,
-                start_char=ent.start_char,
-                end_char=ent.end_char,
-                confidence=confidence,
-                source="rule" if ent.label_ in ("TECHNOLOGY", "MARKET", "PATENT") else "spacy",
-                context=context,
-            ))
+            results.append(
+                NERResult(
+                    name=ent.text.strip(),
+                    label=kg_type,
+                    start_char=ent.start_char,
+                    end_char=ent.end_char,
+                    confidence=confidence,
+                    source="rule"
+                    if ent.label_ in ("TECHNOLOGY", "MARKET", "PATENT")
+                    else "spacy",
+                    context=context,
+                )
+            )
 
         results.sort(key=lambda r: r.confidence, reverse=True)
         return results
 
     def extract_from_batch(
-        self, texts: list[str], confidence_threshold: float = 0.7,
+        self,
+        texts: list[str],
+        confidence_threshold: float = 0.7,
     ) -> list[list[NERResult]]:
         """Extract entities from multiple texts using spaCy.pipe().
 
@@ -217,7 +319,9 @@ class StartupNERPipeline:
             List of lists (one NERResult list per input text).
         """
         self.load()
-        threshold = confidence_threshold or self._config.get("confidence_threshold", 0.7)
+        threshold = confidence_threshold or self._config.get(
+            "confidence_threshold", 0.7
+        )
         all_results = []
 
         docs = self._nlp.pipe(
@@ -235,14 +339,18 @@ class StartupNERPipeline:
                 confidence = self._compute_confidence(ent, kg_type)
                 if confidence < threshold:
                     continue
-                results.append(NERResult(
-                    name=ent.text.strip(),
-                    label=kg_type,
-                    start_char=ent.start_char,
-                    end_char=ent.end_char,
-                    confidence=confidence,
-                    source="rule" if ent.label_ in ("TECHNOLOGY", "MARKET", "PATENT") else "spacy",
-                ))
+                results.append(
+                    NERResult(
+                        name=ent.text.strip(),
+                        label=kg_type,
+                        start_char=ent.start_char,
+                        end_char=ent.end_char,
+                        confidence=confidence,
+                        source="rule"
+                        if ent.label_ in ("TECHNOLOGY", "MARKET", "PATENT")
+                        else "spacy",
+                    )
+                )
             results.sort(key=lambda r: r.confidence, reverse=True)
             all_results.append(results)
 
@@ -279,7 +387,6 @@ class StartupNERPipeline:
         This seeds the model with known technology names, market segments, and
         patent patterns that the general-purpose transformer might miss.
         """
-        import spacy
 
         ruler = self._nlp.add_pipe("entity_ruler", before="ner")
 
@@ -296,5 +403,7 @@ class StartupNERPipeline:
         _logger.info(
             "StartupNERPipeline: EntityRuler added with %d technology, "
             "%d market, %d patent patterns",
-            len(tech_patterns), len(_MARKET_PATTERNS), len(_PATENT_PATTERNS),
+            len(tech_patterns),
+            len(_MARKET_PATTERNS),
+            len(_PATENT_PATTERNS),
         )

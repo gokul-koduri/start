@@ -56,10 +56,16 @@ class StripePaymentAgent(BaseAgent):
             return AgentResult(
                 agent_name=self.name,
                 status="success",
-                data={"sessions_processed": 0, "new_payments": 0, "records_affected": 0},
+                data={
+                    "sessions_processed": 0,
+                    "new_payments": 0,
+                    "records_affected": 0,
+                },
             )
 
-        _logger.info("StripePaymentAgent: Polling Stripe for sessions (last %dh)", poll_hours)
+        _logger.info(
+            "StripePaymentAgent: Polling Stripe for sessions (last %dh)", poll_hours
+        )
 
         try:
             conn = get_connection()
@@ -82,7 +88,8 @@ class StripePaymentAgent(BaseAgent):
 
                 # Check if already processed
                 cursor.execute(
-                    "SELECT id FROM payment_events WHERE stripe_session_id = %s", (session_id,)
+                    "SELECT id FROM payment_events WHERE stripe_session_id = %s",
+                    (session_id,),
                 )
                 if cursor.fetchone():
                     continue
@@ -91,17 +98,28 @@ class StripePaymentAgent(BaseAgent):
                 tier = self._determine_tier(session)
                 amount = self._session_amount(session)
                 email = session.get("customer_details", {}).get("email", "")
-                status = "completed" if session.get("payment_status") == "paid" else "pending"
+                status = (
+                    "completed"
+                    if session.get("payment_status") == "paid"
+                    else "pending"
+                )
 
                 # Generate license key
                 license_key = None
                 if status == "completed":
                     try:
                         from agents.license_agent import generate_license
+
                         license_key = generate_license(tier, 365)
-                        _logger.info("StripePaymentAgent: Generated license %s for %s", license_key, email)
+                        _logger.info(
+                            "StripePaymentAgent: Generated license %s for %s",
+                            license_key,
+                            email,
+                        )
                     except Exception as e:
-                        _logger.error("StripePaymentAgent: License generation failed: %s", e)
+                        _logger.error(
+                            "StripePaymentAgent: License generation failed: %s", e
+                        )
 
                 # Insert payment event
                 now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
@@ -130,7 +148,9 @@ class StripePaymentAgent(BaseAgent):
 
             _logger.info(
                 "StripePaymentAgent: Done — %d sessions, %d new payments, $%.2f",
-                len(sessions), new_payments, total_amount,
+                len(sessions),
+                new_payments,
+                total_amount,
             )
 
             return AgentResult(
@@ -166,7 +186,9 @@ class StripePaymentAgent(BaseAgent):
                 data = json.loads(resp.read().decode())
 
             sessions = data.get("data", [])
-            _logger.info("StripePaymentAgent: Fetched %d sessions from Stripe", len(sessions))
+            _logger.info(
+                "StripePaymentAgent: Fetched %d sessions from Stripe", len(sessions)
+            )
             return sessions
 
         except urllib.error.HTTPError as e:
@@ -175,7 +197,9 @@ class StripePaymentAgent(BaseAgent):
                 body = e.read().decode()
             except Exception:
                 pass
-            _logger.error("StripePaymentAgent: Stripe API error %d: %s", e.code, body[:200])
+            _logger.error(
+                "StripePaymentAgent: Stripe API error %d: %s", e.code, body[:200]
+            )
             return []
         except Exception as e:
             _logger.error("StripePaymentAgent: Stripe API request failed: %s", e)
@@ -207,14 +231,22 @@ class StripePaymentAgent(BaseAgent):
         """Update daily subscription_metrics from current license state."""
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-        cursor.execute("SELECT COUNT(*) as cnt FROM user_licenses WHERE tier = 'free' AND status = 'active'")
+        cursor.execute(
+            "SELECT COUNT(*) as cnt FROM user_licenses WHERE tier = 'free' AND status = 'active'"
+        )
         free_count = cursor.fetchone()["cnt"]
-        cursor.execute("SELECT COUNT(*) as cnt FROM user_licenses WHERE tier = 'pro' AND status = 'active'")
+        cursor.execute(
+            "SELECT COUNT(*) as cnt FROM user_licenses WHERE tier = 'pro' AND status = 'active'"
+        )
         pro_count = cursor.fetchone()["cnt"]
-        cursor.execute("SELECT COUNT(*) as cnt FROM user_licenses WHERE tier = 'enterprise' AND status = 'active'")
+        cursor.execute(
+            "SELECT COUNT(*) as cnt FROM user_licenses WHERE tier = 'enterprise' AND status = 'active'"
+        )
         ent_count = cursor.fetchone()["cnt"]
 
-        cursor.execute("SELECT COALESCE(SUM(amount_usd), 0) FROM payment_events WHERE status = 'completed'")
+        cursor.execute(
+            "SELECT COALESCE(SUM(amount_usd), 0) FROM payment_events WHERE status = 'completed'"
+        )
         revenue = cursor.fetchone()[0]
 
         cursor.execute(
@@ -231,6 +263,7 @@ class StripePaymentAgent(BaseAgent):
 
 
 # ── Optional Flask webhook server (for local development) ──
+
 
 def create_flask_app(stripe_webhook_secret: str = ""):
     """Create a Flask app for receiving Stripe webhook events locally.
@@ -258,6 +291,7 @@ def create_flask_app(stripe_webhook_secret: str = ""):
         if stripe_webhook_secret:
             try:
                 import stripe
+
                 event = stripe.Webhook.construct_event(
                     payload, sig_header, stripe_webhook_secret
                 )
@@ -266,11 +300,15 @@ def create_flask_app(stripe_webhook_secret: str = ""):
                 return jsonify({"error": str(e)}), 400
         else:
             event = json.loads(payload)
-            _logger.warning("No webhook secret configured — skipping signature verification")
+            _logger.warning(
+                "No webhook secret configured — skipping signature verification"
+            )
 
         if event["type"] == "checkout.session.completed":
             session = event["data"]["object"]
-            _logger.info("Webhook: Processing checkout.session.completed: %s", session.get("id"))
+            _logger.info(
+                "Webhook: Processing checkout.session.completed: %s", session.get("id")
+            )
 
             try:
                 conn = get_connection()
@@ -278,11 +316,16 @@ def create_flask_app(stripe_webhook_secret: str = ""):
                 cursor = conn.cursor()
 
                 session_id = session.get("id")
-                cursor.execute("SELECT id FROM payment_events WHERE stripe_session_id = %s", (session_id,))
+                cursor.execute(
+                    "SELECT id FROM payment_events WHERE stripe_session_id = %s",
+                    (session_id,),
+                )
                 if cursor.fetchone():
                     return jsonify({"status": "already_processed"}), 200
 
-                agent = StripePaymentAgent(config={"stripe_secret_key": "", "poll_hours_back": 24})
+                agent = StripePaymentAgent(
+                    config={"stripe_secret_key": "", "poll_hours_back": 24}
+                )
                 tier = agent._determine_tier(session)
                 amount = agent._session_amount(session)
                 email = session.get("customer_details", {}).get("email", "")
@@ -290,6 +333,7 @@ def create_flask_app(stripe_webhook_secret: str = ""):
                 license_key = None
                 try:
                     from agents.license_agent import generate_license
+
                     license_key = generate_license(tier, 365)
                 except Exception:
                     pass

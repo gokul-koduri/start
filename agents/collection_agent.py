@@ -82,10 +82,15 @@ class CollectionAgent(BaseAgent):
         if daily_mode:
             collector_names = collector_config.get("daily_collectors", DAILY_COLLECTORS)
         else:
-            collector_names = collector_config.get("collectors", list(ALL_COLLECTORS.keys()))
+            collector_names = collector_config.get(
+                "collectors", list(ALL_COLLECTORS.keys())
+            )
 
-        _logger.info("CollectionAgent: Running %d collectors (daily_mode=%s)",
-                     len(collector_names), daily_mode)
+        _logger.info(
+            "CollectionAgent: Running %d collectors (daily_mode=%s)",
+            len(collector_names),
+            daily_mode,
+        )
 
         results = []
         total_collected = 0
@@ -103,14 +108,16 @@ class CollectionAgent(BaseAgent):
             _logger.info("Running collector: %s", collector_name)
             result = collector.run()
 
-            results.append({
-                "name": collector_name,
-                "status": result.status,
-                "records_collected": result.records_collected,
-                "records_inserted": result.records_inserted,
-                "records_skipped": result.records_skipped,
-                "errors": result.errors,
-            })
+            results.append(
+                {
+                    "name": collector_name,
+                    "status": result.status,
+                    "records_collected": result.records_collected,
+                    "records_inserted": result.records_inserted,
+                    "records_skipped": result.records_skipped,
+                    "errors": result.errors,
+                }
+            )
 
             total_collected += result.records_collected
             total_inserted += result.records_inserted

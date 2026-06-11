@@ -13,23 +13,25 @@ import argparse
 import json
 import logging
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import mean
-from urllib.parse import unquote
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from db.connection import get_connection
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 _logger = logging.getLogger("correlation_analysis")
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def load_latest_insights(conn, table: str) -> dict:
     """Load the latest insights_json from an analysis_* table."""
@@ -91,6 +93,7 @@ def md_table(headers: list[str], rows: list[list]) -> str:
 # Correlation analyses
 # ---------------------------------------------------------------------------
 
+
 def correlation_1_sector_failure_vs_revival(conn) -> dict:
     """Sector failure counts vs revival industry scores."""
     cursor = conn.cursor()
@@ -103,12 +106,16 @@ def correlation_1_sector_failure_vs_revival(conn) -> dict:
         GROUP BY manufacturing_sub_sector
         ORDER BY cnt DESC
     """)
-    failure_counts = {r["manufacturing_sub_sector"].lower(): r["cnt"] for r in cursor.fetchall()}
+    failure_counts = {
+        r["manufacturing_sub_sector"].lower(): r["cnt"] for r in cursor.fetchall()
+    }
 
     # Revival industry scores from analysis
     revival_data = load_latest_insights(conn, "analysis_revival_opportunities")
     industry_scores = {}
-    for item in revival_data.get("top_industries", []) or revival_data.get("industries", []):
+    for item in revival_data.get("top_industries", []) or revival_data.get(
+        "industries", []
+    ):
         if isinstance(item, dict):
             name = (item.get("industry") or item.get("name") or "").lower()
             score = item.get("revival_score") or item.get("score") or 0
@@ -120,9 +127,15 @@ def correlation_1_sector_failure_vs_revival(conn) -> dict:
     for industry, score in industry_scores.items():
         fcount = 0
         for sub, cnt in failure_counts.items():
-            if industry in sub or sub in industry or any(word in sub for word in industry.split()):
+            if (
+                industry in sub
+                or sub in industry
+                or any(word in sub for word in industry.split())
+            ):
                 fcount += cnt
-        matches.append({"industry": industry, "revival_score": score, "failure_count": fcount})
+        matches.append(
+            {"industry": industry, "revival_score": score, "failure_count": fcount}
+        )
 
     # Pearson correlation: revival_score vs failure_count
     scores = [m["revival_score"] for m in matches if m["failure_count"] > 0]
@@ -137,11 +150,13 @@ def correlation_1_sector_failure_vs_revival(conn) -> dict:
         "pearson_r": r,
         "interpretation": (
             f"Pearson r = {fmt_corr(r)}. "
-            + ("Sectors that saw more failures DO tend to have higher revival scores — failure creates opportunity."
-               if r > 0.3 else
-               "Weak or no positive correlation — failures and revival scoring are largely independent signals."
-               if r > -0.3 else
-               "Negative correlation — revival scoring is driven by factors other than past failure volume.")
+            + (
+                "Sectors that saw more failures DO tend to have higher revival scores — failure creates opportunity."
+                if r > 0.3
+                else "Weak or no positive correlation — failures and revival scoring are largely independent signals."
+                if r > -0.3
+                else "Negative correlation — revival scoring is driven by factors other than past failure volume."
+            )
         ),
     }
 
@@ -157,7 +172,10 @@ def correlation_2_failure_reason_vs_survival(conn) -> dict:
         GROUP BY failure_category
         ORDER BY cnt DESC
     """)
-    cat_counts = [{"category": r["failure_category"], "count": r["cnt"]} for r in cursor.fetchall()]
+    cat_counts = [
+        {"category": r["failure_category"], "count": r["cnt"]}
+        for r in cursor.fetchall()
+    ]
 
     cursor.execute("""
         SELECT year, AVG(age_5_yr_survival) AS avg_survival
@@ -166,7 +184,10 @@ def correlation_2_failure_reason_vs_survival(conn) -> dict:
         GROUP BY year
         ORDER BY year
     """)
-    survival_by_year = [{"year": r["year"], "avg_5yr": float(r["avg_survival"])} for r in cursor.fetchall()]
+    survival_by_year = [
+        {"year": r["year"], "avg_5yr": float(r["avg_survival"])}
+        for r in cursor.fetchall()
+    ]
 
     cursor.execute("""
         SELECT year_shutdown, COUNT(*) AS cnt
@@ -180,7 +201,9 @@ def correlation_2_failure_reason_vs_survival(conn) -> dict:
     # Pearson: shutdown-year failure count vs same-year survival rate
     years = sorted(set(failures_by_year.keys()) & {s["year"] for s in survival_by_year})
     fail_counts = [failures_by_year[y] for y in years]
-    surv = [next(s["avg_5yr"] for s in survival_by_year if s["year"] == y) for y in years]
+    surv = [
+        next(s["avg_5yr"] for s in survival_by_year if s["year"] == y) for y in years
+    ]
     r = pearson(fail_counts, surv) if years else 0.0
 
     cursor.close()
@@ -192,11 +215,13 @@ def correlation_2_failure_reason_vs_survival(conn) -> dict:
         "pearson_r": r,
         "interpretation": (
             f"Pearson r (failures vs survival rate by year) = {fmt_corr(r)}. "
-            + ("Higher failure counts cluster in years with LOWER survival rates — external conditions matter."
-               if r < -0.3 else
-               "No strong relationship — failures are driven more by company-specific factors than macro survival rates."
-               if abs(r) < 0.3 else
-               "Surprising positive correlation — more failures recorded in higher-survival years (likely because more firms exist).")
+            + (
+                "Higher failure counts cluster in years with LOWER survival rates — external conditions matter."
+                if r < -0.3
+                else "No strong relationship — failures are driven more by company-specific factors than macro survival rates."
+                if abs(r) < 0.3
+                else "Surprising positive correlation — more failures recorded in higher-survival years (likely because more firms exist)."
+            )
         ),
     }
 
@@ -212,11 +237,13 @@ def correlation_3_geo_failures_vs_whale(conn) -> dict:
         ORDER BY cnt DESC
         LIMIT 10
     """)
-    geo_failures = [{"region": r["area"], "failure_count": r["cnt"]} for r in cursor.fetchall()]
+    geo_failures = [
+        {"region": r["area"], "failure_count": r["cnt"]} for r in cursor.fetchall()
+    ]
 
     # Whale investor findings: count by sector mentioned
     whale_data = load_latest_insights(conn, "analysis_whale_investors")
-    sector_counts = whale_data.get("findings_by_sector", {})
+    whale_data.get("findings_by_sector", {})
     top_findings = whale_data.get("top_findings", [])
 
     # Count whale findings URLs mentioning each region
@@ -242,11 +269,13 @@ def correlation_3_geo_failures_vs_whale(conn) -> dict:
         "pearson_r": r,
         "interpretation": (
             f"Pearson r (failure density vs whale mentions) = {fmt_corr(r)}. "
-            + ("Whale investors DO cluster around regions with past failures — they're buying distressed assets."
-               if r > 0.3 else
-               "Whale investor activity and failure density are NOT strongly linked at the regional level."
-               if abs(r) < 0.3 else
-               "Negative correlation — whales are avoiding high-failure regions, seeking greenfield opportunities.")
+            + (
+                "Whale investors DO cluster around regions with past failures — they're buying distressed assets."
+                if r > 0.3
+                else "Whale investor activity and failure density are NOT strongly linked at the regional level."
+                if abs(r) < 0.3
+                else "Negative correlation — whales are avoiding high-failure regions, seeking greenfield opportunities."
+            )
         ),
     }
 
@@ -263,8 +292,14 @@ def correlation_4_funding_vs_year(conn) -> dict:
         ORDER BY year_shutdown
     """)
     rows = cursor.fetchall()
-    by_year = [{"year": r["year_shutdown"], "avg_funding": float(r["avg_funding"]),
-                "count": r["cnt"]} for r in rows]
+    by_year = [
+        {
+            "year": r["year_shutdown"],
+            "avg_funding": float(r["avg_funding"]),
+            "count": r["cnt"],
+        }
+        for r in rows
+    ]
 
     years = [r["year"] for r in by_year]
     funds = [r["avg_funding"] for r in by_year]
@@ -278,13 +313,15 @@ def correlation_4_funding_vs_year(conn) -> dict:
         "pearson_r": r,
         "interpretation": (
             f"Pearson r (year vs avg funding) = {fmt_corr(r)}. "
-            + ("Strong positive trend — recent failures had MORE capital to burn. The funding bubble is real."
-               if r > 0.5 else
-               "Moderate upward trend — failures are getting more capital-intensive."
-               if r > 0.3 else
-               "Flat — funding amounts haven't changed significantly across failure years."
-               if abs(r) < 0.3 else
-               "Recent failures had LESS funding — capital is drying up for risky ventures.")
+            + (
+                "Strong positive trend — recent failures had MORE capital to burn. The funding bubble is real."
+                if r > 0.5
+                else "Moderate upward trend — failures are getting more capital-intensive."
+                if r > 0.3
+                else "Flat — funding amounts haven't changed significantly across failure years."
+                if abs(r) < 0.3
+                else "Recent failures had LESS funding — capital is drying up for risky ventures."
+            )
         ),
     }
 
@@ -302,7 +339,9 @@ def correlation_5_news_vs_failures(conn) -> dict:
         GROUP BY y
         ORDER BY y
     """)
-    news_by_year = [{"year": r["y"], "count": r["cnt"]} for r in cursor.fetchall() if r["y"]]
+    news_by_year = [
+        {"year": r["y"], "count": r["cnt"]} for r in cursor.fetchall() if r["y"]
+    ]
 
     cursor.execute("""
         SELECT year_shutdown, COUNT(*) AS cnt
@@ -319,7 +358,9 @@ def correlation_5_news_vs_failures(conn) -> dict:
     overlap = sorted(news_years & fail_years)
 
     if overlap:
-        news_vals = [next(n["count"] for n in news_by_year if n["year"] == y) for y in overlap]
+        news_vals = [
+            next(n["count"] for n in news_by_year if n["year"] == y) for y in overlap
+        ]
         fail_vals = [fail_by_year[y] for y in overlap]
         r = pearson(news_vals, fail_vals)
     else:
@@ -335,11 +376,13 @@ def correlation_5_news_vs_failures(conn) -> dict:
         "pearson_r": r,
         "interpretation": (
             f"Pearson r (news volume vs failure count by year) = {fmt_corr(r)}. "
-            + ("News coverage tracks failure volume closely — media is a reliable signal."
-               if r > 0.4 else
-               "News volume and failure timing are NOT strongly correlated — coverage is driven by other factors."
-               if abs(r) < 0.4 else
-               "Inverse — more news in years with FEWER recorded failures (media focus shifts away during quiet periods).")
+            + (
+                "News coverage tracks failure volume closely — media is a reliable signal."
+                if r > 0.4
+                else "News volume and failure timing are NOT strongly correlated — coverage is driven by other factors."
+                if abs(r) < 0.4
+                else "Inverse — more news in years with FEWER recorded failures (media focus shifts away during quiet periods)."
+            )
         ),
     }
 
@@ -358,18 +401,26 @@ def correlation_6_reshoring_vs_revival(conn) -> dict:
           AND industry != 'FDI'
         ORDER BY jobs_created DESC
     """)
-    reshoring = [{"industry": r["industry"], "jobs": r["jobs_created"],
-                  "jobs_announced": r["jobs_announced"], "projects": r["project_count"],
-                  "year": r["data_year"]}
-                 for r in cursor.fetchall()]
+    reshoring = [
+        {
+            "industry": r["industry"],
+            "jobs": r["jobs_created"],
+            "jobs_announced": r["jobs_announced"],
+            "projects": r["project_count"],
+            "year": r["data_year"],
+        }
+        for r in cursor.fetchall()
+    ]
 
     revival_data = load_latest_insights(conn, "analysis_revival_opportunities")
     industry_scores = {}
     # Try several possible keys
-    score_list = (revival_data.get("industry_revival_scores")
-                  or revival_data.get("top_industries")
-                  or revival_data.get("industries")
-                  or [])
+    score_list = (
+        revival_data.get("industry_revival_scores")
+        or revival_data.get("top_industries")
+        or revival_data.get("industries")
+        or []
+    )
     for item in score_list:
         if isinstance(item, dict):
             name = (item.get("industry") or item.get("name") or "").lower()
@@ -388,19 +439,25 @@ def correlation_6_reshoring_vs_revival(conn) -> dict:
             ind_words = set(ind_lower.split())
             rev_words = set(revival_ind.split())
             # Also do substring matching
-            if ind_words & rev_words or revival_ind in ind_lower or ind_lower in revival_ind:
+            if (
+                ind_words & rev_words
+                or revival_ind in ind_lower
+                or ind_lower in revival_ind
+            ):
                 if score > best_score:
                     best_score = score
                     best_match = revival_ind
-        matches.append({
-            "reshoring_industry": r["industry"],
-            "jobs": r["jobs"],
-            "jobs_announced": r["jobs_announced"],
-            "projects": r["projects"],
-            "matched_revival": best_match,
-            "revival_score": best_score,
-            "year": r["year"],
-        })
+        matches.append(
+            {
+                "reshoring_industry": r["industry"],
+                "jobs": r["jobs"],
+                "jobs_announced": r["jobs_announced"],
+                "projects": r["projects"],
+                "matched_revival": best_match,
+                "revival_score": best_score,
+                "year": r["year"],
+            }
+        )
 
     # Correlation: jobs vs revival score
     matched = [m for m in matches if m["matched_revival"]]
@@ -419,12 +476,16 @@ def correlation_6_reshoring_vs_revival(conn) -> dict:
         "pearson_r": r,
         "interpretation": (
             f"Pearson r (jobs vs revival score) = {fmt_corr(r)}. "
-            + (f"Matched {len(matched)}/{len(matches)} reshoring industries to revival scores. "
-               + ("Higher-scoring revival industries ARE creating more jobs — scoring reflects reality."
-                  if r > 0.3 else
-                  "Revival scoring doesn't match actual job creation — scores need recalibration."
-                  if r < -0.3 else
-                  "No clear link between score and job count."))
+            + (
+                f"Matched {len(matched)}/{len(matches)} reshoring industries to revival scores. "
+                + (
+                    "Higher-scoring revival industries ARE creating more jobs — scoring reflects reality."
+                    if r > 0.3
+                    else "Revival scoring doesn't match actual job creation — scores need recalibration."
+                    if r < -0.3
+                    else "No clear link between score and job count."
+                )
+            )
         ),
     }
 
@@ -447,15 +508,17 @@ def correlation_7_opportunity_vs_whale(conn) -> dict:
     for o in opportunities:
         name = o.get("startup") or o.get("region") or "unknown"
         wb = whale_backed.get(name, {})
-        enriched.append({
-            "name": name,
-            "type": o.get("type"),
-            "opp_score": o.get("opportunity_score", 0),
-            "risk_level": o.get("risk_level"),
-            "whale_backed": wb.get("whale_backed", False),
-            "matched_sectors": wb.get("matched_sectors", []),
-            "matched_investors": wb.get("matched_investors", []),
-        })
+        enriched.append(
+            {
+                "name": name,
+                "type": o.get("type"),
+                "opp_score": o.get("opportunity_score", 0),
+                "risk_level": o.get("risk_level"),
+                "whale_backed": wb.get("whale_backed", False),
+                "matched_sectors": wb.get("matched_sectors", []),
+                "matched_investors": wb.get("matched_investors", []),
+            }
+        )
 
     # Compare avg score: whale-backed vs not
     backed_scores = [e["opp_score"] for e in enriched if e["whale_backed"]]
@@ -478,11 +541,13 @@ def correlation_7_opportunity_vs_whale(conn) -> dict:
         "interpretation": (
             f"{len(backed_scores)}/{len(opportunities)} opportunities have whale backing. "
             f"Avg score: {avg_backed:.1f} (backed) vs {avg_not_backed:.1f} (not backed), Δ={delta:+.1f}. "
-            + ("Whale-backed opportunities have HIGHER scores — our scoring aligns with institutional interest."
-               if delta > 5 else
-               "Scores are similar regardless of backing — whale activity is independent of our scoring."
-               if abs(delta) <= 5 else
-               "Whale-backed opportunities have LOWER scores — whales may be pursuing different opportunities than our model captures.")
+            + (
+                "Whale-backed opportunities have HIGHER scores — our scoring aligns with institutional interest."
+                if delta > 5
+                else "Scores are similar regardless of backing — whale activity is independent of our scoring."
+                if abs(delta) <= 5
+                else "Whale-backed opportunities have LOWER scores — whales may be pursuing different opportunities than our model captures."
+            )
         ),
     }
 
@@ -490,6 +555,7 @@ def correlation_7_opportunity_vs_whale(conn) -> dict:
 # ---------------------------------------------------------------------------
 # Report generation
 # ---------------------------------------------------------------------------
+
 
 def build_report(results: dict) -> str:
     """Assemble all correlation findings into a markdown report."""
@@ -514,11 +580,20 @@ def build_report(results: dict) -> str:
 
     lines.append("Correlations ranked by strength:")
     lines.append("")
-    lines.append(md_table(
-        ["Rank", "Correlation", "Pearson r", "Strength"],
-        [[i + 1, t[1].split(".")[1].strip(), fmt_corr(t[2]), "★★★" if t[3] >= 0.5 else "★★" if t[3] >= 0.3 else "★"]
-         for i, t in enumerate(ranked)],
-    ))
+    lines.append(
+        md_table(
+            ["Rank", "Correlation", "Pearson r", "Strength"],
+            [
+                [
+                    i + 1,
+                    t[1].split(".")[1].strip(),
+                    fmt_corr(t[2]),
+                    "★★★" if t[3] >= 0.5 else "★★" if t[3] >= 0.3 else "★",
+                ]
+                for i, t in enumerate(ranked)
+            ],
+        )
+    )
     lines.append("")
 
     # Top findings
@@ -542,7 +617,10 @@ def build_report(results: dict) -> str:
 
         # Per-correlation tables
         if key == "c1":
-            rows = [[m["industry"], m["revival_score"], m["failure_count"]] for m in res["matches"]]
+            rows = [
+                [m["industry"], m["revival_score"], m["failure_count"]]
+                for m in res["matches"]
+            ]
             lines.append(md_table(["Industry", "Revival Score", "Failure Count"], rows))
         elif key == "c2":
             rows = [[c["category"], c["count"]] for c in res["category_counts"]]
@@ -550,16 +628,27 @@ def build_report(results: dict) -> str:
             lines.append("")
             lines.append(md_table(["Failure Category", "Count"], rows))
             lines.append("")
-            rows = [[s["year"], f"{s['avg_5yr']:.1f}%"] for s in res["survival_by_year"]]
+            rows = [
+                [s["year"], f"{s['avg_5yr']:.1f}%"] for s in res["survival_by_year"]
+            ]
             lines.append("Average 5-year survival rate by year:")
             lines.append("")
             lines.append(md_table(["Year", "Avg 5yr Survival"], rows))
         elif key == "c3":
-            rows = [[g["region"], g["failure_count"], res["whale_region_mentions"].get(g["region"], 0)]
-                    for g in res["geo_failures"]]
+            rows = [
+                [
+                    g["region"],
+                    g["failure_count"],
+                    res["whale_region_mentions"].get(g["region"], 0),
+                ]
+                for g in res["geo_failures"]
+            ]
             lines.append(md_table(["Region", "Failure Count", "Whale Mentions"], rows))
         elif key == "c4":
-            rows = [[r["year"], f"${r['avg_funding']/1e6:.1f}M", r["count"]] for r in res["by_year"]]
+            rows = [
+                [r["year"], f"${r['avg_funding']/1e6:.1f}M", r["count"]]
+                for r in res["by_year"]
+            ]
             lines.append(md_table(["Year Shutdown", "Avg Funding", "# Failures"], rows))
         elif key == "c5":
             fail_by_year = res["fail_by_year"]
@@ -573,15 +662,36 @@ def build_report(results: dict) -> str:
             lines.append("")
             lines.append(md_table(["Year", "Article Count"], rows))
         elif key == "c6":
-            rows = [[m["reshoring_industry"], m["jobs"], m["matched_revival"] or "—",
-                     m["revival_score"]] for m in res["matches"]]
-            lines.append(md_table(["Reshoring Industry", "Jobs", "Matched Revival", "Score"], rows))
+            rows = [
+                [
+                    m["reshoring_industry"],
+                    m["jobs"],
+                    m["matched_revival"] or "—",
+                    m["revival_score"],
+                ]
+                for m in res["matches"]
+            ]
+            lines.append(
+                md_table(
+                    ["Reshoring Industry", "Jobs", "Matched Revival", "Score"], rows
+                )
+            )
         elif key == "c7":
-            rows = [[e["name"], e["opp_score"], e["risk_level"],
-                     "Yes" if e["whale_backed"] else "No",
-                     ", ".join(e["matched_investors"]) or "—"]
-                    for e in res["enriched"]]
-            lines.append(md_table(["Opportunity", "Score", "Risk", "Whale Backed", "Investors"], rows))
+            rows = [
+                [
+                    e["name"],
+                    e["opp_score"],
+                    e["risk_level"],
+                    "Yes" if e["whale_backed"] else "No",
+                    ", ".join(e["matched_investors"]) or "—",
+                ]
+                for e in res["enriched"]
+            ]
+            lines.append(
+                md_table(
+                    ["Opportunity", "Score", "Risk", "Whale Backed", "Investors"], rows
+                )
+            )
 
         lines.append("")
 
@@ -589,19 +699,32 @@ def build_report(results: dict) -> str:
     lines.append("")
     lines.append("## Methodology")
     lines.append("")
-    lines.append("- **Pearson correlation** is used for numeric pairs (e.g., funding vs year).")
-    lines.append("- r ≥ 0.7 = strong; r ≥ 0.4 = moderate; r ≥ 0.2 = weak; |r| < 0.2 = negligible.")
-    lines.append("- All data sourced from the live MySQL database populated by the 7 analysis agents.")
-    lines.append("- Sample sizes are small (163 startups, 31 BLS records, 6 revival industries) so treat correlations as exploratory.")
+    lines.append(
+        "- **Pearson correlation** is used for numeric pairs (e.g., funding vs year)."
+    )
+    lines.append(
+        "- r ≥ 0.7 = strong; r ≥ 0.4 = moderate; r ≥ 0.2 = weak; |r| < 0.2 = negligible."
+    )
+    lines.append(
+        "- All data sourced from the live MySQL database populated by the 7 analysis agents."
+    )
+    lines.append(
+        "- Sample sizes are small (163 startups, 31 BLS records, 6 revival industries) so treat correlations as exploratory."
+    )
     lines.append("")
 
     return "\n".join(lines)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run cross-module correlation analysis")
-    parser.add_argument("--output", default="Market_Correlation_Analysis.md",
-                        help="Output markdown report path")
+    parser = argparse.ArgumentParser(
+        description="Run cross-module correlation analysis"
+    )
+    parser.add_argument(
+        "--output",
+        default="Market_Correlation_Analysis.md",
+        help="Output markdown report path",
+    )
     args = parser.parse_args()
 
     conn = get_connection()

@@ -10,9 +10,7 @@ Rate limits: 10 requests per second (SEC guideline)
 
 import logging
 import re
-import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
-from urllib.parse import quote_plus
 
 import feedparser
 
@@ -45,13 +43,19 @@ class SECEdgarCollector(BaseCollector):
             ]
 
         session = get_http_session()
-        session.headers.update({
-            "User-Agent": "OpportunityIntel/1.0 research@example.com",
-            "Accept": "application/rss+xml",
-        })
+        session.headers.update(
+            {
+                "User-Agent": "OpportunityIntel/1.0 research@example.com",
+                "Accept": "application/rss+xml",
+            }
+        )
 
         last_run = self.get_last_run_time(conn)
-        since_date = last_run - timedelta(hours=1) if last_run else datetime.now(timezone.utc) - timedelta(days=7)
+        since_date = (
+            last_run - timedelta(hours=1)
+            if last_run
+            else datetime.now(timezone.utc) - timedelta(days=7)
+        )
 
         cursor = conn.cursor()
 
@@ -212,13 +216,32 @@ class SECEdgarCollector(BaseCollector):
             return 0.0
 
         positive_keywords = {
-            "growth", "increase", "revenue", "profit", "record", "strong",
-            "innovation", "expand", "acquisition", "strategic", "upgraded",
+            "growth",
+            "increase",
+            "revenue",
+            "profit",
+            "record",
+            "strong",
+            "innovation",
+            "expand",
+            "acquisition",
+            "strategic",
+            "upgraded",
         }
         negative_keywords = {
-            "loss", "decline", "risk", "litigation", "bankruptcy", "fraud",
-            "restatement", "investigation", "material weakness", "downgrade",
-            "impairment", "layoff", "restructure",
+            "loss",
+            "decline",
+            "risk",
+            "litigation",
+            "bankruptcy",
+            "fraud",
+            "restatement",
+            "investigation",
+            "material weakness",
+            "downgrade",
+            "impairment",
+            "layoff",
+            "restructure",
         }
 
         words = set(text.lower().split())

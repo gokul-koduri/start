@@ -14,8 +14,6 @@ publicly available RSS feeds and search APIs as alternatives.
 import logging
 import re
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal, InvalidOperation
-from urllib.parse import quote_plus
 
 import feedparser
 
@@ -62,7 +60,11 @@ class FundingEventsCollector(BaseCollector):
 
         session = get_http_session()
         last_run = self.get_last_run_time(conn)
-        since_date = last_run - timedelta(hours=1) if last_run else datetime.now(timezone.utc) - timedelta(days=7)
+        since_date = (
+            last_run - timedelta(hours=1)
+            if last_run
+            else datetime.now(timezone.utc) - timedelta(days=7)
+        )
 
         cursor = conn.cursor()
 
@@ -76,7 +78,9 @@ class FundingEventsCollector(BaseCollector):
                     resp = session.get(url, timeout=20)
                     resp.raise_for_status()
                 except Exception as e:
-                    result.errors.append(f"Funding source fetch failed ({source_name}): {e}")
+                    result.errors.append(
+                        f"Funding source fetch failed ({source_name}): {e}"
+                    )
                     continue
 
                 feed = feedparser.parse(resp.text)
@@ -184,11 +188,18 @@ class FundingEventsCollector(BaseCollector):
     def _extract_company(self, title: str) -> str | None:
         """Extract company name from funding headline."""
         # Pattern: "Company Raises $Xm Series A" or "$Xm Round for Company"
-        match = re.match(r"^([A-Z][A-Za-z0-9 ]{2,40}?)(?:\s+Raises|\s+Raised|\s+Closes|\s+Announces)", title)
+        match = re.match(
+            r"^([A-Z][A-Za-z0-9 ]{2,40}?)(?:\s+Raises|\s+Raised|\s+Closes|\s+Announces)",
+            title,
+        )
         if match:
             return match.group(1).strip()
         # Pattern: "Company lands $Xm..."
-        match = re.match(r"^([A-Z][A-Za-z0-9 ]{2,40}?)(?:\s+lands|\s+secures|\s+gets)", title, re.IGNORECASE)
+        match = re.match(
+            r"^([A-Z][A-Za-z0-9 ]{2,40}?)(?:\s+lands|\s+secures|\s+gets)",
+            title,
+            re.IGNORECASE,
+        )
         if match:
             return match.group(1).strip()
         return None

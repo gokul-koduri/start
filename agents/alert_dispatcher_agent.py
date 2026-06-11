@@ -59,7 +59,9 @@ class AlertDispatcherAgent(BaseAgent):
         max_alerts = self.config.get("max_alerts_per_run", 50)
         channels_config = self.config.get("channels", {})
 
-        _logger.info("AlertDispatcherAgent: Starting dispatch (max %d alerts)", max_alerts)
+        _logger.info(
+            "AlertDispatcherAgent: Starting dispatch (max %d alerts)", max_alerts
+        )
 
         try:
             conn = get_connection()
@@ -105,29 +107,42 @@ class AlertDispatcherAgent(BaseAgent):
             # Dispatch each alert through enabled channels
             for alert in alerts[:max_alerts]:
                 alert_id = alert.get("id")
-                alert_title = alert.get("title", "Unknown Alert")
-                alert_desc = alert.get("description", "")
+                alert.get("title", "Unknown Alert")
+                alert.get("description", "")
 
                 # Email channel
                 email_config = channels_config.get("email", {})
                 if email_config.get("enabled"):
                     status, error = self._send_email(email_config, alert)
-                    self._log_dispatch(cursor, alert_id, "email",
-                                       email_config.get("to_addresses", []),
-                                       status, error)
+                    self._log_dispatch(
+                        cursor,
+                        alert_id,
+                        "email",
+                        email_config.get("to_addresses", []),
+                        status,
+                        error,
+                    )
                     if status == "sent":
                         dispatched += 1
                     else:
                         failed += 1
                 else:
-                    _logger.debug("AlertDispatcherAgent: Email channel not configured, skipping")
+                    _logger.debug(
+                        "AlertDispatcherAgent: Email channel not configured, skipping"
+                    )
 
                 # Slack webhook
                 slack_config = channels_config.get("webhook_slack", {})
                 if slack_config.get("enabled") and slack_config.get("url"):
                     status, error = self._send_slack_webhook(slack_config["url"], alert)
-                    self._log_dispatch(cursor, alert_id, "webhook_slack",
-                                       slack_config["url"], status, error)
+                    self._log_dispatch(
+                        cursor,
+                        alert_id,
+                        "webhook_slack",
+                        slack_config["url"],
+                        status,
+                        error,
+                    )
                     if status == "sent":
                         dispatched += 1
                     else:
@@ -136,9 +151,17 @@ class AlertDispatcherAgent(BaseAgent):
                 # Discord webhook
                 discord_config = channels_config.get("webhook_discord", {})
                 if discord_config.get("enabled") and discord_config.get("url"):
-                    status, error = self._send_discord_webhook(discord_config["url"], alert)
-                    self._log_dispatch(cursor, alert_id, "webhook_discord",
-                                       discord_config["url"], status, error)
+                    status, error = self._send_discord_webhook(
+                        discord_config["url"], alert
+                    )
+                    self._log_dispatch(
+                        cursor,
+                        alert_id,
+                        "webhook_discord",
+                        discord_config["url"],
+                        status,
+                        error,
+                    )
                     if status == "sent":
                         dispatched += 1
                     else:
@@ -148,8 +171,14 @@ class AlertDispatcherAgent(BaseAgent):
                 custom_config = channels_config.get("webhook_custom", {})
                 if custom_config.get("enabled") and custom_config.get("url"):
                     status, error = self._send_webhook(custom_config["url"], alert)
-                    self._log_dispatch(cursor, alert_id, "webhook_custom",
-                                       custom_config["url"], status, error)
+                    self._log_dispatch(
+                        cursor,
+                        alert_id,
+                        "webhook_custom",
+                        custom_config["url"],
+                        status,
+                        error,
+                    )
                     if status == "sent":
                         dispatched += 1
                     else:
@@ -159,7 +188,9 @@ class AlertDispatcherAgent(BaseAgent):
 
             _logger.info(
                 "AlertDispatcherAgent: Done — %d dispatched, %d failed out of %d alerts",
-                dispatched, failed, len(alerts),
+                dispatched,
+                failed,
+                len(alerts),
             )
 
             return AgentResult(
@@ -205,7 +236,9 @@ class AlertDispatcherAgent(BaseAgent):
             last_triggered = rule.get("last_triggered_at")
             if last_triggered:
                 try:
-                    lt = datetime.strptime(last_triggered, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+                    lt = datetime.strptime(last_triggered, "%Y-%m-%d %H:%M:%S").replace(
+                        tzinfo=timezone.utc
+                    )
                     if now - lt < cooldown:
                         continue
                 except ValueError:
@@ -227,15 +260,17 @@ class AlertDispatcherAgent(BaseAgent):
                 triggered, detail = self._check_pipeline_failure(cursor, condition)
 
             if triggered:
-                alerts.append({
-                    "id": None,
-                    "alert_type": rule["rule_type"],
-                    "title": f"Rule triggered: {rule['rule_name']}",
-                    "description": detail,
-                    "affected_models": [],
-                    "priority": condition.get("priority", "medium"),
-                    "created_at": now.strftime("%Y-%m-%d %H:%M:%S"),
-                })
+                alerts.append(
+                    {
+                        "id": None,
+                        "alert_type": rule["rule_type"],
+                        "title": f"Rule triggered: {rule['rule_name']}",
+                        "description": detail,
+                        "affected_models": [],
+                        "priority": condition.get("priority", "medium"),
+                        "created_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+                    }
+                )
                 cursor.execute(
                     "UPDATE alert_rules SET last_triggered_at = %s WHERE id = %s",
                     (now.strftime("%Y-%m-%d %H:%M:%S"), rule["id"]),
@@ -257,7 +292,9 @@ class AlertDispatcherAgent(BaseAgent):
         recent = cursor.fetchall()
         collectors_run = {r["collector_name"] for r in recent}
 
-        expected = condition.get("expected_collectors", ["google_news_rss", "techcrunch_rss"])
+        expected = condition.get(
+            "expected_collectors", ["google_news_rss", "techcrunch_rss"]
+        )
         missing = [c for c in expected if c not in collectors_run]
 
         if missing:
@@ -282,8 +319,13 @@ class AlertDispatcherAgent(BaseAgent):
         failures = cursor.fetchall()
 
         if failures:
-            names = ", ".join(f"{r['agent_name']} ({r['started_at']})" for r in failures)
-            return True, f"{len(failures)} agent failure(s) in last {lookback_hours}h: {names}"
+            names = ", ".join(
+                f"{r['agent_name']} ({r['started_at']})" for r in failures
+            )
+            return (
+                True,
+                f"{len(failures)} agent failure(s) in last {lookback_hours}h: {names}",
+            )
         return False, ""
 
     def _seed_default_rules(self, cursor):
@@ -296,21 +338,25 @@ class AlertDispatcherAgent(BaseAgent):
             {
                 "rule_name": "Data freshness — RSS collectors",
                 "rule_type": "data_freshness",
-                "condition_json": json.dumps({
-                    "stale_hours": 48,
-                    "expected_collectors": ["google_news_rss", "techcrunch_rss"],
-                    "priority": "medium",
-                }),
+                "condition_json": json.dumps(
+                    {
+                        "stale_hours": 48,
+                        "expected_collectors": ["google_news_rss", "techcrunch_rss"],
+                        "priority": "medium",
+                    }
+                ),
                 "channel": "email",
                 "cooldown_minutes": 1440,
             },
             {
                 "rule_name": "Pipeline failure detection",
                 "rule_type": "pipeline_failure",
-                "condition_json": json.dumps({
-                    "lookback_hours": 24,
-                    "priority": "high",
-                }),
+                "condition_json": json.dumps(
+                    {
+                        "lookback_hours": 24,
+                        "priority": "high",
+                    }
+                ),
                 "channel": "email",
                 "cooldown_minutes": 360,
             },
@@ -320,8 +366,13 @@ class AlertDispatcherAgent(BaseAgent):
                 """INSERT INTO alert_rules (rule_name, rule_type, condition_json,
                    channel, enabled, cooldown_minutes)
                    VALUES (%s, %s, %s, %s, 1, %s)""",
-                (rule["rule_name"], rule["rule_type"], rule["condition_json"],
-                 rule["channel"], rule["cooldown_minutes"]),
+                (
+                    rule["rule_name"],
+                    rule["rule_type"],
+                    rule["condition_json"],
+                    rule["channel"],
+                    rule["cooldown_minutes"],
+                ),
             )
 
     # ── Channel dispatchers ──
@@ -339,7 +390,9 @@ class AlertDispatcherAgent(BaseAgent):
             return "skipped", "SMTP host or recipients not configured"
 
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"[Startup Research] {alert.get('priority', 'medium').upper()}: {alert.get('title', 'Alert')}"
+        msg["Subject"] = (
+            f"[Startup Research] {alert.get('priority', 'medium').upper()}: {alert.get('title', 'Alert')}"
+        )
         msg["From"] = from_addr
         msg["To"] = ", ".join(to_addrs)
 
@@ -383,7 +436,12 @@ class AlertDispatcherAgent(BaseAgent):
     def _send_slack_webhook(self, url: str, alert: dict) -> tuple[str, str | None]:
         """Send alert to Slack via incoming webhook."""
         priority = alert.get("priority", "medium")
-        emoji = {"critical": ":rotating_light:", "high": ":warning:", "medium": ":bell:", "low": ":information_source:"}
+        emoji = {
+            "critical": ":rotating_light:",
+            "high": ":warning:",
+            "medium": ":bell:",
+            "low": ":information_source:",
+        }
         icon = emoji.get(priority, ":bell:")
 
         payload = {
@@ -408,7 +466,12 @@ class AlertDispatcherAgent(BaseAgent):
     def _send_discord_webhook(self, url: str, alert: dict) -> tuple[str, str | None]:
         """Send alert to Discord via webhook."""
         priority = alert.get("priority", "medium")
-        colors = {"critical": 15158332, "high": 15105570, "medium": 15859728, "low": 4289794}
+        colors = {
+            "critical": 15158332,
+            "high": 15105570,
+            "medium": 15859728,
+            "low": 4289794,
+        }
 
         payload = {
             "embeds": [
@@ -417,7 +480,11 @@ class AlertDispatcherAgent(BaseAgent):
                     "description": alert.get("description", ""),
                     "color": colors.get(priority, 4289794),
                     "fields": [
-                        {"name": "Type", "value": alert.get("alert_type", ""), "inline": True},
+                        {
+                            "name": "Type",
+                            "value": alert.get("alert_type", ""),
+                            "inline": True,
+                        },
                         {"name": "Priority", "value": priority.upper(), "inline": True},
                     ],
                     "footer": {"text": f"Generated: {alert.get('created_at', '')}"},
@@ -427,7 +494,9 @@ class AlertDispatcherAgent(BaseAgent):
 
         return self._send_webhook(url, alert, payload)
 
-    def _send_webhook(self, url: str, alert: dict, payload: dict | None = None) -> tuple[str, str | None]:
+    def _send_webhook(
+        self, url: str, alert: dict, payload: dict | None = None
+    ) -> tuple[str, str | None]:
         """Generic webhook POST dispatcher."""
         if payload is None:
             payload = {
@@ -441,7 +510,9 @@ class AlertDispatcherAgent(BaseAgent):
         try:
             data = json.dumps(payload).encode()
             req = urllib.request.Request(
-                url, data=data, headers={"Content-Type": "application/json"},
+                url,
+                data=data,
+                headers={"Content-Type": "application/json"},
             )
             with urllib.request.urlopen(req, timeout=10) as resp:
                 resp.read()
@@ -450,16 +521,33 @@ class AlertDispatcherAgent(BaseAgent):
             _logger.error("AlertDispatcherAgent: Webhook failed (%s): %s", url, e)
             return "failed", str(e)
 
-    def _log_dispatch(self, cursor, alert_id: int | None, channel: str,
-                      destination: str | list[str], status: str, error: str | None):
+    def _log_dispatch(
+        self,
+        cursor,
+        alert_id: int | None,
+        channel: str,
+        destination: str | list[str],
+        status: str,
+        error: str | None,
+    ):
         """Log a dispatch attempt to alert_dispatches table."""
         if not alert_id:
             return
-        dest_str = ", ".join(destination) if isinstance(destination, list) else str(destination)
+        dest_str = (
+            ", ".join(destination)
+            if isinstance(destination, list)
+            else str(destination)
+        )
         cursor.execute(
             """INSERT INTO alert_dispatches (alert_id, channel, destination,
                dispatch_status, error_message, dispatched_at)
                VALUES (%s, %s, %s, %s, %s, %s)""",
-            (alert_id, channel, dest_str[:500], status, error,
-             datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")),
+            (
+                alert_id,
+                channel,
+                dest_str[:500],
+                status,
+                error,
+                datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+            ),
         )

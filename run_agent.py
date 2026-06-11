@@ -16,7 +16,6 @@ Usage:
 import argparse
 import fcntl
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -40,7 +39,9 @@ def acquire_lock():
         fcntl.flock(LOCK_FILE, fcntl.LOCK_EX | fcntl.LOCK_NB)
         return True
     except (IOError, OSError) as e:
-        logging.error("Could not acquire lock — another pipeline run may be in progress: %s", e)
+        logging.error(
+            "Could not acquire lock — another pipeline run may be in progress: %s", e
+        )
         return False
 
 
@@ -60,12 +61,25 @@ def main():
     parser = argparse.ArgumentParser(description="Run startup research agent pipeline")
     parser.add_argument(
         "--pipeline",
-        choices=["daily", "weekly", "analysis", "full", "collect-only", "report-only", "publish-only", "dev-team"],
+        choices=[
+            "daily",
+            "weekly",
+            "analysis",
+            "full",
+            "collect-only",
+            "report-only",
+            "publish-only",
+            "dev-team",
+        ],
         default="daily",
         help="Which pipeline to run (default: daily)",
     )
-    parser.add_argument("--dry-run", action="store_true", help="Log actions without making changes")
-    parser.add_argument("--force", action="store_true", help="Force run even if no new data")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Log actions without making changes"
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="Force run even if no new data"
+    )
     parser.add_argument(
         "--chat",
         type=str,
@@ -90,7 +104,7 @@ def main():
         # Redirect ALL logging to stderr so JSON output on stdout is clean
         for handler in logging.getLogger().handlers[:]:
             logging.getLogger().removeHandler(handler)
-            if hasattr(handler, 'stream') and handler.stream == sys.stdout:
+            if hasattr(handler, "stream") and handler.stream == sys.stdout:
                 handler.stream = sys.stderr
                 logging.getLogger().addHandler(handler)
             else:
@@ -98,16 +112,17 @@ def main():
         for name in logging.root.manager.loggerDict:
             lg = logging.getLogger(name)
             for h in lg.handlers[:]:
-                if hasattr(h, 'stream') and h.stream == sys.stdout:
+                if hasattr(h, "stream") and h.stream == sys.stdout:
                     lg.removeHandler(h)
                     h.stream = sys.stderr
                     lg.addHandler(h)
 
         _logger.info("Single agent mode — agent: %s", args.agent)
         from agents.orchestrator import _get_agent_class
+
         try:
             agent_class = _get_agent_class(args.agent)
-        except ValueError as e:
+        except ValueError:
             _logger.error("Unknown agent: %s", args.agent)
             sys.exit(1)
 
@@ -122,6 +137,7 @@ def main():
 
         # Print JSON to stdout only
         import json as _json
+
         output = {"status": result.status, "agent_name": result.agent_name}
         if result.errors:
             output["errors"] = result.errors
@@ -140,7 +156,10 @@ def main():
         analyst_config["_scheduled"] = False
 
         from agents.ai_analyst_agent import AIAnalystAgent
-        analyst = AIAnalystAgent(config=analyst_config, dry_run=args.dry_run, query=args.chat)
+
+        analyst = AIAnalystAgent(
+            config=analyst_config, dry_run=args.dry_run, query=args.chat
+        )
         result = analyst.run()
         sys.exit(1 if result.status == "failed" else 0)
 
@@ -160,25 +179,54 @@ def main():
         orchestrator_config["dry_run"] = args.dry_run
 
         # Merge in agent-specific configs
-        for key in ["collection", "report", "dashboard", "git_publisher", "internet_research",
-                     "failure_pattern", "survival_analysis", "revival_opportunity",
-                     "geographic_strategy", "news_intelligence", "opportunity_pipeline",
-                     "whale_investor", "correlation", "global_market_viability",
-                     "llm_pricing", "llm_benchmark", "llm_portfolio", "llm_cost_optimizer",
-                     "license_manager", "knowledge_graph", "ai_analyst",
-                     "alert_dispatcher", "report_generator", "stripe_payments", "span_monitor",
-                     "opportunity_scorer", "entity_resolver", "nlp_enrichment",
-                     "semantic_search",
-                     # AI Product Development Team
-                     "product_manager", "business_analyst", "solution_architect",
-                     "ux_designer", "software_engineer", "qa_engineer", "devops_engineer"]:
+        for key in [
+            "collection",
+            "report",
+            "dashboard",
+            "git_publisher",
+            "internet_research",
+            "failure_pattern",
+            "survival_analysis",
+            "revival_opportunity",
+            "geographic_strategy",
+            "news_intelligence",
+            "opportunity_pipeline",
+            "whale_investor",
+            "correlation",
+            "global_market_viability",
+            "llm_pricing",
+            "llm_benchmark",
+            "llm_portfolio",
+            "llm_cost_optimizer",
+            "license_manager",
+            "knowledge_graph",
+            "ai_analyst",
+            "alert_dispatcher",
+            "report_generator",
+            "stripe_payments",
+            "span_monitor",
+            "opportunity_scorer",
+            "entity_resolver",
+            "nlp_enrichment",
+            "semantic_search",
+            # AI Product Development Team
+            "product_manager",
+            "business_analyst",
+            "solution_architect",
+            "ux_designer",
+            "software_engineer",
+            "qa_engineer",
+            "devops_engineer",
+        ]:
             if key in agents_config:
                 orchestrator_config[key] = agents_config[key]
 
         if args.force and "report" in orchestrator_config:
             orchestrator_config["report"]["only_on_new_data"] = False
 
-        orchestrator = OrchestratorAgent(config=orchestrator_config, dry_run=args.dry_run)
+        orchestrator = OrchestratorAgent(
+            config=orchestrator_config, dry_run=args.dry_run
+        )
         result = orchestrator.run()
 
         # Exit with error code if pipeline failed

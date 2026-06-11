@@ -43,7 +43,7 @@ class NLPEnrichmentAgent(BaseAgent):
             return AgentResult(agent_name=self.name, status="failed", errors=[str(e)])
 
         batch_size = int(self.config.get("batch_size", 50))
-        emb_batch_size = int(self.config.get("embedding_batch_size", 32))
+        int(self.config.get("embedding_batch_size", 32))
         min_text_len = int(self.config.get("skip_text_shorter_than", 10))
         do_embeddings = self.config.get("store_embeddings", True)
         do_search_index = self.config.get("index_search", True)
@@ -63,6 +63,7 @@ class NLPEnrichmentAgent(BaseAgent):
 
         try:
             from nlp.entity_extractor import UnifiedEntityExtractor
+
             extractor = UnifiedEntityExtractor()
             _logger.info("NLPEnrichmentAgent: entity extractor ready")
         except Exception as e:
@@ -71,6 +72,7 @@ class NLPEnrichmentAgent(BaseAgent):
 
         try:
             from nlp.text_classifier import SignalTextClassifier
+
             classifier = SignalTextClassifier()
         except Exception as e:
             errors.append(f"Text classifier unavailable: {e}")
@@ -79,9 +81,13 @@ class NLPEnrichmentAgent(BaseAgent):
         if do_embeddings:
             try:
                 from nlp.embedding_generator import EmbeddingGenerator
+
                 embedder = EmbeddingGenerator()
                 embedder.load()
-                _logger.info("NLPEnrichmentAgent: embedding generator loaded (dim=%d)", embedder.dimension)
+                _logger.info(
+                    "NLPEnrichmentAgent: embedding generator loaded (dim=%d)",
+                    embedder.dimension,
+                )
             except Exception as e:
                 errors.append(f"Embedding generator unavailable: {e}")
                 _logger.warning("NLPEnrichmentAgent: %s", e)
@@ -89,19 +95,27 @@ class NLPEnrichmentAgent(BaseAgent):
         if do_search_index:
             try:
                 from db.vector_store import VectorStore
+
                 vs_config = self.config.get("qdrant", {})
                 vector_store = VectorStore(vs_config)
                 vector_store.connect()
-                _logger.info("NLPEnrichmentAgent: vector store %s", "connected" if vector_store.is_connected else "unavailable")
+                _logger.info(
+                    "NLPEnrichmentAgent: vector store %s",
+                    "connected" if vector_store.is_connected else "unavailable",
+                )
             except Exception as e:
                 _logger.warning("NLPEnrichmentAgent: vector store unavailable: %s", e)
 
             try:
                 from db.search_index import SearchIndex
+
                 si_config = self.config.get("elasticsearch", {})
                 search_index = SearchIndex(si_config)
                 search_index.connect()
-                _logger.info("NLPEnrichmentAgent: search index %s", "connected" if search_index.is_connected else "unavailable")
+                _logger.info(
+                    "NLPEnrichmentAgent: search index %s",
+                    "connected" if search_index.is_connected else "unavailable",
+                )
             except Exception as e:
                 _logger.warning("NLPEnrichmentAgent: search index unavailable: %s", e)
 
@@ -123,8 +137,13 @@ class NLPEnrichmentAgent(BaseAgent):
                 _logger.info("NLPEnrichmentAgent: no unprocessed signals")
                 conn.close()
                 return AgentResult(
-                    agent_name=self.name, status="success",
-                    data={"processed": 0, "entities_extracted": 0, "embeddings_stored": 0},
+                    agent_name=self.name,
+                    status="success",
+                    data={
+                        "processed": 0,
+                        "entities_extracted": 0,
+                        "embeddings_stored": 0,
+                    },
                 )
 
             _logger.info("NLPEnrichmentAgent: processing %d signals", len(signals))
@@ -153,19 +172,29 @@ class NLPEnrichmentAgent(BaseAgent):
                         enrichment["entities"] = entities
                         total_entities += len(entities)
                     except Exception as e:
-                        _logger.warning("NLPEnrichmentAgent: entity extraction failed for signal %d: %s", sig_id, e)
+                        _logger.warning(
+                            "NLPEnrichmentAgent: entity extraction failed for signal %d: %s",
+                            sig_id,
+                            e,
+                        )
 
                 # 2. Classification
                 if classifier:
                     try:
                         sig_type, sig_conf = classifier.classify_signal_type(full_text)
-                        sent_label, sent_score = classifier.classify_sentiment(full_text)
+                        sent_label, sent_score = classifier.classify_sentiment(
+                            full_text
+                        )
                         enrichment["signal_type_nlp"] = sig_type
                         enrichment["signal_type_confidence"] = round(sig_conf, 3)
                         enrichment["sentiment_label"] = sent_label
                         enrichment["sentiment_score"] = round(sent_score, 3)
                     except Exception as e:
-                        _logger.warning("NLPEnrichmentAgent: classification failed for signal %d: %s", sig_id, e)
+                        _logger.warning(
+                            "NLPEnrichmentAgent: classification failed for signal %d: %s",
+                            sig_id,
+                            e,
+                        )
 
                 # 3. Embedding
                 if embedder:
@@ -178,7 +207,12 @@ class NLPEnrichmentAgent(BaseAgent):
                             """INSERT INTO vector_embeddings
                                (entity_name, entity_type, content_text, vector_data, created_at)
                                VALUES (%s, %s, %s, %s, NOW())""",
-                            (sig.get("source_name", ""), sig.get("signal_type", ""), full_text[:2000], json.dumps(vector)),
+                            (
+                                sig.get("source_name", ""),
+                                sig.get("signal_type", ""),
+                                full_text[:2000],
+                                json.dumps(vector),
+                            ),
                         )
                         ve_id = cursor.lastrowid
                         enrichment["vector_embedding_id"] = ve_id
@@ -209,11 +243,17 @@ class NLPEnrichmentAgent(BaseAgent):
                                 "body_text": full_text[:5000],
                                 "published_at": str(sig.get("collected_at", "")),
                             }
-                            search_index.index_document(doc_id=f"signal_{sig_id}", document=doc)
+                            search_index.index_document(
+                                doc_id=f"signal_{sig_id}", document=doc
+                            )
                             total_indexed += 1
 
                     except Exception as e:
-                        _logger.warning("NLPEnrichmentAgent: embedding failed for signal %d: %s", sig_id, e)
+                        _logger.warning(
+                            "NLPEnrichmentAgent: embedding failed for signal %d: %s",
+                            sig_id,
+                            e,
+                        )
 
                 # Mark signal as processed
                 self._mark_processed(cursor, sig_id, enrichment)
@@ -230,7 +270,8 @@ class NLPEnrichmentAgent(BaseAgent):
 
         status = "success" if not errors else "partial"
         return AgentResult(
-            agent_name=self.name, status=status,
+            agent_name=self.name,
+            status=status,
             data={
                 "processed": total_processed,
                 "entities_extracted": total_entities,

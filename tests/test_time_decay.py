@@ -1,16 +1,13 @@
 """Unit tests for the scoring engine — time decay, anomaly detection, and composite scorer."""
 
-import math
 from datetime import datetime, timedelta, timezone
 
-import pytest
 
 from scoring.anomaly_detector import (
-    AnomalyResult,
     detect_multi_signal_anomaly,
     z_score_anomaly,
 )
-from scoring.composite_scorer import CompositeScorer, ScoreResult
+from scoring.composite_scorer import CompositeScorer
 from scoring.feature_attribution import build_attribution, compute_confidence
 from scoring.signal_weights import SIGNAL_WEIGHTS
 from scoring.time_decay import exponential_decay, freshness_label, half_life_hours
@@ -67,7 +64,9 @@ class TestExponentialDecay:
     def test_custom_now(self):
         """Test with explicit 'now' parameter."""
         base = datetime(2025, 1, 1, tzinfo=timezone.utc)
-        decay = exponential_decay(base, lambda_=0.000079, now=base + timedelta(days=180))
+        decay = exponential_decay(
+            base, lambda_=0.000079, now=base + timedelta(days=180)
+        )
         # ~1 year half-life (8760 hrs), so 180 days (4320 hrs) ≈ ~71%
         assert 0.5 < decay < 0.9
 
@@ -153,7 +152,9 @@ class TestZScoreAnomaly:
         r_strict = z_score_anomaly(values, threshold=1.0)
         r_loose = z_score_anomaly(values, threshold=5.0)
         # 15 is a moderate spike — detected at threshold 1.0 but not 5.0
-        assert r_strict.is_anomaly or r_loose.is_anomaly or True  # At least one consistent
+        assert (
+            r_strict.is_anomaly or r_loose.is_anomaly or True
+        )  # At least one consistent
 
 
 class TestMultiSignalAnomaly:
@@ -211,15 +212,27 @@ class TestCompositeScorer:
         single = scorer.score(
             entity_name="Single Corp",
             signal_scores={
-                "news_mention": {"raw_score": 60, "published_at": now - timedelta(days=1)},
+                "news_mention": {
+                    "raw_score": 60,
+                    "published_at": now - timedelta(days=1),
+                },
             },
         )
         multi = scorer.score(
             entity_name="Multi Corp",
             signal_scores={
-                "funding_round": {"raw_score": 90, "published_at": now - timedelta(days=1)},
-                "sec_filing": {"raw_score": 80, "published_at": now - timedelta(days=3)},
-                "news_mention": {"raw_score": 60, "published_at": now - timedelta(days=1)},
+                "funding_round": {
+                    "raw_score": 90,
+                    "published_at": now - timedelta(days=1),
+                },
+                "sec_filing": {
+                    "raw_score": 80,
+                    "published_at": now - timedelta(days=3),
+                },
+                "news_mention": {
+                    "raw_score": 60,
+                    "published_at": now - timedelta(days=1),
+                },
             },
         )
         assert multi.composite_score > single.composite_score
@@ -231,13 +244,19 @@ class TestCompositeScorer:
         fresh = scorer.score(
             entity_name="Fresh Corp",
             signal_scores={
-                "news_mention": {"raw_score": 60, "published_at": now - timedelta(hours=1)},
+                "news_mention": {
+                    "raw_score": 60,
+                    "published_at": now - timedelta(hours=1),
+                },
             },
         )
         stale = scorer.score(
             entity_name="Stale Corp",
             signal_scores={
-                "news_mention": {"raw_score": 60, "published_at": now - timedelta(days=180)},
+                "news_mention": {
+                    "raw_score": 60,
+                    "published_at": now - timedelta(days=180),
+                },
             },
         )
         assert fresh.composite_score > stale.composite_score
@@ -255,9 +274,18 @@ class TestCompositeScorer:
         result = scorer.score(
             entity_name="Bound Corp",
             signal_scores={
-                "funding_round": {"raw_score": 100, "published_at": now - timedelta(hours=1)},
-                "sec_filing": {"raw_score": 100, "published_at": now - timedelta(hours=1)},
-                "news_mention": {"raw_score": 100, "published_at": now - timedelta(hours=1)},
+                "funding_round": {
+                    "raw_score": 100,
+                    "published_at": now - timedelta(hours=1),
+                },
+                "sec_filing": {
+                    "raw_score": 100,
+                    "published_at": now - timedelta(hours=1),
+                },
+                "news_mention": {
+                    "raw_score": 100,
+                    "published_at": now - timedelta(hours=1),
+                },
             },
         )
         assert 0 <= result.composite_score <= 100
@@ -278,9 +306,18 @@ class TestCompositeScorer:
         result = scorer.score(
             entity_name="Rising Corp",
             signal_scores={
-                "funding_round": {"raw_score": 90, "published_at": now - timedelta(hours=1)},
-                "news_mention": {"raw_score": 80, "published_at": now - timedelta(hours=2)},
-                "job_posting_spike": {"raw_score": 70, "published_at": now - timedelta(hours=3)},
+                "funding_round": {
+                    "raw_score": 90,
+                    "published_at": now - timedelta(hours=1),
+                },
+                "news_mention": {
+                    "raw_score": 80,
+                    "published_at": now - timedelta(hours=2),
+                },
+                "job_posting_spike": {
+                    "raw_score": 70,
+                    "published_at": now - timedelta(hours=3),
+                },
             },
         )
         assert result.trend_direction == "rising"
@@ -292,8 +329,14 @@ class TestFeatureAttribution:
     def test_attribution_sorted(self):
         """Attribution should be sorted by contribution descending."""
         signals = {
-            "funding_round": {"raw_score": 90, "published_at": datetime.now(timezone.utc)},
-            "news_mention": {"raw_score": 60, "published_at": datetime.now(timezone.utc)},
+            "funding_round": {
+                "raw_score": 90,
+                "published_at": datetime.now(timezone.utc),
+            },
+            "news_mention": {
+                "raw_score": 60,
+                "published_at": datetime.now(timezone.utc),
+            },
         }
         decays = {"funding_round": 0.9, "news_mention": 0.8}
         attr = build_attribution(signals, SIGNAL_WEIGHTS, decays)

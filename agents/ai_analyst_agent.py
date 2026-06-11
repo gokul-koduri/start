@@ -19,7 +19,6 @@ import urllib.error
 from agents.base import AgentResult, BaseAgent
 from agents.ollama_usage_tracker_agent import _track_inference
 from db.connection import get_connection
-from db import schema
 
 _logger = logging.getLogger(__name__)
 
@@ -52,8 +51,15 @@ _SQL_BLACKLIST = re.compile(
 )
 
 _INTENT_CATEGORIES = [
-    "failure_patterns", "market_analysis", "news", "survival_rates",
-    "revival_industries", "geographic", "llm_pricing", "pipeline_status", "general",
+    "failure_patterns",
+    "market_analysis",
+    "news",
+    "survival_rates",
+    "revival_industries",
+    "geographic",
+    "llm_pricing",
+    "pipeline_status",
+    "general",
 ]
 
 
@@ -76,7 +82,9 @@ class AIAnalystAgent(BaseAgent):
     def name(self) -> str:
         return "ai_analyst"
 
-    def __init__(self, config: dict | None = None, dry_run: bool = False, query: str = ""):
+    def __init__(
+        self, config: dict | None = None, dry_run: bool = False, query: str = ""
+    ):
         super().__init__(config=config, dry_run=dry_run)
         self.query = query
 
@@ -94,7 +102,9 @@ class AIAnalystAgent(BaseAgent):
         }
         try:
             data = json.dumps(payload).encode()
-            req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+            req = urllib.request.Request(
+                url, data=data, headers={"Content-Type": "application/json"}
+            )
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 result = json.loads(resp.read().decode())
 
@@ -129,7 +139,9 @@ class AIAnalystAgent(BaseAgent):
                 "Respond with ONLY the category name, nothing else."
             ),
         }
-        result = self._call_ollama([system_msg, {"role": "user", "content": query}], timeout=30)
+        result = self._call_ollama(
+            [system_msg, {"role": "user", "content": query}], timeout=30
+        )
         if result:
             for cat in _INTENT_CATEGORIES:
                 if cat in result.lower():
@@ -156,7 +168,10 @@ class AIAnalystAgent(BaseAgent):
             ),
         }
         result = self._call_ollama(
-            [system_msg, {"role": "user", "content": f"Intent: {intent}\n\nQuestion: {query}"}],
+            [
+                system_msg,
+                {"role": "user", "content": f"Intent: {intent}\n\nQuestion: {query}"},
+            ],
             timeout=60,
         )
         if not result:
@@ -250,15 +265,18 @@ class AIAnalystAgent(BaseAgent):
             ),
         }
         result = self._call_ollama(
-            [system_msg, {
-                "role": "user",
-                "content": (
-                    f"Question: {query}\n\n"
-                    f"SQL:\n```sql\n{sql}\n```\n\n"
-                    f"Results:\n{results_md}\n\n"
-                    "Provide a clear, data-driven answer."
-                ),
-            }],
+            [
+                system_msg,
+                {
+                    "role": "user",
+                    "content": (
+                        f"Question: {query}\n\n"
+                        f"SQL:\n```sql\n{sql}\n```\n\n"
+                        f"Results:\n{results_md}\n\n"
+                        "Provide a clear, data-driven answer."
+                    ),
+                },
+            ],
             timeout=90,
         )
         return result or "Unable to generate an answer."
@@ -275,7 +293,7 @@ class AIAnalystAgent(BaseAgent):
 
         # Step 1: Classify intent
         print(f"\n{'─'*60}", flush=True)
-        print(f"Analyzing query...", flush=True)
+        print("Analyzing query...", flush=True)
         intent = self._classify_intent(self.query)
         _logger.info("AIAnalystAgent: Intent=%s Query=%s", intent, self.query[:80])
 
@@ -284,7 +302,9 @@ class AIAnalystAgent(BaseAgent):
         if not sql:
             answer = "Could not generate a valid SQL query. Try rephrasing."
             print(f"\n{answer}", flush=True)
-            return AgentResult(agent_name=self.name, status="partial", errors=["SQL generation failed"])
+            return AgentResult(
+                agent_name=self.name, status="partial", errors=["SQL generation failed"]
+            )
 
         _logger.info("AIAnalystAgent: SQL=%s", sql[:200])
 

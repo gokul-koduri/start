@@ -14,7 +14,7 @@ Attribution breakdown:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
@@ -71,7 +71,9 @@ def build_attribution(
         label = weight_config.get("label", signal_type)
         freshness = decay_values.get(signal_type, 1.0)
 
-        contribution = weight * raw_score * freshness / 100.0  # Normalize to [0, weight]
+        contribution = (
+            weight * raw_score * freshness / 100.0
+        )  # Normalize to [0, weight]
 
         attributions.append(
             SignalAttribution(
@@ -108,7 +110,8 @@ def compute_confidence(
         Confidence factor in [0.1, 1.0] where 1.0 = all signals present.
     """
     relevant_types = {
-        st for st, cfg in signal_weights.items()
+        st
+        for st, cfg in signal_weights.items()
         if category == "all" or cfg.get("category") == category
     }
 
@@ -125,4 +128,4 @@ def compute_confidence(
 
 
 # Need math for compute_confidence
-import math
+import math  # noqa: E402

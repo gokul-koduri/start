@@ -18,6 +18,7 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_empty_signals(self):
         """Score with no signals returns 0."""
         from scoring.composite_scorer import CompositeScorer
+
         scorer = CompositeScorer()
         result = scorer.score(
             entity_name="EmptyCorp",
@@ -31,12 +32,16 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_single_signal(self):
         """Score with a single signal works."""
         from scoring.composite_scorer import CompositeScorer
+
         scorer = CompositeScorer()
         result = scorer.score(
             entity_name="SingleSig",
             entity_type="company",
             signal_scores={
-                "funding_round": {"raw_score": 80, "published_at": datetime.now(timezone.utc)},
+                "funding_round": {
+                    "raw_score": 80,
+                    "published_at": datetime.now(timezone.utc),
+                },
             },
             historical_values={"funding_round": [80]},
         )
@@ -46,6 +51,7 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_many_signals(self):
         """Score with all signal types works."""
         from scoring.composite_scorer import CompositeScorer
+
         scorer = CompositeScorer()
         now = datetime.now(timezone.utc)
         signal_scores = {
@@ -66,10 +72,17 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_zero_score_signal(self):
         """Signal with raw_score=0 doesn't crash."""
         from scoring.composite_scorer import CompositeScorer
+
         scorer = CompositeScorer()
         result = scorer.score(
-            "ZeroCorp", "company",
-            {"funding_round": {"raw_score": 0, "published_at": datetime.now(timezone.utc)}},
+            "ZeroCorp",
+            "company",
+            {
+                "funding_round": {
+                    "raw_score": 0,
+                    "published_at": datetime.now(timezone.utc),
+                }
+            },
             {"funding_round": [0]},
         )
         self.assertIsInstance(result.composite_score, float)
@@ -77,10 +90,17 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_max_score_signal(self):
         """Signal with raw_score=100 works."""
         from scoring.composite_scorer import CompositeScorer
+
         scorer = CompositeScorer()
         result = scorer.score(
-            "MaxCorp", "company",
-            {"funding_round": {"raw_score": 100, "published_at": datetime.now(timezone.utc)}},
+            "MaxCorp",
+            "company",
+            {
+                "funding_round": {
+                    "raw_score": 100,
+                    "published_at": datetime.now(timezone.utc),
+                }
+            },
             {"funding_round": [100]},
         )
         self.assertGreater(result.composite_score, 0)
@@ -88,17 +108,20 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_old_signal_decays(self):
         """Very old signal has lower impact than recent one."""
         from scoring.composite_scorer import CompositeScorer
+
         scorer = CompositeScorer()
         now = datetime.now(timezone.utc)
         old = now - timedelta(days=365)
 
         recent_result = scorer.score(
-            "RecentCorp", "company",
+            "RecentCorp",
+            "company",
             {"funding_round": {"raw_score": 80, "published_at": now}},
             {"funding_round": [80]},
         )
         old_result = scorer.score(
-            "OldCorp", "company",
+            "OldCorp",
+            "company",
             {"funding_round": {"raw_score": 80, "published_at": old}},
             {"funding_round": [80]},
         )
@@ -108,6 +131,7 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_score_result_has_trend_direction(self):
         """Result includes trend_direction."""
         from scoring.composite_scorer import CompositeScorer
+
         scorer = CompositeScorer()
         result = scorer.score("TrendCorp", "company", {}, {})
         self.assertIn(result.trend_direction, ("rising", "falling", "stable"))
@@ -115,6 +139,7 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_score_result_has_confidence(self):
         """Result includes confidence factor."""
         from scoring.composite_scorer import CompositeScorer
+
         scorer = CompositeScorer()
         result = scorer.score("ConfCorp", "company", {}, {})
         self.assertIsInstance(result.confidence, float)
@@ -124,6 +149,7 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_custom_weights(self):
         """Custom weights change the score."""
         from scoring.composite_scorer import CompositeScorer
+
         now = datetime.now(timezone.utc)
         signals = {
             "funding_round": {"raw_score": 90, "published_at": now},
@@ -131,14 +157,38 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
         }
         historical = {k: [v["raw_score"]] for k, v in signals.items()}
 
-        high_funding = CompositeScorer(weights={
-            "funding_round": {"weight": 50.0, "decay_lambda": 0.000079, "label": "Funding", "category": "primary"},
-            "social_buzz": {"weight": 1.0, "decay_lambda": 0.002063, "label": "Social", "category": "tertiary"},
-        })
-        low_funding = CompositeScorer(weights={
-            "funding_round": {"weight": 1.0, "decay_lambda": 0.000079, "label": "Funding", "category": "primary"},
-            "social_buzz": {"weight": 50.0, "decay_lambda": 0.002063, "label": "Social", "category": "tertiary"},
-        })
+        high_funding = CompositeScorer(
+            weights={
+                "funding_round": {
+                    "weight": 50.0,
+                    "decay_lambda": 0.000079,
+                    "label": "Funding",
+                    "category": "primary",
+                },
+                "social_buzz": {
+                    "weight": 1.0,
+                    "decay_lambda": 0.002063,
+                    "label": "Social",
+                    "category": "tertiary",
+                },
+            }
+        )
+        low_funding = CompositeScorer(
+            weights={
+                "funding_round": {
+                    "weight": 1.0,
+                    "decay_lambda": 0.000079,
+                    "label": "Funding",
+                    "category": "primary",
+                },
+                "social_buzz": {
+                    "weight": 50.0,
+                    "decay_lambda": 0.002063,
+                    "label": "Social",
+                    "category": "tertiary",
+                },
+            }
+        )
 
         result_high = high_funding.score("Corp1", "company", signals, historical)
         result_low = low_funding.score("Corp2", "company", signals, historical)
@@ -148,6 +198,7 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_score_result_to_dict(self):
         """ScoreResult.to_dict() has all expected fields."""
         from scoring.composite_scorer import CompositeScorer
+
         scorer = CompositeScorer()
         result = scorer.score("DictCorp", "company", {}, {})
         d = result.to_dict()
@@ -161,10 +212,17 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_entity_type_market(self):
         """Scoring works with entity_type='market'."""
         from scoring.composite_scorer import CompositeScorer
+
         scorer = CompositeScorer()
         result = scorer.score(
-            "AI Market", "market",
-            {"news_mention": {"raw_score": 70, "published_at": datetime.now(timezone.utc)}},
+            "AI Market",
+            "market",
+            {
+                "news_mention": {
+                    "raw_score": 70,
+                    "published_at": datetime.now(timezone.utc),
+                }
+            },
             {"news_mention": [70]},
         )
         self.assertEqual(result.entity_type, "market")
@@ -172,10 +230,12 @@ class TestCompositeScorerEdgeCases(unittest.TestCase):
     def test_anomaly_with_spike(self):
         """Large historical spike triggers anomaly detection."""
         from scoring.composite_scorer import CompositeScorer
+
         scorer = CompositeScorer()
         now = datetime.now(timezone.utc)
         result = scorer.score(
-            "SpikeCorp", "company",
+            "SpikeCorp",
+            "company",
             {"funding_round": {"raw_score": 95, "published_at": now}},
             {"funding_round": [30, 35, 32, 28, 95]},  # Spike at end
         )

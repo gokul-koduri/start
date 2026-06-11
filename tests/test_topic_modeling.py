@@ -1,6 +1,5 @@
 """Tests for agents/topic_modeling_agent.py"""
 
-
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -23,6 +22,7 @@ class TestTopicModelingAgent:
     @pytest.fixture
     def agent(self):
         from agents.topic_modeling_agent import TopicModelingAgent
+
         return TopicModelingAgent(config={}, dry_run=False)
 
     def test_agent_name(self, agent):
@@ -33,8 +33,10 @@ class TestTopicModelingAgent:
         cursor.fetchall.return_value = [{"sector": "AI", "count": 10}]
         mock_connection.cursor.side_effect = [cursor, cursor, cursor]
 
-        with patch(f"agents.topic_modeling_agent.get_connection", return_value=mock_connection):
-            with patch(f"agents.topic_modeling_agent.schema"):
+        with patch(
+            "agents.topic_modeling_agent.get_connection", return_value=mock_connection
+        ):
+            with patch("agents.topic_modeling_agent.schema"):
                 result = agent.execute()
 
         assert result.status == "success"
@@ -44,8 +46,10 @@ class TestTopicModelingAgent:
         cursor.fetchall.return_value = []
         mock_connection.cursor.side_effect = [cursor, cursor, cursor]
 
-        with patch(f"agents.topic_modeling_agent.get_connection", return_value=mock_connection):
-            with patch(f"agents.topic_modeling_agent.schema"):
+        with patch(
+            "agents.topic_modeling_agent.get_connection", return_value=mock_connection
+        ):
+            with patch("agents.topic_modeling_agent.schema"):
                 result = agent.execute()
 
         assert result.status == "success"

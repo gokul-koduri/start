@@ -10,7 +10,6 @@ Usage:
 import argparse
 import logging
 import sys
-import tempfile
 from pathlib import Path
 
 # Add project root to Python path
@@ -26,10 +25,19 @@ _logger = logging.getLogger("run_report")
 
 def main():
     parser = argparse.ArgumentParser(description="Generate startup research report")
-    parser.add_argument("--output", "-o", type=str, default=None,
-                        help="Output file path (default: from config)")
-    parser.add_argument("--section", type=str, default=None,
-                        help="Generate only a specific section (e.g., part1, part2)")
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default=None,
+        help="Output file path (default: from config)",
+    )
+    parser.add_argument(
+        "--section",
+        type=str,
+        default=None,
+        help="Generate only a specific section (e.g., part1, part2)",
+    )
 
     args = parser.parse_args()
 
@@ -52,7 +60,9 @@ def main():
     schema.init_schema(conn)
 
     try:
-        result_path = generate_report(conn, config, str(output_path), section=args.section)
+        result_path = generate_report(
+            conn, config, str(output_path), section=args.section
+        )
         _logger.info("Report written to: %s", result_path)
     finally:
         conn.close()

@@ -1,7 +1,7 @@
 """Role-based access control (RBAC) permissions."""
 
 import logging
-from typing import Dict, List, Set
+from typing import List
 
 _logger = logging.getLogger(__name__)
 
@@ -19,45 +19,37 @@ PERMISSIONS = {
     "startups:read": ["viewer", "analyst", "admin"],
     "startups:write": ["analyst", "admin"],
     "startups:delete": ["admin"],
-
     # News and signals
     "news:read": ["viewer", "analyst", "admin"],
     "news:write": ["analyst", "admin"],
     "signals:read": ["viewer", "analyst", "admin"],
     "signals:write": ["analyst", "admin"],
-
     # Analysis and reports
     "analysis:read": ["viewer", "analyst", "admin"],
     "analysis:run": ["analyst", "admin"],
     "reports:read": ["viewer", "analyst", "admin"],
     "reports:generate": ["analyst", "admin"],
-
     # Knowledge graph
     "knowledge_graph:read": ["viewer", "analyst", "admin"],
     "knowledge_graph:write": ["analyst", "admin"],
-
     # ML models
     "ml:read": ["viewer", "analyst", "admin"],
     "ml:train": ["analyst", "admin"],
-
     # Users and licenses
     "users:read": ["admin"],
     "users:write": ["admin"],
     "licenses:read": ["viewer", "analyst", "admin"],
     "licenses:write": ["admin"],
-
     # Pipelines and agents
     "pipelines:read": ["viewer", "analyst", "admin"],
     "pipelines:run": ["analyst", "admin"],
     "agents:read": ["viewer", "analyst", "admin"],
     "agents:run": ["analyst", "admin"],
-
     # Webhooks and integrations
     "webhooks:read": ["viewer", "analyst", "admin"],
     "webhooks:write": ["analyst", "admin"],
     "integrations:read": ["viewer", "analyst", "admin"],
     "integrations:write": ["admin"],
-
     # System administration
     "system:read": ["viewer", "analyst", "admin"],
     "system:write": ["admin"],
@@ -155,8 +147,7 @@ class RBAC:
             return list(self.role_hierarchy.keys())
 
         return [
-            role for role, level in self.role_hierarchy.items()
-            if level >= min_level
+            role for role, level in self.role_hierarchy.items() if level >= min_level
         ]
 
     def add_permission(self, permission: str, roles: List[str]) -> None:

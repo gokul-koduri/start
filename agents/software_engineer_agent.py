@@ -189,13 +189,17 @@ class SoftwareEngineerAgent(BaseAgent):
                 # Naming: check for camelCase functions
                 for node in ast.walk(tree):
                     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                        if not node.name.startswith("_") and re.match(r'^[a-z]+[A-Z]', node.name):
+                        if not node.name.startswith("_") and re.match(
+                            r"^[a-z]+[A-Z]", node.name
+                        ):
                             if node.name not in ("setUp", "tearDown"):
-                                standards["naming_issues"].append({
-                                    "file": str(pyfile),
-                                    "function": node.name,
-                                    "issue": "camelCase (use snake_case)",
-                                })
+                                standards["naming_issues"].append(
+                                    {
+                                        "file": str(pyfile),
+                                        "function": node.name,
+                                        "issue": "camelCase (use snake_case)",
+                                    }
+                                )
 
             except Exception:
                 pass
@@ -207,7 +211,11 @@ class SoftwareEngineerAgent(BaseAgent):
         patterns = []
 
         for pyfile in Path(".").rglob("*.py"):
-            if ".git" in str(pyfile) or "__pycache__" in str(pyfile) or "test" in str(pyfile):
+            if (
+                ".git" in str(pyfile)
+                or "__pycache__" in str(pyfile)
+                or "test" in str(pyfile)
+            ):
                 continue
             try:
                 content = pyfile.read_text()
@@ -215,28 +223,34 @@ class SoftwareEngineerAgent(BaseAgent):
                 # Bare except Exception
                 bare_excepts = content.count("except Exception")
                 if bare_excepts > 3:
-                    patterns.append({
-                        "file": str(pyfile),
-                        "pattern": "too_many_bare_excepts",
-                        "count": bare_excepts,
-                        "recommendation": "Use specific exception types",
-                    })
+                    patterns.append(
+                        {
+                            "file": str(pyfile),
+                            "pattern": "too_many_bare_excepts",
+                            "count": bare_excepts,
+                            "recommendation": "Use specific exception types",
+                        }
+                    )
 
                 # datetime.utcnow() (deprecated in 3.12)
                 if "datetime.utcnow()" in content:
-                    patterns.append({
-                        "file": str(pyfile),
-                        "pattern": "deprecated_utcnow",
-                        "recommendation": "Use datetime.now(timezone.utc)",
-                    })
+                    patterns.append(
+                        {
+                            "file": str(pyfile),
+                            "pattern": "deprecated_utcnow",
+                            "recommendation": "Use datetime.now(timezone.utc)",
+                        }
+                    )
 
                 # import * (wildcard)
-                if re.search(r'from\s+\w+\s+import\s+\*', content):
-                    patterns.append({
-                        "file": str(pyfile),
-                        "pattern": "wildcard_import",
-                        "recommendation": "Import specific names",
-                    })
+                if re.search(r"from\s+\w+\s+import\s+\*", content):
+                    patterns.append(
+                        {
+                            "file": str(pyfile),
+                            "pattern": "wildcard_import",
+                            "recommendation": "Import specific names",
+                        }
+                    )
 
             except Exception:
                 pass
@@ -292,7 +306,11 @@ class SoftwareEngineerAgent(BaseAgent):
         }
 
         for pyfile in Path(".").rglob("*.py"):
-            if ".git" in str(pyfile) or "__pycache__" in str(pyfile) or "test" in str(pyfile):
+            if (
+                ".git" in str(pyfile)
+                or "__pycache__" in str(pyfile)
+                or "test" in str(pyfile)
+            ):
                 continue
             if str(pyfile) in ("db/helpers.py", "db/connection.py"):
                 continue
@@ -302,16 +320,20 @@ class SoftwareEngineerAgent(BaseAgent):
                 count = content.count("schema.init_schema(conn)")
                 if count > 0:
                     reuse["db_boilerplate_count"] += count
-                    reuse["should_use_db_helpers"].append({
-                        "file": str(pyfile),
-                        "count": count,
-                    })
+                    reuse["should_use_db_helpers"].append(
+                        {
+                            "file": str(pyfile),
+                            "count": count,
+                        }
+                    )
             except Exception:
                 pass
 
         return reuse
 
-    def _generate_recommendations(self, quality, standards, anti_patterns, coverage, reuse) -> list[str]:
+    def _generate_recommendations(
+        self, quality, standards, anti_patterns, coverage, reuse
+    ) -> list[str]:
         """Generate engineering recommendations."""
         recs = []
 

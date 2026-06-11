@@ -17,9 +17,7 @@ Design choices:
 
 from __future__ import annotations
 
-import json
 import logging
-import re
 from collections import defaultdict
 
 from agents.base import AgentResult, BaseAgent
@@ -79,9 +77,7 @@ def _jaro_winkler_similarity(s1: str, s2: str) -> float:
         k += 1
 
     jaro = (
-        matches / len1
-        + matches / len2
-        + (matches - transpositions / 2) / matches
+        matches / len1 + matches / len2 + (matches - transpositions / 2) / matches
     ) / 3.0
 
     # Winkler bonus for common prefix (max 4 chars)
@@ -141,7 +137,12 @@ class EntityResolverAgent(BaseAgent):
 
             for type_id, entities in by_type.items():
                 resolved, aliases = self._resolve_type(
-                    conn, cursor, entities, threshold, dry_run, min_mentions,
+                    conn,
+                    cursor,
+                    entities,
+                    threshold,
+                    dry_run,
+                    min_mentions,
                 )
                 total_resolved += resolved
                 total_aliases += aliases
@@ -161,7 +162,8 @@ class EntityResolverAgent(BaseAgent):
 
         _logger.info(
             "EntityResolverAgent: Done — %d duplicates resolved, %d aliases created",
-            total_resolved, total_aliases,
+            total_resolved,
+            total_aliases,
         )
 
         return AgentResult(
@@ -176,8 +178,13 @@ class EntityResolverAgent(BaseAgent):
         )
 
     def _resolve_type(
-        self, conn, cursor, entities: list[dict],
-        threshold: float, dry_run: bool, min_mentions: int,
+        self,
+        conn,
+        cursor,
+        entities: list[dict],
+        threshold: float,
+        dry_run: bool,
+        min_mentions: int,
     ) -> tuple[int, int]:
         """Resolve duplicates within a single entity type."""
         resolved = 0
@@ -210,7 +217,8 @@ class EntityResolverAgent(BaseAgent):
                         continue
 
                     score = _jaro_winkler_similarity(
-                        ei["normalized_name"], ej["normalized_name"],
+                        ei["normalized_name"],
+                        ej["normalized_name"],
                     )
 
                     if score < threshold:
@@ -224,13 +232,18 @@ class EntityResolverAgent(BaseAgent):
 
                     _logger.info(
                         "EntityResolverAgent: match '%s' ↔ '%s' (score=%.3f)",
-                        canonical["name"], duplicate["name"], score,
+                        canonical["name"],
+                        duplicate["name"],
+                        score,
                     )
 
                     if not dry_run:
                         alias_count = self._merge_entities(
-                            cursor, canonical["id"], duplicate["id"],
-                            duplicate["name"], duplicate["normalized_name"],
+                            cursor,
+                            canonical["id"],
+                            duplicate["id"],
+                            duplicate["name"],
+                            duplicate["normalized_name"],
                         )
                         aliases += alias_count
 
@@ -240,8 +253,12 @@ class EntityResolverAgent(BaseAgent):
         return resolved, aliases
 
     def _merge_entities(
-        self, cursor, canonical_id: int, duplicate_id: int,
-        alias_name: str, normalized_alias: str,
+        self,
+        cursor,
+        canonical_id: int,
+        duplicate_id: int,
+        alias_name: str,
+        normalized_alias: str,
     ) -> int:
         """Merge duplicate entity into canonical entity.
 

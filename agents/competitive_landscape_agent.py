@@ -56,7 +56,7 @@ class CompetitiveLandscapeAgent(BaseAgent):
 
             competitor_count = sector_row.get("competitor_count", 0) or 0
             avg_funding = sector_row.get("avg_funding", 0) or 0
-            well_funded_count = sector_row.get("well_funded_count", 0) or 0
+            sector_row.get("well_funded_count", 0) or 0
 
             # Market concentration (inverse of competitor count normalized)
             # Fewer competitors = higher concentration
@@ -97,23 +97,27 @@ class CompetitiveLandscapeAgent(BaseAgent):
                    WHERE sector = %s AND funding_raised_usd IS NOT NULL
                    ORDER BY funding_raised_usd DESC
                    LIMIT 5""",
-                (sector,)
+                (sector,),
             )
             top_competitors = cursor.fetchall()
             cursor.close()
 
-            landscape_data.append({
-                "sector": sector,
-                "competitor_count": competitor_count,
-                "market_concentration": market_concentration,
-                "fragmentation_score": fragmentation_score,
-                "avg_funding_competitors": avg_funding,
-                "top_competitors_json": json.dumps([dict(c) for c in top_competitors], default=str),
-                "entry_barriers": entry_barriers,
-                "rivalry_intensity": rivalry_intensity,
-                "analyzed_at": datetime.now(timezone.utc).isoformat(),
-                "record_count": competitor_count
-            })
+            landscape_data.append(
+                {
+                    "sector": sector,
+                    "competitor_count": competitor_count,
+                    "market_concentration": market_concentration,
+                    "fragmentation_score": fragmentation_score,
+                    "avg_funding_competitors": avg_funding,
+                    "top_competitors_json": json.dumps(
+                        [dict(c) for c in top_competitors], default=str
+                    ),
+                    "entry_barriers": entry_barriers,
+                    "rivalry_intensity": rivalry_intensity,
+                    "analyzed_at": datetime.now(timezone.utc).isoformat(),
+                    "record_count": competitor_count,
+                }
+            )
 
         insights["landscape_data"] = landscape_data
 
@@ -138,15 +142,17 @@ class CompetitiveLandscapeAgent(BaseAgent):
                     data["entry_barriers"],
                     data["rivalry_intensity"],
                     data["analyzed_at"],
-                    data["record_count"]
-                )
+                    data["record_count"],
+                ),
             )
 
         conn.commit()
         cursor.close()
         conn.close()
 
-        _logger.info("CompetitiveLandscapeAgent: Analyzed %d sectors", len(landscape_data))
+        _logger.info(
+            "CompetitiveLandscapeAgent: Analyzed %d sectors", len(landscape_data)
+        )
 
         return AgentResult(
             agent_name=self.name,
@@ -155,6 +161,7 @@ class CompetitiveLandscapeAgent(BaseAgent):
                 "sectors_analyzed": len(landscape_data),
                 "records_affected": len(landscape_data),
                 "top_insight": f"Most competitive: {landscape_data[0]['sector']} ({landscape_data[0]['competitor_count']} competitors)"
-                    if landscape_data else "No data",
+                if landscape_data
+                else "No data",
             },
         )

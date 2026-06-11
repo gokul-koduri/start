@@ -12,8 +12,7 @@ Config options:
 """
 
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import Any
+from datetime import datetime, timezone
 
 from agents.base import AgentResult, BaseAgent
 from db.connection import get_connection
@@ -21,7 +20,6 @@ from utils.email_queue import (
     queue_bulk,
     get_active_recipients,
     render_template,
-    plain_from_html,
     queue_stats,
 )
 
@@ -83,12 +81,16 @@ class EmailDigestAgent(BaseAgent):
             alerts = []
             for a in cursor.fetchall():
                 priority = (a["priority"] or "medium").lower()
-                alerts.append({
-                    "title": a["title"],
-                    "priority": priority,
-                    "priority_class": priority,
-                    "savings": f"{a['estimated_savings_pct']:.0f}" if a.get("estimated_savings_pct") else None,
-                })
+                alerts.append(
+                    {
+                        "title": a["title"],
+                        "priority": priority,
+                        "priority_class": priority,
+                        "savings": f"{a['estimated_savings_pct']:.0f}"
+                        if a.get("estimated_savings_pct")
+                        else None,
+                    }
+                )
 
             # Collection health
             cursor.execute(
@@ -96,7 +98,11 @@ class EmailDigestAgent(BaseAgent):
                    FROM collection_runs ORDER BY started_at DESC LIMIT 5"""
             )
             collection_runs = [
-                {"collector": r["collector_name"], "records": r["records_collected"], "status": r["status"]}
+                {
+                    "collector": r["collector_name"],
+                    "records": r["records_collected"],
+                    "status": r["status"],
+                }
                 for r in cursor.fetchall()
             ]
 

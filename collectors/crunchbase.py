@@ -16,7 +16,6 @@ Rate limits: CrunchBase API allows 500 calls/day on the Basic plan.
 
 import logging
 import time
-from datetime import datetime, timezone
 
 from collectors.base import BaseCollector, CollectionResult
 from utils.http_client import get_http_session
@@ -101,9 +100,15 @@ class CrunchBaseCollector(BaseCollector):
         params = {
             "user_key": api_key,
             "field_ids": [
-                "identifier", "short_description", "categories",
-                "funding_total", "status", "founded_on", "closed_on",
-                "location_identifiers", "num_employees_enum",
+                "identifier",
+                "short_description",
+                "categories",
+                "funding_total",
+                "status",
+                "founded_on",
+                "closed_on",
+                "location_identifiers",
+                "num_employees_enum",
             ],
             "query": [
                 {
@@ -136,7 +141,9 @@ class CrunchBaseCollector(BaseCollector):
 
         return resp.json().get("entities", [])
 
-    def _process_entity(self, conn, entity: dict, result: CollectionResult, industry: str):
+    def _process_entity(
+        self, conn, entity: dict, result: CollectionResult, industry: str
+    ):
         """Process and store a single CrunchBase entity."""
         props = entity.get("properties", {})
 

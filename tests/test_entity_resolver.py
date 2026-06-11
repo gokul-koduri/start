@@ -78,7 +78,10 @@ class TestEntityResolverAgent:
     def test_execute_no_db(self):
         """Returns failed result when DB connection fails."""
         agent = EntityResolverAgent()
-        with patch("agents.entity_resolver_agent.get_connection", side_effect=Exception("no db")):
+        with patch(
+            "agents.entity_resolver_agent.get_connection",
+            side_effect=Exception("no db"),
+        ):
             result = agent.execute()
         assert result.status == "failed"
         assert len(result.errors) > 0
@@ -93,8 +96,10 @@ class TestEntityResolverAgent:
         mock_cursor.fetchall.return_value = []
         mock_conn.cursor.return_value = mock_cursor
 
-        with patch("agents.entity_resolver_agent.get_connection", return_value=mock_conn):
-            with patch("agents.entity_resolver_agent.schema") as mock_schema:
+        with patch(
+            "agents.entity_resolver_agent.get_connection", return_value=mock_conn
+        ):
+            with patch("agents.entity_resolver_agent.schema"):
                 result = agent.execute()
 
         assert result.status == "success"
@@ -103,12 +108,34 @@ class TestEntityResolverAgent:
     def test_blocking_logic(self):
         """Test that entities are grouped by normalized name prefix."""
         entities = [
-            {"id": 1, "name": "OpenAI", "normalized_name": "openai", "entity_type_id": 1, "mention_count": 10, "attributes_json": None},
-            {"id": 2, "name": "Open AI Inc", "normalized_name": "openaiinc", "entity_type_id": 1, "mention_count": 5, "attributes_json": None},
-            {"id": 3, "name": "Spotify", "normalized_name": "spotify", "entity_type_id": 1, "mention_count": 8, "attributes_json": None},
+            {
+                "id": 1,
+                "name": "OpenAI",
+                "normalized_name": "openai",
+                "entity_type_id": 1,
+                "mention_count": 10,
+                "attributes_json": None,
+            },
+            {
+                "id": 2,
+                "name": "Open AI Inc",
+                "normalized_name": "openaiinc",
+                "entity_type_id": 1,
+                "mention_count": 5,
+                "attributes_json": None,
+            },
+            {
+                "id": 3,
+                "name": "Spotify",
+                "normalized_name": "spotify",
+                "entity_type_id": 1,
+                "mention_count": 8,
+                "attributes_json": None,
+            },
         ]
 
         from collections import defaultdict
+
         blocks = defaultdict(list)
         for e in entities:
             blocks[e["normalized_name"][:3]].append(e)

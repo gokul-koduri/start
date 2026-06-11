@@ -136,16 +136,36 @@ class ModelManager:
                     "total_tokens": prompt_tokens + completion_tokens,
                 }
 
-            except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError) as e:
+            except (
+                urllib.error.URLError,
+                urllib.error.HTTPError,
+                TimeoutError,
+                OSError,
+            ) as e:
                 _logger.warning(
                     "Ollama inference attempt %d/%d failed for model=%s task=%s: %s",
-                    attempt + 1, max_retries + 1, model, task, e,
+                    attempt + 1,
+                    max_retries + 1,
+                    model,
+                    task,
+                    e,
                 )
                 if attempt < max_retries:
                     time.sleep(2 * (attempt + 1))
 
-        _logger.error("Ollama inference failed after %d retries (model=%s, task=%s)", max_retries, model, task)
-        return {"text": "", "model": model, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+        _logger.error(
+            "Ollama inference failed after %d retries (model=%s, task=%s)",
+            max_retries,
+            model,
+            task,
+        )
+        return {
+            "text": "",
+            "model": model,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+        }
 
     def infer_json(
         self,
@@ -170,7 +190,13 @@ class ModelManager:
                 "Output must be parseable by json.loads()."
             )
 
-        result = self.infer(prompt, task=task, system_prompt=system_prompt, temperature=temperature, **kwargs)
+        result = self.infer(
+            prompt,
+            task=task,
+            system_prompt=system_prompt,
+            temperature=temperature,
+            **kwargs,
+        )
         raw = result["text"].strip()
 
         return _extract_json(raw)
@@ -195,7 +221,9 @@ class ModelManager:
             )
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 result = json.loads(resp.read().decode())
-            _logger.info("Model pull completed: %s (status=%s)", model_name, result.get("status"))
+            _logger.info(
+                "Model pull completed: %s (status=%s)", model_name, result.get("status")
+            )
             return True
         except Exception as e:
             _logger.error("Failed to pull model %s: %s", model_name, e)
@@ -232,7 +260,9 @@ class ModelManager:
             _logger.warning("Failed to list local models: %s", e)
             return []
 
-    def _track_usage(self, model: str, prompt_tokens: int, completion_tokens: int) -> None:
+    def _track_usage(
+        self, model: str, prompt_tokens: int, completion_tokens: int
+    ) -> None:
         """Append inference run to local token tracker JSON file."""
         try:
             _TOKEN_TRACKER_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -244,13 +274,15 @@ class ModelManager:
                     data = json.load(f)
                     runs = data if isinstance(data, list) else []
 
-            runs.append({
-                "model": model,
-                "prompt_tokens": prompt_tokens,
-                "completion_tokens": completion_tokens,
-                "total_tokens": prompt_tokens + completion_tokens,
-                "timestamp": time.time(),
-            })
+            runs.append(
+                {
+                    "model": model,
+                    "prompt_tokens": prompt_tokens,
+                    "completion_tokens": completion_tokens,
+                    "total_tokens": prompt_tokens + completion_tokens,
+                    "timestamp": time.time(),
+                }
+            )
 
             with open(_TOKEN_TRACKER_PATH, "w") as f:
                 json.dump(runs, f, indent=2)

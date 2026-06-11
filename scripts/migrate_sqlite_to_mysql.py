@@ -22,10 +22,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from db.connection import get_connection
-from db import schema
+from db.connection import get_connection  # noqa: E402
+from db import schema  # noqa: E402
 
 SQLITE_DB_PATH = Path(__file__).parent.parent / "data" / "startup_research.db"
 
@@ -126,7 +127,9 @@ def migrate():
 
         mysql_conn.commit()
         total_migrated += inserted
-        print(f"  {table_name}: {len(sqlite_rows)} SQLite rows -> {inserted} MySQL rows inserted")
+        print(
+            f"  {table_name}: {len(sqlite_rows)} SQLite rows -> {inserted} MySQL rows inserted"
+        )
         mysql_cursor.close()
 
     sqlite_conn.close()

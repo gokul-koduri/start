@@ -48,7 +48,7 @@ STEP 1: She deploys OIP locally:
   → Dashboard loads at localhost:8000
 
 STEP 2: She searches "EV battery manufacturing":
-  
+
   Search returns:
   ├── 12 startups found globally
   ├── 4 failed in India (2020-2023)
@@ -56,7 +56,7 @@ STEP 2: She searches "EV battery manufacturing":
   └── 5 active globally
 
 STEP 3: She clicks "Failure Pattern Analysis":
-  
+
   WHY THEY FAILED IN INDIA:
   ┌─────────────────────────────────────────────────────────┐
   │                                                         │

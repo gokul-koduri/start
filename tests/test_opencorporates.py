@@ -1,6 +1,5 @@
 """Tests for the OpenCorporates Collector."""
 
-import json
 import sys
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -27,8 +26,8 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.opencorporates_collector import OpenCorporatesCollector
-from collectors.base import CollectionResult
+from collectors.opencorporates_collector import OpenCorporatesCollector  # noqa: E402
+from collectors.base import CollectionResult  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -38,11 +37,17 @@ for key, orig in _saved_db_modules.items():
         sys.modules.pop(key, None)
 
 
-def _make_oc_company(name="AI Corp", company_number="12345678",
-                     jurisdiction="us", inc_date="2023-06-15",
-                     status="Active", company_type="LLC",
-                     address="123 Silicon Valley, CA",
-                     officers=None, filings=None):
+def _make_oc_company(
+    name="AI Corp",
+    company_number="12345678",
+    jurisdiction="us",
+    inc_date="2023-06-15",
+    status="Active",
+    company_type="LLC",
+    address="123 Silicon Valley, CA",
+    officers=None,
+    filings=None,
+):
     """Build a mock OpenCorporates API company response."""
     return {
         "company": {
@@ -55,8 +60,13 @@ def _make_oc_company(name="AI Corp", company_number="12345678",
             "current_status": status,
             "registered_address_in_full": address,
             "registry_url": f"https://opencorporates.com/companies/{jurisdiction}/{company_number}",
-            "officers": officers or [
-                {"name": "John Doe", "position": "Director", "start_date": "2023-06-15"},
+            "officers": officers
+            or [
+                {
+                    "name": "John Doe",
+                    "position": "Director",
+                    "start_date": "2023-06-15",
+                },
                 {"name": "Jane Smith", "position": "CTO", "start_date": "2023-06-15"},
             ],
             "filings": filings or [],
@@ -120,23 +130,26 @@ class TestOpenCorporatesCollectorScoring:
     def test_active_recent_company(self):
         c = OpenCorporatesCollector(config={})
         # Use a date < 2 years ago: Active(+40) + <2yr(+30) + Officers(+15) = 85
-        from datetime import timedelta
-        recent_date = (datetime.now(timezone.utc) - timedelta(days=365)).strftime("%Y-%m-%d")
+        recent_date = (datetime.now(timezone.utc) - timedelta(days=365)).strftime(
+            "%Y-%m-%d"
+        )
         company = _make_oc_company(status="Active", inc_date=recent_date)
         score = c._compute_score(company)
         assert score >= 80
 
     def test_dissolved_company(self):
         c = OpenCorporatesCollector(config={})
-        company = _make_oc_company(status="Dissolved", inc_date="2020-01-01",
-                                    officers=[], filings=[])
+        company = _make_oc_company(
+            status="Dissolved", inc_date="2020-01-01", officers=[], filings=[]
+        )
         score = c._compute_score(company)
         assert score < 30
 
     def test_old_active_company(self):
         c = OpenCorporatesCollector(config={})
-        company = _make_oc_company(status="Active", inc_date="2005-01-01",
-                                    officers=[], filings=[])
+        company = _make_oc_company(
+            status="Active", inc_date="2005-01-01", officers=[], filings=[]
+        )
         score = c._compute_score(company)
         # Active but old, no officers/filings
         assert 40 <= score < 60
@@ -149,9 +162,12 @@ class TestOpenCorporatesCollectorScoring:
 
     def test_capped_at_100(self):
         c = OpenCorporatesCollector(config={})
-        company = _make_oc_company(status="Active", inc_date="2024-01-01",
-                                    officers=[{"name": "X", "position": "Y"}],
-                                    filings=[{"id": "f1"}])
+        company = _make_oc_company(
+            status="Active",
+            inc_date="2024-01-01",
+            officers=[{"name": "X", "position": "Y"}],
+            filings=[{"id": "f1"}],
+        )
         score = c._compute_score(company)
         assert score <= 100.0
 
@@ -161,7 +177,9 @@ class TestOpenCorporatesCollectorFetch:
         c = OpenCorporatesCollector(config={"opencorporates": {"api_token": "test"}})
         resp = _make_search_response([_make_oc_company()])
         mock_session = _make_mock_session([resp])
-        data = c._fetch_search(mock_session, "https://api.example.com", "test", "AI startup", ["us"])
+        data = c._fetch_search(
+            mock_session, "https://api.example.com", "test", "AI startup", ["us"]
+        )
         assert data is not None
         assert len(data["results"]["companies"]) == 1
 
@@ -169,21 +187,27 @@ class TestOpenCorporatesCollectorFetch:
         c = OpenCorporatesCollector(config={"opencorporates": {"api_token": "test"}})
         resp = _make_search_response([])
         mock_session = _make_mock_session([resp])
-        data = c._fetch_search(mock_session, "https://api.example.com", "test", "AI startup")
+        data = c._fetch_search(
+            mock_session, "https://api.example.com", "test", "AI startup"
+        )
         assert len(data["results"]["companies"]) == 0
 
     def test_fetch_search_api_failure(self):
         c = OpenCorporatesCollector(config={"opencorporates": {"api_token": "test"}})
         mock_session = MagicMock()
         mock_session.get.side_effect = Exception("Network error")
-        data = c._fetch_search(mock_session, "https://api.example.com", "test", "AI startup")
+        data = c._fetch_search(
+            mock_session, "https://api.example.com", "test", "AI startup"
+        )
         assert data is None
 
     def test_fetch_company(self):
         c = OpenCorporatesCollector(config={"opencorporates": {"api_token": "test"}})
         company = _make_oc_company()
         mock_session = _make_mock_session([company])
-        data = c._fetch_company(mock_session, "https://api.example.com", "test", "us", "12345678")
+        data = c._fetch_company(
+            mock_session, "https://api.example.com", "test", "us", "12345678"
+        )
         assert data is not None
         assert data["company"]["name"] == "AI Corp"
 
@@ -206,7 +230,9 @@ class TestOpenCorporatesCollectorInsert:
         result = CollectionResult(collector_name="opencorporates")
 
         for i in range(5):
-            c._insert_company(mock_cursor, _make_oc_company(name=f"Company {i}"), "test", result)
+            c._insert_company(
+                mock_cursor, _make_oc_company(name=f"Company {i}"), "test", result
+            )
         assert result.records_collected == 5
 
     def test_insert_company_no_officers(self):
@@ -220,17 +246,21 @@ class TestOpenCorporatesCollectorInsert:
 
     def test_extract_officers(self):
         c = OpenCorporatesCollector(config={})
-        company = _make_oc_company(officers=[
-            {"name": "Alice", "position": "CEO"},
-            {"name": "Bob", "position": "CTO"},
-        ])
+        company = _make_oc_company(
+            officers=[
+                {"name": "Alice", "position": "CEO"},
+                {"name": "Bob", "position": "CTO"},
+            ]
+        )
         officers = c._extract_officers(company["company"])
         assert len(officers) == 2
         assert officers[0]["name"] == "Alice"
 
     def test_extract_officers_capped(self):
         c = OpenCorporatesCollector(config={})
-        officers = [{"name": f"Officer {i}", "position": f"Role {i}"} for i in range(15)]
+        officers = [
+            {"name": f"Officer {i}", "position": f"Role {i}"} for i in range(15)
+        ]
         company = _make_oc_company(officers=officers)
         extracted = c._extract_officers(company["company"])
         assert len(extracted) == 10  # Cap at 10
@@ -246,14 +276,18 @@ class TestOpenCorporatesCollectorIntegration:
         mock_session = _make_mock_session([resp])
         mock_get_session.return_value = mock_session
 
-        c = OpenCorporatesCollector(config={
-            "opencorporates": {
-                "api_token": "test",
-                "search_queries": [{"query": "AI startup", "jurisdictions": ["us"]}],
-                "per_page": 30,
-                "min_delay_seconds": 0,
-            },
-        })
+        c = OpenCorporatesCollector(
+            config={
+                "opencorporates": {
+                    "api_token": "test",
+                    "search_queries": [
+                        {"query": "AI startup", "jurisdictions": ["us"]}
+                    ],
+                    "per_page": 30,
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -271,13 +305,15 @@ class TestOpenCorporatesCollectorIntegration:
         mock_session = _make_mock_session([resp])
         mock_get_session.return_value = mock_session
 
-        c = OpenCorporatesCollector(config={
-            "opencorporates": {
-                "api_token": "test",
-                "search_queries": [{"query": "nonexistent", "jurisdictions": []}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = OpenCorporatesCollector(
+            config={
+                "opencorporates": {
+                    "api_token": "test",
+                    "search_queries": [{"query": "nonexistent", "jurisdictions": []}],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -297,16 +333,18 @@ class TestOpenCorporatesCollectorIntegration:
         mock_session = _make_mock_session([resp1, resp2])
         mock_get_session.return_value = mock_session
 
-        c = OpenCorporatesCollector(config={
-            "opencorporates": {
-                "api_token": "test",
-                "search_queries": [
-                    {"query": "AI", "jurisdictions": ["us"]},
-                    {"query": "fintech", "jurisdictions": ["gb"]},
-                ],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = OpenCorporatesCollector(
+            config={
+                "opencorporates": {
+                    "api_token": "test",
+                    "search_queries": [
+                        {"query": "AI", "jurisdictions": ["us"]},
+                        {"query": "fintech", "jurisdictions": ["gb"]},
+                    ],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -325,13 +363,15 @@ class TestOpenCorporatesCollectorIntegration:
         mock_session = _make_mock_session([resp])
         mock_get_session.return_value = mock_session
 
-        c = OpenCorporatesCollector(config={
-            "opencorporates": {
-                "api_token": "test",
-                "search_queries": [{"query": "test", "jurisdictions": []}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = OpenCorporatesCollector(
+            config={
+                "opencorporates": {
+                    "api_token": "test",
+                    "search_queries": [{"query": "test", "jurisdictions": []}],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()

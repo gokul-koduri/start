@@ -13,6 +13,7 @@ class TestEmailDigestAgent(unittest.TestCase):
     def test_agent_exists(self):
         """Test agent can be imported."""
         from agents.email_digest_agent import EmailDigestAgent
+
         agent = EmailDigestAgent()
         self.assertEqual(agent.name, "email_digest")
 

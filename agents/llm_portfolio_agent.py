@@ -17,7 +17,6 @@ Depends on:
 Runs weekly via the ``weekly`` pipeline, after ``llm_benchmark``.
 """
 
-import json
 import logging
 from datetime import datetime, timezone
 
@@ -32,61 +31,91 @@ _logger = logging.getLogger(__name__)
 TASK_CATEGORIES: dict[str, dict] = {
     "code_generation": {
         "label": "Code Generation",
-        "weight_quality": 0.50, "weight_cost": 0.25, "weight_speed": 0.15, "weight_context": 0.10,
+        "weight_quality": 0.50,
+        "weight_cost": 0.25,
+        "weight_speed": 0.15,
+        "weight_context": 0.10,
         "icon": "💻",
         "relevant_benchmarks": ["HumanEval", "MBPP", "SWE-bench"],
     },
     "code_review": {
         "label": "Code Review",
-        "weight_quality": 0.40, "weight_cost": 0.30, "weight_speed": 0.20, "weight_context": 0.10,
+        "weight_quality": 0.40,
+        "weight_cost": 0.30,
+        "weight_speed": 0.20,
+        "weight_context": 0.10,
         "icon": "🔍",
         "relevant_benchmarks": ["HumanEval", "MBPP"],
     },
     "summarization": {
         "label": "Summarization",
-        "weight_quality": 0.30, "weight_cost": 0.40, "weight_speed": 0.20, "weight_context": 0.10,
+        "weight_quality": 0.30,
+        "weight_cost": 0.40,
+        "weight_speed": 0.20,
+        "weight_context": 0.10,
         "icon": "📝",
         "relevant_benchmarks": ["MMLU", "IFEval"],
     },
     "analysis_reasoning": {
         "label": "Analysis & Reasoning",
-        "weight_quality": 0.60, "weight_cost": 0.15, "weight_speed": 0.10, "weight_context": 0.15,
+        "weight_quality": 0.60,
+        "weight_cost": 0.15,
+        "weight_speed": 0.10,
+        "weight_context": 0.15,
         "icon": "🧠",
         "relevant_benchmarks": ["GPQA", "MMLU", "MATH"],
     },
     "creative_writing": {
         "label": "Creative Writing",
-        "weight_quality": 0.40, "weight_cost": 0.30, "weight_speed": 0.15, "weight_context": 0.15,
+        "weight_quality": 0.40,
+        "weight_cost": 0.30,
+        "weight_speed": 0.15,
+        "weight_context": 0.15,
         "icon": "✍️",
         "relevant_benchmarks": ["MMLU", "IFEval"],
     },
     "data_extraction": {
         "label": "Data Extraction",
-        "weight_quality": 0.30, "weight_cost": 0.40, "weight_speed": 0.20, "weight_context": 0.10,
+        "weight_quality": 0.30,
+        "weight_cost": 0.40,
+        "weight_speed": 0.20,
+        "weight_context": 0.10,
         "icon": "📊",
         "relevant_benchmarks": ["MMLU", "IFEval"],
     },
     "rag_qa": {
         "label": "RAG & Q&A",
-        "weight_quality": 0.30, "weight_cost": 0.25, "weight_speed": 0.15, "weight_context": 0.30,
+        "weight_quality": 0.30,
+        "weight_cost": 0.25,
+        "weight_speed": 0.15,
+        "weight_context": 0.30,
         "icon": "📚",
         "relevant_benchmarks": ["MMLU", "LongBench"],
     },
     "chatbot_general": {
         "label": "Chatbot / General",
-        "weight_quality": 0.30, "weight_cost": 0.40, "weight_speed": 0.20, "weight_context": 0.10,
+        "weight_quality": 0.30,
+        "weight_cost": 0.40,
+        "weight_speed": 0.20,
+        "weight_context": 0.10,
         "icon": "💬",
         "relevant_benchmarks": ["MMLU", "MT-Bench", "IFEval"],
     },
     "agent_tool_use": {
         "label": "Agent & Tool Use",
-        "weight_quality": 0.45, "weight_cost": 0.20, "weight_speed": 0.20, "weight_context": 0.15,
+        "weight_quality": 0.45,
+        "weight_cost": 0.20,
+        "weight_speed": 0.20,
+        "weight_context": 0.15,
         "icon": "🤖",
         "relevant_benchmarks": ["IFEval", "HumanEval", "MMLU"],
     },
     "math_science": {
         "label": "Math & Science",
-        "weight_quality": 0.55, "weight_cost": 0.20, "weight_speed": 0.10, "weight_context": 0.15,
+        "weight_quality": 0.55,
+        "weight_cost": 0.20,
+        "weight_speed": 0.10,
+        "weight_context": 0.15,
         "icon": "🔢",
         "relevant_benchmarks": ["MATH", "GPQA", "MMLU"],
     },
@@ -126,16 +155,21 @@ class LLMPortfolioAgent(BaseAgent):
             # 1. Load all model pricing
             pricing = self._load_pricing(conn)
             if not pricing:
-                _logger.warning("LLMPortfolioAgent: No pricing data found — run llm_pricing agent first")
+                _logger.warning(
+                    "LLMPortfolioAgent: No pricing data found — run llm_pricing agent first"
+                )
                 return AgentResult(
-                    agent_name=self.name, status="partial",
+                    agent_name=self.name,
+                    status="partial",
                     errors=["No pricing data in database"],
                 )
 
             # 2. Load all benchmark scores
             benchmarks = self._load_benchmarks(conn)
             if not benchmarks:
-                _logger.warning("LLMPortfolioAgent: No benchmark data found — using pricing only")
+                _logger.warning(
+                    "LLMPortfolioAgent: No benchmark data found — using pricing only"
+                )
 
             # 3. Compute per-model quality scores by category
             quality_scores = self._compute_quality_scores(benchmarks)
@@ -156,7 +190,11 @@ class LLMPortfolioAgent(BaseAgent):
 
             for task_id, task_config in TASK_CATEGORIES.items():
                 ranked = self._rank_models(
-                    pricing, quality_scores, cost_scores, context_scores, task_config,
+                    pricing,
+                    quality_scores,
+                    cost_scores,
+                    context_scores,
+                    task_config,
                 )
 
                 if len(ranked) < 1:
@@ -193,14 +231,18 @@ class LLMPortfolioAgent(BaseAgent):
                         ),
                     )
 
-                    category_summary["models"].append({
-                        "rank": rank,
-                        "provider": model_data["provider"],
-                        "model_name": model_data["model_name"],
-                        "score": round(model_data["composite_score"], 1),
-                        "allocation_pct": allocation,
-                        "cost_per_1m_tokens": model_data.get("cost_per_1m_tokens", 0),
-                    })
+                    category_summary["models"].append(
+                        {
+                            "rank": rank,
+                            "provider": model_data["provider"],
+                            "model_name": model_data["model_name"],
+                            "score": round(model_data["composite_score"], 1),
+                            "allocation_pct": allocation,
+                            "cost_per_1m_tokens": model_data.get(
+                                "cost_per_1m_tokens", 0
+                            ),
+                        }
+                    )
                     total_recommendations += 1
 
                 portfolio_summary[task_id] = category_summary
@@ -212,7 +254,9 @@ class LLMPortfolioAgent(BaseAgent):
 
             _logger.info(
                 "LLMPortfolioAgent: Done — %d recommendations across %d task categories, est. %d%% savings",
-                total_recommendations, len(portfolio_summary), savings,
+                total_recommendations,
+                len(portfolio_summary),
+                savings,
             )
 
             return AgentResult(
@@ -300,8 +344,7 @@ class LLMPortfolioAgent(BaseAgent):
 
         # Normalize: cheapest = 100, most expensive = ~0
         return {
-            key: round((1 - cost / max_cost) * 100, 1)
-            for key, cost in costs.items()
+            key: round((1 - cost / max_cost) * 100, 1) for key, cost in costs.items()
         }
 
     def _compute_context_scores(self, pricing: list[dict]) -> dict:
@@ -347,7 +390,7 @@ class LLMPortfolioAgent(BaseAgent):
         w_ctx = task_config["weight_context"]
 
         # Get quality-relevant categories for this task
-        relevant_benchmarks = task_config.get("relevant_benchmarks", [])
+        task_config.get("relevant_benchmarks", [])
 
         model_scores: list[dict] = []
         seen = set()
@@ -360,7 +403,13 @@ class LLMPortfolioAgent(BaseAgent):
 
             # Get quality score: prefer relevant benchmarks, fall back to any
             quality = 0.0
-            for bench_cat in ["coding", "reasoning", "math", "instruction_following", "general"]:
+            for bench_cat in [
+                "coding",
+                "reasoning",
+                "math",
+                "instruction_following",
+                "general",
+            ]:
                 q = quality_scores.get((p["provider"], p["model_name"], bench_cat), 0)
                 if q > 0:
                     quality = q
@@ -375,12 +424,19 @@ class LLMPortfolioAgent(BaseAgent):
                 "math_science": "math",
                 "rag_qa": "long_context",
             }
-            preferred_cat = category_mapping.get(list(TASK_CATEGORIES.keys())[
-                list(TASK_CATEGORIES.values()).index(task_config)
-            ] if task_config in TASK_CATEGORIES.values() else "", None)
+            preferred_cat = category_mapping.get(
+                list(TASK_CATEGORIES.keys())[
+                    list(TASK_CATEGORIES.values()).index(task_config)
+                ]
+                if task_config in TASK_CATEGORIES.values()
+                else "",
+                None,
+            )
 
             if preferred_cat:
-                q_specific = quality_scores.get((p["provider"], p["model_name"], preferred_cat), 0)
+                q_specific = quality_scores.get(
+                    (p["provider"], p["model_name"], preferred_cat), 0
+                )
                 if q_specific > 0:
                     quality = (quality + q_specific) / 2  # Blend
 
@@ -390,22 +446,26 @@ class LLMPortfolioAgent(BaseAgent):
             # Speed: not yet tracked from scraping, default to 70 (middle)
             speed = 70.0
 
-            composite = (quality * w_q) + (c_score * w_c) + (speed * w_s) + (ctx_score * w_ctx)
+            composite = (
+                (quality * w_q) + (c_score * w_c) + (speed * w_s) + (ctx_score * w_ctx)
+            )
 
             blended_cost = 0
             if p["pricing_tier"] != "self-hosted":
                 blended_cost = p["input_price_per_1m"] + p["output_price_per_1m"]
 
-            model_scores.append({
-                "provider": p["provider"],
-                "model_name": p["model_name"],
-                "composite_score": round(composite, 1),
-                "quality_score": quality,
-                "cost_score": c_score,
-                "speed_score": speed,
-                "context_score": ctx_score,
-                "cost_per_1m_tokens": round(blended_cost, 2),
-            })
+            model_scores.append(
+                {
+                    "provider": p["provider"],
+                    "model_name": p["model_name"],
+                    "composite_score": round(composite, 1),
+                    "quality_score": quality,
+                    "cost_score": c_score,
+                    "speed_score": speed,
+                    "context_score": ctx_score,
+                    "cost_per_1m_tokens": round(blended_cost, 2),
+                }
+            )
 
         # Sort by composite score descending
         model_scores.sort(key=lambda x: x["composite_score"], reverse=True)

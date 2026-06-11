@@ -8,8 +8,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # ── Mock all DB/MySQL dependencies before importing collectors ──
 mock_pymysql = MagicMock()
-sys.modules['pymysql'] = mock_pymysql
-sys.modules['pymysql.cursors'] = mock_pymysql.cursors
+sys.modules["pymysql"] = mock_pymysql
+sys.modules["pymysql.cursors"] = mock_pymysql.cursors
 
 # Save originals so we don't poison other test modules
 _saved_db_modules = {
@@ -19,15 +19,15 @@ _saved_db_modules = {
 
 # Mock db modules that try to connect to MySQL
 mock_db_conn = MagicMock()
-sys.modules['db'] = MagicMock()
-sys.modules['db.connection'] = MagicMock()
-sys.modules['db.connection'].get_connection = MagicMock()
-sys.modules['db.dedup'] = MagicMock()
-sys.modules['db.dedup'].dedup_startup = MagicMock(return_value=False)
-sys.modules['db.schema'] = MagicMock()
+sys.modules["db"] = MagicMock()
+sys.modules["db.connection"] = MagicMock()
+sys.modules["db.connection"].get_connection = MagicMock()
+sys.modules["db.dedup"] = MagicMock()
+sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
+sys.modules["db.schema"] = MagicMock()
 
-from collectors.failory_scraper import FailoryScraper
-from bs4 import BeautifulSoup
+from collectors.failory_scraper import FailoryScraper  # noqa: E402
+from bs4 import BeautifulSoup  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():

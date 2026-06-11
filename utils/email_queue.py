@@ -56,7 +56,9 @@ def queue_email(
     Raises ValueError if recipient is suppressed.
     """
     if _is_suppressed(recipient):
-        raise ValueError(f"Recipient {recipient} is suppressed (bounce/complaint/unsubscribe)")
+        raise ValueError(
+            f"Recipient {recipient} is suppressed (bounce/complaint/unsubscribe)"
+        )
 
     from_addr = from_address or os.environ.get("SMTP_FROM", "noreply@localhost")
 
@@ -99,14 +101,22 @@ def queue_email(
                 (email_id, now.strftime("%Y-%m-%d %H:%M:%S")),
             )
         conn.commit()
-        _logger.info("queue_email: Queued %s email id=%d to %s", email_type, email_id, recipient)
+        _logger.info(
+            "queue_email: Queued %s email id=%d to %s", email_type, email_id, recipient
+        )
         return email_id
     finally:
         conn.close()
 
 
-def queue_bulk(recipients: Iterable[str], subject: str, email_type: str,
-               plain_body: str, html_body: str, **kwargs) -> list[int]:
+def queue_bulk(
+    recipients: Iterable[str],
+    subject: str,
+    email_type: str,
+    plain_body: str,
+    html_body: str,
+    **kwargs,
+) -> list[int]:
     """Queue the same email to multiple recipients.
 
     Skips suppressed addresses silently. Returns list of queued email IDs.
@@ -196,13 +206,16 @@ def render_template(template_name: str, context: dict) -> str:
     """
     template_path = _template_dir / template_name
     if not template_path.exists():
-        _logger.warning("render_template: Template %s not found at %s", template_name, template_path)
+        _logger.warning(
+            "render_template: Template %s not found at %s", template_name, template_path
+        )
         return f"<html><body><p>Template '{template_name}' not found.</p></body></html>"
 
     template_text = template_path.read_text(encoding="utf-8")
 
     try:
         import jinja2
+
         env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(str(_template_dir)),
             autoescape=True,
@@ -227,6 +240,7 @@ def plain_from_html(html: str) -> str:
     For important emails, provide a hand-written plain_body instead.
     """
     import re
+
     text = re.sub(r"<style[^>]*>.*?</style>", "", html, flags=re.DOTALL | re.IGNORECASE)
     text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
     text = re.sub(r"</p>", "\n\n", text, flags=re.IGNORECASE)
@@ -253,9 +267,7 @@ def queue_stats() -> dict:
             )
             by_status = {r["status"]: r["cnt"] for r in cur.fetchall()}
 
-            cur.execute(
-                """SELECT COUNT(*) as cnt FROM email_suppressions"""
-            )
+            cur.execute("""SELECT COUNT(*) as cnt FROM email_suppressions""")
             suppressed = cur.fetchone()["cnt"]
 
             cur.execute(

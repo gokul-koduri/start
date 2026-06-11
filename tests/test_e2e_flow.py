@@ -18,22 +18,25 @@ class TestE2EFlowImports(unittest.TestCase):
     def test_api_server_module_loads(self):
         """api_server module structure is valid."""
         import api_server
+
         self.assertTrue(hasattr(api_server, "HAS_FASTAPI"))
 
     def test_feedback_router_loads(self):
         """Feedback API router is importable."""
         from api.v2.feedback import router
+
         self.assertEqual(router.prefix, "/v2/feedback")
 
     def test_search_components_load(self):
         """Search-related modules load cleanly."""
         from db.connection import get_connection
-        from db import schema
+
         self.assertTrue(callable(get_connection))
 
     def test_chat_agent_loads(self):
         """AI analyst agent module loads."""
         from agents.ai_analyst_agent import AIAnalystAgent
+
         self.assertTrue(callable(AIAnalystAgent))
 
 
@@ -45,12 +48,18 @@ class TestE2ESearchFlow(unittest.TestCase):
     def test_search_returns_startup_data(self, mock_schema, mock_conn):
         """Search endpoint returns expected structure with mocked DB."""
         from api_server import HAS_FASTAPI
+
         if not HAS_FASTAPI:
             self.skipTest("FastAPI not installed")
 
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = [
-            {"id": 1, "name": "Fisker", "industry": "Automotive", "failure_reason": "Cash burn"},
+            {
+                "id": 1,
+                "name": "Fisker",
+                "industry": "Automotive",
+                "failure_reason": "Cash burn",
+            },
         ]
         mock_cursor.fetchone.return_value = {"cnt": 1}
         mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
@@ -63,6 +72,7 @@ class TestE2ESearchFlow(unittest.TestCase):
         # Verify the query structure — list_startups handler
         from api_server import app
         from fastapi.testclient import TestClient
+
         client = TestClient(app)
 
         response = client.get("/api/startups?limit=5")
@@ -78,20 +88,25 @@ class TestE2EScoreFlow(unittest.TestCase):
     def test_score_endpoint_exists(self, *mocks):
         """Score endpoint accepts POST with startup data."""
         from api_server import HAS_FASTAPI
+
         if not HAS_FASTAPI:
             self.skipTest("FastAPI not installed")
 
         from api_server import app
         from fastapi.testclient import TestClient
+
         client = TestClient(app)
 
-        response = client.post("/api/score", json={
-            "startup_name": "TestCo",
-            "industry": "SaaS",
-            "funding_total_m": 50,
-            "founded_year": 2020,
-            "employees": 200,
-        })
+        response = client.post(
+            "/api/score",
+            json={
+                "startup_name": "TestCo",
+                "industry": "SaaS",
+                "funding_total_m": 50,
+                "founded_year": 2020,
+                "employees": 200,
+            },
+        )
         # Accept 200 (success) or 500 (agent not available) — both prove routing works
         self.assertIn(response.status_code, [200, 500, 422])
 
@@ -102,11 +117,13 @@ class TestE2EChatFlow(unittest.TestCase):
     def test_chat_endpoint_exists(self):
         """Chat endpoint accepts POST with query."""
         from api_server import HAS_FASTAPI
+
         if not HAS_FASTAPI:
             self.skipTest("FastAPI not installed")
 
         from api_server import app
         from fastapi.testclient import TestClient
+
         client = TestClient(app)
 
         response = client.post("/api/chat", json={"query": ""})
@@ -165,11 +182,13 @@ class TestE2EHealthCheck(unittest.TestCase):
     def test_health_endpoint(self):
         """Health endpoint returns 200."""
         from api_server import HAS_FASTAPI
+
         if not HAS_FASTAPI:
             self.skipTest("FastAPI not installed")
 
         from api_server import app
         from fastapi.testclient import TestClient
+
         client = TestClient(app)
 
         response = client.get("/api/health")

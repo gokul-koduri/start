@@ -49,10 +49,13 @@ class GitPublisherAgent(BaseAgent):
             )
 
         # Determine what to commit
-        files_to_commit = self.config.get("files_to_commit", [
-            "Failed_Startups_Manufacturing_Revival_Report.md",
-            "site/",
-        ])
+        files_to_commit = self.config.get(
+            "files_to_commit",
+            [
+                "Failed_Startups_Manufacturing_Revival_Report.md",
+                "site/",
+            ],
+        )
 
         # Check for changes
         changed_files = self._get_changed_files(project_root)
@@ -84,14 +87,18 @@ class GitPublisherAgent(BaseAgent):
         if has_remote:
             pushed = self._push(project_root)
             if pushed:
-                repo_url = self.config.get("repo_url", "") or os.environ.get("GITHUB_REPO", "")
+                repo_url = self.config.get("repo_url", "") or os.environ.get(
+                    "GITHUB_REPO", ""
+                )
                 if repo_url:
                     # Convert git URL to GitHub Pages URL
                     deployed_url = self._get_pages_url(repo_url)
 
         return AgentResult(
             agent_name=self.name,
-            status="success" if (commit_hash and (not has_remote or pushed)) else "partial",
+            status="success"
+            if (commit_hash and (not has_remote or pushed))
+            else "partial",
             data={
                 "commit_hash": commit_hash,
                 "files_changed": len(changed_files),
@@ -103,7 +110,9 @@ class GitPublisherAgent(BaseAgent):
 
     def _git_available(self) -> bool:
         try:
-            result = subprocess.run(["git", "--version"], capture_output=True, text=True, timeout=5)
+            result = subprocess.run(
+                ["git", "--version"], capture_output=True, text=True, timeout=5
+            )
             return result.returncode == 0
         except (FileNotFoundError, subprocess.TimeoutExpired):
             return False
@@ -113,7 +122,10 @@ class GitPublisherAgent(BaseAgent):
         try:
             result = subprocess.run(
                 ["git", "status", "--porcelain"],
-                cwd=str(project_root), capture_output=True, text=True, timeout=10,
+                cwd=str(project_root),
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             if result.returncode != 0:
                 return []
@@ -134,7 +146,10 @@ class GitPublisherAgent(BaseAgent):
         try:
             result = subprocess.run(
                 ["git", "remote"],
-                cwd=str(project_root), capture_output=True, text=True, timeout=5,
+                cwd=str(project_root),
+                capture_output=True,
+                text=True,
+                timeout=5,
             )
             return bool(result.stdout.strip())
         except Exception:
@@ -147,13 +162,17 @@ class GitPublisherAgent(BaseAgent):
             for pattern in files_to_commit:
                 subprocess.run(
                     ["git", "add", pattern],
-                    cwd=str(project_root), capture_output=True, timeout=30,
+                    cwd=str(project_root),
+                    capture_output=True,
+                    timeout=30,
                 )
 
             # Check if there's anything staged
             result = subprocess.run(
                 ["git", "diff", "--cached", "--quiet"],
-                cwd=str(project_root), capture_output=True, timeout=10,
+                cwd=str(project_root),
+                capture_output=True,
+                timeout=10,
             )
             if result.returncode == 0:
                 _logger.info("GitPublisherAgent: Nothing staged after git add")
@@ -169,7 +188,10 @@ class GitPublisherAgent(BaseAgent):
 
             result = subprocess.run(
                 ["git", "commit", "-m", message],
-                cwd=str(project_root), capture_output=True, text=True, timeout=30,
+                cwd=str(project_root),
+                capture_output=True,
+                text=True,
+                timeout=30,
             )
             if result.returncode != 0:
                 _logger.error("GitPublisherAgent: git commit failed: %s", result.stderr)
@@ -178,7 +200,10 @@ class GitPublisherAgent(BaseAgent):
             # Get commit hash
             result = subprocess.run(
                 ["git", "rev-parse", "--short", "HEAD"],
-                cwd=str(project_root), capture_output=True, text=True, timeout=5,
+                cwd=str(project_root),
+                capture_output=True,
+                text=True,
+                timeout=5,
             )
             commit_hash = result.stdout.strip()
             _logger.info("GitPublisherAgent: Committed as %s", commit_hash)
@@ -194,7 +219,10 @@ class GitPublisherAgent(BaseAgent):
         try:
             result = subprocess.run(
                 ["git", "push", "origin", branch],
-                cwd=str(project_root), capture_output=True, text=True, timeout=60,
+                cwd=str(project_root),
+                capture_output=True,
+                text=True,
+                timeout=60,
             )
             if result.returncode == 0:
                 _logger.info("GitPublisherAgent: Pushed to origin/%s", branch)
@@ -210,7 +238,8 @@ class GitPublisherAgent(BaseAgent):
         """Convert a GitHub repo URL to the GitHub Pages URL."""
         # Handle various formats: git@github.com:user/repo.git, https://github.com/user/repo.git
         import re
-        match = re.search(r'github\.com[:/]([^/]+)/([^/.]+)', repo_url)
+
+        match = re.search(r"github\.com[:/]([^/]+)/([^/.]+)", repo_url)
         if match:
             user, repo = match.group(1), match.group(2)
             return f"https://{user}.github.io/{repo}/"

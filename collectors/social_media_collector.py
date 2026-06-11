@@ -77,11 +77,13 @@ class SocialMediaCollector(BaseCollector):
 
         try:
             import praw
+
             reddit = praw.Reddit(
                 client_id=self.config.get("reddit_client_id", ""),
                 client_secret=self.config.get("reddit_client_secret", ""),
                 user_agent=self.config.get(
-                    "reddit_user_agent", "OpportunityIntel/1.0 (research)",
+                    "reddit_user_agent",
+                    "OpportunityIntel/1.0 (research)",
                 ),
             )
         except (ImportError, Exception) as e:
@@ -97,30 +99,43 @@ class SocialMediaCollector(BaseCollector):
                         continue
 
                     self._insert_reddit_post(
-                        cursor, submission, subreddit_name, result,
+                        cursor,
+                        submission,
+                        subreddit_name,
+                        result,
                     )
                     count += 1
 
                 _logger.info(
                     "SocialMediaCollector: r/%s → %d posts collected",
-                    subreddit_name, count,
+                    subreddit_name,
+                    count,
                 )
             except Exception as e:
                 _logger.warning(
-                    "SocialMediaCollector: r/%s failed: %s", subreddit_name, e,
+                    "SocialMediaCollector: r/%s failed: %s",
+                    subreddit_name,
+                    e,
                 )
                 result.errors.append(f"r/{subreddit_name}: {e}")
 
     def _insert_reddit_post(
-        self, cursor, submission, subreddit: str, result: CollectionResult,
+        self,
+        cursor,
+        submission,
+        subreddit: str,
+        result: CollectionResult,
     ) -> None:
         """Insert a Reddit post into social_posts and raw_signals."""
         entity_name, entity_type = self._extract_entity_from_title(
-            submission.title + " " + (submission.selftext[:200] if submission.selftext else ""),
+            submission.title
+            + " "
+            + (submission.selftext[:200] if submission.selftext else ""),
         )
 
         raw_score = self._compute_engagement_score(
-            submission.score, submission.num_comments,
+            submission.score,
+            submission.num_comments,
         )
 
         # Insert into social_posts
@@ -131,13 +146,20 @@ class SocialMediaCollector(BaseCollector):
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                ON DUPLICATE KEY UPDATE score = VALUES(score), num_comments = VALUES(num_comments)""",
             (
-                "reddit", submission.id, submission.title[:1000],
+                "reddit",
+                submission.id,
+                submission.title[:1000],
                 submission.selftext[:5000] if submission.selftext else "",
                 str(submission.author) if submission.author else "[deleted]",
-                submission.score, submission.num_comments,
-                submission.url, subreddit, entity_name, entity_type,
+                submission.score,
+                submission.num_comments,
+                submission.url,
+                subreddit,
+                entity_name,
+                entity_type,
                 datetime.fromtimestamp(submission.created_utc, tz=timezone.utc)
-                if submission.created_utc else None,
+                if submission.created_utc
+                else None,
             ),
         )
         result.records_collected += 1
@@ -154,7 +176,8 @@ class SocialMediaCollector(BaseCollector):
             entity_type=entity_type,
             published_at=(
                 datetime.fromtimestamp(submission.created_utc, tz=timezone.utc)
-                if submission.created_utc else None
+                if submission.created_utc
+                else None
             ),
             raw_score=raw_score,
             platform="reddit",
@@ -169,8 +192,12 @@ class SocialMediaCollector(BaseCollector):
                VALUES (%s, %s, %s, %s, %s, %s, %s)
                ON DUPLICATE KEY UPDATE title = VALUES(title)""",
             (
-                signal.signal_type, signal.source_name, signal.source_url,
-                signal.title, signal.body_text, signal.entity_name,
+                signal.signal_type,
+                signal.source_name,
+                signal.source_url,
+                signal.title,
+                signal.body_text,
+                signal.entity_name,
                 signal.published_at,
             ),
         )
@@ -196,9 +223,12 @@ class SocialMediaCollector(BaseCollector):
                     f"&hitsPerPage={max_results}"
                 )
 
-                req = urllib.request.Request(url, headers={
-                    "User-Agent": "OpportunityIntel/1.0 (research)",
-                })
+                req = urllib.request.Request(
+                    url,
+                    headers={
+                        "User-Agent": "OpportunityIntel/1.0 (research)",
+                    },
+                )
                 with urllib.request.urlopen(req, timeout=15) as resp:
                     data = json.loads(resp.read().decode())
 
@@ -208,15 +238,21 @@ class SocialMediaCollector(BaseCollector):
 
                 _logger.info(
                     "SocialMediaCollector: HN query '%s' → %d posts",
-                    query, len(hits),
+                    query,
+                    len(hits),
                 )
 
             except (urllib.error.URLError, urllib.error.HTTPError) as e:
-                _logger.warning("SocialMediaCollector: HN query '%s' failed: %s", query, e)
+                _logger.warning(
+                    "SocialMediaCollector: HN query '%s' failed: %s", query, e
+                )
                 result.errors.append(f"HN: {query}: {e}")
 
     def _insert_hn_post(
-        self, cursor, hit: dict, result: CollectionResult,
+        self,
+        cursor,
+        hit: dict,
+        result: CollectionResult,
     ) -> None:
         """Insert a Hacker News post into social_posts and raw_signals."""
         title = hit.get("title", "")
@@ -224,7 +260,8 @@ class SocialMediaCollector(BaseCollector):
         entity_name, entity_type = self._extract_entity_from_title(story_text)
 
         raw_score = self._compute_engagement_score(
-            hit.get("points", 0), hit.get("num_comments", 0),
+            hit.get("points", 0),
+            hit.get("num_comments", 0),
         )
 
         created_at = None
@@ -244,13 +281,17 @@ class SocialMediaCollector(BaseCollector):
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                ON DUPLICATE KEY UPDATE score = VALUES(score), num_comments = VALUES(num_comments)""",
             (
-                "hacker_news", hit.get("objectID", ""),
+                "hacker_news",
+                hit.get("objectID", ""),
                 title[:1000],
                 hit.get("story_text", "")[:5000],
                 hit.get("author", ""),
-                hit.get("points", 0), hit.get("num_comments", 0),
+                hit.get("points", 0),
+                hit.get("num_comments", 0),
                 hit.get("url", hit.get("story_url", "")),
-                entity_name, entity_type, created_at,
+                entity_name,
+                entity_type,
+                created_at,
             ),
         )
         result.records_collected += 1
@@ -276,8 +317,12 @@ class SocialMediaCollector(BaseCollector):
                VALUES (%s, %s, %s, %s, %s, %s, %s)
                ON DUPLICATE KEY UPDATE title = VALUES(title)""",
             (
-                signal.signal_type, signal.source_name, signal.source_url,
-                signal.title, signal.body_text, signal.entity_name,
+                signal.signal_type,
+                signal.source_name,
+                signal.source_url,
+                signal.title,
+                signal.body_text,
+                signal.entity_name,
                 signal.published_at,
             ),
         )
@@ -289,20 +334,22 @@ class SocialMediaCollector(BaseCollector):
         Uses pattern matching to detect companies mentioned in context.
         """
         # Pattern: "$X raised" → company
-        match = re.search(r'\$(\d[\d,.]*)[MmBb]?\b.*?(\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b)', text)
+        match = re.search(
+            r"\$(\d[\d,.]*)[MmBb]?\b.*?(\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b)", text
+        )
         if match:
             return match.group(2).strip(), "company"
 
         # Pattern: "Company launches/releases/announces"
         match = re.search(
-            r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b\s+(?:launches?|releases?|announces?|raises?|debuts?)',
+            r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b\s+(?:launches?|releases?|announces?|raises?|debuts?)",
             text,
         )
         if match:
             return match.group(1).strip(), "company"
 
         # Pattern: title case phrase at start (likely company name)
-        match = re.match(r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)', text)
+        match = re.match(r"^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)", text)
         if match and len(match.group(1)) < 40:
             return match.group(1).strip(), "company"
 

@@ -22,17 +22,37 @@ _NS = {"atom": "http://www.w3.org/2005/Atom"}
 
 # Signal keywords for startup-related tweets
 _SIGNAL_KEYWORDS = {
-    "funding": ["raised", "funding", "series a", "series b", "seed round",
-                "investment", "vc funding"],
-    "launch": ["launching", "now available", "public beta", "early access",
-               "just launched", "new product"],
+    "funding": [
+        "raised",
+        "funding",
+        "series a",
+        "series b",
+        "seed round",
+        "investment",
+        "vc funding",
+    ],
+    "launch": [
+        "launching",
+        "now available",
+        "public beta",
+        "early access",
+        "just launched",
+        "new product",
+    ],
     "hiring": ["we're hiring", "hiring", "looking for", "join us"],
     "acquisition": ["acquired", "acquisition", "buys", "merger"],
 }
 
 # Hashtags relevant to startup signals
-_RELEVANT_HASHTAGS = {"#startup", "#funding", "#launch", "#saas", "#ai",
-                       "#machinelearning", "#venturecapital"}
+_RELEVANT_HASHTAGS = {
+    "#startup",
+    "#funding",
+    "#launch",
+    "#saas",
+    "#ai",
+    "#machinelearning",
+    "#venturecapital",
+}
 
 
 class TwitterCollector(BaseCollector):
@@ -52,8 +72,9 @@ class TwitterCollector(BaseCollector):
     def name(self) -> str:
         return "twitter"
 
-    def _fetch_feed(self, session, instance_url: str, query: str,
-                    timeout: int = 15) -> list[dict]:
+    def _fetch_feed(
+        self, session, instance_url: str, query: str, timeout: int = 15
+    ) -> list[dict]:
         """Fetch Nitter RSS feed for a search query."""
         # Nitter search RSS format: /search?f=tweets&q={query}&rss=1
         url = f"{instance_url}/search?f=tweets&q={query}&rss=1"
@@ -90,7 +111,7 @@ class TwitterCollector(BaseCollector):
         # Extract author from title prefix (@username:)
         author = ""
         text = title
-        match = re.match(r'^(@[\w]+):\s*(.+)$', title, re.DOTALL)
+        match = re.match(r"^(@[\w]+):\s*(.+)$", title, re.DOTALL)
         if match:
             author = match.group(1)
             text = match.group(2).strip()
@@ -150,13 +171,13 @@ class TwitterCollector(BaseCollector):
 
     def _find_hashtags(self, text: str) -> list[str]:
         """Extract relevant hashtags from tweet text."""
-        tags = re.findall(r'#(\w+)', text.lower())
+        tags = re.findall(r"#(\w+)", text.lower())
         return [f"#{t}" for t in tags if f"#{t}" in _RELEVANT_HASHTAGS]
 
     def _find_entity(self, text: str) -> str:
         """Extract a potential company/entity name from tweet text."""
         # Look for @mentions of companies (capitalized usernames)
-        mentions = re.findall(r'@(\w+)', text)
+        mentions = re.findall(r"@(\w+)", text)
         for m in mentions:
             if m[0].isupper() and len(m) > 3:
                 return f"@{m}"
@@ -166,8 +187,9 @@ class TwitterCollector(BaseCollector):
             return quoted[0].strip()
         return ""
 
-    def _compute_score(self, tweet: dict, signals: list[dict],
-                       hashtags: list[str]) -> float:
+    def _compute_score(
+        self, tweet: dict, signals: list[dict], hashtags: list[str]
+    ) -> float:
         """Compute signal strength (0-100).
 
         Factors:
@@ -187,7 +209,9 @@ class TwitterCollector(BaseCollector):
         pub_str = tweet.get("published_date")
         if pub_str:
             try:
-                pub_dt = datetime.strptime(pub_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                pub_dt = datetime.strptime(pub_str, "%Y-%m-%d").replace(
+                    tzinfo=timezone.utc
+                )
                 age_hours = (datetime.now(timezone.utc) - pub_dt).total_seconds() / 3600
                 if age_hours < 24:
                     score += 25
@@ -207,10 +231,16 @@ class TwitterCollector(BaseCollector):
 
         return min(score, 100.0)
 
-    def _insert_tweet(self, cursor, tweet: dict, search_term: str,
-                      signals: list[dict], hashtags: list[str],
-                      raw_score: float,
-                      result: CollectionResult) -> None:
+    def _insert_tweet(
+        self,
+        cursor,
+        tweet: dict,
+        search_term: str,
+        signals: list[dict],
+        hashtags: list[str],
+        raw_score: float,
+        result: CollectionResult,
+    ) -> None:
         """Insert tweet into social_posts + raw_signals tables."""
         author = tweet["author"]
         text = tweet["text"]
@@ -228,7 +258,9 @@ class TwitterCollector(BaseCollector):
                 url or f"tw-{hash(text)}",
                 author,
                 text,
-                0, 0, 0,  # No engagement metrics from Nitter RSS
+                0,
+                0,
+                0,  # No engagement metrics from Nitter RSS
                 published_date,
                 datetime.now(timezone.utc).isoformat(),
             ),
@@ -236,7 +268,9 @@ class TwitterCollector(BaseCollector):
 
         # Insert into raw_signals
         signal_keywords = [s["keyword"] for s in signals]
-        signal_title = f"{author}: {text[:100]}..." if len(text) > 100 else f"{author}: {text}"
+        signal_title = (
+            f"{author}: {text[:100]}..." if len(text) > 100 else f"{author}: {text}"
+        )
 
         cursor.execute(
             """INSERT IGNORE INTO raw_signals
@@ -278,9 +312,14 @@ class TwitterCollector(BaseCollector):
             return result
 
         nitter_instances = config.get("nitter_instances", [])
-        search_queries = config.get("search_queries", [
-            "startup funding", "new product launch", "series A",
-        ])
+        search_queries = config.get(
+            "search_queries",
+            [
+                "startup funding",
+                "new product launch",
+                "series A",
+            ],
+        )
         timeout = config.get("timeout_seconds", 15)
         min_delay = config.get("min_delay_seconds", 3)
 
@@ -305,18 +344,26 @@ class TwitterCollector(BaseCollector):
 
                     try:
                         self._insert_tweet(
-                            cursor, tweet, query, signals, hashtags,
-                            raw_score, result,
+                            cursor,
+                            tweet,
+                            query,
+                            signals,
+                            hashtags,
+                            raw_score,
+                            result,
                         )
                     except Exception as e:
                         result.errors.append(
-                            f"Error inserting tweet from {instance}: {e}")
+                            f"Error inserting tweet from {instance}: {e}"
+                        )
 
                 time.sleep(min_delay)
 
             _logger.info(
                 "TwitterCollector: query '%s' → %d tweets across %d instances",
-                query, result.records_collected, len(nitter_instances),
+                query,
+                result.records_collected,
+                len(nitter_instances),
             )
 
         result.records_inserted = result.records_collected

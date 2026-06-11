@@ -3,7 +3,6 @@
 import logging
 import re
 from datetime import datetime, timezone
-from urllib.parse import quote_plus
 
 from agents.base import AgentResult, BaseAgent
 from config import load_config
@@ -49,11 +48,14 @@ class InternetResearchAgent(BaseAgent):
 
     def execute(self, upstream_results: list | None = None) -> AgentResult:
         config = load_config()
-        queries = self.config.get("queries", [
-            "startup failure database open data",
-            "failed startups API data source",
-            "manufacturing bankruptcy statistics data",
-        ])
+        queries = self.config.get(
+            "queries",
+            [
+                "startup failure database open data",
+                "failed startups API data source",
+                "manufacturing bankruptcy statistics data",
+            ],
+        )
         max_results = self.config.get("max_results_per_query", 20)
         val_config = self.config.get("validation", {})
         timeout = val_config.get("timeout_seconds", 10)
@@ -62,7 +64,9 @@ class InternetResearchAgent(BaseAgent):
 
         # Load classification keywords for relevance scoring
         classification = config.get("classification", {})
-        mfg_keywords = [k.lower() for k in classification.get("manufacturing_keywords", [])]
+        mfg_keywords = [
+            k.lower() for k in classification.get("manufacturing_keywords", [])
+        ]
         fail_keywords = [k.lower() for k in classification.get("failure_keywords", [])]
 
         _logger.info("InternetResearchAgent: Running %d search queries", len(queries))
@@ -85,8 +89,16 @@ class InternetResearchAgent(BaseAgent):
                         discovered += 1
 
                         # Skip known domains we already scrape
-                        if any(d in url for d in ["failory.com", "bls.gov", "reshorenow.org",
-                                                    "techcrunch.com", "news.google.com"]):
+                        if any(
+                            d in url
+                            for d in [
+                                "failory.com",
+                                "bls.gov",
+                                "reshorenow.org",
+                                "techcrunch.com",
+                                "news.google.com",
+                            ]
+                        ):
                             continue
 
                         # Check if already discovered
@@ -132,7 +144,9 @@ class InternetResearchAgent(BaseAgent):
                         cursor.close()
 
                 except Exception as e:
-                    _logger.warning("InternetResearchAgent: query '%s' failed: %s", query[:30], e)
+                    _logger.warning(
+                        "InternetResearchAgent: query '%s' failed: %s", query[:30], e
+                    )
                     errors.append(f"Query '{query[:30]}': {e}")
                     continue
         finally:
@@ -140,7 +154,9 @@ class InternetResearchAgent(BaseAgent):
 
         _logger.info(
             "InternetResearchAgent: discovered=%d, validated=%d, high_quality=%d",
-            discovered, validated, high_quality,
+            discovered,
+            validated,
+            high_quality,
         )
 
         return AgentResult(
@@ -180,6 +196,7 @@ class InternetResearchAgent(BaseAgent):
                 if "uddg=" in url:
                     actual = url.split("uddg=")[-1].split("&")[0]
                     from urllib.parse import unquote
+
                     url = unquote(actual)
                 if url.startswith("http") and "duckduckgo.com" not in url:
                     urls.append(url)
@@ -192,8 +209,12 @@ class InternetResearchAgent(BaseAgent):
         return urls
 
     def _validate_url(
-        self, url: str, mfg_keywords: list[str], fail_keywords: list[str],
-        timeout: int, min_length: int,
+        self,
+        url: str,
+        mfg_keywords: list[str],
+        fail_keywords: list[str],
+        timeout: int,
+        min_length: int,
     ) -> tuple[str, str | None, float]:
         """Validate a URL and score its relevance.
 
@@ -202,8 +223,12 @@ class InternetResearchAgent(BaseAgent):
         import requests
 
         try:
-            response = requests.head(url, timeout=timeout, allow_redirects=True,
-                                     headers={"User-Agent": SEARCH_USER_AGENT})
+            response = requests.head(
+                url,
+                timeout=timeout,
+                allow_redirects=True,
+                headers={"User-Agent": SEARCH_USER_AGENT},
+            )
             content_type = response.headers.get("Content-Type", "")
 
             # Determine source type
@@ -223,7 +248,9 @@ class InternetResearchAgent(BaseAgent):
                 return source_type, None, 0.4  # Moderate score for non-HTML sources
 
             # Fetch content for HTML sources
-            response = requests.get(url, timeout=timeout, headers={"User-Agent": SEARCH_USER_AGENT})
+            response = requests.get(
+                url, timeout=timeout, headers={"User-Agent": SEARCH_USER_AGENT}
+            )
             content = response.text
 
             if len(content) < min_length:
@@ -236,8 +263,18 @@ class InternetResearchAgent(BaseAgent):
 
             # Bonus for data-related keywords
             data_bonus = 0
-            for kw in ["database", "dataset", "api", "open data", "csv", "json",
-                        "statistics", "research", "report", "analysis"]:
+            for kw in [
+                "database",
+                "dataset",
+                "api",
+                "open data",
+                "csv",
+                "json",
+                "statistics",
+                "research",
+                "report",
+                "analysis",
+            ]:
                 if kw in text_lower:
                     data_bonus += 0.05
 

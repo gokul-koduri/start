@@ -45,9 +45,18 @@ query($cursor: String) {
 """
 
 # Topics considered relevant for startup/tech signal detection
-_RELEVANT_TOPICS = {"ai", "developer-tools", "saas", "no-code", "open-source",
-                    "tech", "artificial-intelligence", "machine-learning",
-                    "productivity", "startup"}
+_RELEVANT_TOPICS = {
+    "ai",
+    "developer-tools",
+    "saas",
+    "no-code",
+    "open-source",
+    "tech",
+    "artificial-intelligence",
+    "machine-learning",
+    "productivity",
+    "startup",
+}
 
 
 class ProductHuntCollector(BaseCollector):
@@ -78,9 +87,13 @@ class ProductHuntCollector(BaseCollector):
         session.headers["Content-Type"] = "application/json"
         return session
 
-    def _fetch_posts(self, session, base_url: str,
-                     posts_per_page: int = 50,
-                     cursor: str | None = None) -> tuple[list[dict], str | None]:
+    def _fetch_posts(
+        self,
+        session,
+        base_url: str,
+        posts_per_page: int = 50,
+        cursor: str | None = None,
+    ) -> tuple[list[dict], str | None]:
         """Execute GraphQL query and parse response.
 
         Returns (posts, next_cursor). next_cursor is None if no more pages.
@@ -102,7 +115,9 @@ class ProductHuntCollector(BaseCollector):
         errors = data.get("errors")
         if errors:
             for err in errors:
-                _logger.warning("Product Hunt GraphQL error: %s", err.get("message", err))
+                _logger.warning(
+                    "Product Hunt GraphQL error: %s", err.get("message", err)
+                )
             return [], None
 
         posts_data = data.get("data", {}).get("posts", {})
@@ -116,7 +131,9 @@ class ProductHuntCollector(BaseCollector):
             if post:
                 posts.append(post)
 
-        next_cursor = page_info.get("endCursor") if page_info.get("hasNextPage") else None
+        next_cursor = (
+            page_info.get("endCursor") if page_info.get("hasNextPage") else None
+        )
 
         return posts, next_cursor
 
@@ -129,13 +146,17 @@ class ProductHuntCollector(BaseCollector):
 
         # Topics
         topic_edges = node.get("topics", {}).get("edges", [])
-        topics = [e["node"]["name"] for e in topic_edges
-                  if e.get("node", {}).get("name")]
+        topics = [
+            e["node"]["name"] for e in topic_edges if e.get("node", {}).get("name")
+        ]
 
         # Makers
         maker_edges = node.get("makers", {}).get("edges", [])
-        makers = [e["node"].get("name", "") for e in maker_edges
-                  if e.get("node", {}).get("name")]
+        makers = [
+            e["node"].get("name", "")
+            for e in maker_edges
+            if e.get("node", {}).get("name")
+        ]
 
         # Dates
         created_at = node.get("createdAt")
@@ -211,9 +232,12 @@ class ProductHuntCollector(BaseCollector):
         created_str = post.get("created_at")
         if created_str:
             try:
-                created_dt = datetime.strptime(created_str, "%Y-%m-%d %H:%M:%S").replace(
-                    tzinfo=timezone.utc)
-                age_hours = (datetime.now(timezone.utc) - created_dt).total_seconds() / 3600
+                created_dt = datetime.strptime(
+                    created_str, "%Y-%m-%d %H:%M:%S"
+                ).replace(tzinfo=timezone.utc)
+                age_hours = (
+                    datetime.now(timezone.utc) - created_dt
+                ).total_seconds() / 3600
                 if age_hours < 24:
                     score += 20
                 elif age_hours < 72:
@@ -223,8 +247,7 @@ class ProductHuntCollector(BaseCollector):
 
         return min(score, 100.0)
 
-    def _insert_post(self, cursor, post: dict,
-                     result: CollectionResult) -> None:
+    def _insert_post(self, cursor, post: dict, result: CollectionResult) -> None:
         """Insert post into producthunt_launches and raw_signals."""
         ph_id = post["ph_id"]
         name = post["name"]
@@ -333,7 +356,8 @@ class ProductHuntCollector(BaseCollector):
 
         while request_count < max_requests:
             posts, next_cursor = self._fetch_posts(
-                session, base_url, posts_per_page, page_cursor)
+                session, base_url, posts_per_page, page_cursor
+            )
 
             if not posts:
                 break
@@ -348,7 +372,9 @@ class ProductHuntCollector(BaseCollector):
                 try:
                     self._insert_post(cursor, post, result)
                 except Exception as e:
-                    result.errors.append(f"Error inserting post {post.get('ph_id', '?')}: {e}")
+                    result.errors.append(
+                        f"Error inserting post {post.get('ph_id', '?')}: {e}"
+                    )
 
             request_count += 1
 

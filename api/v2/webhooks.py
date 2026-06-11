@@ -12,6 +12,7 @@ router = APIRouter(prefix="/v2/webhooks", tags=["webhooks"])
 
 class WebhookCreate(BaseModel):
     """Webhook creation request."""
+
     url: str
     events: list[str]
     headers: Optional[dict] = None
@@ -20,6 +21,7 @@ class WebhookCreate(BaseModel):
 
 class WebhookUpdate(BaseModel):
     """Webhook update request."""
+
     url: Optional[str] = None
     events: Optional[list[str]] = None
     headers: Optional[dict] = None
@@ -83,14 +85,19 @@ def create_webhook(webhook: WebhookCreate):
             json.dumps(webhook.events),
             json.dumps(webhook.headers or {}),
             int(webhook.active),
-        )
+        ),
     )
     webhook_id = cursor.lastrowid
     conn.commit()
     cursor.close()
     conn.close()
 
-    return {"id": webhook_id, "url": webhook.url, "events": webhook.events, "active": webhook.active}
+    return {
+        "id": webhook_id,
+        "url": webhook.url,
+        "events": webhook.events,
+        "active": webhook.active,
+    }
 
 
 @router.get("/{webhook_id}")
@@ -149,8 +156,7 @@ def update_webhook(webhook_id: int, webhook: WebhookUpdate):
 
     params.append(webhook_id)
     cursor.execute(
-        f"UPDATE api_webhooks SET {', '.join(updates)} WHERE id = %s",
-        params
+        f"UPDATE api_webhooks SET {', '.join(updates)} WHERE id = %s", params
     )
     conn.commit()
     cursor.close()

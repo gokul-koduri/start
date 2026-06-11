@@ -31,17 +31,14 @@ Design:
 import argparse
 import json
 import logging
-import os
 import subprocess
 import sys
-import time
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Optional
 
 from db.connection import get_connection
-from db import schema
 from utils.work_tokens import (
     create_token as _create_token,
     release_completed_blockers,
@@ -51,7 +48,6 @@ from utils.work_tokens import (
     get_token as _get_token,
     list_tokens as _list_tokens,
     get_ready_tokens,
-    token_stats,
     get_token_log as _get_token_log,
     print_token_dashboard,
     TokenStatus as _TokenStatus,
@@ -74,12 +70,12 @@ class TaskStatus(str, Enum):
 
 
 class TaskType(str, Enum):
-    BUILD = "build"          # New feature
-    FIX = "fix"              # Bug fix
-    REFACTOR = "refactor"    # Code improvement
-    DESIGN = "design"        # Design document only
-    TEST = "test"            # Add tests
-    DOCS = "docs"            # Documentation
+    BUILD = "build"  # New feature
+    FIX = "fix"  # Bug fix
+    REFACTOR = "refactor"  # Code improvement
+    DESIGN = "design"  # Design document only
+    TEST = "test"  # Add tests
+    DOCS = "docs"  # Documentation
 
 
 # ── Ensure DB table exists ──────────────────────────────────────────────────
@@ -209,9 +205,12 @@ def spawn_task(
         conn.close()
 
 
-def update_task_status(task_id: int, status: str,
-                       message: Optional[str] = None,
-                       data: Optional[dict] = None) -> None:
+def update_task_status(
+    task_id: int,
+    status: str,
+    message: Optional[str] = None,
+    data: Optional[dict] = None,
+) -> None:
     """Update a task's status and log the transition."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     conn = get_connection()
@@ -228,12 +227,20 @@ def update_task_status(task_id: int, status: str,
                     started = row["started_at"]
                     if isinstance(started, str):
                         started = datetime.fromisoformat(started)
-                    wall_minutes = (datetime.now(timezone.utc) - started.replace(tzinfo=timezone.utc) if hasattr(started, 'tzinfo') and started.tzinfo else (datetime.now(timezone.utc) - started)).total_seconds() / 60
+                    wall_minutes = (
+                        datetime.now(timezone.utc)
+                        - started.replace(tzinfo=timezone.utc)
+                        if hasattr(started, "tzinfo") and started.tzinfo
+                        else (datetime.now(timezone.utc) - started)
+                    ).total_seconds() / 60
 
             updates = ["status = %s", "updated_at = %s"]
             params = [status, now]
 
-            if status in ("designing", "building", "testing") and message != "set_started":
+            if (
+                status in ("designing", "building", "testing")
+                and message != "set_started"
+            ):
                 # Don't overwrite started_at on intermediate status changes
                 pass
             elif status in ("designing", "building", "testing"):
@@ -271,13 +278,15 @@ def update_task_status(task_id: int, status: str,
         conn.close()
 
 
-def record_artifacts(task_id: int,
-                     files_created: Optional[list[str]] = None,
-                     files_modified: Optional[list[str]] = None,
-                     tests_added: int = 0,
-                     tests_passing: int = 0,
-                     design_doc: Optional[dict] = None,
-                     result_summary: Optional[str] = None) -> None:
+def record_artifacts(
+    task_id: int,
+    files_created: Optional[list[str]] = None,
+    files_modified: Optional[list[str]] = None,
+    tests_added: int = 0,
+    tests_passing: int = 0,
+    design_doc: Optional[dict] = None,
+    result_summary: Optional[str] = None,
+) -> None:
     """Record what was built during this task."""
     conn = get_connection()
     try:
@@ -391,6 +400,7 @@ def get_task_log(task_id: int) -> list[dict]:
 
 # ── Run tests for a task ────────────────────────────────────────────────────
 
+
 def run_tests(test_path: Optional[str] = None) -> dict:
     """Run pytest and return results. Used by tasks to verify their work."""
     cmd = [sys.executable, "-m", "pytest", "-v", "--tb=short", "-q"]
@@ -422,6 +432,7 @@ def run_tests(test_path: Optional[str] = None) -> dict:
 
 # ── Status dashboard ────────────────────────────────────────────────────────
 
+
 def print_status():
     """Print a formatted status dashboard of all parallel tasks."""
     tasks = list_tasks()
@@ -444,14 +455,20 @@ def print_status():
     print("  PARALLEL TASKS — SPAWNED DURING SPRINT")
     print("=" * 80)
     print()
-    print(f"  {'ID':<4} {'STATUS':<14} {'PRIORITY':<8} {'TYPE':<10} {'NAME':<30} {'TIME':>8}")
+    print(
+        f"  {'ID':<4} {'STATUS':<14} {'PRIORITY':<8} {'TYPE':<10} {'NAME':<30} {'TIME':>8}"
+    )
     print(f"  {'─'*4} {'─'*14} {'─'*8} {'─'*10} {'─'*30} {'─'*8}")
 
     for t in tasks:
         icon = status_icons.get(t["status"], "?")
         wall = f"{t['wall_clock_minutes']:.1f}m" if t.get("wall_clock_minutes") else "—"
-        name = t["task_name"][:28] + ".." if len(t["task_name"]) > 30 else t["task_name"]
-        print(f"  {t['id']:<4} {icon} {t['status']:<12} {t['priority']:<8} {t['task_type']:<10} {name:<30} {wall:>8}")
+        name = (
+            t["task_name"][:28] + ".." if len(t["task_name"]) > 30 else t["task_name"]
+        )
+        print(
+            f"  {t['id']:<4} {icon} {t['status']:<12} {t['priority']:<8} {t['task_type']:<10} {name:<30} {wall:>8}"
+        )
 
     # Summary
     active = sum(1 for t in tasks if t["status"] not in ("done", "failed", "cancelled"))
@@ -461,13 +478,16 @@ def print_status():
     total_tests = sum(t.get("tests_passing") or 0 for t in tasks)
 
     print()
-    print(f"  Active: {active}  Done: {done}  Failed: {failed}  "
-          f"Files created: {total_files}  Tests passing: {total_tests}")
+    print(
+        f"  Active: {active}  Done: {done}  Failed: {failed}  "
+        f"Files created: {total_files}  Tests passing: {total_tests}"
+    )
     print("=" * 80)
     print()
 
 
 # ── Convenience: spawn + run ─────────────────────────────────────────────────
+
 
 def spawn_and_track(
     name: str,
@@ -491,18 +511,167 @@ def spawn_and_track(
 
     print(f"\n✅ Spawned parallel task #{task_id}: {name}")
     print(f"   Type: {task_type}  Priority: {priority}")
-    print(f"   Status: queued")
+    print("   Status: queued")
     print()
     print("   Next steps:")
-    print(f"   1. Update status:  python -m agents.parallel_spawner update --id {task_id} --status designing")
-    print(f"   2. Record design:  python -m agents.parallel_spawner design --id {task_id} --doc '{{\"approach\": \"...\"}}'")
-    print(f"   3. Start building: python -m agents.parallel_spawner update --id {task_id} --status building")
-    print(f"   4. Record files:   python -m agents.parallel_spawner artifacts --id {task_id} --created 'file1.py,file2.py'")
-    print(f"   5. Run tests:      python -m agents.parallel_spawner test --id {task_id}")
-    print(f"   6. Complete:       python -m agents.parallel_spawner complete --id {task_id} --result 'Done, all tests pass'")
+    print(
+        f"   1. Update status:  python -m agents.parallel_spawner update --id {task_id} --status designing"
+    )
+    print(
+        f'   2. Record design:  python -m agents.parallel_spawner design --id {task_id} --doc \'{{"approach": "..."}}\''
+    )
+    print(
+        f"   3. Start building: python -m agents.parallel_spawner update --id {task_id} --status building"
+    )
+    print(
+        f"   4. Record files:   python -m agents.parallel_spawner artifacts --id {task_id} --created 'file1.py,file2.py'"
+    )
+    print(
+        f"   5. Run tests:      python -m agents.parallel_spawner test --id {task_id}"
+    )
+    print(
+        f"   6. Complete:       python -m agents.parallel_spawner complete --id {task_id} --result 'Done, all tests pass'"
+    )
     print()
 
     return task_id
+
+
+def _handle_token_command(args):
+    """Dispatch token subcommands."""
+    if args.token_command == "create":
+        blocked_by = [int(x.strip()) for x in args.blocked_by.split(",")]
+        token_id = _create_token(
+            name=args.name,
+            description=args.description,
+            blocked_by=blocked_by,
+            created_by=args.created_by,
+            priority=args.priority,
+            work_summary=args.work_summary,
+        )
+        print(f"\n🔒 Created token #{token_id}: {args.name}")
+        print(f"   Blocked by: {blocked_by}")
+        print("   Status: blocked")
+        print()
+        print(f"   This token will auto-release when task(s) {blocked_by} complete.")
+        print(
+            f"   Check:  python -m agents.parallel_spawner token show --id {token_id}"
+        )
+        print("   Ready:  python -m agents.parallel_spawner token list --status ready")
+        print()
+
+    elif args.token_command == "list":
+        tokens = _list_tokens(status=args.status, task_id=args.task)
+        if not tokens:
+            print("  No tokens found.")
+        for t in tokens:
+            blocked = (
+                f"→ task #{t['claimed_by_task_id']}"
+                if t.get("claimed_by_task_id")
+                else ""
+            )
+            print(
+                f"  #{t['id']:<4} {t['status']:<10} {t['priority']:<5} {t['token_name']} {blocked}"
+            )
+
+    elif args.token_command == "show":
+        token = _get_token(args.id)
+        if not token:
+            print(f"Token #{args.id} not found")
+            return
+        print(f"\n  Token #{token['id']}: {token['token_name']}")
+        print(f"  Status:      {token['status']}")
+        print(f"  Priority:    {token['priority']}")
+        print(f"  Description: {token['description']}")
+        if token.get("work_summary"):
+            print(f"  Work:        {token['work_summary']}")
+        if token.get("created_by_task_id"):
+            print(f"  Created by:  task #{token['created_by_task_id']}")
+        if token.get("claimed_by_task_id"):
+            print(f"  Claimed by:  task #{token['claimed_by_task_id']}")
+        if token.get("result_summary"):
+            print(f"  Result:      {token['result_summary']}")
+        print(f"  Created:     {token['created_at']}")
+        if token.get("released_at"):
+            print(f"  Released:    {token['released_at']}")
+        if token.get("claimed_at"):
+            print(f"  Claimed:     {token['claimed_at']}")
+        if token.get("completed_at"):
+            print(f"  Completed:   {token['completed_at']}")
+        # Blockers
+        if token.get("blockers"):
+            print("\n  Blockers:")
+            for b in token["blockers"]:
+                sat = "✅" if b["satisfied"] else "🔒"
+                print(
+                    f"    {sat} task #{b['blocking_task_id']} ({b['task_name']}) — {b['task_status']}"
+                )
+        # Artifacts
+        if token.get("files_created"):
+            files = json.loads(token["files_created"])
+            print(f"\n  Files created: {len(files)}")
+            for f in files:
+                print(f"    + {f}")
+        if token.get("files_modified"):
+            files = json.loads(token["files_modified"])
+            print(f"  Files modified: {len(files)}")
+            for f in files:
+                print(f"    ~ {f}")
+        print(
+            f"  Tests: {token.get('tests_passing') or 0} passing / {token.get('tests_added') or 0} added"
+        )
+        print()
+
+    elif args.token_command == "claim":
+        _claim_token(args.id, claimed_by=args.claimed_by)
+        print(f"🔧 Token #{args.id} claimed by task #{args.claimed_by}")
+
+    elif args.token_command == "complete":
+        created = args.created.split(",") if args.created else None
+        modified = args.modified.split(",") if args.modified else None
+        _complete_token(
+            args.id,
+            result=args.result,
+            files_created=created,
+            files_modified=modified,
+            tests_added=args.tests_added,
+            tests_passing=args.tests_passing,
+        )
+        print(f"✅ Token #{args.id} completed: {args.result}")
+
+    elif args.token_command == "expire":
+        _expire_token(args.id, reason=args.reason)
+        print(f"⏰ Token #{args.id} expired: {args.reason}")
+
+    elif args.token_command == "log":
+        entries = _get_token_log(args.id)
+        if not entries:
+            print(f"No log entries for token #{args.id}")
+        for e in entries:
+            print(f"  [{e['created_at']}] {e['event']}: {e['message']}")
+
+    elif args.token_command == "ready":
+        tokens = get_ready_tokens()
+        if not tokens:
+            print("  No ready tokens.")
+        for t in tokens:
+            print(f"  🟢 #{t['id']:<4} {t['priority']:<5} {t['token_name']}")
+            if t.get("work_summary"):
+                print(f"         {t['work_summary']}")
+
+    elif args.token_command == "blocked":
+        from utils.work_tokens import list_tokens as _lt
+
+        tokens = _lt(status="blocked")
+        if not tokens:
+            print("  No blocked tokens.")
+        for t in tokens:
+            print(f"  🔒 #{t['id']:<4} {t['priority']:<5} {t['token_name']}")
+
+    else:
+        print(
+            "  Usage: python -m agents.parallel_spawner token <create|list|show|claim|complete|expire|log|ready|blocked>"
+        )
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
@@ -513,21 +682,29 @@ if __name__ == "__main__":
         format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
     )
 
-    parser = argparse.ArgumentParser(description="Parallel task spawner for sprint work")
+    parser = argparse.ArgumentParser(
+        description="Parallel task spawner for sprint work"
+    )
     sub = parser.add_subparsers(dest="command")
 
     # spawn
     p_spawn = sub.add_parser("spawn", help="Spawn a new parallel task")
     p_spawn.add_argument("--name", required=True, help="Task name (unique)")
     p_spawn.add_argument("--description", required=True, help="What needs to be done")
-    p_spawn.add_argument("--type", default="build", choices=["build", "fix", "refactor", "design", "test", "docs"])
+    p_spawn.add_argument(
+        "--type",
+        default="build",
+        choices=["build", "fix", "refactor", "design", "test", "docs"],
+    )
     p_spawn.add_argument("--priority", default="P2", choices=["P0", "P1", "P2", "P3"])
     p_spawn.add_argument("--sprint", default=None, help="Parent sprint name")
 
     # update
     p_update = sub.add_parser("update", help="Update task status")
     p_update.add_argument("--id", type=int, required=True)
-    p_update.add_argument("--status", required=True, choices=[s.value for s in TaskStatus])
+    p_update.add_argument(
+        "--status", required=True, choices=[s.value for s in TaskStatus]
+    )
     p_update.add_argument("--message", default=None)
 
     # design
@@ -538,15 +715,23 @@ if __name__ == "__main__":
     # artifacts
     p_art = sub.add_parser("artifacts", help="Record files created/modified")
     p_art.add_argument("--id", type=int, required=True)
-    p_art.add_argument("--created", default=None, help="Comma-separated list of files created")
-    p_art.add_argument("--modified", default=None, help="Comma-separated list of files modified")
+    p_art.add_argument(
+        "--created", default=None, help="Comma-separated list of files created"
+    )
+    p_art.add_argument(
+        "--modified", default=None, help="Comma-separated list of files modified"
+    )
     p_art.add_argument("--tests-added", type=int, default=0)
     p_art.add_argument("--tests-passing", type=int, default=0)
 
     # test
     p_test = sub.add_parser("test", help="Run tests and record results")
     p_test.add_argument("--id", type=int, required=True)
-    p_test.add_argument("--path", default=None, help="Specific test path (e.g., tests/test_email_queue.py)")
+    p_test.add_argument(
+        "--path",
+        default=None,
+        help="Specific test path (e.g., tests/test_email_queue.py)",
+    )
 
     # complete
     p_complete = sub.add_parser("complete", help="Mark task as done")
@@ -579,7 +764,11 @@ if __name__ == "__main__":
     tc = token_sub.add_parser("create", help="Create a blocked work token")
     tc.add_argument("--name", required=True, help="Token name")
     tc.add_argument("--description", required=True, help="What work needs doing")
-    tc.add_argument("--blocked-by", required=True, help="Comma-separated task IDs that must complete first")
+    tc.add_argument(
+        "--blocked-by",
+        required=True,
+        help="Comma-separated task IDs that must complete first",
+    )
     tc.add_argument("--created-by", type=int, default=None, help="Your current task ID")
     tc.add_argument("--priority", default="P2", choices=["P0", "P1", "P2", "P3"])
     tc.add_argument("--work-summary", default=None, help="What to do once unblocked")
@@ -671,7 +860,9 @@ if __name__ == "__main__":
         if released:
             print(f"✅ Task #{args.id} completed: {args.result}")
             print(f"🔓 Released {len(released)} token(s): {released}")
-            print(f"   Run 'python -m agents.parallel_spawner token list --status ready' to see them")
+            print(
+                "   Run 'python -m agents.parallel_spawner token list --status ready' to see them"
+            )
         else:
             print(f"✅ Task #{args.id} completed: {args.result}")
 
@@ -696,7 +887,9 @@ if __name__ == "__main__":
     elif args.command == "list":
         tasks = list_tasks(status=args.status)
         for t in tasks:
-            print(f"  #{t['id']:>3}  {t['status']:<14} {t['priority']:<6} {t['task_name']}")
+            print(
+                f"  #{t['id']:>3}  {t['status']:<14} {t['priority']:<6} {t['task_name']}"
+            )
 
     elif args.command == "log":
         entries = get_task_log(args.id)
@@ -730,7 +923,9 @@ if __name__ == "__main__":
                 print(f"  Files modified: {len(files)}")
                 for f in files:
                     print(f"    ~ {f}")
-            print(f"  Tests: {task.get('tests_passing') or 0} passing / {task.get('tests_added') or 0} added")
+            print(
+                f"  Tests: {task.get('tests_passing') or 0} passing / {task.get('tests_added') or 0} added"
+            )
             if task.get("error_message"):
                 print(f"  Error: {task['error_message']}")
             print()
@@ -743,138 +938,16 @@ if __name__ == "__main__":
         parser.print_help()
 
 
-def _handle_token_command(args):
-    """Dispatch token subcommands."""
-    if args.token_command == "create":
-        blocked_by = [int(x.strip()) for x in args.blocked_by.split(",")]
-        token_id = _create_token(
-            name=args.name,
-            description=args.description,
-            blocked_by=blocked_by,
-            created_by=args.created_by,
-            priority=args.priority,
-            work_summary=args.work_summary,
-        )
-        print(f"\n🔒 Created token #{token_id}: {args.name}")
-        print(f"   Blocked by: {blocked_by}")
-        print(f"   Status: blocked")
-        print()
-        print(f"   This token will auto-release when task(s) {blocked_by} complete.")
-        print(f"   Check:  python -m agents.parallel_spawner token show --id {token_id}")
-        print(f"   Ready:  python -m agents.parallel_spawner token list --status ready")
-        print()
-
-    elif args.token_command == "list":
-        tokens = _list_tokens(status=args.status, task_id=args.task)
-        if not tokens:
-            print("  No tokens found.")
-        for t in tokens:
-            blocked = f"→ task #{t['claimed_by_task_id']}" if t.get("claimed_by_task_id") else ""
-            print(f"  #{t['id']:<4} {t['status']:<10} {t['priority']:<5} {t['token_name']} {blocked}")
-
-    elif args.token_command == "show":
-        token = _get_token(args.id)
-        if not token:
-            print(f"Token #{args.id} not found")
-            return
-        print(f"\n  Token #{token['id']}: {token['token_name']}")
-        print(f"  Status:      {token['status']}")
-        print(f"  Priority:    {token['priority']}")
-        print(f"  Description: {token['description']}")
-        if token.get("work_summary"):
-            print(f"  Work:        {token['work_summary']}")
-        if token.get("created_by_task_id"):
-            print(f"  Created by:  task #{token['created_by_task_id']}")
-        if token.get("claimed_by_task_id"):
-            print(f"  Claimed by:  task #{token['claimed_by_task_id']}")
-        if token.get("result_summary"):
-            print(f"  Result:      {token['result_summary']}")
-        print(f"  Created:     {token['created_at']}")
-        if token.get("released_at"):
-            print(f"  Released:    {token['released_at']}")
-        if token.get("claimed_at"):
-            print(f"  Claimed:     {token['claimed_at']}")
-        if token.get("completed_at"):
-            print(f"  Completed:   {token['completed_at']}")
-        # Blockers
-        if token.get("blockers"):
-            print(f"\n  Blockers:")
-            for b in token["blockers"]:
-                sat = "✅" if b["satisfied"] else "🔒"
-                print(f"    {sat} task #{b['blocking_task_id']} ({b['task_name']}) — {b['task_status']}")
-        # Artifacts
-        if token.get("files_created"):
-            files = json.loads(token["files_created"])
-            print(f"\n  Files created: {len(files)}")
-            for f in files:
-                print(f"    + {f}")
-        if token.get("files_modified"):
-            files = json.loads(token["files_modified"])
-            print(f"  Files modified: {len(files)}")
-            for f in files:
-                print(f"    ~ {f}")
-        print(f"  Tests: {token.get('tests_passing') or 0} passing / {token.get('tests_added') or 0} added")
-        print()
-
-    elif args.token_command == "claim":
-        _claim_token(args.id, claimed_by=args.claimed_by)
-        print(f"🔧 Token #{args.id} claimed by task #{args.claimed_by}")
-
-    elif args.token_command == "complete":
-        created = args.created.split(",") if args.created else None
-        modified = args.modified.split(",") if args.modified else None
-        _complete_token(
-            args.id,
-            result=args.result,
-            files_created=created,
-            files_modified=modified,
-            tests_added=args.tests_added,
-            tests_passing=args.tests_passing,
-        )
-        print(f"✅ Token #{args.id} completed: {args.result}")
-
-    elif args.token_command == "expire":
-        _expire_token(args.id, reason=args.reason)
-        print(f"⏰ Token #{args.id} expired: {args.reason}")
-
-    elif args.token_command == "log":
-        entries = _get_token_log(args.id)
-        if not entries:
-            print(f"No log entries for token #{args.id}")
-        for e in entries:
-            print(f"  [{e['created_at']}] {e['event']}: {e['message']}")
-
-    elif args.token_command == "ready":
-        tokens = get_ready_tokens()
-        if not tokens:
-            print("  No ready tokens.")
-        for t in tokens:
-            print(f"  🟢 #{t['id']:<4} {t['priority']:<5} {t['token_name']}")
-            if t.get("work_summary"):
-                print(f"         {t['work_summary']}")
-
-    elif args.token_command == "blocked":
-        from utils.work_tokens import list_tokens as _lt
-        tokens = _lt(status="blocked")
-        if not tokens:
-            print("  No blocked tokens.")
-        for t in tokens:
-            print(f"  🔒 #{t['id']:<4} {t['priority']:<5} {t['token_name']}")
-
-    else:
-        print("  Usage: python -m agents.parallel_spawner token <create|list|show|claim|complete|expire|log|ready|blocked>")
-
-
 # ── Orchestrated agent wrapper ───────────────────────────────────────────────
 
 # This lets the parallel spawner run inside the orchestrator pipeline
 # as a regular agent. It checks for queued tasks and runs them.
 
+
 class OrchestratedParallelSpawner:
     """Agent wrapper that the orchestrator can call to process queued parallel tasks."""
 
     def __init__(self, config=None, dry_run=False):
-        from agents.base import BaseAgent
         self.config = config or {}
         self.dry_run = dry_run
 
@@ -890,7 +963,9 @@ class OrchestratedParallelSpawner:
         from agents.base import AgentResult
 
         if not self.enabled:
-            return AgentResult(agent_name=self.name, status="success", data={"skipped": True})
+            return AgentResult(
+                agent_name=self.name, status="success", data={"skipped": True}
+            )
 
         tasks = list_tasks(status="queued")
         if not tasks:

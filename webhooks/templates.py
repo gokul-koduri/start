@@ -15,8 +15,8 @@ TEMPLATES: Dict[str, Dict[str, Any]] = {
                 "composite_score": "float 0-100",
                 "trend_direction": "rising|falling|stable",
                 "signal_count": "int",
-            }
-        }
+            },
+        },
     },
     "signal_collected": {
         "description": "A raw signal was collected",
@@ -28,8 +28,8 @@ TEMPLATES: Dict[str, Dict[str, Any]] = {
                 "source_name": "string",
                 "entity_name": "string (optional)",
                 "title": "string",
-            }
-        }
+            },
+        },
     },
     "pipeline_completed": {
         "description": "A pipeline execution completed",
@@ -41,8 +41,8 @@ TEMPLATES: Dict[str, Dict[str, Any]] = {
                 "status": "success|partial|failed",
                 "duration_seconds": "float",
                 "agents_run": "int",
-            }
-        }
+            },
+        },
     },
     "agent_failed": {
         "description": "An agent execution failed",
@@ -53,8 +53,8 @@ TEMPLATES: Dict[str, Dict[str, Any]] = {
                 "agent_name": "string",
                 "pipeline_name": "string",
                 "error_message": "string",
-            }
-        }
+            },
+        },
     },
 }
 
@@ -71,7 +71,7 @@ def build_payload(event_type: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """
     from datetime import datetime, timezone
 
-    template = TEMPLATES.get(event_type, {})
+    TEMPLATES.get(event_type, {})
     return {
         "event": event_type,
         "timestamp": datetime.now(timezone.utc).isoformat(),

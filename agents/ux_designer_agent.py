@@ -24,7 +24,6 @@ Usage:
     # Returns: UX health, usability issues, recommendations
 """
 
-import json
 import logging
 from datetime import datetime, timezone
 
@@ -197,9 +196,17 @@ class UXDesignerAgent(BaseAgent):
             "pages": [
                 {"name": "Overview", "status": "built", "estimated_usage": "high"},
                 {"name": "Search", "status": "built", "estimated_usage": "high"},
-                {"name": "Failure Patterns", "status": "built", "estimated_usage": "medium"},
+                {
+                    "name": "Failure Patterns",
+                    "status": "built",
+                    "estimated_usage": "medium",
+                },
                 {"name": "Opportunities", "status": "built", "estimated_usage": "high"},
-                {"name": "Knowledge Graph", "status": "built", "estimated_usage": "medium"},
+                {
+                    "name": "Knowledge Graph",
+                    "status": "built",
+                    "estimated_usage": "medium",
+                },
                 {"name": "AI Chat", "status": "built", "estimated_usage": "high"},
                 {"name": "Monitoring", "status": "planned", "estimated_usage": "admin"},
                 {"name": "Settings", "status": "planned", "estimated_usage": "low"},
@@ -214,16 +221,31 @@ class UXDesignerAgent(BaseAgent):
         return {
             "wcag_level": "AA (target)",
             "issues": [
-                {"rule": "Color contrast", "status": "pass",
-                 "detail": "Streamlit default theme meets 4.5:1 ratio"},
-                {"rule": "Keyboard navigation", "status": "pass",
-                 "detail": "Streamlit supports keyboard navigation"},
-                {"rule": "Screen reader support", "status": "partial",
-                 "detail": "Charts need aria-label descriptions"},
-                {"rule": "Alt text for images", "status": "partial",
-                 "detail": "Generated charts lack alt text"},
-                {"rule": "Form labels", "status": "pass",
-                 "detail": "Streamlit inputs have labels"},
+                {
+                    "rule": "Color contrast",
+                    "status": "pass",
+                    "detail": "Streamlit default theme meets 4.5:1 ratio",
+                },
+                {
+                    "rule": "Keyboard navigation",
+                    "status": "pass",
+                    "detail": "Streamlit supports keyboard navigation",
+                },
+                {
+                    "rule": "Screen reader support",
+                    "status": "partial",
+                    "detail": "Charts need aria-label descriptions",
+                },
+                {
+                    "rule": "Alt text for images",
+                    "status": "partial",
+                    "detail": "Generated charts lack alt text",
+                },
+                {
+                    "rule": "Form labels",
+                    "status": "pass",
+                    "detail": "Streamlit inputs have labels",
+                },
             ],
             "compliance_pct": 70,
         }
@@ -243,34 +265,44 @@ class UXDesignerAgent(BaseAgent):
             ],
         }
 
-    def _generate_recommendations(self, search_ux, chat_ux, dashboard, accessibility) -> list[dict]:
+    def _generate_recommendations(
+        self, search_ux, chat_ux, dashboard, accessibility
+    ) -> list[dict]:
         """Generate UX improvement recommendations."""
         recs = []
 
         if search_ux.get("zero_result_rate", 0) > 20:
-            recs.append({
-                "priority": "P1",
-                "recommendation": f"Zero-result rate is {search_ux['zero_result_rate']}%. "
-                                  "Add fuzzy matching and suggestions.",
-            })
+            recs.append(
+                {
+                    "priority": "P1",
+                    "recommendation": f"Zero-result rate is {search_ux['zero_result_rate']}%. "
+                    "Add fuzzy matching and suggestions.",
+                }
+            )
 
         if chat_ux.get("avg_response_ms", 0) > 10000:
-            recs.append({
-                "priority": "P1",
-                "recommendation": f"Chat avg response {chat_ux['avg_response_ms']}ms (>10s). "
-                                  "Add streaming response or loading indicator.",
-            })
+            recs.append(
+                {
+                    "priority": "P1",
+                    "recommendation": f"Chat avg response {chat_ux['avg_response_ms']}ms (>10s). "
+                    "Add streaming response or loading indicator.",
+                }
+            )
 
         if accessibility.get("compliance_pct", 0) < 90:
-            recs.append({
-                "priority": "P2",
-                "recommendation": f"Accessibility at {accessibility['compliance_pct']}%. "
-                                  "Add aria-labels to charts, alt text to images.",
-            })
+            recs.append(
+                {
+                    "priority": "P2",
+                    "recommendation": f"Accessibility at {accessibility['compliance_pct']}%. "
+                    "Add aria-labels to charts, alt text to images.",
+                }
+            )
 
-        recs.append({
-            "priority": "P2",
-            "recommendation": "Add search autocomplete/suggestions to reduce zero-result queries.",
-        })
+        recs.append(
+            {
+                "priority": "P2",
+                "recommendation": "Add search autocomplete/suggestions to reduce zero-result queries.",
+            }
+        )
 
         return recs

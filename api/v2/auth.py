@@ -9,7 +9,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr, Field
 
 from auth.jwt_handler import JWTHandler
-from auth.password_hasher import hash_password, verify_password, validate_password_strength
+from auth.password_hasher import (
+    hash_password,
+    verify_password,
+    validate_password_strength,
+)
 from auth.api_key_manager import generate_api_key
 from auth.auth_middleware import get_current_user
 
@@ -21,6 +25,7 @@ _jwt_handler = JWTHandler()
 
 
 # ── Pydantic Models ──────────────────────────────────────
+
 
 class RegisterRequest(BaseModel):
     email: EmailStr
@@ -41,6 +46,7 @@ class APIKeyCreate(BaseModel):
 
 # ── Registration (T-054) ──────────────────────────────────
 
+
 @router.post("/register")
 def register(body: RegisterRequest):
     """Register a new user account.
@@ -54,6 +60,7 @@ def register(body: RegisterRequest):
     try:
         from db.connection import get_connection
         from db import schema
+
         conn = get_connection()
         schema.init_schema(conn)
         cursor = conn.cursor()
@@ -75,7 +82,9 @@ def register(body: RegisterRequest):
         cursor.close()
         conn.close()
 
-        _logger.info("User registered: %s (ID: %d, role: %s)", body.email, user_id, body.role)
+        _logger.info(
+            "User registered: %s (ID: %d, role: %s)", body.email, user_id, body.role
+        )
 
         return {
             "status": "registered",
@@ -92,12 +101,14 @@ def register(body: RegisterRequest):
 
 # ── Login (T-055) ──────────────────────────────────────────
 
+
 @router.post("/login")
 def login(body: LoginRequest):
     """Authenticate user and return JWT token."""
     try:
         from db.connection import get_connection
         from db import schema
+
         conn = get_connection()
         schema.init_schema(conn)
         cursor = conn.cursor()
@@ -156,6 +167,7 @@ def login(body: LoginRequest):
 
 # ── API Key Management (T-057) ──────────────────────────────
 
+
 @router.post("/api-keys")
 def create_api_key(body: APIKeyCreate, current_user: dict = Depends(get_current_user)):
     """Create a new API key for the authenticated user."""
@@ -165,6 +177,7 @@ def create_api_key(body: APIKeyCreate, current_user: dict = Depends(get_current_
     try:
         from db.connection import get_connection
         from db import schema
+
         conn = get_connection()
         schema.init_schema(conn)
         cursor = conn.cursor()
@@ -179,7 +192,9 @@ def create_api_key(body: APIKeyCreate, current_user: dict = Depends(get_current_
         cursor.close()
         conn.close()
 
-        _logger.info("API key created: prefix=%s, user=%s", key_prefix, current_user.get("email"))
+        _logger.info(
+            "API key created: prefix=%s, user=%s", key_prefix, current_user.get("email")
+        )
 
         return {
             "id": key_id,
@@ -206,6 +221,7 @@ def list_api_keys(
     try:
         from db.connection import get_connection
         from db import schema
+
         conn = get_connection()
         schema.init_schema(conn)
         cursor = conn.cursor()
@@ -240,6 +256,7 @@ def delete_api_key(key_id: int, current_user: dict = Depends(get_current_user)):
     try:
         from db.connection import get_connection
         from db import schema
+
         conn = get_connection()
         schema.init_schema(conn)
         cursor = conn.cursor()

@@ -1,7 +1,6 @@
 """Data quality agent — checks data quality metrics."""
 
 import logging
-from typing import Dict
 from agents.base import BaseAgent, AgentResult
 
 _logger = logging.getLogger(__name__)

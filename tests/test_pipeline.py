@@ -7,7 +7,6 @@ a running Kafka or Bytewax cluster. All tests use mocked sources.
 import json
 import pytest
 from datetime import datetime, timezone, timedelta
-from unittest.mock import MagicMock, patch
 
 from ingestion.signal_normalizer import SignalEnvelope, normalize_signal
 from stream.operators import (
@@ -16,14 +15,12 @@ from stream.operators import (
     build_signal_scores,
     score_entity,
     emit_alert,
-    _parse_datetime,
 )
 from stream.state import (
-    EntityState,
     init_entity_state,
     update_entity_state,
 )
-from stream.metrics import PipelineMetrics, MetricsWriter
+from stream.metrics import PipelineMetrics
 
 
 # ── parse_signal_envelope ────────────────────────────────────
@@ -31,10 +28,12 @@ from stream.metrics import PipelineMetrics, MetricsWriter
 
 class TestParseSignalEnvelope:
     def test_valid_minimal(self):
-        data = json.dumps({
-            "signal_type": "funding_round",
-            "source_name": "techcrunch",
-        }).encode()
+        data = json.dumps(
+            {
+                "signal_type": "funding_round",
+                "source_name": "techcrunch",
+            }
+        ).encode()
         entity, envelope = parse_signal_envelope(data)
         assert entity == "unknown"
         assert isinstance(envelope, SignalEnvelope)
@@ -42,16 +41,18 @@ class TestParseSignalEnvelope:
 
     def test_valid_full(self):
         now = datetime.now(timezone.utc)
-        data = json.dumps({
-            "signal_type": "github_trend",
-            "source_name": "github_trends",
-            "title": "langchain hits 50k stars",
-            "entity_name": "LangChain",
-            "entity_type": "technology",
-            "raw_score": 75.0,
-            "published_at": now.isoformat(),
-            "metadata": {"stars": 50000},
-        }).encode()
+        data = json.dumps(
+            {
+                "signal_type": "github_trend",
+                "source_name": "github_trends",
+                "title": "langchain hits 50k stars",
+                "entity_name": "LangChain",
+                "entity_type": "technology",
+                "raw_score": 75.0,
+                "published_at": now.isoformat(),
+                "metadata": {"stars": 50000},
+            }
+        ).encode()
         entity, envelope = parse_signal_envelope(data)
         assert entity == "LangChain"  # entity_name preserved as-is
         assert envelope.entity_name == "LangChain"
@@ -66,11 +67,13 @@ class TestParseSignalEnvelope:
             parse_signal_envelope(b'{"signal_type": "funding"}')
 
     def test_empty_entity_defaults_to_unknown(self):
-        data = json.dumps({
-            "signal_type": "news_mention",
-            "source_name": "news",
-            "entity_name": "  ",
-        }).encode()
+        data = json.dumps(
+            {
+                "signal_type": "news_mention",
+                "source_name": "news",
+                "entity_name": "  ",
+            }
+        ).encode()
         entity, envelope = parse_signal_envelope(data)
         assert entity == "unknown"
 
@@ -81,17 +84,21 @@ class TestParseSignalEnvelope:
 class TestEnrichSignal:
     def test_adds_positive_sentiment(self):
         envelope = normalize_signal(
-            "funding_round", "techcrunch",
+            "funding_round",
+            "techcrunch",
             title="NeuralForge raises $50M Series B",
             body_text="The company raised funding to expand growth",
         )
         enriched = enrich_signal(envelope)
         assert enriched.metadata["stream_enriched"] is True
-        assert enriched.metadata["stream_sentiment"] > 0  # "raised", "funding", "growth"
+        assert (
+            enriched.metadata["stream_sentiment"] > 0
+        )  # "raised", "funding", "growth"
 
     def test_adds_negative_sentiment(self):
         envelope = normalize_signal(
-            "news_mention", "news",
+            "news_mention",
+            "news",
             title="Startup lays off 200 workers",
             body_text="The company announced layoffs and shut down operations",
         )
@@ -100,7 +107,8 @@ class TestEnrichSignal:
 
     def test_neutral_sentiment(self):
         envelope = normalize_signal(
-            "github_trend", "github",
+            "github_trend",
+            "github",
             title="Repo updated readme",
         )
         enriched = enrich_signal(envelope)
@@ -108,7 +116,8 @@ class TestEnrichSignal:
 
     def test_preserves_original_data(self):
         envelope = normalize_signal(
-            "sec_filing", "sec_edgar",
+            "sec_filing",
+            "sec_edgar",
             title="Form S-1 filed",
             entity_name="TestCorp",
             raw_score=80.0,
@@ -126,7 +135,12 @@ class TestBuildSignalScores:
         now = datetime.now(timezone.utc)
         signals = [
             SignalEnvelope("funding_round", "tc", raw_score=90.0, published_at=now),
-            SignalEnvelope("funding_round", "tc", raw_score=70.0, published_at=now - timedelta(days=1)),
+            SignalEnvelope(
+                "funding_round",
+                "tc",
+                raw_score=70.0,
+                published_at=now - timedelta(days=1),
+            ),
             SignalEnvelope("news_mention", "news", raw_score=50.0, published_at=now),
         ]
         scores = build_signal_scores(signals)
@@ -146,7 +160,8 @@ class TestScoreEntity:
         now = datetime.now(timezone.utc)
         signals = [
             SignalEnvelope(
-                "funding_round", "techcrunch",
+                "funding_round",
+                "techcrunch",
                 entity_name="TestCorp",
                 raw_score=90.0,
                 published_at=now,
@@ -166,8 +181,18 @@ class TestScoreEntity:
         now = datetime.now(timezone.utc)
         signals = [
             SignalEnvelope("funding_round", "tc", raw_score=90.0, published_at=now),
-            SignalEnvelope("sec_filing", "sec", raw_score=75.0, published_at=now - timedelta(days=1)),
-            SignalEnvelope("github_trend", "gh", raw_score=65.0, published_at=now - timedelta(days=3)),
+            SignalEnvelope(
+                "sec_filing",
+                "sec",
+                raw_score=75.0,
+                published_at=now - timedelta(days=1),
+            ),
+            SignalEnvelope(
+                "github_trend",
+                "gh",
+                raw_score=65.0,
+                published_at=now - timedelta(days=3),
+            ),
         ]
         result = score_entity("MultiCorp", signals)
         assert result["composite_score"] > 0
@@ -294,6 +319,7 @@ class TestPipelineMetrics:
 
     def test_compute_throughput(self):
         import time
+
         metrics = PipelineMetrics()
         metrics._prev_time = time.time() - 60  # 60s ago
         metrics._prev_count = 0
@@ -310,62 +336,87 @@ class TestPipelineOperators:
 
     def _import_pipeline_ops(self):
         from stream import pipeline
+
         return pipeline
 
     def test_op_ingest_valid(self):
         from stream.pipeline import _op_ingest
-        data = json.dumps({
-            "signal_type": "funding_round",
-            "source_name": "tc",
-            "entity_name": "TestCorp",
-        }).encode()
+
+        data = json.dumps(
+            {
+                "signal_type": "funding_round",
+                "source_name": "tc",
+                "entity_name": "TestCorp",
+            }
+        ).encode()
         entity, signal = _op_ingest(data)
         assert entity == "TestCorp"
         assert signal["signal_type"] == "funding_round"
 
     def test_op_ingest_invalid_json(self):
         from stream.pipeline import _op_ingest
+
         entity, signal = _op_ingest(b"bad data")
         assert entity == "__dlq__"
         assert "error" in signal
 
     def test_op_enrich_passes_dlq(self):
         from stream.pipeline import _op_enrich
+
         result = _op_enrich(("__dlq__", {"error": "test"}))
         assert result[0] == "__dlq__"
 
     def test_op_enrich_valid(self):
         from stream.pipeline import _op_enrich
-        result = _op_enrich((
-            "TestCorp",
-            {"signal_type": "funding_round", "source_name": "tc", "title": "Raises $50M",
-             "entity_name": "TestCorp"},
-        ))
+
+        result = _op_enrich(
+            (
+                "TestCorp",
+                {
+                    "signal_type": "funding_round",
+                    "source_name": "tc",
+                    "title": "Raises $50M",
+                    "entity_name": "TestCorp",
+                },
+            )
+        )
         assert result[0] == "TestCorp"
         assert result[1]["metadata"]["stream_enriched"] is True
 
     def test_op_score_valid(self):
         from stream.pipeline import _op_score
+
         now = datetime.now(timezone.utc).isoformat()
-        entity, scored = _op_score((
-            "TestCorp",
-            [{"signal_type": "funding_round", "raw_score": 90, "published_at": now}],
-        ))
+        entity, scored = _op_score(
+            (
+                "TestCorp",
+                [
+                    {
+                        "signal_type": "funding_round",
+                        "raw_score": 90,
+                        "published_at": now,
+                    }
+                ],
+            )
+        )
         assert entity == "TestCorp"
         assert scored["composite_score"] > 0
 
     def test_op_score_empty(self):
         from stream.pipeline import _op_score
+
         entity, scored = _op_score(("EmptyCorp", []))
         assert scored["composite_score"] == 0.0
 
     def test_op_emit_alert_above(self):
         from stream.pipeline import _op_emit_alert
+
         result = _op_emit_alert(("HotCorp", {"composite_score": 85}))
         assert result is not None
         assert result[1]["alert_type"] == "high_value_opportunity"
 
     def test_op_emit_alert_below(self):
         from stream.pipeline import _op_emit_alert
+
         result = _op_emit_alert(("LowCorp", {"composite_score": 45}))
         assert result is None

@@ -42,8 +42,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from config import setup_logging, load_config, get_project_root
-from db.connection import get_connection
-from db import schema
+
+_logger = logging.getLogger("api_server")
+from db.connection import get_connection  # noqa: E402
+from db import schema  # noqa: E402
 
 # FastAPI imports (graceful fallback)
 try:
@@ -51,6 +53,7 @@ try:
     from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
     from fastapi.middleware.cors import CORSMiddleware
     import uvicorn
+
     HAS_FASTAPI = True
 except ImportError:
     HAS_FASTAPI = False
@@ -77,13 +80,16 @@ if HAS_FASTAPI:
 
     class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         """Add security headers to all responses."""
+
         async def dispatch(self, request, call_next):
             response = await call_next(request)
             response.headers["X-Content-Type-Options"] = "nosniff"
             response.headers["X-Frame-Options"] = "DENY"
             response.headers["X-XSS-Protection"] = "1; mode=block"
             response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-            response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+            response.headers["Permissions-Policy"] = (
+                "camera=(), microphone=(), geolocation=()"
+            )
             response.headers["Content-Security-Policy"] = (
                 "default-src 'self'; "
                 "script-src 'self'; "
@@ -92,7 +98,9 @@ if HAS_FASTAPI:
                 "connect-src 'self' ws: wss:"
             )
             if request.url.hostname not in ("localhost", "127.0.0.1"):
-                response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+                response.headers["Strict-Transport-Security"] = (
+                    "max-age=31536000; includeSubDomains"
+                )
             return response
 
     app.add_middleware(SecurityHeadersMiddleware)
@@ -103,6 +111,7 @@ if HAS_FASTAPI:
 
     class InputSanitizerMiddleware(BaseHTTPMiddleware):
         """Reject oversized payloads and strip HTML from query params."""
+
         MAX_BODY_SIZE = 1_000_000  # 1 MB
 
         async def dispatch(self, request: Request, call_next):
@@ -140,17 +149,24 @@ if HAS_FASTAPI:
         app.add_middleware(SlowAPIMiddleware)
         logging.getLogger("api_server").info("Rate limiting enabled: 60 req/min per IP")
     except ImportError:
-        logging.getLogger("api_server").warning("slowapi not installed — rate limiting disabled")
+        logging.getLogger("api_server").warning(
+            "slowapi not installed — rate limiting disabled"
+        )
 
     # ── Sentry/GlitchTip integration (optional, env-driven) (T-048) ──
     _sentry_dsn = os.environ.get("SENTRY_DSN", "")
     if _sentry_dsn:
         try:
             import sentry_sdk
+
             sentry_sdk.init(dsn=_sentry_dsn, traces_sample_rate=0.1)
-            _logger.info("Sentry/GlitchTip error tracking enabled")
+            logging.getLogger("api_server").info(
+                "Sentry/GlitchTip error tracking enabled"
+            )
         except ImportError:
-            _logger.warning("SENTRY_DSN set but sentry-sdk not installed. pip install sentry-sdk")
+            logging.getLogger("api_server").warning(
+                "SENTRY_DSN set but sentry-sdk not installed. pip install sentry-sdk"
+            )
 
     # ── Global exception handler — logs to error_log table (T-047) ──
     import traceback as _traceback
@@ -193,7 +209,10 @@ if HAS_FASTAPI:
 
         return JSONResponse(
             status_code=500,
-            content={"detail": "Internal server error", "error_type": type(exc).__name__},
+            content={
+                "detail": "Internal server error",
+                "error_type": type(exc).__name__,
+            },
         )
 
     # ── API v2 Routers ─────────────────────────────────────────
@@ -203,6 +222,7 @@ if HAS_FASTAPI:
         from api.v2.webhooks import router as v2_webhooks_router
         from api.v2.export import router as v2_export_router
         from api.v2.feedback import router as v2_feedback_router
+
         app.include_router(v2_opportunities_router, prefix="/api")
         app.include_router(v2_signals_router, prefix="/api")
         app.include_router(v2_webhooks_router, prefix="/api")
@@ -214,10 +234,10 @@ if HAS_FASTAPI:
     # Auth router (T-054, T-055, T-057)
     try:
         from api.v2.auth import router as v2_auth_router
+
         app.include_router(v2_auth_router, prefix="/api")
     except ImportError as e:
         logging.getLogger("api_server").warning("Could not import auth router: %s", e)
-
 
     # ── Dashboard ─────────────────────────────────────────────
 
@@ -228,8 +248,10 @@ if HAS_FASTAPI:
         index = site_dir / "index.html"
         if index.exists():
             return FileResponse(str(index))
-        return HTMLResponse("<h1>Dashboard not built yet. Run: python run_agent.py --pipeline daily</h1>", status_code=404)
-
+        return HTMLResponse(
+            "<h1>Dashboard not built yet. Run: python run_agent.py --pipeline daily</h1>",
+            status_code=404,
+        )
 
     # ── Health ────────────────────────────────────────────────
 
@@ -244,8 +266,9 @@ if HAS_FASTAPI:
             conn.close()
             return {"status": "healthy", "database": "connected"}
         except Exception as e:
-            return JSONResponse({"status": "unhealthy", "error": str(e)}, status_code=503)
-
+            return JSONResponse(
+                {"status": "unhealthy", "error": str(e)}, status_code=503
+            )
 
     # ── Stats ─────────────────────────────────────────────────
 
@@ -257,9 +280,17 @@ if HAS_FASTAPI:
         cursor = conn.cursor()
 
         counts = {}
-        for table in ["failed_startups", "news_articles", "bls_survival_rates",
-                       "revival_industries", "geographic_hotspots", "llm_pricing",
-                       "kg_entities", "kg_relationships", "llm_optimization_alerts"]:
+        for table in [
+            "failed_startups",
+            "news_articles",
+            "bls_survival_rates",
+            "revival_industries",
+            "geographic_hotspots",
+            "llm_pricing",
+            "kg_entities",
+            "kg_relationships",
+            "llm_optimization_alerts",
+        ]:
             try:
                 cursor.execute(f"SELECT COUNT(*) as cnt FROM {table}")
                 counts[table] = cursor.fetchone()["cnt"]
@@ -269,7 +300,6 @@ if HAS_FASTAPI:
         cursor.close()
         conn.close()
         return counts
-
 
     # ── Collection Status (Sprint 2) ──────────────────────
 
@@ -324,7 +354,6 @@ if HAS_FASTAPI:
 
         return {"collectors": statuses, "count": len(statuses)}
 
-
     # ── Startups ──────────────────────────────────────────────
 
     @app.get("/api/startups")
@@ -332,8 +361,12 @@ if HAS_FASTAPI:
         sector: str | None = Query(None, description="Filter by sector"),
         country: str | None = Query(None, description="Filter by country"),
         region: str | None = Query(None, description="Filter by region"),
-        failure_category: str | None = Query(None, description="Filter by failure category"),
-        manufacturing: bool | None = Query(None, description="Manufacturing startups only"),
+        failure_category: str | None = Query(
+            None, description="Filter by failure category"
+        ),
+        manufacturing: bool | None = Query(
+            None, description="Manufacturing startups only"
+        ),
         limit: int = Query(20, ge=1, le=100, description="Max results"),
         offset: int = Query(0, ge=0, description="Pagination offset"),
     ):
@@ -385,7 +418,6 @@ if HAS_FASTAPI:
 
         return {"total": total, "offset": offset, "limit": limit, "results": rows}
 
-
     @app.get("/api/startups/{startup_id}")
     def get_startup(startup_id: int):
         """Get a single startup by ID."""
@@ -400,7 +432,6 @@ if HAS_FASTAPI:
         if not row:
             raise HTTPException(status_code=404, detail="Startup not found")
         return dict(row)
-
 
     # ── News ──────────────────────────────────────────────────
 
@@ -448,7 +479,9 @@ if HAS_FASTAPI:
         )
         distribution = [dict(r) for r in cursor.fetchall()]
 
-        cursor.execute("SELECT COUNT(*) as total FROM news_articles WHERE sentiment_score IS NOT NULL")
+        cursor.execute(
+            "SELECT COUNT(*) as total FROM news_articles WHERE sentiment_score IS NOT NULL"
+        )
         total_scored = cursor.fetchone()["total"]
 
         cursor.execute("SELECT COUNT(*) as total FROM news_articles")
@@ -463,14 +496,15 @@ if HAS_FASTAPI:
             "coverage_pct": round(total_scored / max(total_articles, 1) * 100, 1),
         }
 
-
     # ── Survival Rates ───────────────────────────────────────
 
     # ── Risk Scores ──────────────────────────────────────────
 
     @app.get("/api/risk-scores")
     def risk_scores(
-        risk_level: str | None = Query(None, description="Filter: low, moderate, high, critical"),
+        risk_level: str | None = Query(
+            None, description="Filter: low, moderate, high, critical"
+        ),
         limit: int = Query(20, ge=1, le=100),
         offset: int = Query(0, ge=0),
     ):
@@ -531,6 +565,7 @@ if HAS_FASTAPI:
         # Try ML model for blended scoring
         try:
             from agents.ml_trainer_agent import MLTrainer, _build_features
+
             trainer = MLTrainer({})
             model, model_name, features = trainer.load_best_model()
             if model is not None:
@@ -538,7 +573,9 @@ if HAS_FASTAPI:
                 feat_vector = [[feat_dict[col] for col in features]]
                 proba = model.predict_proba(feat_vector)[0]
                 ml_score = proba[1] if len(proba) > 1 else proba[0]
-                blended = min(1.0, max(0.0, 0.7 * ml_score + 0.3 * heuristic["risk_score"]))
+                blended = min(
+                    1.0, max(0.0, 0.7 * ml_score + 0.3 * heuristic["risk_score"])
+                )
                 heuristic["risk_score"] = round(blended, 3)
                 heuristic["model_used"] = model_name
                 heuristic["ml_confidence"] = round(float(ml_score), 3)
@@ -548,7 +585,6 @@ if HAS_FASTAPI:
 
         heuristic["scoring_method"] = heuristic.get("scoring_method", "heuristic_only")
         return heuristic
-
 
     # ── ML Model Management ──────────────────────────────────
 
@@ -571,7 +607,9 @@ if HAS_FASTAPI:
     @app.post("/api/ml/train")
     def ml_train(
         min_samples: int = Query(50, ge=10, description="Minimum training rows"),
-        test_split: float = Query(0.2, ge=0.1, le=0.5, description="Train/test split ratio"),
+        test_split: float = Query(
+            0.2, ge=0.1, le=0.5, description="Train/test split ratio"
+        ),
     ):
         """Trigger ML model training on existing startup data."""
         try:
@@ -580,10 +618,12 @@ if HAS_FASTAPI:
 
             conn = _gc()
             schema.init_schema(conn)
-            trainer = MLTrainer({
-                "min_training_samples": min_samples,
-                "test_split": test_split,
-            })
+            trainer = MLTrainer(
+                {
+                    "min_training_samples": min_samples,
+                    "test_split": test_split,
+                }
+            )
             result = trainer.train(conn)
             conn.close()
             return result
@@ -613,6 +653,7 @@ if HAS_FASTAPI:
 
         try:
             from agents.ml_trainer_agent import MLTrainer, _build_features
+
             trainer = MLTrainer({})
             model, model_name, features = trainer.load_best_model()
             if model is None:
@@ -651,7 +692,6 @@ if HAS_FASTAPI:
         except Exception as e:
             return {**heuristic, "scoring_method": "heuristic_only", "error": str(e)}
 
-
     # ── Ollama / LLM Model Management ─────────────────────────
 
     @app.get("/api/models")
@@ -659,6 +699,7 @@ if HAS_FASTAPI:
         """List locally available Ollama models."""
         try:
             from agents.model_manager_agent import ModelManager
+
             mgr = ModelManager({})
             models = mgr.list_local_models()
             return {"models": models, "count": len(models)}
@@ -677,12 +718,21 @@ if HAS_FASTAPI:
 
         try:
             from agents.model_manager_agent import ModelManager
+
             mgr = ModelManager({})
             success = mgr.pull_model(model_name)
             if success:
-                return {"status": "success", "model": model_name, "message": f"Model '{model_name}' downloaded successfully."}
+                return {
+                    "status": "success",
+                    "model": model_name,
+                    "message": f"Model '{model_name}' downloaded successfully.",
+                }
             else:
-                return {"status": "failed", "model": model_name, "message": f"Failed to download model '{model_name}'."}
+                return {
+                    "status": "failed",
+                    "model": model_name,
+                    "message": f"Failed to download model '{model_name}'.",
+                }
         except Exception as e:
             return {"status": "error", "model": model_name, "message": str(e)}
 
@@ -690,6 +740,7 @@ if HAS_FASTAPI:
     def token_usage():
         """Ollama token usage statistics from local tracker."""
         import json as _json
+
         tracker_path = Path("data/cache/ollama_token_tracker.json")
 
         if not tracker_path.exists():
@@ -705,7 +756,12 @@ if HAS_FASTAPI:
             for r in data:
                 m = r.get("model", "unknown")
                 if m not in by_model:
-                    by_model[m] = {"runs": 0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+                    by_model[m] = {
+                        "runs": 0,
+                        "prompt_tokens": 0,
+                        "completion_tokens": 0,
+                        "total_tokens": 0,
+                    }
                 by_model[m]["runs"] += 1
                 by_model[m]["prompt_tokens"] += r.get("prompt_tokens", 0)
                 by_model[m]["completion_tokens"] += r.get("completion_tokens", 0)
@@ -756,7 +812,6 @@ if HAS_FASTAPI:
         conn.close()
         return {"results": rows}
 
-
     # ── Revival Opportunities ─────────────────────────────────
 
     @app.get("/api/revival-opportunities")
@@ -770,7 +825,6 @@ if HAS_FASTAPI:
         cursor.close()
         conn.close()
         return {"results": rows}
-
 
     # ── Alerts ────────────────────────────────────────────────
 
@@ -793,7 +847,6 @@ if HAS_FASTAPI:
         conn.close()
         return {"results": rows}
 
-
     # ── Alert Preferences ──────────────────────────────────────
 
     @app.get("/api/alerts/preferences")
@@ -802,22 +855,33 @@ if HAS_FASTAPI:
         conn = get_connection()
         schema.init_schema(conn)
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM alert_preferences ORDER BY updated_at DESC LIMIT 1")
+        cursor.execute(
+            "SELECT * FROM alert_preferences ORDER BY updated_at DESC LIMIT 1"
+        )
         row = cursor.fetchone()
         cursor.close()
         conn.close()
         if row:
             prefs = dict(row)
             # Convert INT booleans to actual booleans
-            for key in ("email_enabled", "slack_enabled", "discord_enabled", "webhook_enabled"):
+            for key in (
+                "email_enabled",
+                "slack_enabled",
+                "discord_enabled",
+                "webhook_enabled",
+            ):
                 prefs[key] = bool(prefs.get(key, 1))
             return prefs
         # Return defaults
         return {
-            "email_enabled": True, "slack_enabled": True,
-            "discord_enabled": True, "webhook_enabled": True,
-            "min_score_threshold": 80.0, "max_alerts_per_hour": 20,
-            "quiet_hours_start": None, "quiet_hours_end": None,
+            "email_enabled": True,
+            "slack_enabled": True,
+            "discord_enabled": True,
+            "webhook_enabled": True,
+            "min_score_threshold": 80.0,
+            "max_alerts_per_hour": 20,
+            "quiet_hours_start": None,
+            "quiet_hours_end": None,
         }
 
     @app.put("/api/alerts/preferences")
@@ -835,8 +899,13 @@ if HAS_FASTAPI:
             }
         """
         allowed = {
-            "email_enabled", "slack_enabled", "discord_enabled", "webhook_enabled",
-            "min_score_threshold", "quiet_hours_start", "quiet_hours_end",
+            "email_enabled",
+            "slack_enabled",
+            "discord_enabled",
+            "webhook_enabled",
+            "min_score_threshold",
+            "quiet_hours_start",
+            "quiet_hours_end",
             "max_alerts_per_hour",
         }
         updates = {k: v for k, v in body.items() if k in allowed}
@@ -844,7 +913,12 @@ if HAS_FASTAPI:
             return {"status": "no_changes", "message": "No valid fields to update"}
 
         # Convert booleans to ints for MySQL
-        for key in ("email_enabled", "slack_enabled", "discord_enabled", "webhook_enabled"):
+        for key in (
+            "email_enabled",
+            "slack_enabled",
+            "discord_enabled",
+            "webhook_enabled",
+        ):
             if key in updates and isinstance(updates[key], bool):
                 updates[key] = int(updates[key])
 
@@ -853,17 +927,24 @@ if HAS_FASTAPI:
         cursor = conn.cursor()
 
         # Check if preferences exist
-        cursor.execute("SELECT id FROM alert_preferences ORDER BY updated_at DESC LIMIT 1")
+        cursor.execute(
+            "SELECT id FROM alert_preferences ORDER BY updated_at DESC LIMIT 1"
+        )
         existing = cursor.fetchone()
 
         if existing:
             set_clause = ", ".join(f"{k} = %s" for k in updates)
             values = list(updates.values()) + [existing["id"]]
-            cursor.execute(f"UPDATE alert_preferences SET {set_clause} WHERE id = %s", values)
+            cursor.execute(
+                f"UPDATE alert_preferences SET {set_clause} WHERE id = %s", values
+            )
         else:
             cols = ", ".join(updates.keys())
             placeholders = ", ".join(["%s"] * len(updates))
-            cursor.execute(f"INSERT INTO alert_preferences ({cols}) VALUES ({placeholders})", list(updates.values()))
+            cursor.execute(
+                f"INSERT INTO alert_preferences ({cols}) VALUES ({placeholders})",
+                list(updates.values()),
+            )
 
         conn.commit()
         cursor.close()
@@ -911,7 +992,6 @@ if HAS_FASTAPI:
         conn.close()
         return {"results": rows}
 
-
     # ── AI Chat ───────────────────────────────────────────────
 
     @app.post("/api/chat")
@@ -934,6 +1014,7 @@ if HAS_FASTAPI:
         analyst_config["_scheduled"] = False
 
         from agents.ai_analyst_agent import AIAnalystAgent
+
         analyst = AIAnalystAgent(config=analyst_config, dry_run=False, query=query)
         result = analyst.run()
 
@@ -950,7 +1031,6 @@ if HAS_FASTAPI:
             "status": result.status,
         }
 
-
     # ── Knowledge Graph ────────────────────────────────────
 
     @app.get("/api/knowledge-graph")
@@ -963,8 +1043,10 @@ if HAS_FASTAPI:
         schema.init_schema(conn)
         cursor = conn.cursor()
 
-        where = "WHERE e.entity_type_id = t.id" if not entity_type else (
-            "WHERE e.entity_type_id = t.id AND t.type_name = %s"
+        where = (
+            "WHERE e.entity_type_id = t.id"
+            if not entity_type
+            else ("WHERE e.entity_type_id = t.id AND t.type_name = %s")
         )
         params = [entity_type] if entity_type else []
 
@@ -986,12 +1068,14 @@ if HAS_FASTAPI:
         )
         relationships = []
         for r in cursor.fetchall():
-            relationships.append({
-                "source_id": r["source_entity_id"],
-                "target_id": r["target_entity_id"],
-                "relationship_type": r["relationship_type"],
-                "weight": r["weight"],
-            })
+            relationships.append(
+                {
+                    "source_id": r["source_entity_id"],
+                    "target_id": r["target_entity_id"],
+                    "relationship_type": r["relationship_type"],
+                    "weight": r["weight"],
+                }
+            )
 
         cursor.close()
         conn.close()
@@ -1014,7 +1098,9 @@ if HAS_FASTAPI:
         except Exception:
             pass  # Never break search on logging failure
 
-    def _log_chat(session_id: str, user_message: str, ai_response: str, response_ms: int = 0):
+    def _log_chat(
+        session_id: str, user_message: str, ai_response: str, response_ms: int = 0
+    ):
         """Log chat conversation to chat_log table (best-effort)."""
         try:
             conn = get_connection()
@@ -1022,7 +1108,12 @@ if HAS_FASTAPI:
                 cursor.execute(
                     "INSERT INTO chat_log (session_id, user_message, ai_response, response_ms) "
                     "VALUES (%s, %s, %s, %s)",
-                    (session_id, user_message, ai_response[:5000] if ai_response else None, response_ms),
+                    (
+                        session_id,
+                        user_message,
+                        ai_response[:5000] if ai_response else None,
+                        response_ms,
+                    ),
                 )
             conn.commit()
             conn.close()
@@ -1032,7 +1123,9 @@ if HAS_FASTAPI:
     @app.get("/api/search")
     def unified_search(
         q: str = Query(..., description="Search query"),
-        mode: str = Query("hybrid", description="Search mode: semantic, fulltext, hybrid"),
+        mode: str = Query(
+            "hybrid", description="Search mode: semantic, fulltext, hybrid"
+        ),
         entity_type: str | None = Query(None, description="Filter by entity_type"),
         signal_type: str | None = Query(None, description="Filter by signal_type"),
         limit: int = Query(20, ge=1, le=100),
@@ -1048,7 +1141,9 @@ if HAS_FASTAPI:
         Falls back gracefully if backends are unavailable.
         """
         if mode not in ("semantic", "fulltext", "hybrid"):
-            raise HTTPException(status_code=400, detail="mode must be semantic, fulltext, or hybrid")
+            raise HTTPException(
+                status_code=400, detail="mode must be semantic, fulltext, or hybrid"
+            )
 
         # Build filter dict
         filters = {}
@@ -1074,7 +1169,10 @@ if HAS_FASTAPI:
 
                 if vector_store.is_connected:
                     vector_results = vector_store.search_by_text(
-                        q, embedder, limit=limit, filters=filters if filters else None,
+                        q,
+                        embedder,
+                        limit=limit,
+                        filters=filters if filters else None,
                     )
                     results.extend([r.to_dict() for r in vector_results])
 
@@ -1090,25 +1188,30 @@ if HAS_FASTAPI:
 
         except ImportError:
             search_mode_used = "fulltext"
-        except Exception as e:
+        except Exception:
             search_mode_used = "fulltext"
 
         # Full-text search (Elasticsearch)
         try:
             from db.search_index import SearchIndex
+
             search_index = SearchIndex({})
             search_index.connect()
 
             if search_index.is_connected:
-                es_results = search_index.search(q, limit=limit, filters=filters if filters else None)
+                es_results = search_index.search(
+                    q, limit=limit, filters=filters if filters else None
+                )
                 for r in es_results:
-                    results.append({
-                        "id": r.id,
-                        "score": r.score,
-                        "source": r.source,
-                        "highlights": r.highlights,
-                        "search_engine": "elasticsearch",
-                    })
+                    results.append(
+                        {
+                            "id": r.id,
+                            "score": r.score,
+                            "source": r.source,
+                            "highlights": r.highlights,
+                            "search_engine": "elasticsearch",
+                        }
+                    )
         except ImportError:
             pass
         except Exception:
@@ -1133,21 +1236,28 @@ if HAS_FASTAPI:
                     )
                     rows = cur.fetchall()
                     for row in rows:
-                        results.append({
-                            "id": str(row.get("id", "")),
-                            "score": 1.0,
-                            "source": "mysql_fulltext",
-                            "highlights": {"name": row.get("name", ""), "sector": row.get("sector", "")},
-                            "search_engine": "mysql",
-                            "name": row.get("name", ""),
-                            "sector": row.get("sector", ""),
-                            "country": row.get("country", ""),
-                            "failure_reason": row.get("failure_reason", ""),
-                            "failure_category": row.get("failure_category", ""),
-                            "year_founded": row.get("year_founded"),
-                            "year_shutdown": row.get("year_shutdown"),
-                            "funding_description": row.get("funding_description", ""),
-                        })
+                        results.append(
+                            {
+                                "id": str(row.get("id", "")),
+                                "score": 1.0,
+                                "source": "mysql_fulltext",
+                                "highlights": {
+                                    "name": row.get("name", ""),
+                                    "sector": row.get("sector", ""),
+                                },
+                                "search_engine": "mysql",
+                                "name": row.get("name", ""),
+                                "sector": row.get("sector", ""),
+                                "country": row.get("country", ""),
+                                "failure_reason": row.get("failure_reason", ""),
+                                "failure_category": row.get("failure_category", ""),
+                                "year_founded": row.get("year_founded"),
+                                "year_shutdown": row.get("year_shutdown"),
+                                "funding_description": row.get(
+                                    "funding_description", ""
+                                ),
+                            }
+                        )
             except Exception:
                 pass
 
@@ -1167,7 +1277,9 @@ if HAS_FASTAPI:
             rid = r.get("id", "")
             if rid not in seen or r.get("score", 0) > seen[rid].get("score", 0):
                 seen[rid] = r
-        results = sorted(seen.values(), key=lambda x: x.get("score", 0), reverse=True)[:limit]
+        results = sorted(seen.values(), key=lambda x: x.get("score", 0), reverse=True)[
+            :limit
+        ]
 
         _log_query(q, search_mode_used, len(results))
         return {
@@ -1178,14 +1290,15 @@ if HAS_FASTAPI:
             "results": results,
         }
 
-
     # ── Phase 2: Entity Connections (Graph Traversal) ────────
 
     @app.get("/api/entities/{entity_name}/connections")
     def entity_connections(
         entity_name: str,
         depth: int = Query(1, ge=1, le=3, description="Graph traversal depth (1-3)"),
-        relationship_type: str | None = Query(None, description="Filter by relationship type"),
+        relationship_type: str | None = Query(
+            None, description="Filter by relationship type"
+        ),
         limit: int = Query(50, ge=1, le=200, description="Max nodes to return"),
     ):
         """Get knowledge graph connections for an entity.
@@ -1220,7 +1333,10 @@ if HAS_FASTAPI:
                 )
                 alias_row = cursor.fetchone()
                 if alias_row:
-                    cursor.execute("SELECT id, name, mention_count FROM kg_entities WHERE id = %s", (alias_row["canonical_entity_id"],))
+                    cursor.execute(
+                        "SELECT id, name, mention_count FROM kg_entities WHERE id = %s",
+                        (alias_row["canonical_entity_id"],),
+                    )
                     row = cursor.fetchone()
             except Exception:
                 pass
@@ -1228,7 +1344,10 @@ if HAS_FASTAPI:
         if not row:
             cursor.close()
             conn.close()
-            raise HTTPException(status_code=404, detail=f"Entity '{entity_name}' not found in knowledge graph")
+            raise HTTPException(
+                status_code=404,
+                detail=f"Entity '{entity_name}' not found in knowledge graph",
+            )
 
         entity_id = row["id"]
 
@@ -1246,7 +1365,12 @@ if HAS_FASTAPI:
                 }
 
         # Add the starting entity
-        add_node(entity_id, row["name"], row.get("type_name", "unknown"), row.get("mention_count"))
+        add_node(
+            entity_id,
+            row["name"],
+            row.get("type_name", "unknown"),
+            row.get("mention_count"),
+        )
 
         visited = {entity_id}
         frontier = [entity_id]
@@ -1276,12 +1400,14 @@ if HAS_FASTAPI:
                         visited.add(tid)
                         next_frontier.append(tid)
                         add_node(tid, r["name"], r["type_name"], r["mention_count"])
-                    edges.append({
-                        "source": fid,
-                        "target": tid,
-                        "relationship_type": r["relationship_type"],
-                        "weight": r["weight"],
-                    })
+                    edges.append(
+                        {
+                            "source": fid,
+                            "target": tid,
+                            "relationship_type": r["relationship_type"],
+                            "weight": r["weight"],
+                        }
+                    )
 
                 # Incoming relationships
                 rel_query = """SELECT r.source_entity_id, r.relationship_type, r.weight,
@@ -1303,13 +1429,17 @@ if HAS_FASTAPI:
                         next_frontier.append(sid)
                         add_node(sid, r["name"], r["type_name"], r["mention_count"])
                     # Avoid duplicate edge (undirected)
-                    if not any(e["source"] == sid and e["target"] == fid for e in edges):
-                        edges.append({
-                            "source": sid,
-                            "target": fid,
-                            "relationship_type": r["relationship_type"],
-                            "weight": r["weight"],
-                        })
+                    if not any(
+                        e["source"] == sid and e["target"] == fid for e in edges
+                    ):
+                        edges.append(
+                            {
+                                "source": sid,
+                                "target": fid,
+                                "relationship_type": r["relationship_type"],
+                                "weight": r["weight"],
+                            }
+                        )
 
             frontier = next_frontier
 
@@ -1326,7 +1456,6 @@ if HAS_FASTAPI:
             "total_edges": len(edges),
         }
 
-
     # ── License Validation ───────────────────────────────────
 
     @app.post("/api/license/validate")
@@ -1340,6 +1469,7 @@ if HAS_FASTAPI:
             raise HTTPException(status_code=400, detail="Missing license_key")
 
         import re
+
         if not re.match(r"^(PRO|ENT)-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$", key):
             return {"valid": False, "error": "Invalid key format"}
 
@@ -1360,7 +1490,8 @@ if HAS_FASTAPI:
         if row["status"] != "active":
             return {"valid": False, "error": f"Key is {row['status']}"}
 
-        from datetime import datetime, timezone
+        from datetime import datetime
+
         if row["expires_at"]:
             try:
                 expires = datetime.strptime(str(row["expires_at"]), "%Y-%m-%d %H:%M:%S")
@@ -1370,6 +1501,7 @@ if HAS_FASTAPI:
                 pass
 
         from agents.license_agent import TIER_FEATURES, TIER_PRICING
+
         tier = row["tier"]
         return {
             "valid": True,
@@ -1388,6 +1520,7 @@ if HAS_FASTAPI:
         expiry_days = body.get("expiry_days", 365)
 
         from agents.license_agent import generate_license
+
         key = generate_license(tier, expiry_days)
         return {"license_key": key, "tier": tier, "expiry_days": expiry_days}
 
@@ -1414,7 +1547,6 @@ if HAS_FASTAPI:
         cursor.close()
         conn.close()
         return metrics
-
 
     # ── Real-time WebSocket ───────────────────────────────────
 
@@ -1493,7 +1625,9 @@ if HAS_FASTAPI:
                     {
                         "client_id": info.get("client_id"),
                         "connected_at": info["connected_at"].isoformat(),
-                        "connected_for_seconds": int((now - info["connected_at"]).total_seconds()),
+                        "connected_for_seconds": int(
+                            (now - info["connected_at"]).total_seconds()
+                        ),
                     }
                     for info in self.active.values()
                 ],
@@ -1519,13 +1653,15 @@ if HAS_FASTAPI:
 
     def _kafka_score_reader():
         """Sync thread: read from Kafka scores.updates and push to async queue."""
-        import threading
         topic = "scores.updates"
         try:
             from kafka import KafkaConsumer
+
             consumer = KafkaConsumer(
                 topic,
-                bootstrap_servers=os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092").split(","),
+                bootstrap_servers=os.environ.get(
+                    "KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"
+                ).split(","),
                 value_deserializer=lambda m: json.loads(m.decode("utf-8")),
                 auto_offset_reset="latest",
                 consumer_timeout_ms=5000,
@@ -1539,7 +1675,9 @@ if HAS_FASTAPI:
                             _score_queue.put_nowait(msg.value)
             consumer.close()
         except ImportError:
-            _logger.info("Score push: kafka-python not installed, using DB poll fallback")
+            _logger.info(
+                "Score push: kafka-python not installed, using DB poll fallback"
+            )
         except Exception as e:
             _logger.warning("Score push: Kafka consumer failed: %s", e)
 
@@ -1553,6 +1691,7 @@ if HAS_FASTAPI:
 
         # Start Kafka reader in a thread
         import threading
+
         kafka_thread = threading.Thread(target=_kafka_score_reader, daemon=True)
         kafka_thread.start()
 
@@ -1563,13 +1702,17 @@ if HAS_FASTAPI:
             try:
                 while not _score_queue.empty():
                     score_data = _score_queue.get_nowait()
-                    await ws_manager.broadcast({
-                        "type": "score_update",
-                        "data": score_data,
-                    })
-                    _logger.debug("Pushed score update: %s (%.1f)",
-                                  score_data.get("entity_name", ""),
-                                  score_data.get("composite_score", 0))
+                    await ws_manager.broadcast(
+                        {
+                            "type": "score_update",
+                            "data": score_data,
+                        }
+                    )
+                    _logger.debug(
+                        "Pushed score update: %s (%.1f)",
+                        score_data.get("entity_name", ""),
+                        score_data.get("composite_score", 0),
+                    )
             except Exception:
                 pass
 
@@ -1591,16 +1734,18 @@ if HAS_FASTAPI:
                 for row in rows:
                     if row["id"] not in last_seen_ids:
                         last_seen_ids.add(row["id"])
-                        await ws_manager.broadcast({
-                            "type": "score_update",
-                            "data": {
-                                "entity_name": row["entity_name"],
-                                "entity_type": row["entity_type"],
-                                "composite_score": row["composite_score"],
-                                "signal_count": row["signal_count"],
-                                "trend_direction": row["trend_direction"],
-                            },
-                        })
+                        await ws_manager.broadcast(
+                            {
+                                "type": "score_update",
+                                "data": {
+                                    "entity_name": row["entity_name"],
+                                    "entity_type": row["entity_type"],
+                                    "composite_score": row["composite_score"],
+                                    "signal_count": row["signal_count"],
+                                    "trend_direction": row["trend_direction"],
+                                },
+                            }
+                        )
                         # Also try to broadcast score delta
                         try:
                             conn2 = get_connection()
@@ -1618,18 +1763,27 @@ if HAS_FASTAPI:
                             conn2.close()
                             if delta_row:
                                 import json as _json
-                                await ws_manager.broadcast({
-                                    "type": "score_delta",
-                                    "data": {
-                                        "entity_name": delta_row["entity_name"],
-                                        "old_score": delta_row["old_score"],
-                                        "new_score": delta_row["new_score"],
-                                        "change": delta_row["delta"],
-                                        "trend_previous": delta_row["trend_previous"],
-                                        "trend_current": delta_row["trend_current"],
-                                        "signal_deltas": _json.loads(delta_row.get("signal_breakdown_json", "{}")),
-                                    },
-                                })
+
+                                await ws_manager.broadcast(
+                                    {
+                                        "type": "score_delta",
+                                        "data": {
+                                            "entity_name": delta_row["entity_name"],
+                                            "old_score": delta_row["old_score"],
+                                            "new_score": delta_row["new_score"],
+                                            "change": delta_row["delta"],
+                                            "trend_previous": delta_row[
+                                                "trend_previous"
+                                            ],
+                                            "trend_current": delta_row["trend_current"],
+                                            "signal_deltas": _json.loads(
+                                                delta_row.get(
+                                                    "signal_breakdown_json", "{}"
+                                                )
+                                            ),
+                                        },
+                                    }
+                                )
                         except Exception:
                             pass
 
@@ -1680,7 +1834,9 @@ if HAS_FASTAPI:
                            FROM startup_risk_scores
                            GROUP BY risk_level"""
                     )
-                    risk_dist = {dict(r)["risk_level"]: dict(r)["cnt"] for r in cursor.fetchall()}
+                    risk_dist = {
+                        dict(r)["risk_level"]: dict(r)["cnt"] for r in cursor.fetchall()
+                    }
 
                     cursor.execute(
                         """SELECT sentiment_label, COUNT(*) as cnt
@@ -1688,7 +1844,10 @@ if HAS_FASTAPI:
                            WHERE sentiment_score IS NOT NULL
                            GROUP BY sentiment_label"""
                     )
-                    sentiment_dist = {dict(r)["sentiment_label"]: dict(r)["cnt"] for r in cursor.fetchall()}
+                    sentiment_dist = {
+                        dict(r)["sentiment_label"]: dict(r)["cnt"]
+                        for r in cursor.fetchall()
+                    }
 
                     cursor.execute(
                         """SELECT agent_name, status, completed_at
@@ -1700,22 +1859,26 @@ if HAS_FASTAPI:
                     cursor.close()
                     conn.close()
 
-                    await ws_manager.broadcast({
-                        "type": "stats_update",
-                        "data": {
-                            "startup_count": startup_count,
-                            "news_count": news_count,
-                            "risk_distribution": risk_dist,
-                            "sentiment_distribution": sentiment_dist,
-                            "recent_pipeline_runs": recent_runs,
-                        },
-                    })
+                    await ws_manager.broadcast(
+                        {
+                            "type": "stats_update",
+                            "data": {
+                                "startup_count": startup_count,
+                                "news_count": news_count,
+                                "risk_distribution": risk_dist,
+                                "sentiment_distribution": sentiment_dist,
+                                "recent_pipeline_runs": recent_runs,
+                            },
+                        }
+                    )
                 except Exception:
                     pass
 
                 # Wait for incoming messages (pong, subscribe) or timeout for stats poll
                 try:
-                    data = await asyncio.wait_for(websocket.receive_json(), timeout=30.0)
+                    data = await asyncio.wait_for(
+                        websocket.receive_json(), timeout=30.0
+                    )
                     if isinstance(data, dict) and data.get("type") == "pong":
                         ws_manager.handle_pong(websocket)
                 except asyncio.TimeoutError:
@@ -1733,7 +1896,6 @@ if HAS_FASTAPI:
     def ws_status():
         """WebSocket connection manager status."""
         return ws_manager.get_status()
-
 
     # ── Score Deltas ────────────────────────────────────────────
 
@@ -1778,7 +1940,9 @@ if HAS_FASTAPI:
             # Parse signal_breakdown_json
             for row in rows:
                 try:
-                    row["signal_deltas"] = json.loads(row.pop("signal_breakdown_json", "{}") or "{}")
+                    row["signal_deltas"] = json.loads(
+                        row.pop("signal_breakdown_json", "{}") or "{}"
+                    )
                 except (json.JSONDecodeError, TypeError):
                     row["signal_deltas"] = {}
         except Exception:
@@ -1804,23 +1968,35 @@ if HAS_FASTAPI:
         if run_validation_now:
             try:
                 from scoring.validate import run_validation
+
                 report = run_validation()
                 conn = get_connection()
                 schema.init_schema(conn)
                 cursor = conn.cursor()
-                weights_json = json.dumps({k: v for k, v in report.weights_used.items()})
+                weights_json = json.dumps(
+                    {k: v for k, v in report.weights_used.items()}
+                )
                 cursor.execute(
                     """INSERT INTO score_accuracy_runs
                        (accuracy_pct, total_tested, correct,
                         true_positives, false_positives, true_negatives, false_negatives,
                         precision_pct, recall_pct, f1_score, threshold_used, weights_snapshot, run_notes)
                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                    (report.accuracy, report.total, report.correct,
-                     report.true_positives, report.false_positives,
-                     report.true_negatives, report.false_negatives,
-                     report.precision, report.recall, report.f1_score,
-                     report.threshold, weights_json,
-                     f"Auto-run via API: {report.correct}/{report.total} correct"),
+                    (
+                        report.accuracy,
+                        report.total,
+                        report.correct,
+                        report.true_positives,
+                        report.false_positives,
+                        report.true_negatives,
+                        report.false_negatives,
+                        report.precision,
+                        report.recall,
+                        report.f1_score,
+                        report.threshold,
+                        weights_json,
+                        f"Auto-run via API: {report.correct}/{report.total} correct",
+                    ),
                 )
                 conn.commit()
                 cursor.close()
@@ -1919,7 +2095,9 @@ if HAS_FASTAPI:
             opportunities.append(opp)
 
         # Get total count for pagination
-        count_query = "SELECT COUNT(*) as cnt FROM opportunity_scores WHERE composite_score >= %s"
+        count_query = (
+            "SELECT COUNT(*) as cnt FROM opportunity_scores WHERE composite_score >= %s"
+        )
         count_params = [min_score]
         if trend:
             count_query += " AND trend_direction = %s"
@@ -2040,7 +2218,9 @@ if HAS_FASTAPI:
         cursor.execute(
             "SELECT signal_type, COUNT(*) as cnt FROM raw_signals GROUP BY signal_type ORDER BY cnt DESC"
         )
-        stats["by_type"] = {dict(r)["signal_type"]: dict(r)["cnt"] for r in cursor.fetchall()}
+        stats["by_type"] = {
+            dict(r)["signal_type"]: dict(r)["cnt"] for r in cursor.fetchall()
+        }
 
         # Processing status
         cursor.execute(
@@ -2076,7 +2256,6 @@ if HAS_FASTAPI:
         conn.close()
         return stats
 
-
     # ── In-Memory Cache ───────────────────────────────────
     # Simple TTL cache to avoid repeated COUNT(*) queries on stats endpoints.
     # Falls back gracefully — no external Redis required for basic operation.
@@ -2086,6 +2265,7 @@ if HAS_FASTAPI:
     def _cache_get(key: str, ttl: int = 60) -> dict | None:
         """Return cached value if still fresh, else None."""
         import time
+
         entry = _cache.get(key)
         if entry and entry[1] > time.time():
             return entry[0]
@@ -2094,6 +2274,7 @@ if HAS_FASTAPI:
 
     def _cache_set(key: str, value: dict, ttl: int = 60):
         import time
+
         _cache[key] = (value, time.time() + ttl)
 
     # ── Redis-Backed Cache (T-050) ─────────────────────────
@@ -2105,11 +2286,15 @@ if HAS_FASTAPI:
         """Try Redis first, fall back to in-memory cache."""
         try:
             import redis as _redis
-            r = _redis.from_url(_REDIS_URL, socket_connect_timeout=2, decode_responses=True)
+
+            r = _redis.from_url(
+                _REDIS_URL, socket_connect_timeout=2, decode_responses=True
+            )
             raw = r.get(f"api:{key}")
             r.close()
             if raw:
                 import json as _json
+
                 return _json.loads(raw)
         except Exception:
             pass
@@ -2122,7 +2307,10 @@ if HAS_FASTAPI:
         try:
             import redis as _redis
             import json as _json
-            r = _redis.from_url(_REDIS_URL, socket_connect_timeout=2, decode_responses=True)
+
+            r = _redis.from_url(
+                _REDIS_URL, socket_connect_timeout=2, decode_responses=True
+            )
             r.setex(f"api:{key}", ttl, _json.dumps(value, default=str))
             r.close()
         except Exception:
@@ -2133,7 +2321,10 @@ if HAS_FASTAPI:
         _cache.clear()
         try:
             import redis as _redis
-            r = _redis.from_url(_REDIS_URL, socket_connect_timeout=2, decode_responses=True)
+
+            r = _redis.from_url(
+                _REDIS_URL, socket_connect_timeout=2, decode_responses=True
+            )
             for key in r.scan_iter(pattern):
                 r.delete(key)
             r.close()
@@ -2160,13 +2351,19 @@ if HAS_FASTAPI:
         cursor.execute("SELECT COUNT(*) as cnt FROM news_articles")
         news_count = cursor.fetchone()["cnt"]
 
-        cursor.execute("SELECT COUNT(*) as cnt FROM news_articles WHERE sentiment_score IS NOT NULL")
+        cursor.execute(
+            "SELECT COUNT(*) as cnt FROM news_articles WHERE sentiment_score IS NOT NULL"
+        )
         sentiment_scored = cursor.fetchone()["cnt"]
 
-        cursor.execute("SELECT COUNT(*) as cnt FROM opportunity_scores WHERE composite_score >= 60")
+        cursor.execute(
+            "SELECT COUNT(*) as cnt FROM opportunity_scores WHERE composite_score >= 60"
+        )
         opportunities_count = cursor.fetchone()["cnt"]
 
-        cursor.execute("SELECT COUNT(*) as cnt FROM raw_signals WHERE DATE(collected_at) = CURDATE()")
+        cursor.execute(
+            "SELECT COUNT(*) as cnt FROM raw_signals WHERE DATE(collected_at) = CURDATE()"
+        )
         signals_today = cursor.fetchone()["cnt"]
 
         cursor.execute("SELECT COUNT(*) as cnt FROM raw_signals")
@@ -2198,12 +2395,17 @@ if HAS_FASTAPI:
     def cache_clear():
         """Clear all cached responses — both Redis and in-memory (admin endpoint)."""
         _redis_cache_invalidate()
-        return {"status": "cleared", "message": "All cache entries removed (Redis + in-memory)"}
+        return {
+            "status": "cleared",
+            "message": "All cache entries removed (Redis + in-memory)",
+        }
 
     # ── Performance Analytics (T-052) ────────────────────
 
     @app.get("/api/performance")
-    def performance_analytics(hours: int = Query(24, ge=1, le=168, description="Lookback window in hours")):
+    def performance_analytics(
+        hours: int = Query(24, ge=1, le=168, description="Lookback window in hours"),
+    ):
         """Performance analytics: latencies, error rates, cache stats.
 
         Returns query/chat latency percentiles, error counts, and cache metrics.
@@ -2278,7 +2480,11 @@ if HAS_FASTAPI:
             query_count = result.get("query_latency", {}).get("count", 0)
             chat_count = result.get("chat_latency", {}).get("total", 0)
             total_requests = query_count + chat_count
-            rate = round((error_count / total_requests) * 100, 2) if total_requests > 0 else 0
+            rate = (
+                round((error_count / total_requests) * 100, 2)
+                if total_requests > 0
+                else 0
+            )
             result["error_rate"] = {
                 "errors": error_count,
                 "total_requests": total_requests,
@@ -2294,6 +2500,7 @@ if HAS_FASTAPI:
         }
         try:
             import redis as _redis_check
+
             r = _redis_check.from_url(_REDIS_URL, socket_connect_timeout=1)
             r.ping()
             api_keys = list(r.scan_iter("api:*"))
@@ -2333,11 +2540,13 @@ if HAS_FASTAPI:
         """Health check for stream processing pipeline — reads live metrics from Redis."""
         import json
         import time
+
         redis_ok = False
         pipeline_metrics = {}
 
         try:
             import redis as redis_client
+
             r = redis_client.from_url(
                 "redis://localhost:6379/0",
                 socket_connect_timeout=2,
@@ -2387,6 +2596,7 @@ if HAS_FASTAPI:
 
 # ── Main ─────────────────────────────────────────────────────
 
+
 def main():
     if not HAS_FASTAPI:
         print("Error: FastAPI and uvicorn are required.")
@@ -2394,13 +2604,16 @@ def main():
         sys.exit(1)
 
     parser = argparse.ArgumentParser(description="Startup Research Report API Server")
-    parser.add_argument("--host", default="127.0.0.1", help="Bind host (default: 127.0.0.1)")
+    parser.add_argument(
+        "--host", default="127.0.0.1", help="Bind host (default: 127.0.0.1)"
+    )
     parser.add_argument("--port", type=int, default=8000, help="Port (default: 8000)")
-    parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
+    parser.add_argument(
+        "--reload", action="store_true", help="Enable auto-reload for development"
+    )
     args = parser.parse_args()
 
     setup_logging()
-    _logger = logging.getLogger("api_server")
 
     # ── Startup secrets validation (T-010) ──
     _required_secrets = ["MYSQL_PASSWORD", "JWT_SECRET"]

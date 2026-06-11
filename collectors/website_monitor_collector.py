@@ -21,7 +21,14 @@ _logger = logging.getLogger(__name__)
 
 # Default signal keyword categories
 _DEFAULT_SIGNAL_KEYWORDS = {
-    "funding": ["raised", "funding", "series a", "series b", "investment", "seed round"],
+    "funding": [
+        "raised",
+        "funding",
+        "series a",
+        "series b",
+        "investment",
+        "seed round",
+    ],
     "hiring": ["we're hiring", "careers", "join our team", "open positions"],
     "launch": ["now available", "launching", "public beta", "early access"],
     "pricing": ["pricing", "plans starting at"],
@@ -56,23 +63,25 @@ class WebsiteMonitorCollector(BaseCollector):
 
     def _extract_title(self, html: str) -> str:
         """Extract page title from HTML using regex."""
-        match = re.search(r'<title[^>]*>(.*?)</title>', html, re.IGNORECASE | re.DOTALL)
+        match = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
         if match:
-            return re.sub(r'\s+', ' ', match.group(1)).strip()
+            return re.sub(r"\s+", " ", match.group(1)).strip()
         return ""
 
     def _extract_meta_description(self, html: str) -> str:
         """Extract meta description from HTML."""
         match = re.search(
             r'<meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']',
-            html, re.IGNORECASE | re.DOTALL,
+            html,
+            re.IGNORECASE | re.DOTALL,
         )
         if match:
             return match.group(1).strip()
         # Try reversed attribute order
         match = re.search(
             r'<meta\s+content=["\'](.*?)["\']\s+name=["\']description["\']',
-            html, re.IGNORECASE | re.DOTALL,
+            html,
+            re.IGNORECASE | re.DOTALL,
         )
         if match:
             return match.group(1).strip()
@@ -80,10 +89,14 @@ class WebsiteMonitorCollector(BaseCollector):
 
     def _extract_text(self, html: str) -> str:
         """Strip HTML tags and extract plain text."""
-        text = re.sub(r'<script[^>]*>.*?</script>', '', html, flags=re.IGNORECASE | re.DOTALL)
-        text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.IGNORECASE | re.DOTALL)
-        text = re.sub(r'<[^>]+>', ' ', text)
-        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(
+            r"<script[^>]*>.*?</script>", "", html, flags=re.IGNORECASE | re.DOTALL
+        )
+        text = re.sub(
+            r"<style[^>]*>.*?</style>", "", text, flags=re.IGNORECASE | re.DOTALL
+        )
+        text = re.sub(r"<[^>]+>", " ", text)
+        text = re.sub(r"\s+", " ", text).strip()
         return text
 
     def _find_signals(self, text: str, keywords: dict[str, list[str]]) -> list[dict]:
@@ -99,7 +112,9 @@ class WebsiteMonitorCollector(BaseCollector):
             weight = _SIGNAL_WEIGHTS.get(category, 10)
             for kw in kws:
                 if kw.lower() not in seen and kw.lower() in text_lower:
-                    signals.append({"keyword": kw, "category": category, "weight": weight})
+                    signals.append(
+                        {"keyword": kw, "category": category, "weight": weight}
+                    )
                     seen.add(kw.lower())
 
         return signals
@@ -126,8 +141,7 @@ class WebsiteMonitorCollector(BaseCollector):
         """Compute SHA-256 hash of text content."""
         return hashlib.sha256(text.encode("utf-8", errors="replace")).hexdigest()
 
-    def _fetch_page(self, session, url: str,
-                    timeout: int = 15) -> tuple[int, str]:
+    def _fetch_page(self, session, url: str, timeout: int = 15) -> tuple[int, str]:
         """Fetch a web page. Returns (status_code, html)."""
         try:
             resp = session.get(url, timeout=timeout)
@@ -136,11 +150,19 @@ class WebsiteMonitorCollector(BaseCollector):
             _logger.warning("WebsiteMonitor: failed to fetch %s — %s", url, e)
             return 0, ""
 
-    def _insert_snapshot(self, cursor, url: str, label: str,
-                         title: str, meta_desc: str, text: str,
-                         content_hash: str, signals: list[dict],
-                         http_status: int,
-                         result: CollectionResult) -> None:
+    def _insert_snapshot(
+        self,
+        cursor,
+        url: str,
+        label: str,
+        title: str,
+        meta_desc: str,
+        text: str,
+        content_hash: str,
+        signals: list[dict],
+        http_status: int,
+        result: CollectionResult,
+    ) -> None:
         """Insert snapshot into website_monitor_snapshots and raw_signals."""
         signal_keywords = [s["keyword"] for s in signals]
         raw_score = self._compute_score(signals)
@@ -243,15 +265,25 @@ class WebsiteMonitorCollector(BaseCollector):
 
             try:
                 self._insert_snapshot(
-                    cursor, url, label, title, meta_desc, text,
-                    content_hash, signals, http_status, result,
+                    cursor,
+                    url,
+                    label,
+                    title,
+                    meta_desc,
+                    text,
+                    content_hash,
+                    signals,
+                    http_status,
+                    result,
                 )
             except Exception as e:
                 result.errors.append(f"Error processing {url}: {e}")
 
             _logger.info(
                 "WebsiteMonitor: %s — %d signals, hash=%s",
-                url, len(signals), content_hash[:12],
+                url,
+                len(signals),
+                content_hash[:12],
             )
 
             time.sleep(min_delay)

@@ -74,7 +74,11 @@ class JobPostingsCollector(BaseCollector):
         session = get_http_session()
 
         last_run = self.get_last_run_time(conn)
-        since_date = last_run - timedelta(hours=1) if last_run else datetime.now(timezone.utc) - timedelta(days=3)
+        since_date = (
+            last_run - timedelta(hours=1)
+            if last_run
+            else datetime.now(timezone.utc) - timedelta(days=3)
+        )
 
         cursor = conn.cursor()
         company_counts: dict[str, int] = {}  # Track per-company posting counts
@@ -138,11 +142,17 @@ class JobPostingsCollector(BaseCollector):
 
                         # Extract company name (usually in title)
                         company_name = self._extract_company(title)
-                        job_title = title.replace(company_name, "").strip() if company_name else title
+                        job_title = (
+                            title.replace(company_name, "").strip()
+                            if company_name
+                            else title
+                        )
 
                         # Extract skills
                         text = f"{title} {summary}"
-                        skills = list(set(m.group(0).lower() for m in _TECH_SKILLS.finditer(text)))
+                        skills = list(
+                            set(m.group(0).lower() for m in _TECH_SKILLS.finditer(text))
+                        )
 
                         cursor.execute(
                             """INSERT IGNORE INTO job_postings
@@ -193,7 +203,9 @@ class JobPostingsCollector(BaseCollector):
 
                         # Track company counts for spike detection
                         if company_name:
-                            company_counts[company_name] = company_counts.get(company_name, 0) + 1
+                            company_counts[company_name] = (
+                                company_counts.get(company_name, 0) + 1
+                            )
 
                         result.records_inserted += 1
                         result.records_collected += 1
@@ -209,7 +221,8 @@ class JobPostingsCollector(BaseCollector):
             if count >= 3:
                 _logger.info(
                     "🎯 HIRING SPIKE: %s has %d new postings (potential growth signal)",
-                    company, count,
+                    company,
+                    count,
                 )
 
         result.status = "success" if result.records_inserted > 0 else "partial"

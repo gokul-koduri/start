@@ -56,7 +56,12 @@ class BLSSurvivalRateCollector(BaseCollector):
             store_as = naics_entry.get("store_as", naics_code)  # e.g. "31-33"
             url = f"{BED_BASE_URL}/us_age_naics_{naics_code}_table7.txt"
 
-            _logger.info("Fetching BLS BED Table 7: %s (%s) from %s", naics_label, naics_code, url)
+            _logger.info(
+                "Fetching BLS BED Table 7: %s (%s) from %s",
+                naics_label,
+                naics_code,
+                url,
+            )
 
             try:
                 resp = session.get(url, timeout=60)
@@ -74,7 +79,9 @@ class BLSSurvivalRateCollector(BaseCollector):
             cohorts = self._parse_table7(resp.text)
             _logger.info("Parsed %d cohorts from %s Table 7", len(cohorts), naics_label)
 
-            inserted = self._insert_cohorts(conn, cohorts, store_as, naics_label, url, result)
+            inserted = self._insert_cohorts(
+                conn, cohorts, store_as, naics_label, url, result
+            )
             _logger.info("Inserted %d records for %s", inserted, naics_label)
 
         result.status = "partial" if result.errors else "success"
@@ -179,9 +186,17 @@ class BLSSurvivalRateCollector(BaseCollector):
                     age_1_yr_survival, age_2_yr_survival, age_3_yr_survival, age_5_yr_survival,
                     establishment_count, source_url, collected_at)
                    VALUES (%s, %s, %s, NULL, %s, %s, %s, %s, %s, %s, NOW())""",
-                (naics_code, industry_name, birth_year,
-                 age_1, age_2, age_3, age_5,
-                 est_count, source_url),
+                (
+                    naics_code,
+                    industry_name,
+                    birth_year,
+                    age_1,
+                    age_2,
+                    age_3,
+                    age_5,
+                    est_count,
+                    source_url,
+                ),
             )
             cursor.close()
             result.records_collected += 1
@@ -194,9 +209,7 @@ class BLSSurvivalRateCollector(BaseCollector):
     def _get_max_year(self, conn) -> int | None:
         """Get the maximum birth year currently in the database."""
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT MAX(year) as max_year FROM bls_survival_rates"
-        )
+        cursor.execute("SELECT MAX(year) as max_year FROM bls_survival_rates")
         row = cursor.fetchone()
         cursor.close()
         if row and row["max_year"]:

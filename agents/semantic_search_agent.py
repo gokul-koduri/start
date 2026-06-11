@@ -46,6 +46,7 @@ class SemanticSearchAgent(BaseAgent):
         # Connect to Qdrant
         try:
             from db.vector_store import VectorStore
+
             vs_config = self.config.get("qdrant", {})
             vector_store = VectorStore(vs_config)
             vector_store.connect()
@@ -56,6 +57,7 @@ class SemanticSearchAgent(BaseAgent):
         # Connect to Elasticsearch
         try:
             from db.search_index import SearchIndex
+
             si_config = self.config.get("elasticsearch", {})
             search_index = SearchIndex(si_config)
             search_index.connect()
@@ -65,11 +67,18 @@ class SemanticSearchAgent(BaseAgent):
 
         if not vector_store or not vector_store.is_connected:
             if not search_index or not search_index.is_connected:
-                _logger.info("SemanticSearchAgent: no search backends available, skipping")
+                _logger.info(
+                    "SemanticSearchAgent: no search backends available, skipping"
+                )
                 conn.close()
                 return AgentResult(
-                    agent_name=self.name, status="success",
-                    data={"indexed_qdrant": 0, "indexed_es": 0, "reason": "no_backends"},
+                    agent_name=self.name,
+                    status="success",
+                    data={
+                        "indexed_qdrant": 0,
+                        "indexed_es": 0,
+                        "reason": "no_backends",
+                    },
                 )
 
         qdrant_indexed = 0
@@ -93,7 +102,8 @@ class SemanticSearchAgent(BaseAgent):
                 _logger.info("SemanticSearchAgent: no embeddings to sync")
                 conn.close()
                 return AgentResult(
-                    agent_name=self.name, status="success",
+                    agent_name=self.name,
+                    status="success",
                     data={"indexed_qdrant": 0, "indexed_es": 0},
                 )
 
@@ -107,6 +117,7 @@ class SemanticSearchAgent(BaseAgent):
                 if emb.get("vector_data"):
                     try:
                         import json
+
                         vector = json.loads(emb["vector_data"])
                     except Exception:
                         pass
@@ -134,7 +145,11 @@ class SemanticSearchAgent(BaseAgent):
                             (point_id, emb["id"]),
                         )
                     except Exception as e:
-                        _logger.warning("SemanticSearchAgent: Qdrant upsert failed for %d: %s", emb["id"], e)
+                        _logger.warning(
+                            "SemanticSearchAgent: Qdrant upsert failed for %d: %s",
+                            emb["id"],
+                            e,
+                        )
 
                 # Index in Elasticsearch
                 if search_index and search_index.is_connected:
@@ -150,7 +165,11 @@ class SemanticSearchAgent(BaseAgent):
                         search_index.index_document(doc_id=point_id, document=doc)
                         es_indexed += 1
                     except Exception as e:
-                        _logger.warning("SemanticSearchAgent: ES index failed for %d: %s", emb["id"], e)
+                        _logger.warning(
+                            "SemanticSearchAgent: ES index failed for %d: %s",
+                            emb["id"],
+                            e,
+                        )
 
             conn.commit()
 
@@ -167,7 +186,8 @@ class SemanticSearchAgent(BaseAgent):
 
         status = "success" if not errors else "partial"
         return AgentResult(
-            agent_name=self.name, status=status,
+            agent_name=self.name,
+            status=status,
             data={
                 "indexed_qdrant": qdrant_indexed,
                 "indexed_es": es_indexed,
@@ -178,6 +198,10 @@ class SemanticSearchAgent(BaseAgent):
     def _clean_stale(self, vector_store, search_index):
         """Remove orphaned entries from Qdrant/ES."""
         if vector_store and vector_store.is_connected:
-            _logger.info("SemanticSearchAgent: stale cleanup for Qdrant not yet implemented")
+            _logger.info(
+                "SemanticSearchAgent: stale cleanup for Qdrant not yet implemented"
+            )
         if search_index and search_index.is_connected:
-            _logger.info("SemanticSearchAgent: stale cleanup for ES not yet implemented")
+            _logger.info(
+                "SemanticSearchAgent: stale cleanup for ES not yet implemented"
+            )

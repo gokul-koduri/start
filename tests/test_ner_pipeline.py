@@ -32,8 +32,13 @@ class TestNERResult:
         assert d["source"] == "spacy"
 
     def test_to_dict_with_context(self):
-        r = NERResult(name="Python", label="technology", confidence=0.95,
-                     source="rule", context="uses Python for backend")
+        r = NERResult(
+            name="Python",
+            label="technology",
+            confidence=0.95,
+            source="rule",
+            context="uses Python for backend",
+        )
         d = r.to_dict()
         assert d["source"] == "rule"
         assert d["context"] == "uses Python for backend"
@@ -147,10 +152,12 @@ class TestUnifiedEntityExtractor:
     def test_falls_back_to_ollama(self, mock_ollama, mock_spacy):
         mock_spacy.return_value = []
         mock_ollama.return_value = [{"name": "Stripe", "type": "startup"}]
-        extractor = UnifiedEntityExtractor({
-            "primary_engine": "spacy",
-            "fallback_engine": "ollama",
-        })
+        extractor = UnifiedEntityExtractor(
+            {
+                "primary_engine": "spacy",
+                "fallback_engine": "ollama",
+            }
+        )
         results = extractor.extract("Stripe raised $50M")
         mock_ollama.assert_called_once()
         assert len(results) == 1
@@ -180,7 +187,9 @@ class TestUnifiedEntityExtractor:
             NERResult(name="Python", label="technology", confidence=0.95),
         ]
         extractor = UnifiedEntityExtractor({"fallback_engine": "none"})
-        results = extractor.extract("Stripe uses Python for backend services", target_types=["technology"])
+        results = extractor.extract(
+            "Stripe uses Python for backend services", target_types=["technology"]
+        )
         assert len(results) == 1
         assert results[0]["name"] == "Python"
 
@@ -241,7 +250,9 @@ class TestSignalTextClassifier:
         assert conf > 0.5
 
     def test_classify_social_buzz(self):
-        text = "A post on Hacker News about the startup went viral and trending on Reddit"
+        text = (
+            "A post on Hacker News about the startup went viral and trending on Reddit"
+        )
         sig_type, conf = self.classifier.classify_signal_type(text)
         assert sig_type == "social_buzz"
         assert conf > 0.3  # Multiple pattern matches boost confidence
@@ -311,17 +322,17 @@ class TestOllamaSummarizer:
     @patch("urllib.request.urlopen")
     def test_summarize_with_ollama(self, mock_urlopen):
         mock_resp = MagicMock()
-        mock_resp.read.return_value = json.dumps({
-            "message": {"content": "Stripe raised significant funding."}
-        }).encode()
+        mock_resp.read.return_value = json.dumps(
+            {"message": {"content": "Stripe raised significant funding."}}
+        ).encode()
         mock_urlopen.return_value.__enter__ = MagicMock(return_value=mock_resp)
         mock_urlopen.return_value.__exit__ = MagicMock(return_value=False)
 
         summarizer = OllamaSummarizer({"url": "http://test:11434/api/chat"})
         result = summarizer.summarize(
-            "Stripe Inc. announced a major funding round. " +
-            "The company raised $50 million in a Series B round. " +
-            "This brings their total funding to $100 million."
+            "Stripe Inc. announced a major funding round. "
+            + "The company raised $50 million in a Series B round. "
+            + "This brings their total funding to $100 million."
         )
         assert "funding" in result.lower()
 

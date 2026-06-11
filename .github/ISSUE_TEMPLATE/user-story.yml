@@ -1,0 +1,83 @@
+name: User Story
+description: Write a user story with acceptance criteria
+labels: ["type/story"]
+body:
+  - type: dropdown
+    id: sprint
+    attributes:
+      label: Sprint
+      options:
+        - Sprint 1 (Launch MVP)
+        - Sprint 2 (Core Infrastructure)
+        - Sprint 3 (Feedback + Analytics)
+        - Sprint 4 (Auth + Security)
+        - Sprint 5 (Watchlists + Alerts)
+        - Sprint 6 (Export + Integrations)
+        - Sprint 7 (Pro Tier + Billing)
+        - Sprint 8 (Polish + V1 Release)
+        - Backlog (Unscheduled)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 (Must have)
+        - P1 (Should have)
+        - P2 (Could have)
+        - P3 (Won't have — this time)
+    validations:
+      required: true
+
+  - type: textarea
+    id: user_story
+    attributes:
+      label: User Story
+      description: "Follow the format: As a [role], I want [feature], so that [benefit]."
+      placeholder: "As a startup founder, I want to see trending sectors so that I can identify opportunities."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Given/When/Then format preferred. All criteria must be testable.
+      placeholder: |
+        Given I am on the dashboard,
+        When I navigate to the Trends section,
+        Then I see a list of trending sectors ranked by growth rate.
+
+        Given trending sectors are displayed,
+        When I click on a sector,
+        Then I see detailed analysis for that sector.
+    validations:
+      required: true
+
+  - type: textarea
+    id: design_reference
+    attributes:
+      label: Design / Mockup Reference
+      description: Link to Figma, screenshot, or description of expected UI.
+      placeholder: "See docs/product-vision.md section on Trend Analysis"
+
+  - type: input
+    id: story_points
+    attributes:
+      label: Story Points
+      description: Fibonacci estimate (1, 2, 3, 5, 8, 13).
+      placeholder: "5"
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks Breakdown
+      description: Break this story into ≤2-hour tasks.
+      placeholder: |
+        - [ ] T-XXX: Design API endpoint
+        - [ ] T-XXX: Implement data query
+        - [ ] T-XXX: Build UI component
+        - [ ] T-XXX: Write tests
+        - [ ] T-XXX: Update documentation

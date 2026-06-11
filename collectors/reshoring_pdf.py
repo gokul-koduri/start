@@ -2,7 +2,6 @@
 
 import logging
 import re
-import hashlib
 from pathlib import Path
 
 from collectors.base import BaseCollector, CollectionResult
@@ -12,8 +11,12 @@ _logger = logging.getLogger(__name__)
 
 # Regex patterns for extracting data from Reshoring Initiative PDFs
 _JOB_COUNT_PATTERNS = [
-    re.compile(r"(\d{1,3}(?:,\d{3})+)\s+jobs?\s+(?:announced|created|brought)", re.IGNORECASE),
-    re.compile(r"(\d{1,3}(?:,\d{3})+)\s+jobs?\s+from\s+(?:reshoring|FDI)", re.IGNORECASE),
+    re.compile(
+        r"(\d{1,3}(?:,\d{3})+)\s+jobs?\s+(?:announced|created|brought)", re.IGNORECASE
+    ),
+    re.compile(
+        r"(\d{1,3}(?:,\d{3})+)\s+jobs?\s+from\s+(?:reshoring|FDI)", re.IGNORECASE
+    ),
     re.compile(r"(\d{1,3}(?:,\d{3})+)\s+(?:total|net)\s+jobs?", re.IGNORECASE),
     re.compile(r"announced\s+(\d{1,3}(?:,\d{3})+)\s+jobs?", re.IGNORECASE),
 ]
@@ -49,7 +52,11 @@ class ReshoringPDFCollector(BaseCollector):
             report_year = pdf_info["report_year"]
             data_year = pdf_info["data_year"]
 
-            _logger.info("Processing Reshoring Initiative PDF: year=%d, url=%s", data_year, pdf_url)
+            _logger.info(
+                "Processing Reshoring Initiative PDF: year=%d, url=%s",
+                data_year,
+                pdf_url,
+            )
 
             # Download PDF
             local_path = dl_path / f"reshoring_{data_year}.pdf"
@@ -81,9 +88,14 @@ class ReshoringPDFCollector(BaseCollector):
                             """REPLACE INTO reshoring_summary_stats
                                (stat_year, total_jobs, success_rate_pct, key_policy, headline, source, collected_at)
                                VALUES (%s, %s, %s, %s, %s, %s, NOW())""",
-                            (rec["data_year"], rec.get("total_jobs"),
-                             rec.get("success_rate"), rec.get("key_policy"),
-                             rec.get("headline"), rec.get("source")),
+                            (
+                                rec["data_year"],
+                                rec.get("total_jobs"),
+                                rec.get("success_rate"),
+                                rec.get("key_policy"),
+                                rec.get("headline"),
+                                rec.get("source"),
+                            ),
                         )
                         cursor.close()
                 elif rec["type"] == "industry":
@@ -95,10 +107,18 @@ class ReshoringPDFCollector(BaseCollector):
                                 success_rate_pct, cost_reduction_pct, notes,
                                 source_report, source_url, collected_at)
                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())""",
-                            (report_year, rec["data_year"], rec.get("industry"),
-                             rec.get("jobs_created"), rec.get("jobs_announced"),
-                             rec.get("success_rate"), rec.get("cost_reduction"),
-                             rec.get("notes"), rec.get("source"), pdf_url),
+                            (
+                                report_year,
+                                rec["data_year"],
+                                rec.get("industry"),
+                                rec.get("jobs_created"),
+                                rec.get("jobs_announced"),
+                                rec.get("success_rate"),
+                                rec.get("cost_reduction"),
+                                rec.get("notes"),
+                                rec.get("source"),
+                                pdf_url,
+                            ),
                         )
                         cursor.close()
                 result.records_collected += 1
@@ -123,7 +143,9 @@ class ReshoringPDFCollector(BaseCollector):
             with open(local_path, "wb") as f:
                 for chunk in resp.iter_content(chunk_size=8192):
                     f.write(chunk)
-            _logger.info("Downloaded %d bytes to %s", local_path.stat().st_size, local_path)
+            _logger.info(
+                "Downloaded %d bytes to %s", local_path.stat().st_size, local_path
+            )
             return True
         except Exception as e:
             _logger.error("Download failed: %s", e)
@@ -149,7 +171,9 @@ class ReshoringPDFCollector(BaseCollector):
 
         return "\n".join(text_parts)
 
-    def _extract_data(self, text: str, data_year: int, source_url: str, report_year: int) -> list[dict]:
+    def _extract_data(
+        self, text: str, data_year: int, source_url: str, report_year: int
+    ) -> list[dict]:
         """Extract structured data from PDF text using multiple strategies."""
         records = []
         source_report = f"Reshoring Initiative {report_year} Annual Report"
@@ -175,10 +199,25 @@ class ReshoringPDFCollector(BaseCollector):
         # Strategy 3: Look for industry-specific data
         # Common reshoring industries to search for
         industries = [
-            "semiconductor", "battery", "steel", "metal", "auto", "automotive",
-            "electronics", "solar", "textile", "pharmaceutical", "chemical",
-            "plastic", "rubber", "food", "machinery", "appliance",
-            "aerospace", "defense", "medical device",
+            "semiconductor",
+            "battery",
+            "steel",
+            "metal",
+            "auto",
+            "automotive",
+            "electronics",
+            "solar",
+            "textile",
+            "pharmaceutical",
+            "chemical",
+            "plastic",
+            "rubber",
+            "food",
+            "machinery",
+            "appliance",
+            "aerospace",
+            "defense",
+            "medical device",
         ]
 
         for industry in industries:
@@ -190,13 +229,15 @@ class ReshoringPDFCollector(BaseCollector):
             match = industry_pattern.search(text)
             if match:
                 industry_jobs = int(match.group(1).replace(",", ""))
-                records.append({
-                    "type": "industry",
-                    "data_year": data_year,
-                    "industry": industry.title(),
-                    "jobs_created": industry_jobs,
-                    "source": source_report,
-                })
+                records.append(
+                    {
+                        "type": "industry",
+                        "data_year": data_year,
+                        "industry": industry.title(),
+                        "jobs_created": industry_jobs,
+                        "source": source_report,
+                    }
+                )
 
         # Strategy 4: Look for industry tables
         # Try to find sections that list industries with numbers
@@ -224,18 +265,22 @@ class ReshoringPDFCollector(BaseCollector):
             else:
                 key_policy = "IRA ($369B)"
 
-        records.append({
-            "type": "summary",
-            "data_year": data_year,
-            "total_jobs": total_jobs,
-            "success_rate": success_rate,
-            "key_policy": key_policy,
-            "headline": ". ".join(headline_parts) if headline_parts else None,
-            "source": source_report,
-        })
+        records.append(
+            {
+                "type": "summary",
+                "data_year": data_year,
+                "total_jobs": total_jobs,
+                "success_rate": success_rate,
+                "key_policy": key_policy,
+                "headline": ". ".join(headline_parts) if headline_parts else None,
+                "source": source_report,
+            }
+        )
 
         # Mark low-confidence if we couldn't extract much
         if total_jobs is None and success_rate is None and len(records) <= 1:
-            _logger.warning("Low confidence extraction from reshoring PDF for year %d", data_year)
+            _logger.warning(
+                "Low confidence extraction from reshoring PDF for year %d", data_year
+            )
 
         return records

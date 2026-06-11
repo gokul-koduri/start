@@ -1,13 +1,12 @@
 """Webhook dispatch engine."""
 
-import json
 import logging
 import time
 from typing import Dict, List
-from unittest.mock import MagicMock
 
 try:
     import requests
+
     HAS_REQUESTS = True
 except ImportError:
     HAS_REQUESTS = False
@@ -43,11 +42,13 @@ class WebhookDispatcher:
         if event_type not in self.webhooks:
             self.webhooks[event_type] = []
 
-        self.webhooks[event_type].append({
-            "url": url,
-            "headers": headers or {},
-            "active": True,
-        })
+        self.webhooks[event_type].append(
+            {
+                "url": url,
+                "headers": headers or {},
+                "active": True,
+            }
+        )
         _logger.info("Registered webhook for %s: %s", event_type, url)
 
     def dispatch(self, event_type: str, payload: dict) -> dict:

@@ -65,11 +65,13 @@ class RedditStreamCollector(BaseCollector):
         """Initialize PRAW Reddit instance."""
         try:
             import praw
+
             return praw.Reddit(
                 client_id=self.config.get("reddit_client_id", ""),
                 client_secret=self.config.get("reddit_client_secret", ""),
                 user_agent=self.config.get(
-                    "reddit_user_agent", "OpportunityIntel/1.0 (research)",
+                    "reddit_user_agent",
+                    "OpportunityIntel/1.0 (research)",
                 ),
             )
         except ImportError:
@@ -85,7 +87,7 @@ class RedditStreamCollector(BaseCollector):
 
         # Pattern: "$X raised ... CompanyName"
         match = re.search(
-            r'\$(\d[\d,.]*)[MmBb]?\b.*?(\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b)',
+            r"\$(\d[\d,.]*)[MmBb]?\b.*?(\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b)",
             combined,
         )
         if match:
@@ -93,14 +95,14 @@ class RedditStreamCollector(BaseCollector):
 
         # Pattern: "Company launches/releases/announces"
         match = re.search(
-            r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b\s+(?:launches?|releases?|announces?|raises?|debuts?)',
+            r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b\s+(?:launches?|releases?|announces?|raises?|debuts?)",
             combined,
         )
         if match:
             return match.group(1).strip(), "company"
 
         # Title case phrase at start
-        match = re.match(r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)', combined)
+        match = re.match(r"^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)", combined)
         if match and len(match.group(1)) < 40:
             return match.group(1).strip(), "company"
 
@@ -111,13 +113,14 @@ class RedditStreamCollector(BaseCollector):
         raw = score + (num_comments * 2)
         return min(raw / 10.0, 100.0)
 
-    def _stream_posts(self, reddit, subreddits: list, config: dict,
-                      result: CollectionResult) -> list:
+    def _stream_posts(
+        self, reddit, subreddits: list, config: dict, result: CollectionResult
+    ) -> list:
         """Stream new posts from subreddits using PRAW stream API.
 
         Returns list of collected submission dicts for comment processing.
         """
-        stream_timeout = config.get("stream_timeout", 30)
+        config.get("stream_timeout", 30)
         max_posts = config.get("max_posts", 50)
         posts_collected = []
 
@@ -140,7 +143,9 @@ class RedditStreamCollector(BaseCollector):
                     "id": submission.id,
                     "title": submission.title,
                     "selftext": submission.selftext or "",
-                    "author": str(submission.author) if submission.author else "[deleted]",
+                    "author": str(submission.author)
+                    if submission.author
+                    else "[deleted]",
                     "score": submission.score,
                     "num_comments": submission.num_comments,
                     "url": submission.url,
@@ -160,7 +165,8 @@ class RedditStreamCollector(BaseCollector):
 
         _logger.info(
             "RedditStreamCollector: streamed %d posts from r/%s",
-            count, subreddit_names,
+            count,
+            subreddit_names,
         )
         return posts_collected
 
@@ -173,14 +179,16 @@ class RedditStreamCollector(BaseCollector):
                 )
 
                 raw_score = self._compute_score(
-                    post["score"], post["num_comments"],
+                    post["score"],
+                    post["num_comments"],
                 )
 
                 published_at = None
                 if post.get("created_utc"):
                     try:
                         published_at = datetime.fromtimestamp(
-                            post["created_utc"], tz=timezone.utc,
+                            post["created_utc"],
+                            tz=timezone.utc,
                         )
                     except (ValueError, TypeError, OSError):
                         pass
@@ -246,8 +254,9 @@ class RedditStreamCollector(BaseCollector):
             except Exception as e:
                 result.errors.append(f"Error inserting post {post.get('id', '?')}: {e}")
 
-    def _collect_comments(self, reddit, posts: list, config: dict,
-                         cursor, result: CollectionResult) -> None:
+    def _collect_comments(
+        self, reddit, posts: list, config: dict, cursor, result: CollectionResult
+    ) -> None:
         """Fetch top comments from high-engagement posts."""
         if not config.get("collect_comments", True):
             return
@@ -283,7 +292,8 @@ class RedditStreamCollector(BaseCollector):
                         if comment.created_utc:
                             try:
                                 published_at = datetime.fromtimestamp(
-                                    comment.created_utc, tz=timezone.utc,
+                                    comment.created_utc,
+                                    tz=timezone.utc,
                                 )
                             except (ValueError, TypeError, OSError):
                                 pass
@@ -301,7 +311,9 @@ class RedditStreamCollector(BaseCollector):
                                 str(comment.author) if comment.author else "[deleted]",
                                 comment_body[:10000],
                                 comment.score,
-                                comment.permalink if hasattr(comment, "permalink") else "",
+                                comment.permalink
+                                if hasattr(comment, "permalink")
+                                else "",
                                 published_at,
                                 datetime.now(timezone.utc).isoformat(),
                             ),
@@ -314,7 +326,9 @@ class RedditStreamCollector(BaseCollector):
                         )
 
             except Exception as e:
-                result.errors.append(f"Error fetching comments for post {post['id']}: {e}")
+                result.errors.append(
+                    f"Error fetching comments for post {post['id']}: {e}"
+                )
 
     def collect(self, conn) -> CollectionResult:
         result = CollectionResult(collector_name=self.name)
@@ -330,10 +344,18 @@ class RedditStreamCollector(BaseCollector):
             result.errors.append("PRAW not available")
             return result
 
-        subreddits = stream_config.get("subreddits", [
-            "startups", "technology", "programming", "SaaS",
-            "machinelearning", "artificial", "entrepreneur",
-        ])
+        subreddits = stream_config.get(
+            "subreddits",
+            [
+                "startups",
+                "technology",
+                "programming",
+                "SaaS",
+                "machinelearning",
+                "artificial",
+                "entrepreneur",
+            ],
+        )
 
         cursor = conn.cursor()
 

@@ -73,8 +73,12 @@ class SignalEnvelope:
             "body_text": self.body_text[:50_000],
             "entity_name": self.entity_name[:255],
             "entity_type": self.entity_type,
-            "published_at": self.published_at.isoformat() if self.published_at else None,
-            "collected_at": self.collected_at.isoformat() if self.collected_at else None,
+            "published_at": self.published_at.isoformat()
+            if self.published_at
+            else None,
+            "collected_at": self.collected_at.isoformat()
+            if self.collected_at
+            else None,
             "raw_score": self.raw_score,
             "metadata": self.metadata,
         }

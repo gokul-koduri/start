@@ -24,7 +24,6 @@ from agents.base import AgentResult, BaseAgent
 from db.connection import get_connection
 from db import schema
 from scoring.composite_scorer import CompositeScorer
-from scoring.signal_weights import SIGNAL_WEIGHTS
 
 _logger = logging.getLogger(__name__)
 
@@ -73,8 +72,11 @@ class OpportunityScorerAgent(BaseAgent):
                 conn.close()
                 return result
 
-            _logger.info("Scoring %d entities from %d signals", len(entity_signals),
-                         sum(len(v) for v in entity_signals.values()))
+            _logger.info(
+                "Scoring %d entities from %d signals",
+                len(entity_signals),
+                sum(len(v) for v in entity_signals.values()),
+            )
 
             # ── Step 2: Score each entity ──
             scored_count = 0
@@ -84,7 +86,9 @@ class OpportunityScorerAgent(BaseAgent):
                 try:
                     # Build signal_scores dict for the scorer
                     signal_scores = self._build_signal_scores(signals)
-                    historical_values = self._build_historical_values(cursor, entity_name, signals)
+                    historical_values = self._build_historical_values(
+                        cursor, entity_name, signals
+                    )
 
                     # Compute composite score
                     score_result = scorer.score(
@@ -130,7 +134,8 @@ class OpportunityScorerAgent(BaseAgent):
 
             _logger.info(
                 "=== OpportunityScorer: %d entities scored, %d high-value (≥70) ===",
-                scored_count, high_value_count,
+                scored_count,
+                high_value_count,
             )
 
         except Exception as e:
@@ -286,12 +291,15 @@ class OpportunityScorerAgent(BaseAgent):
         """Insert or update the opportunity_scores table."""
         signal_types_list = list(set(s["signal_type"] for s in signals))
         signal_weights_json = json.dumps(
-            {a.signal_type: {"weight": a.weight, "contribution": round(a.contribution, 2)}
-             for a in score_result.attribution}
+            {
+                a.signal_type: {
+                    "weight": a.weight,
+                    "contribution": round(a.contribution, 2),
+                }
+                for a in score_result.attribution
+            }
         )
-        attribution_json = json.dumps(
-            [a.to_dict() for a in score_result.attribution]
-        )
+        attribution_json = json.dumps([a.to_dict() for a in score_result.attribution])
 
         cursor.execute(
             """INSERT INTO opportunity_scores
@@ -322,8 +330,10 @@ class OpportunityScorerAgent(BaseAgent):
                 score_result.signal_count,
                 json.dumps(signal_types_list),
                 signal_weights_json,
-                sum(a.freshness for a in score_result.attribution) / len(score_result.attribution)
-                if score_result.attribution else 0.0,
+                sum(a.freshness for a in score_result.attribution)
+                / len(score_result.attribution)
+                if score_result.attribution
+                else 0.0,
                 score_result.anomaly.z_score if score_result.anomaly else None,
                 score_result.anomaly.anomaly_type if score_result.anomaly else None,
                 score_result.trend_direction,
@@ -345,7 +355,7 @@ class OpportunityScorerAgent(BaseAgent):
             # Process in batches of 500
             batch_size = 500
             for i in range(0, len(signal_ids), batch_size):
-                batch = signal_ids[i:i + batch_size]
+                batch = signal_ids[i : i + batch_size]
                 placeholders = ",".join(["%s"] * len(batch))
                 cursor.execute(
                     f"UPDATE raw_signals SET processed = 1 WHERE id IN ({placeholders})",

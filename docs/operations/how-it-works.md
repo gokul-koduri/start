@@ -401,9 +401,9 @@ PATTERN: "Market Entry"
 
 ```
 INPUT: Raw news article
-"Neuromorphic Labs, an AI chip startup based in Austin, TX, announced today 
-that it has raised $5 million in Series A funding led by Horizon Ventures 
-with participation from angel investor Sarah Chen. The company plans to use 
+"Neuromorphic Labs, an AI chip startup based in Austin, TX, announced today
+that it has raised $5 million in Series A funding led by Horizon Ventures
+with participation from angel investor Sarah Chen. The company plans to use
 the funding to expand its engineering team and accelerate product development."
 
     │
@@ -611,11 +611,11 @@ CONFIDENCE FACTOR:
   6 of 8 signals present = 0.75 confidence
 
 FINAL SCORE:
-  79.9 × 1.05 × 0.75 = 62.9 → ... 
+  79.9 × 1.05 × 0.75 = 62.9 → ...
 
   Actually, confidence doesn't multiply the score directly.
   Confidence is reported separately.
-  
+
   FINAL: 79.9 × 1.05 = 83.9 → rounded to 84.0
 ```
 
@@ -916,28 +916,28 @@ GOVERNMENT POLICYMAKER:
 WEEK 1:
   Score for "Startup X" = 75.0
   Based on: funding + hiring + news
-  
+
 WEEK 4:
   New signal: Startup X lays off 20% of staff
   Score drops to 55.0
   Pattern detected: "Distress Signal"
-  
+
 WEEK 8:
   Startup X files for bankruptcy
   Score drops to 10.0
-  
+
 WEEK 9 (SELF-IMPROVEMENT):
   The ML model reviews its predictions:
   "Did we predict this failure?"
   "Score was 55 at week 4 — we should have alerted earlier"
   "Distress signal was detected — good"
   "But we missed the layoff signal's importance"
-  
+
   ADJUSTMENT:
   - Layoff signal weight increased from 5.0 → 10.0
   - Distress pattern threshold lowered from 14 days → 7 days
   - New pattern added: "Layoff + Executive Departure = Imminent Failure"
-  
+
   NEXT TIME:
   Similar situation → alert fires 2 weeks earlier
   Score more accurately reflects risk

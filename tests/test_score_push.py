@@ -1,8 +1,7 @@
 """Tests for score push, WebSocket enhancements, and score deltas (T-034 to T-036)."""
 
 import unittest
-from unittest.mock import patch, MagicMock
-from datetime import datetime, timezone
+from unittest.mock import MagicMock
 import sys
 from pathlib import Path
 
@@ -15,6 +14,7 @@ class TestCalculateScoreDelta(unittest.TestCase):
     def test_first_score_no_previous(self):
         """Delta for a brand-new entity (no previous score)."""
         from stream.score_delta import calculate_score_delta
+
         current = {
             "entity_name": "Tesla",
             "entity_type": "company",
@@ -31,6 +31,7 @@ class TestCalculateScoreDelta(unittest.TestCase):
     def test_score_increase(self):
         """Delta shows positive change when score increases."""
         from stream.score_delta import calculate_score_delta
+
         current = {
             "entity_name": "Tesla",
             "entity_type": "company",
@@ -52,6 +53,7 @@ class TestCalculateScoreDelta(unittest.TestCase):
     def test_score_decrease(self):
         """Delta shows negative change when score decreases."""
         from stream.score_delta import calculate_score_delta
+
         current = {
             "entity_name": "BlockFi",
             "entity_type": "company",
@@ -72,6 +74,7 @@ class TestCalculateScoreDelta(unittest.TestCase):
     def test_signal_deltas_computed(self):
         """Signal-level contribution changes are computed."""
         from stream.score_delta import calculate_score_delta
+
         current = {
             "entity_name": "Test",
             "composite_score": 85.0,
@@ -95,6 +98,7 @@ class TestCalculateScoreDelta(unittest.TestCase):
     def test_no_change_returns_near_zero(self):
         """No meaningful change produces a small delta."""
         from stream.score_delta import calculate_score_delta
+
         current = {"entity_name": "X", "composite_score": 80.0, "attribution": []}
         previous = {"composite_score": 80.0, "attribution": []}
         delta = calculate_score_delta(current, previous)
@@ -107,7 +111,14 @@ class TestFormatDeltaMessage(unittest.TestCase):
     def test_format_new_entity(self):
         """First score shows as '→ score (new)'."""
         from stream.score_delta import format_delta_message
-        delta = {"entity_name": "Tesla", "old_score": None, "new_score": 82.0, "change": 82.0, "signal_deltas": {}}
+
+        delta = {
+            "entity_name": "Tesla",
+            "old_score": None,
+            "new_score": 82.0,
+            "change": 82.0,
+            "signal_deltas": {},
+        }
         msg = format_delta_message(delta)
         self.assertIn("Tesla", msg)
         self.assertIn("new", msg)
@@ -115,6 +126,7 @@ class TestFormatDeltaMessage(unittest.TestCase):
     def test_format_increase(self):
         """Score increase shows '78→82 (+4.0)'."""
         from stream.score_delta import format_delta_message
+
         delta = {
             "entity_name": "Tesla",
             "old_score": 78.0,
@@ -131,6 +143,7 @@ class TestFormatDeltaMessage(unittest.TestCase):
     def test_format_decrease(self):
         """Score decrease shows negative change."""
         from stream.score_delta import format_delta_message
+
         delta = {
             "entity_name": "BlockFi",
             "old_score": 60.0,
@@ -150,6 +163,7 @@ class TestCalculateAndStoreDelta(unittest.TestCase):
     def test_store_delta_no_previous(self):
         """Stores delta when no previous score exists."""
         from stream.score_delta import calculate_and_store_delta
+
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = None  # No previous score
@@ -168,6 +182,7 @@ class TestCalculateAndStoreDelta(unittest.TestCase):
     def test_store_delta_with_change(self):
         """Stores delta when score changes."""
         from stream.score_delta import calculate_and_store_delta
+
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = {
@@ -191,6 +206,7 @@ class TestCalculateAndStoreDelta(unittest.TestCase):
     def test_store_delta_no_change_returns_none(self):
         """Returns None when score hasn't changed."""
         from stream.score_delta import calculate_and_store_delta
+
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = {
@@ -212,9 +228,12 @@ class TestCalculateAndStoreDelta(unittest.TestCase):
     def test_store_delta_handles_db_error(self):
         """Returns None on DB error without crashing."""
         from stream.score_delta import calculate_and_store_delta
+
         mock_conn = MagicMock()
         mock_conn.cursor.side_effect = Exception("DB error")
-        delta = calculate_and_store_delta(mock_conn, {"entity_name": "X", "composite_score": 50})
+        delta = calculate_and_store_delta(
+            mock_conn, {"entity_name": "X", "composite_score": 50}
+        )
         self.assertIsNone(delta)
 
 
@@ -224,6 +243,7 @@ class TestExtractSignalContributions(unittest.TestCase):
     def test_extract_from_attribution(self):
         """Extracts signal type → contribution mapping."""
         from stream.score_delta import _extract_signal_contributions
+
         attribution = [
             {"signal_type": "funding_round", "contribution_pct": 50.0},
             {"signal_type": "github_trend", "contribution_pct": 30.0},
@@ -235,6 +255,7 @@ class TestExtractSignalContributions(unittest.TestCase):
     def test_extract_empty(self):
         """Returns empty dict for empty attribution."""
         from stream.score_delta import _extract_signal_contributions
+
         self.assertEqual(_extract_signal_contributions([]), {})
 
 
@@ -244,6 +265,7 @@ class TestComputeSignalDeltas(unittest.TestCase):
     def test_signal_added(self):
         """New signal appears in deltas."""
         from stream.score_delta import _compute_signal_deltas
+
         current = [{"signal_type": "funding", "contribution_pct": 30.0}]
         previous = []
         deltas = _compute_signal_deltas(current, previous)
@@ -253,6 +275,7 @@ class TestComputeSignalDeltas(unittest.TestCase):
     def test_signal_removed(self):
         """Removed signal shows negative delta."""
         from stream.score_delta import _compute_signal_deltas
+
         current = []
         previous = [{"signal_type": "hiring", "contribution_pct": 20.0}]
         deltas = _compute_signal_deltas(current, previous)
@@ -262,6 +285,7 @@ class TestComputeSignalDeltas(unittest.TestCase):
     def test_signal_unchanged_not_included(self):
         """Unchanged signals are not included in deltas."""
         from stream.score_delta import _compute_signal_deltas
+
         current = [{"signal_type": "funding", "contribution_pct": 40.0}]
         previous = [{"signal_type": "funding", "contribution_pct": 40.0}]
         deltas = _compute_signal_deltas(current, previous)

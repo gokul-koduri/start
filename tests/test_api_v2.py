@@ -1,7 +1,6 @@
 """Tests for API v2 routers."""
 
 import unittest
-from unittest.mock import patch, MagicMock
 import sys
 from pathlib import Path
 
@@ -14,6 +13,7 @@ class TestAPIV2Opportunities(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         from api.v2.opportunities import router
+
         self.router = router
 
     def test_router_exists(self):
@@ -28,6 +28,7 @@ class TestAPIV2Signals(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         from api.v2.signals import router
+
         self.router = router
 
     def test_router_exists(self):
@@ -42,6 +43,7 @@ class TestAPIV2Webhooks(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         from api.v2.webhooks import router
+
         self.router = router
 
     def test_router_exists(self):
@@ -56,6 +58,7 @@ class TestAPIV2Export(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         from api.v2.export import router
+
         self.router = router
 
     def test_router_exists(self):

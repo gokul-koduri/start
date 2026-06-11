@@ -15,6 +15,7 @@ class TestRedisCacheFunctions(unittest.TestCase):
         """Redis cache functions are defined when HAS_FASTAPI."""
         try:
             import api_server
+
             if not api_server.HAS_FASTAPI:
                 self.skipTest("FastAPI not installed")
             self.assertTrue(hasattr(api_server, "_redis_cache_get"))
@@ -27,6 +28,7 @@ class TestRedisCacheFunctions(unittest.TestCase):
         """_redis_cache_get falls back to in-memory when Redis unavailable."""
         try:
             import api_server
+
             if not api_server.HAS_FASTAPI:
                 self.skipTest("FastAPI not installed")
             # Set a value in memory cache
@@ -41,6 +43,7 @@ class TestRedisCacheFunctions(unittest.TestCase):
         """_redis_cache_set always writes to in-memory cache."""
         try:
             import api_server
+
             if not api_server.HAS_FASTAPI:
                 self.skipTest("FastAPI not installed")
             api_server._redis_cache_set("test_set_key", {"data": "hello"}, ttl=60)
@@ -54,6 +57,7 @@ class TestRedisCacheFunctions(unittest.TestCase):
         """_redis_cache_invalidate clears in-memory cache."""
         try:
             import api_server
+
             if not api_server.HAS_FASTAPI:
                 self.skipTest("FastAPI not installed")
             api_server._redis_cache_set("inv_key", {"x": 1}, ttl=60)
@@ -71,6 +75,7 @@ class TestPerformanceEndpoint(unittest.TestCase):
         """Performance endpoint is registered in the FastAPI app."""
         try:
             import api_server
+
             if not api_server.HAS_FASTAPI:
                 self.skipTest("FastAPI not installed")
             routes = [r.path for r in api_server.app.routes]
@@ -83,17 +88,20 @@ class TestPerformanceEndpoint(unittest.TestCase):
         """Performance endpoint returns valid JSON structure."""
         try:
             import api_server
+
             if not api_server.HAS_FASTAPI:
                 self.skipTest("FastAPI not installed")
             from fastapi.testclient import TestClient
 
             mock_cursor = MagicMock()
             mock_cursor.fetchall.return_value = [
-                {"response_ms": 100}, {"response_ms": 200}, {"response_ms": 300},
+                {"response_ms": 100},
+                {"response_ms": 200},
+                {"response_ms": 300},
             ]
             mock_cursor.fetchone.side_effect = [
                 {"cnt": 5, "avg_ms": 150.0},  # chat latency
-                {"cnt": 2},                     # error count
+                {"cnt": 2},  # error count
             ]
             conn_instance = MagicMock()
             conn_instance.cursor.return_value = mock_cursor
@@ -117,6 +125,7 @@ class TestPerformanceEndpoint(unittest.TestCase):
         """Performance endpoint handles empty data gracefully."""
         try:
             import api_server
+
             if not api_server.HAS_FASTAPI:
                 self.skipTest("FastAPI not installed")
             from fastapi.testclient import TestClient
@@ -147,6 +156,7 @@ class TestPerformancePage(unittest.TestCase):
         """Performance page module imports without error."""
         try:
             from streamlit.pages.performance import render
+
             self.assertIsNotNone(render)
         except ImportError:
             self.skipTest("Streamlit not installed")
@@ -155,6 +165,7 @@ class TestPerformancePage(unittest.TestCase):
         """Performance page exports render function."""
         try:
             from streamlit.pages.performance import render
+
             self.assertTrue(callable(render))
         except ImportError:
             self.skipTest("Streamlit not installed")
@@ -163,6 +174,7 @@ class TestPerformancePage(unittest.TestCase):
         """Performance page has _query_db helper."""
         try:
             from streamlit.pages.performance import _query_db
+
             self.assertTrue(callable(_query_db))
         except ImportError:
             self.skipTest("Streamlit not installed")
@@ -175,6 +187,7 @@ class TestStreamlitCachingPerformance(unittest.TestCase):
         """load_performance_stats function exists in streamlit_app."""
         try:
             from streamlit_app import load_performance_stats
+
             self.assertIsNotNone(load_performance_stats)
         except (ImportError, AttributeError):
             self.skipTest("Streamlit not installed")
@@ -183,6 +196,7 @@ class TestStreamlitCachingPerformance(unittest.TestCase):
         """load_feedback_stats function exists in streamlit_app."""
         try:
             from streamlit_app import load_feedback_stats
+
             self.assertIsNotNone(load_feedback_stats)
         except (ImportError, AttributeError):
             self.skipTest("Streamlit not installed")

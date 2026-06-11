@@ -1,6 +1,5 @@
 """Tests for the Website Monitor Collector."""
 
-import json
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -26,8 +25,8 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.website_monitor_collector import WebsiteMonitorCollector
-from collectors.base import CollectionResult
+from collectors.website_monitor_collector import WebsiteMonitorCollector  # noqa: E402
+from collectors.base import CollectionResult  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -37,10 +36,13 @@ for key, orig in _saved_db_modules.items():
         sys.modules.pop(key, None)
 
 
-def _make_html(title="TechCorp AI Platform", meta="AI-powered business intelligence",
-               body="We just raised Series A funding and are hiring engineers. "
-                    "Our platform is now available in public beta. Check our pricing page.",
-               extra_body=""):
+def _make_html(
+    title="TechCorp AI Platform",
+    meta="AI-powered business intelligence",
+    body="We just raised Series A funding and are hiring engineers. "
+    "Our platform is now available in public beta. Check our pricing page.",
+    extra_body="",
+):
     """Build a sample HTML page."""
     return f"""<!DOCTYPE html>
 <html>
@@ -186,10 +188,13 @@ class TestWebsiteMonitorCollectorSignals:
         c = WebsiteMonitorCollector(config={})
         html = _make_html(body="We just raised Series A funding")
         text = c._extract_text(html)
-        signals = c._find_signals(text, {
-            "funding": ["raised", "funding", "series a"],
-            "hiring": ["careers"],
-        })
+        signals = c._find_signals(
+            text,
+            {
+                "funding": ["raised", "funding", "series a"],
+                "hiring": ["careers"],
+            },
+        )
         assert len(signals) >= 2
         categories = {s["category"] for s in signals}
         assert "funding" in categories
@@ -198,34 +203,46 @@ class TestWebsiteMonitorCollectorSignals:
         c = WebsiteMonitorCollector(config={})
         html = _make_html(body="We are hiring engineers. Check our pricing page.")
         text = c._extract_text(html)
-        signals = c._find_signals(text, {
-            "hiring": ["hiring"],
-            "pricing": ["pricing"],
-        })
+        signals = c._find_signals(
+            text,
+            {
+                "hiring": ["hiring"],
+                "pricing": ["pricing"],
+            },
+        )
         assert len(signals) == 2
 
     def test_no_signals_found(self):
         c = WebsiteMonitorCollector(config={})
         text = "Welcome to our website about gardening"
-        signals = c._find_signals(text, {
-            "funding": ["raised", "funding"],
-        })
+        signals = c._find_signals(
+            text,
+            {
+                "funding": ["raised", "funding"],
+            },
+        )
         assert len(signals) == 0
 
     def test_case_insensitive(self):
         c = WebsiteMonitorCollector(config={})
         text = "WE ARE HIRING NOW"
-        signals = c._find_signals(text, {
-            "hiring": ["hiring"],
-        })
+        signals = c._find_signals(
+            text,
+            {
+                "hiring": ["hiring"],
+            },
+        )
         assert len(signals) == 1
 
     def test_no_duplicate_signals(self):
         c = WebsiteMonitorCollector(config={})
         text = "Funding is funding is funding"
-        signals = c._find_signals(text, {
-            "funding": ["funding"],
-        })
+        signals = c._find_signals(
+            text,
+            {
+                "funding": ["funding"],
+            },
+        )
         assert len(signals) == 1
 
 
@@ -251,10 +268,16 @@ class TestWebsiteMonitorCollectorInsert:
         result = CollectionResult(collector_name="website_monitor")
 
         c._insert_snapshot(
-            mock_cursor, "https://example.com", "Example",
-            "Title", "Meta", "Body text", "abc123",
+            mock_cursor,
+            "https://example.com",
+            "Example",
+            "Title",
+            "Meta",
+            "Body text",
+            "abc123",
             [{"keyword": "funding", "category": "funding", "weight": 35}],
-            200, result,
+            200,
+            result,
         )
         assert result.records_collected == 1
         # 2 SQL calls: website_monitor_snapshots + raw_signals
@@ -266,9 +289,16 @@ class TestWebsiteMonitorCollectorInsert:
         result = CollectionResult(collector_name="website_monitor")
 
         c._insert_snapshot(
-            mock_cursor, "https://example.com", "Example",
-            "Title", "Meta", "Body text", "abc123",
-            [], 200, result,
+            mock_cursor,
+            "https://example.com",
+            "Example",
+            "Title",
+            "Meta",
+            "Body text",
+            "abc123",
+            [],
+            200,
+            result,
         )
         assert result.records_collected == 1
         # Only 1 SQL call: website_monitor_snapshots (no raw_signals)
@@ -281,10 +311,16 @@ class TestWebsiteMonitorCollectorInsert:
 
         for i in range(5):
             c._insert_snapshot(
-                mock_cursor, f"https://example{i}.com", f"Site {i}",
-                "Title", "Meta", "Body", f"hash{i}",
+                mock_cursor,
+                f"https://example{i}.com",
+                f"Site {i}",
+                "Title",
+                "Meta",
+                "Body",
+                f"hash{i}",
                 [{"keyword": "hiring", "category": "hiring", "weight": 25}],
-                200, result,
+                200,
+                result,
             )
         assert result.records_collected == 5
 
@@ -297,12 +333,14 @@ class TestWebsiteMonitorCollectorIntegration:
         session = _make_mock_session([html])
         mock_get_session.return_value = session
 
-        c = WebsiteMonitorCollector(config={
-            "website_monitor": {
-                "watch_urls": [{"url": "https://example.com", "label": "Example"}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = WebsiteMonitorCollector(
+            config={
+                "website_monitor": {
+                    "watch_urls": [{"url": "https://example.com", "label": "Example"}],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -320,15 +358,17 @@ class TestWebsiteMonitorCollectorIntegration:
         session = _make_mock_session([html1, html2])
         mock_get_session.return_value = session
 
-        c = WebsiteMonitorCollector(config={
-            "website_monitor": {
-                "watch_urls": [
-                    {"url": "https://one.com", "label": "One"},
-                    {"url": "https://two.com", "label": "Two"},
-                ],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = WebsiteMonitorCollector(
+            config={
+                "website_monitor": {
+                    "watch_urls": [
+                        {"url": "https://one.com", "label": "One"},
+                        {"url": "https://two.com", "label": "Two"},
+                    ],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -343,12 +383,14 @@ class TestWebsiteMonitorCollectorIntegration:
         session.get.side_effect = Exception("DNS failure")
         mock_get_session.return_value = session
 
-        c = WebsiteMonitorCollector(config={
-            "website_monitor": {
-                "watch_urls": [{"url": "https://fail.com", "label": "Fail"}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = WebsiteMonitorCollector(
+            config={
+                "website_monitor": {
+                    "watch_urls": [{"url": "https://fail.com", "label": "Fail"}],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -364,12 +406,14 @@ class TestWebsiteMonitorCollectorIntegration:
         session = _make_mock_session([html])
         mock_get_session.return_value = session
 
-        c = WebsiteMonitorCollector(config={
-            "website_monitor": {
-                "watch_urls": [{"url": "https://example.com", "label": "Example"}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = WebsiteMonitorCollector(
+            config={
+                "website_monitor": {
+                    "watch_urls": [{"url": "https://example.com", "label": "Example"}],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         call_count = {"n": 0}
 

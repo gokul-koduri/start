@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Ask a Question
+    url: https://github.com/gokul-koduri/start/discussions
+    about: Ask questions and discuss ideas in GitHub Discussions
+  - name: 📖 Documentation
+    url: https://github.com/gokul-koduri/start/blob/main/AGILE_WORKFLOW.md
+    about: Read the Agile Workflow Guide before creating issues

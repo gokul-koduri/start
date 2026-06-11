@@ -1,7 +1,6 @@
 """Report agent — wraps the report generator into the agent pipeline."""
 
 import logging
-from pathlib import Path
 
 from agents.base import AgentResult, BaseAgent
 from config import get_project_root, load_config
@@ -30,8 +29,10 @@ class ReportAgent(BaseAgent):
         agents_config = self.config
 
         output_filename = agents_config.get(
-            "output_path", report_config.get("output_path",
-                                             "Failed_Startups_Manufacturing_Revival_Report.md")
+            "output_path",
+            report_config.get(
+                "output_path", "Failed_Startups_Manufacturing_Revival_Report.md"
+            ),
         )
         output_path = get_project_root() / output_filename
 
@@ -39,8 +40,13 @@ class ReportAgent(BaseAgent):
         only_on_new_data = agents_config.get("only_on_new_data", True)
         if only_on_new_data and upstream_results:
             collection_result = _find_agent_result(upstream_results, "collection")
-            if collection_result and collection_result.data.get("total_inserted", 0) == 0:
-                _logger.info("ReportAgent: No new data collected — skipping report generation")
+            if (
+                collection_result
+                and collection_result.data.get("total_inserted", 0) == 0
+            ):
+                _logger.info(
+                    "ReportAgent: No new data collected — skipping report generation"
+                )
                 return AgentResult(
                     agent_name=self.name,
                     status="success",
@@ -61,8 +67,11 @@ class ReportAgent(BaseAgent):
         content = output_path.read_text() if output_path.exists() else ""
         section_count = content.count("\n## ")
 
-        _logger.info("ReportAgent: Report generated (%d bytes, %d sections)",
-                     file_size, section_count)
+        _logger.info(
+            "ReportAgent: Report generated (%d bytes, %d sections)",
+            file_size,
+            section_count,
+        )
 
         return AgentResult(
             agent_name=self.name,
@@ -80,6 +89,6 @@ class ReportAgent(BaseAgent):
 def _find_agent_result(results: list, agent_name: str):
     """Find an AgentResult by agent_name in the upstream results list."""
     for r in results:
-        if hasattr(r, 'agent_name') and r.agent_name == agent_name:
+        if hasattr(r, "agent_name") and r.agent_name == agent_name:
             return r
     return None

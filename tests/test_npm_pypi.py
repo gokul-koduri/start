@@ -27,8 +27,8 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.npm_pypi_collector import NPMPyPICollector
-from collectors.base import CollectionResult
+from collectors.npm_pypi_collector import NPMPyPICollector  # noqa: E402
+from collectors.base import CollectionResult  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -38,11 +38,16 @@ for key, orig in _saved_db_modules.items():
         sys.modules.pop(key, None)
 
 
-def _make_npm_data(name="next", version="14.0.0",
-                   description="The React Framework",
-                   keywords=None, license_type="MIT",
-                   homepage="https://nextjs.org",
-                   created=None, modified=None):
+def _make_npm_data(
+    name="next",
+    version="14.0.0",
+    description="The React Framework",
+    keywords=None,
+    license_type="MIT",
+    homepage="https://nextjs.org",
+    created=None,
+    modified=None,
+):
     """Build a mock NPM registry API response."""
     if keywords is None:
         keywords = ["react", "framework", "ssr"]
@@ -66,12 +71,16 @@ def _make_npm_downloads(package="next", downloads=5200000):
     return {"package": package, "downloads": downloads}
 
 
-def _make_pypi_data(name="fastapi", version="0.109.0",
-                    summary="Modern, fast web framework",
-                    author="Sebastian Ramirez",
-                    keywords=None, classifiers=None,
-                    license_type="MIT",
-                    project_url="https://github.com/tiangolo/fastapi"):
+def _make_pypi_data(
+    name="fastapi",
+    version="0.109.0",
+    summary="Modern, fast web framework",
+    author="Sebastian Ramirez",
+    keywords=None,
+    classifiers=None,
+    license_type="MIT",
+    project_url="https://github.com/tiangolo/fastapi",
+):
     """Build a mock PyPI JSON API response."""
     if keywords is None:
         keywords = ""
@@ -93,13 +102,19 @@ def _make_pypi_data(name="fastapi", version="0.109.0",
     }
 
 
-def _make_pkg_dict(package_name="next", registry="npm", version="14.0.0",
-                   description="The React Framework",
-                   monthly_downloads=5200000,
-                   keywords=None, author="",
-                   license_type="MIT", project_url="https://nextjs.org",
-                   created_at_registry=None,
-                   updated_at_registry=None):
+def _make_pkg_dict(
+    package_name="next",
+    registry="npm",
+    version="14.0.0",
+    description="The React Framework",
+    monthly_downloads=5200000,
+    keywords=None,
+    author="",
+    license_type="MIT",
+    project_url="https://nextjs.org",
+    created_at_registry=None,
+    updated_at_registry=None,
+):
     """Build a normalized package dict matching _parse_npm/_parse_pypi output."""
     if keywords is None:
         keywords = ["react", "framework", "ssr"]
@@ -169,7 +184,8 @@ class TestNPMPyPICollectorScoring:
         c = NPMPyPICollector(config={})
         pkg = _make_pkg_dict(
             monthly_downloads=2_000_000,
-            updated_at_registry=datetime.now(timezone.utc) - timedelta(days=10))
+            updated_at_registry=datetime.now(timezone.utc) - timedelta(days=10),
+        )
         score = c._compute_score(pkg)
         # downloads(>1M +35) + recency(<30d +20) + keywords(+10) = 65
         assert score == 65.0
@@ -179,7 +195,8 @@ class TestNPMPyPICollectorScoring:
         pkg = _make_pkg_dict(
             monthly_downloads=500,
             keywords=["random"],
-            updated_at_registry=datetime.now(timezone.utc) - timedelta(days=200))
+            updated_at_registry=datetime.now(timezone.utc) - timedelta(days=200),
+        )
         score = c._compute_score(pkg)
         assert score == 0.0
 
@@ -189,7 +206,8 @@ class TestNPMPyPICollectorScoring:
             version="0.3.0",
             monthly_downloads=0,
             keywords=["random"],
-            updated_at_registry=None)
+            updated_at_registry=None,
+        )
         pkg["updated_at_registry"] = None
         score = c._compute_score(pkg)
         # 0.x version (+15) = 15
@@ -198,9 +216,8 @@ class TestNPMPyPICollectorScoring:
     def test_medium_downloads(self):
         c = NPMPyPICollector(config={})
         pkg = _make_pkg_dict(
-            monthly_downloads=500_000,
-            keywords=["random"],
-            version="1.0.0")
+            monthly_downloads=500_000, keywords=["random"], version="1.0.0"
+        )
         pkg["updated_at_registry"] = None
         score = c._compute_score(pkg)
         # downloads(>100K +25) = 25
@@ -211,7 +228,8 @@ class TestNPMPyPICollectorScoring:
         pkg = _make_pkg_dict(
             monthly_downloads=5_000_000,
             version="0.5.0",
-            updated_at_registry=datetime.now(timezone.utc) - timedelta(hours=6))
+            updated_at_registry=datetime.now(timezone.utc) - timedelta(hours=6),
+        )
         score = c._compute_score(pkg)
         assert score <= 100.0
 
@@ -264,10 +282,12 @@ class TestNPMPyPICollectorFetch:
         c = NPMPyPICollector(config={"npm_pypi": {}})
         npm_data = _make_npm_data()
         dl_data = _make_npm_downloads()
-        session = _make_mock_session([
-            json.dumps(npm_data),   # registry endpoint called first
-            json.dumps(dl_data),    # downloads endpoint called second
-        ])
+        session = _make_mock_session(
+            [
+                json.dumps(npm_data),  # registry endpoint called first
+                json.dumps(dl_data),  # downloads endpoint called second
+            ]
+        )
         pkg = c._fetch_npm_package(session, "next")
         assert pkg is not None
         assert pkg["package_name"] == "next"
@@ -318,18 +338,22 @@ class TestNPMPyPICollectorIntegration:
     def test_collect_npm_flow(self, mock_get_session, mock_time):
         npm_data = _make_npm_data()
         dl_data = _make_npm_downloads()
-        session = _make_mock_session([
-            json.dumps(npm_data),  # registry endpoint first
-            json.dumps(dl_data),   # downloads endpoint second
-        ])
+        session = _make_mock_session(
+            [
+                json.dumps(npm_data),  # registry endpoint first
+                json.dumps(dl_data),  # downloads endpoint second
+            ]
+        )
         mock_get_session.return_value = session
 
-        c = NPMPyPICollector(config={
-            "npm_pypi": {
-                "packages": [{"name": "next", "registry": "npm"}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = NPMPyPICollector(
+            config={
+                "npm_pypi": {
+                    "packages": [{"name": "next", "registry": "npm"}],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -347,12 +371,14 @@ class TestNPMPyPICollectorIntegration:
         session = _make_mock_session([json.dumps(pypi_data)])
         mock_get_session.return_value = session
 
-        c = NPMPyPICollector(config={
-            "npm_pypi": {
-                "packages": [{"name": "fastapi", "registry": "pypi"}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = NPMPyPICollector(
+            config={
+                "npm_pypi": {
+                    "packages": [{"name": "fastapi", "registry": "pypi"}],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -368,22 +394,26 @@ class TestNPMPyPICollectorIntegration:
         npm_data = _make_npm_data(name="next")
         dl_data = _make_npm_downloads(package="next")
         pypi_data = _make_pypi_data()
-        session = _make_mock_session([
-            json.dumps(npm_data),   # next registry
-            json.dumps(dl_data),    # next downloads
-            json.dumps(pypi_data),  # fastapi
-        ])
+        session = _make_mock_session(
+            [
+                json.dumps(npm_data),  # next registry
+                json.dumps(dl_data),  # next downloads
+                json.dumps(pypi_data),  # fastapi
+            ]
+        )
         mock_get_session.return_value = session
 
-        c = NPMPyPICollector(config={
-            "npm_pypi": {
-                "packages": [
-                    {"name": "next", "registry": "npm"},
-                    {"name": "fastapi", "registry": "pypi"},
-                ],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = NPMPyPICollector(
+            config={
+                "npm_pypi": {
+                    "packages": [
+                        {"name": "next", "registry": "npm"},
+                        {"name": "fastapi", "registry": "pypi"},
+                    ],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -397,18 +427,22 @@ class TestNPMPyPICollectorIntegration:
     def test_collect_handles_insert_error(self, mock_get_session, mock_time):
         npm_data = _make_npm_data()
         dl_data = _make_npm_downloads()
-        session = _make_mock_session([
-            json.dumps(npm_data),  # registry endpoint first
-            json.dumps(dl_data),    # downloads endpoint second
-        ])
+        session = _make_mock_session(
+            [
+                json.dumps(npm_data),  # registry endpoint first
+                json.dumps(dl_data),  # downloads endpoint second
+            ]
+        )
         mock_get_session.return_value = session
 
-        c = NPMPyPICollector(config={
-            "npm_pypi": {
-                "packages": [{"name": "next", "registry": "npm"}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = NPMPyPICollector(
+            config={
+                "npm_pypi": {
+                    "packages": [{"name": "next", "registry": "npm"}],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         call_count = {"n": 0}
 

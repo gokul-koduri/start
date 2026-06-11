@@ -40,11 +40,14 @@ class GithubTrendsCollector(BaseCollector):
 
         session.headers["Accept"] = "application/vnd.github.v3+json"
 
-        search_queries = gh_config.get("search_queries", [
-            "created:>{since} stars:>5 language:python topic:machine-learning",
-            "created:>{since} stars:>5 topic:startup topic:saas",
-            "created:>{since} stars:>5 topic:ai topic:agent topic:llm",
-        ])
+        search_queries = gh_config.get(
+            "search_queries",
+            [
+                "created:>{since} stars:>5 language:python topic:machine-learning",
+                "created:>{since} stars:>5 topic:startup topic:saas",
+                "created:>{since} stars:>5 topic:ai topic:agent topic:llm",
+            ],
+        )
 
         since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
 
@@ -91,8 +94,12 @@ class GithubTrendsCollector(BaseCollector):
                     weekly_stars_delta = 0
                     if created:
                         try:
-                            created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-                            age_days = max(1, (datetime.now(timezone.utc) - created_dt).days)
+                            created_dt = datetime.fromisoformat(
+                                created.replace("Z", "+00:00")
+                            )
+                            age_days = max(
+                                1, (datetime.now(timezone.utc) - created_dt).days
+                            )
                             weekly_stars_delta = round(stars / age_days * 7, 1)
                         except (ValueError, TypeError):
                             pass
@@ -151,7 +158,7 @@ class GithubTrendsCollector(BaseCollector):
                         entity_name=repo_name,
                         source_url=repo_url,
                         body_text=(description or "")[:5000],
-                        raw_score=raw_score_value,
+                        raw_score=weekly_stars_delta,
                         language=language,
                         stars=stars,
                     )
@@ -162,7 +169,9 @@ class GithubTrendsCollector(BaseCollector):
                     if weekly_stars_delta > 10 and stars > 50:
                         _logger.info(
                             "⭐ TRENDING: %s — %d★, %.1f stars/week",
-                            repo_name, stars, weekly_stars_delta,
+                            repo_name,
+                            stars,
+                            weekly_stars_delta,
                         )
 
                 except Exception as e:

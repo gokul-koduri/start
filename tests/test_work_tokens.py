@@ -2,10 +2,8 @@
 
 import unittest
 import sys
-import json
 from pathlib import Path
 from unittest.mock import patch, MagicMock
-from datetime import datetime, timezone
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -16,11 +14,11 @@ class TestWorkTokens(unittest.TestCase):
     def test_import(self):
         """Test work_tokens module can be imported."""
         from utils.work_tokens import (
-            create_token, release_completed_blockers, claim_token,
-            complete_token, expire_token, get_token, list_tokens,
-            get_ready_tokens, token_stats, print_token_dashboard,
-            TokenStatus,
+            create_token,
+            release_completed_blockers,
+            claim_token,
         )
+
         self.assertTrue(callable(create_token))
         self.assertTrue(callable(release_completed_blockers))
         self.assertTrue(callable(claim_token))
@@ -28,6 +26,7 @@ class TestWorkTokens(unittest.TestCase):
     def test_token_status_enum(self):
         """Test TokenStatus values."""
         from utils.work_tokens import TokenStatus
+
         self.assertEqual(TokenStatus.BLOCKED.value, "blocked")
         self.assertEqual(TokenStatus.READY.value, "ready")
         self.assertEqual(TokenStatus.CLAIMED.value, "claimed")
@@ -37,6 +36,7 @@ class TestWorkTokens(unittest.TestCase):
     def test_create_token_requires_blockers(self):
         """Test that create_token raises ValueError without blockers."""
         from utils.work_tokens import create_token
+
         with self.assertRaises(ValueError) as ctx:
             create_token(name="test", description="x", blocked_by=[])
         self.assertIn("at least one", str(ctx.exception))
@@ -51,8 +51,12 @@ class TestWorkTokens(unittest.TestCase):
         mock_cursor.fetchone.return_value = {"id": 2, "status": "building"}
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         with patch("utils.work_tokens._ensure_tables"):
             token_id = create_token(
@@ -65,8 +69,9 @@ class TestWorkTokens(unittest.TestCase):
 
         self.assertEqual(token_id, 1)
         # Should have INSERT INTO work_tokens + INSERT INTO token_blockers + INSERT INTO token_log
-        insert_calls = [c for c in mock_cursor.execute.call_args_list
-                        if "INSERT" in str(c)]
+        insert_calls = [
+            c for c in mock_cursor.execute.call_args_list if "INSERT" in str(c)
+        ]
         self.assertEqual(len(insert_calls), 3)
 
     @patch("utils.work_tokens.get_connection")
@@ -82,8 +87,12 @@ class TestWorkTokens(unittest.TestCase):
         ]
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         with patch("utils.work_tokens._ensure_tables"):
             token_id = create_token(
@@ -94,8 +103,11 @@ class TestWorkTokens(unittest.TestCase):
 
         self.assertEqual(token_id, 5)
         # Check that initial status was "ready" (INSERT is after the SELECT checks)
-        insert_calls = [c for c in mock_cursor.execute.call_args_list
-                        if "INSERT INTO work_tokens" in str(c)]
+        insert_calls = [
+            c
+            for c in mock_cursor.execute.call_args_list
+            if "INSERT INTO work_tokens" in str(c)
+        ]
         self.assertEqual(len(insert_calls), 1)
         self.assertIn("ready", str(insert_calls[0]))
 
@@ -113,8 +125,12 @@ class TestWorkTokens(unittest.TestCase):
         ]
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         released = release_completed_blockers(task_id=2)
 
@@ -129,8 +145,12 @@ class TestWorkTokens(unittest.TestCase):
         mock_cursor.fetchall.return_value = []  # No tokens to release
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         released = release_completed_blockers(task_id=99)
         self.assertEqual(released, [])
@@ -144,13 +164,20 @@ class TestWorkTokens(unittest.TestCase):
         mock_cursor.fetchone.return_value = {"status": "ready"}
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         claim_token(1, claimed_by=3)
 
-        update_calls = [c for c in mock_cursor.execute.call_args_list
-                        if "UPDATE work_tokens" in str(c)]
+        update_calls = [
+            c
+            for c in mock_cursor.execute.call_args_list
+            if "UPDATE work_tokens" in str(c)
+        ]
         self.assertEqual(len(update_calls), 1)
         self.assertIn("claimed", str(update_calls[0]))
 
@@ -163,8 +190,12 @@ class TestWorkTokens(unittest.TestCase):
         mock_cursor.fetchone.return_value = {"status": "blocked"}
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         with self.assertRaises(ValueError) as ctx:
             claim_token(1, claimed_by=3)
@@ -179,8 +210,12 @@ class TestWorkTokens(unittest.TestCase):
         mock_cursor.fetchone.return_value = {"status": "claimed"}
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         complete_token(
             1,
@@ -191,8 +226,11 @@ class TestWorkTokens(unittest.TestCase):
             tests_passing=5,
         )
 
-        update_calls = [c for c in mock_cursor.execute.call_args_list
-                        if "UPDATE work_tokens" in str(c)]
+        update_calls = [
+            c
+            for c in mock_cursor.execute.call_args_list
+            if "UPDATE work_tokens" in str(c)
+        ]
         self.assertEqual(len(update_calls), 1)
         self.assertIn("done", str(update_calls[0]))
 
@@ -205,8 +243,12 @@ class TestWorkTokens(unittest.TestCase):
         mock_cursor.fetchone.return_value = {"status": "ready"}
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         with self.assertRaises(ValueError) as ctx:
             complete_token(1, result="done")
@@ -220,12 +262,17 @@ class TestWorkTokens(unittest.TestCase):
         mock_cursor = MagicMock()
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         expire_token(1, reason="No longer needed")
-        update_calls = [c for c in mock_cursor.execute.call_args_list
-                        if "expired" in str(c)]
+        update_calls = [
+            c for c in mock_cursor.execute.call_args_list if "expired" in str(c)
+        ]
         self.assertTrue(len(update_calls) >= 1)
 
 
@@ -240,15 +287,24 @@ class TestTokenQueries(unittest.TestCase):
         mock_cursor = MagicMock()
         token_data = {"id": 1, "token_name": "test", "status": "blocked"}
         blocker_data = [
-            {"id": 1, "blocking_task_id": 2, "satisfied": 0,
-             "task_name": "schema-change", "task_status": "building"},
+            {
+                "id": 1,
+                "blocking_task_id": 2,
+                "satisfied": 0,
+                "task_name": "schema-change",
+                "task_status": "building",
+            },
         ]
         mock_cursor.fetchone.side_effect = [token_data]
         mock_cursor.fetchall.return_value = blocker_data
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         with patch("utils.work_tokens._ensure_tables"):
             token = get_token(1)
@@ -270,8 +326,12 @@ class TestTokenQueries(unittest.TestCase):
         ]
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         with patch("utils.work_tokens._ensure_tables"):
             tokens = list_tokens(status="ready")
@@ -291,8 +351,12 @@ class TestTokenQueries(unittest.TestCase):
         ]
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         with patch("utils.work_tokens._ensure_tables"):
             stats = token_stats()
@@ -309,6 +373,7 @@ class TestTokenLifecycleIntegration(unittest.TestCase):
     def test_lifecycle_constants(self):
         """Test all status transitions are defined."""
         from utils.work_tokens import TokenStatus
+
         statuses = [s.value for s in TokenStatus]
         self.assertIn("blocked", statuses)
         self.assertIn("ready", statuses)
@@ -318,7 +383,12 @@ class TestTokenLifecycleIntegration(unittest.TestCase):
 
     def test_tables_defined(self):
         """Test DB table SQL is complete."""
-        from utils.work_tokens import _WORK_TOKENS_TABLE, _TOKEN_BLOCKERS_TABLE, _TOKEN_LOG_TABLE
+        from utils.work_tokens import (
+            _WORK_TOKENS_TABLE,
+            _TOKEN_BLOCKERS_TABLE,
+            _TOKEN_LOG_TABLE,
+        )
+
         self.assertIn("work_tokens", _WORK_TOKENS_TABLE)
         self.assertIn("token_blockers", _TOKEN_BLOCKERS_TABLE)
         self.assertIn("token_log", _TOKEN_LOG_TABLE)
@@ -335,6 +405,7 @@ class TestParallelSpawnerTokenIntegration(unittest.TestCase):
     def test_imports_work(self):
         """Test parallel_spawner can import work_tokens."""
         from agents.parallel_spawner import _create_token, release_completed_blockers
+
         self.assertTrue(callable(_create_token))
         self.assertTrue(callable(release_completed_blockers))
 

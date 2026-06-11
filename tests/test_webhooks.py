@@ -1,7 +1,6 @@
 """Tests for webhook dispatcher."""
 
 import unittest
-from unittest.mock import patch
 import sys
 from pathlib import Path
 
@@ -14,6 +13,7 @@ class TestWebhookDispatcher(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         from webhooks.dispatcher import WebhookDispatcher
+
         self.dispatcher = WebhookDispatcher()
 
     def test_register_webhook(self):

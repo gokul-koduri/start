@@ -15,7 +15,6 @@ Config options:
     batch_size: int — articles per batch (default: 100)
 """
 
-import json
 import logging
 from datetime import datetime, timezone
 
@@ -34,6 +33,7 @@ def _vader_sentiment(text: str) -> tuple[float, str]:
     """
     try:
         from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
         analyzer = SentimentIntensityAnalyzer()
         scores = analyzer.polarity_scores(text)
         compound = scores["compound"]
@@ -57,19 +57,67 @@ def _keyword_sentiment(text: str) -> tuple[float, str]:
         return 0.0, "neutral"
 
     negative_words = {
-        "fail", "failed", "failure", "bankrupt", "bankruptcy", "shutdown", "collapse",
-        "crash", "crisis", "loss", "losing", "lost", "decline", "down", "drop",
-        "fire", "fired", "layoff", "laid off", "cut", "cuts", "closure", "close",
-        "dead", "died", "cease", "liquidat", "insolvent", "fraud", "scandal",
+        "fail",
+        "failed",
+        "failure",
+        "bankrupt",
+        "bankruptcy",
+        "shutdown",
+        "collapse",
+        "crash",
+        "crisis",
+        "loss",
+        "losing",
+        "lost",
+        "decline",
+        "down",
+        "drop",
+        "fire",
+        "fired",
+        "layoff",
+        "laid off",
+        "cut",
+        "cuts",
+        "closure",
+        "close",
+        "dead",
+        "died",
+        "cease",
+        "liquidat",
+        "insolvent",
+        "fraud",
+        "scandal",
     }
     positive_words = {
-        "growth", "grow", "profit", "profitable", "success", "successful", "rise",
-        "rising", "gain", "boost", "innovation", "innovative", "fund", "funded",
-        "investment", "invest", "launch", "expand", "acquire", "acquisition",
-        "partnership", "revenue", "thriving", "milestone", "breakthrough",
+        "growth",
+        "grow",
+        "profit",
+        "profitable",
+        "success",
+        "successful",
+        "rise",
+        "rising",
+        "gain",
+        "boost",
+        "innovation",
+        "innovative",
+        "fund",
+        "funded",
+        "investment",
+        "invest",
+        "launch",
+        "expand",
+        "acquire",
+        "acquisition",
+        "partnership",
+        "revenue",
+        "thriving",
+        "milestone",
+        "breakthrough",
     }
 
     import re
+
     words = re.findall(r"[a-z]+", text.lower())
     neg_count = sum(1 for w in words if w in negative_words)
     pos_count = sum(1 for w in words if w in positive_words)
@@ -125,17 +173,25 @@ class SentimentAgent(BaseAgent):
         mode = self.config.get("mode", "fast")
         batch_size = self.config.get("batch_size", 100)
 
-        _logger.info("SentimentAgent: Starting (mode=%s, batch_size=%d)", mode, batch_size)
+        _logger.info(
+            "SentimentAgent: Starting (mode=%s, batch_size=%d)", mode, batch_size
+        )
 
         # Initialize LLM for deep mode
         model_manager = None
         if mode == "deep":
             try:
                 from agents.model_manager_agent import ModelManager
+
                 model_manager = ModelManager(self.config)
-                _logger.info("SentimentAgent: Using Ollama LLM for deep sentiment analysis")
+                _logger.info(
+                    "SentimentAgent: Using Ollama LLM for deep sentiment analysis"
+                )
             except Exception as e:
-                _logger.warning("SentimentAgent: Failed to init ModelManager, falling back to fast mode: %s", e)
+                _logger.warning(
+                    "SentimentAgent: Failed to init ModelManager, falling back to fast mode: %s",
+                    e,
+                )
                 mode = "fast"
 
         try:
@@ -184,7 +240,10 @@ class SentimentAgent(BaseAgent):
                            SET sentiment_score = 0.0, sentiment_label = 'neutral',
                                sentiment_model = 'empty', sentiment_analyzed_at = %s
                            WHERE id = %s""",
-                        (datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"), article["id"]),
+                        (
+                            datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+                            article["id"],
+                        ),
                     )
                     label_counts["neutral"] = label_counts.get("neutral", 0) + 1
                     scored += 1
@@ -221,7 +280,9 @@ class SentimentAgent(BaseAgent):
 
             _logger.info(
                 "SentimentAgent: Scored %d/%d articles — %s",
-                scored, total_unscored, label_counts,
+                scored,
+                total_unscored,
+                label_counts,
             )
 
             return AgentResult(

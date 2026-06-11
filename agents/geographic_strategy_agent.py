@@ -82,16 +82,21 @@ class GeographicStrategyAgent(BaseAgent):
             area = dict(rf)
             score = 0
             # Higher failures = more data = more opportunities to learn
-            if area["total_failures"] >= 20: score += 30
-            elif area["total_failures"] >= 10: score += 20
-            elif area["total_failures"] >= 5: score += 10
+            if area["total_failures"] >= 20:
+                score += 30
+            elif area["total_failures"] >= 10:
+                score += 20
+            elif area["total_failures"] >= 5:
+                score += 10
             # Manufacturing concentration
             if area["mfg_failures"] and area["total_failures"]:
                 mfg_ratio = area["mfg_failures"] / area["total_failures"]
                 score += int(mfg_ratio * 30)
             # High funding = more capital available
-            if area["avg_funding"] and area["avg_funding"] > 100_000_000: score += 20
-            elif area["avg_funding"] and area["avg_funding"] > 50_000_000: score += 10
+            if area["avg_funding"] and area["avg_funding"] > 100_000_000:
+                score += 20
+            elif area["avg_funding"] and area["avg_funding"] > 50_000_000:
+                score += 10
             # Check if it's a known hotspot
             for h in hotspots:
                 if h["region"].lower() in area["area"].lower():
@@ -139,8 +144,11 @@ class GeographicStrategyAgent(BaseAgent):
         conn.close()
 
         top_region = regional_scores[0]["area"] if regional_scores else "N/A"
-        _logger.info("GeographicStrategyAgent: %d regions analyzed, top: %s",
-                     len(regional_scores), top_region)
+        _logger.info(
+            "GeographicStrategyAgent: %d regions analyzed, top: %s",
+            len(regional_scores),
+            top_region,
+        )
 
         return AgentResult(
             agent_name=self.name,
@@ -151,6 +159,7 @@ class GeographicStrategyAgent(BaseAgent):
                 "top_region": top_region,
                 "records_affected": len(regional_failures),
                 "top_insight": f"Top region: {top_region} ({regional_scores[0]['total_failures']} failures)"
-                    if regional_scores else "No regional data",
+                if regional_scores
+                else "No regional data",
             },
         )

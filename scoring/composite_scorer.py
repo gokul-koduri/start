@@ -27,7 +27,6 @@ Usage:
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
@@ -144,7 +143,9 @@ class CompositeScorer:
             if signal_type in self._weights:
                 published_at = data.get("published_at", now)
                 lambda_ = self._weights[signal_type]["decay_lambda"]
-                decay_values[signal_type] = exponential_decay(published_at, lambda_, now=now)
+                decay_values[signal_type] = exponential_decay(
+                    published_at, lambda_, now=now
+                )
 
         # ── Step 2: Build attribution ──
         attribution = build_attribution(signal_scores, self._weights, decay_values)

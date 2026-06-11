@@ -1,6 +1,5 @@
 """Tests for agents/influence_propagation_agent.py"""
 
-
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -23,6 +22,7 @@ class TestInfluencePropagationAgent:
     @pytest.fixture
     def agent(self):
         from agents.influence_propagation_agent import InfluencePropagationAgent
+
         return InfluencePropagationAgent(config={}, dry_run=False)
 
     def test_agent_name(self, agent):
@@ -33,8 +33,11 @@ class TestInfluencePropagationAgent:
         cursor.fetchall.return_value = [{"sector": "AI", "count": 10}]
         mock_connection.cursor.side_effect = [cursor, cursor, cursor]
 
-        with patch(f"agents.influence_propagation_agent.get_connection", return_value=mock_connection):
-            with patch(f"agents.influence_propagation_agent.schema"):
+        with patch(
+            "agents.influence_propagation_agent.get_connection",
+            return_value=mock_connection,
+        ):
+            with patch("agents.influence_propagation_agent.schema"):
                 result = agent.execute()
 
         assert result.status == "success"
@@ -44,8 +47,11 @@ class TestInfluencePropagationAgent:
         cursor.fetchall.return_value = []
         mock_connection.cursor.side_effect = [cursor, cursor, cursor]
 
-        with patch(f"agents.influence_propagation_agent.get_connection", return_value=mock_connection):
-            with patch(f"agents.influence_propagation_agent.schema"):
+        with patch(
+            "agents.influence_propagation_agent.get_connection",
+            return_value=mock_connection,
+        ):
+            with patch("agents.influence_propagation_agent.schema"):
                 result = agent.execute()
 
         assert result.status == "success"

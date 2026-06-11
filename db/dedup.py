@@ -26,15 +26,15 @@ def dedup_news_article(conn, url: str) -> bool:
     Returns True if the record exists.
     """
     cursor = conn.cursor()
-    cursor.execute(
-        "SELECT 1 FROM news_articles WHERE url = %s", (url,)
-    )
+    cursor.execute("SELECT 1 FROM news_articles WHERE url = %s", (url,))
     row = cursor.fetchone()
     cursor.close()
     return row is not None
 
 
-def dedup_bls_rate(conn, naics_code: str, year: int, quarter: int | None = None) -> bool:
+def dedup_bls_rate(
+    conn, naics_code: str, year: int, quarter: int | None = None
+) -> bool:
     """Check if a BLS rate record already exists.
 
     Returns True if the record exists.

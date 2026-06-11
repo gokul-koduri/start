@@ -27,7 +27,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from db.connection import get_connection
 from db import schema
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 _logger = logging.getLogger("global_market_viability")
 
 # ---------------------------------------------------------------------------
@@ -68,6 +70,7 @@ SYSTEM_PROMPT = (
 # Cache helpers
 # ---------------------------------------------------------------------------
 
+
 def load_cache(cache_file: Path) -> dict:
     if cache_file.exists():
         try:
@@ -79,12 +82,15 @@ def load_cache(cache_file: Path) -> dict:
 
 def save_cache(cache_file: Path, cache: dict) -> None:
     cache_file.parent.mkdir(parents=True, exist_ok=True)
-    cache_file.write_text(json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8")
+    cache_file.write_text(
+        json.dumps(cache, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
 
 
 # ---------------------------------------------------------------------------
 # Database queries
 # ---------------------------------------------------------------------------
+
 
 def query_unique_sectors(conn) -> list[dict]:
     """Query all unique sectors with counts and sub-sectors."""
@@ -112,14 +118,17 @@ def query_unique_sectors(conn) -> list[dict]:
 def query_example_companies(conn, sector: str, limit: int = 3) -> list[dict]:
     """Query top-funded failed startups in a sector."""
     cursor = conn.cursor()
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT name, sector, manufacturing_sub_sector, country,
                funding_raised_usd, year_founded, year_shutdown, failure_reason
         FROM failed_startups
         WHERE sector = %s AND funding_raised_usd IS NOT NULL
         ORDER BY funding_raised_usd DESC
         LIMIT %s
-    """, (sector, limit))
+    """,
+        (sector, limit),
+    )
     rows = cursor.fetchall()
     cursor.close()
     return [
@@ -141,9 +150,14 @@ def query_example_companies(conn, sector: str, limit: int = 3) -> list[dict]:
 # Ollama LLM integration
 # ---------------------------------------------------------------------------
 
-def call_ollama(prompt: str, model: str = DEFAULT_MODEL,
-                url: str = DEFAULT_OLLAMA_URL, timeout: int = 300,
-                max_retries: int = 2) -> str:
+
+def call_ollama(
+    prompt: str,
+    model: str = DEFAULT_MODEL,
+    url: str = DEFAULT_OLLAMA_URL,
+    timeout: int = 300,
+    max_retries: int = 2,
+) -> str:
     """Call Ollama chat API and return the response text."""
     headers = {"Content-Type": "application/json"}
     payload = {
@@ -163,8 +177,12 @@ def call_ollama(prompt: str, model: str = DEFAULT_MODEL,
             data = resp.json()
             return data.get("message", {}).get("content", "")
         except requests.exceptions.ConnectionError:
-            _logger.error("Ollama not reachable at %s (attempt %d/%d)",
-                          url, attempt + 1, max_retries + 1)
+            _logger.error(
+                "Ollama not reachable at %s (attempt %d/%d)",
+                url,
+                attempt + 1,
+                max_retries + 1,
+            )
             if attempt == max_retries:
                 raise ConnectionError(
                     f"Ollama not reachable at {url}. "
@@ -172,14 +190,16 @@ def call_ollama(prompt: str, model: str = DEFAULT_MODEL,
                 )
             time.sleep(5)
         except requests.exceptions.Timeout:
-            _logger.error("Ollama request timed out (attempt %d/%d)",
-                          attempt + 1, max_retries + 1)
+            _logger.error(
+                "Ollama request timed out (attempt %d/%d)", attempt + 1, max_retries + 1
+            )
             if attempt == max_retries:
                 raise
             time.sleep(5)
         except requests.exceptions.HTTPError as e:
-            _logger.error("Ollama HTTP error: %s (attempt %d/%d)",
-                          e, attempt + 1, max_retries + 1)
+            _logger.error(
+                "Ollama HTTP error: %s (attempt %d/%d)", e, attempt + 1, max_retries + 1
+            )
             if attempt == max_retries:
                 raise
             time.sleep(5)
@@ -229,14 +249,23 @@ def parse_llm_response(raw: str) -> dict | None:
 # Prompts
 # ---------------------------------------------------------------------------
 
-def build_sector_prompt(sector: str, sub_sectors: list[str],
-                        example_companies: list[dict],
-                        country_code: str, country_name: str) -> str:
+
+def build_sector_prompt(
+    sector: str,
+    sub_sectors: list[str],
+    example_companies: list[dict],
+    country_code: str,
+    country_name: str,
+) -> str:
     """Build the LLM prompt for a sector x country evaluation."""
     companies_text = ""
     for c in example_companies[:2]:  # Max 2 companies to keep prompt short
-        funding_str = f"${c['funding_raised_usd'] / 1e6:.0f}M" if c["funding_raised_usd"] else "?"
-        companies_text += f"- {c['name']} (${funding_str}, failed {c['year_shutdown']})\n"
+        funding_str = (
+            f"${c['funding_raised_usd'] / 1e6:.0f}M" if c["funding_raised_usd"] else "?"
+        )
+        companies_text += (
+            f"- {c['name']} (${funding_str}, failed {c['year_shutdown']})\n"
+        )
 
     return f"""Rate market viability for "{sector}" in {country_name}.
 Failed examples: {companies_text.strip()}
@@ -246,11 +275,19 @@ Reply with JSON only:
 {{"market_demand_score":<1-10>,"competition_level":"<low|medium|high>","regulatory_barriers":"<low|medium|high>","cultural_fit":"<low|medium|high>","overall_viability_score":<1-10>,"reasoning":"<1 sentence>","key_competitors":"<names>","estimated_market_size":"<size>"}}"""
 
 
-def build_company_drilldown_prompt(company: dict, sector: str,
-                                   country_code: str, country_name: str,
-                                   sector_context: str) -> str:
+def build_company_drilldown_prompt(
+    company: dict,
+    sector: str,
+    country_code: str,
+    country_name: str,
+    sector_context: str,
+) -> str:
     """Build prompt for specific company evaluation in a market."""
-    funding_str = f"${company['funding_raised_usd'] / 1e6:.0f}M" if company["funding_raised_usd"] else "?"
+    funding_str = (
+        f"${company['funding_raised_usd'] / 1e6:.0f}M"
+        if company["funding_raised_usd"]
+        else "?"
+    )
 
     return f"""Could "{company['name']}" ({company['sector']}, ${funding_str}, failed {company['year_shutdown']}: {company['failure_reason'][:80]}) work in {country_name}?
 Context: {sector_context[:100]}
@@ -263,11 +300,18 @@ Reply with JSON only:
 # Evaluation functions
 # ---------------------------------------------------------------------------
 
-def evaluate_sector_country(sector: str, sub_sectors: list[str],
-                            companies: list[dict],
-                            country_code: str, country_name: str,
-                            model: str, url: str, delay: float,
-                            cache: dict) -> dict:
+
+def evaluate_sector_country(
+    sector: str,
+    sub_sectors: list[str],
+    companies: list[dict],
+    country_code: str,
+    country_name: str,
+    model: str,
+    url: str,
+    delay: float,
+    cache: dict,
+) -> dict:
     """Evaluate one sector-country combination using the LLM."""
     cache_key = f"{sector}|{country_code}"
 
@@ -276,15 +320,18 @@ def evaluate_sector_country(sector: str, sub_sectors: list[str],
         cached["cached"] = True
         return cached
 
-    prompt = build_sector_prompt(sector, sub_sectors, companies,
-                                country_code, country_name)
+    prompt = build_sector_prompt(
+        sector, sub_sectors, companies, country_code, country_name
+    )
 
     try:
         raw = call_ollama(prompt, model=model, url=url)
         parsed = parse_llm_response(raw)
 
         if parsed is None:
-            _logger.warning("Failed to parse LLM response for %s in %s", sector, country_code)
+            _logger.warning(
+                "Failed to parse LLM response for %s in %s", sector, country_code
+            )
             result = _make_default_result(sector, country_code, country_name)
         else:
             result = {
@@ -314,11 +361,17 @@ def evaluate_sector_country(sector: str, sub_sectors: list[str],
     return result
 
 
-def deep_dive_company(company: dict, sector: str,
-                      country_code: str, country_name: str,
-                      sector_context: str,
-                      model: str, url: str, delay: float,
-                      cache: dict) -> dict:
+def deep_dive_company(
+    company: dict,
+    sector: str,
+    country_code: str,
+    country_name: str,
+    sector_context: str,
+    model: str,
+    url: str,
+    delay: float,
+    cache: dict,
+) -> dict:
     """Evaluate a specific company in a specific market."""
     cache_key = f"{company['name']}|{country_code}"
 
@@ -327,16 +380,22 @@ def deep_dive_company(company: dict, sector: str,
         cached["cached"] = True
         return cached
 
-    prompt = build_company_drilldown_prompt(company, sector, country_code,
-                                            country_name, sector_context)
+    prompt = build_company_drilldown_prompt(
+        company, sector, country_code, country_name, sector_context
+    )
     try:
         raw = call_ollama(prompt, model=model, url=url)
         parsed = parse_llm_response(raw)
 
         if parsed is None:
-            _logger.warning("Failed to parse deep-dive response for %s in %s",
-                            company["name"], country_code)
-            result = _make_default_deep_dive(company["name"], country_code, country_name)
+            _logger.warning(
+                "Failed to parse deep-dive response for %s in %s",
+                company["name"],
+                country_code,
+            )
+            result = _make_default_deep_dive(
+                company["name"], country_code, country_name
+            )
         else:
             result = {
                 "company_name": company["name"],
@@ -354,7 +413,9 @@ def deep_dive_company(company: dict, sector: str,
                 "cached": False,
             }
     except Exception as e:
-        _logger.error("Deep-dive failed for %s in %s: %s", company["name"], country_code, e)
+        _logger.error(
+            "Deep-dive failed for %s in %s: %s", company["name"], country_code, e
+        )
         result = _make_default_deep_dive(company["name"], country_code, country_name)
         result["specific_opportunity"] = f"Analysis failed: {e}"
 
@@ -383,7 +444,9 @@ def _make_default_result(sector: str, country_code: str, country_name: str) -> d
     }
 
 
-def _make_default_deep_dive(company_name: str, country_code: str, country_name: str) -> dict:
+def _make_default_deep_dive(
+    company_name: str, country_code: str, country_name: str
+) -> dict:
     return {
         "company_name": company_name,
         "sector": "",
@@ -405,9 +468,14 @@ def _make_default_deep_dive(company_name: str, country_code: str, country_name: 
 # DB storage
 # ---------------------------------------------------------------------------
 
-def store_results_in_db(conn, all_results: list[dict],
-                        deep_dive_results: list[dict],
-                        model: str, errors: list[str]) -> None:
+
+def store_results_in_db(
+    conn,
+    all_results: list[dict],
+    deep_dive_results: list[dict],
+    model: str,
+    errors: list[str],
+) -> None:
     """Store results in the analysis_global_market_viability table."""
     now = datetime.now(timezone.utc).isoformat()
     store_data = {
@@ -416,18 +484,26 @@ def store_results_in_db(conn, all_results: list[dict],
         "total_evaluations": len(all_results),
         "total_deep_dives": len(deep_dive_results),
         "avg_viability_score": round(
-            mean([r["overall_viability_score"] for r in all_results
-                  if r["overall_viability_score"] > 0]), 1
-        ) if [r for r in all_results if r["overall_viability_score"] > 0] else 0,
+            mean(
+                [
+                    r["overall_viability_score"]
+                    for r in all_results
+                    if r["overall_viability_score"] > 0
+                ]
+            ),
+            1,
+        )
+        if [r for r in all_results if r["overall_viability_score"] > 0]
+        else 0,
         "top_combinations": [
             {
                 "sector": r["sector"],
                 "country": r["country_name"],
                 "score": r["overall_viability_score"],
             }
-            for r in sorted(all_results,
-                            key=lambda x: x["overall_viability_score"],
-                            reverse=True)[:10]
+            for r in sorted(
+                all_results, key=lambda x: x["overall_viability_score"], reverse=True
+            )[:10]
         ],
         "sector_results": all_results,
         "deep_dive_results": deep_dive_results,
@@ -455,14 +531,13 @@ def store_results_in_db(conn, all_results: list[dict],
 # Summary computation
 # ---------------------------------------------------------------------------
 
+
 def compute_summary(all_results: list[dict], deep_dive_results: list[dict]) -> dict:
     valid = [r for r in all_results if r["overall_viability_score"] > 0]
     sectors = list(set(r["sector"] for r in all_results))
     countries = list(set(r["country_code"] for r in all_results))
 
-    top = sorted(all_results,
-                 key=lambda x: x["overall_viability_score"],
-                 reverse=True)
+    top = sorted(all_results, key=lambda x: x["overall_viability_score"], reverse=True)
 
     # Country-level averages
     country_avgs = {}
@@ -482,21 +557,29 @@ def compute_summary(all_results: list[dict], deep_dive_results: list[dict]) -> d
         "countries_analyzed": len(countries),
         "total_evaluations": len(all_results),
         "total_deep_dives": len(deep_dive_results),
-        "avg_viability_score": round(mean(r["overall_viability_score"] for r in valid), 1) if valid else 0,
+        "avg_viability_score": round(
+            mean(r["overall_viability_score"] for r in valid), 1
+        )
+        if valid
+        else 0,
         "top_combination": {
             "label": f"{top_combo.get('sector', 'N/A')} in {top_combo.get('country_name', 'N/A')}",
             "score": top_combo.get("overall_viability_score", 0),
-        } if top_combo else {},
+        }
+        if top_combo
+        else {},
         "top_10": top[:10],
         "country_avgs": {
-            cc: {"name": v["name"],
-                 "avg_score": round(mean(v["scores"]), 1),
-                 "high_viability_count": v["high_viability"],
-                 "best_sector": max(
-                     (r for r in valid if r["country_code"] == cc),
-                     key=lambda r: r["overall_viability_score"],
-                     default={}
-                 ).get("sector", "N/A")}
+            cc: {
+                "name": v["name"],
+                "avg_score": round(mean(v["scores"]), 1),
+                "high_viability_count": v["high_viability"],
+                "best_sector": max(
+                    (r for r in valid if r["country_code"] == cc),
+                    key=lambda r: r["overall_viability_score"],
+                    default={},
+                ).get("sector", "N/A"),
+            }
             for cc, v in country_avgs.items()
         },
     }
@@ -506,6 +589,7 @@ def compute_summary(all_results: list[dict], deep_dive_results: list[dict]) -> d
 # Report generation
 # ---------------------------------------------------------------------------
 
+
 def md_table(headers: list[str], rows: list[list]) -> str:
     out = ["| " + " | ".join(headers) + " |"]
     out.append("| " + " | ".join("---" for _ in headers) + " |")
@@ -514,8 +598,9 @@ def md_table(headers: list[str], rows: list[list]) -> str:
     return "\n".join(out)
 
 
-def build_report(all_results: list[dict], deep_dive_results: list[dict],
-                  summary: dict) -> str:
+def build_report(
+    all_results: list[dict], deep_dive_results: list[dict], summary: dict
+) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     lines = [
         "# Global Market Viability Analysis",
@@ -545,16 +630,33 @@ def build_report(all_results: list[dict], deep_dive_results: list[dict],
     lines.append("")
     top10 = summary.get("top_10", [])
     if top10:
-        lines.append(md_table(
-            ["Rank", "Sector", "Market", "Viability", "Demand", "Competition", "Barriers", "Cultural Fit"],
-            [[i + 1, r["sector"], r["country_name"],
-              f"{r['overall_viability_score']}/10",
-              f"{r['market_demand_score']}/10",
-              r["competition_level"].title(),
-              r["regulatory_barriers"].title(),
-              r["cultural_fit"].title()]
-             for i, r in enumerate(top10)],
-        ))
+        lines.append(
+            md_table(
+                [
+                    "Rank",
+                    "Sector",
+                    "Market",
+                    "Viability",
+                    "Demand",
+                    "Competition",
+                    "Barriers",
+                    "Cultural Fit",
+                ],
+                [
+                    [
+                        i + 1,
+                        r["sector"],
+                        r["country_name"],
+                        f"{r['overall_viability_score']}/10",
+                        f"{r['market_demand_score']}/10",
+                        r["competition_level"].title(),
+                        r["regulatory_barriers"].title(),
+                        r["cultural_fit"].title(),
+                    ]
+                    for i, r in enumerate(top10)
+                ],
+            )
+        )
     lines.append("")
 
     # Markets ranked by average opportunity
@@ -562,12 +664,23 @@ def build_report(all_results: list[dict], deep_dive_results: list[dict],
     lines.append("")
     country_avgs = summary.get("country_avgs", {})
     if country_avgs:
-        sorted_countries = sorted(country_avgs.values(), key=lambda x: x["avg_score"], reverse=True)
-        lines.append(md_table(
-            ["Market", "Avg Viability", "High-Viability Sectors", "Best Sector"],
-            [[c["name"], f"{c['avg_score']}/10", c["high_viability_count"], c["best_sector"]]
-             for c in sorted_countries],
-        ))
+        sorted_countries = sorted(
+            country_avgs.values(), key=lambda x: x["avg_score"], reverse=True
+        )
+        lines.append(
+            md_table(
+                ["Market", "Avg Viability", "High-Viability Sectors", "Best Sector"],
+                [
+                    [
+                        c["name"],
+                        f"{c['avg_score']}/10",
+                        c["high_viability_count"],
+                        c["best_sector"],
+                    ]
+                    for c in sorted_countries
+                ],
+            )
+        )
     lines.append("")
 
     # Deep-dive results (top opportunities with company analysis)
@@ -576,8 +689,10 @@ def build_report(all_results: list[dict], deep_dive_results: list[dict],
         lines.append("")
         lines.append("## Company Deep-Dive Analysis")
         lines.append("")
-        lines.append("Detailed analysis of specific failed-startup products in their "
-                      "most promising alternative markets.")
+        lines.append(
+            "Detailed analysis of specific failed-startup products in their "
+            "most promising alternative markets."
+        )
         lines.append("")
 
         # Group deep-dives by sector and country
@@ -618,28 +733,48 @@ def build_report(all_results: list[dict], deep_dive_results: list[dict],
     for sector in sectors_seen:
         sector_results = [r for r in all_results if r["sector"] == sector]
         best = max(sector_results, key=lambda r: r["overall_viability_score"])
-        valid_scores = [r["overall_viability_score"] for r in sector_results
-                        if r["overall_viability_score"] > 0]
+        valid_scores = [
+            r["overall_viability_score"]
+            for r in sector_results
+            if r["overall_viability_score"] > 0
+        ]
         avg = round(mean(valid_scores), 1) if valid_scores else 0
 
         lines.append(f"### {sector}")
         lines.append("")
         lines.append(f"- **Avg Viability**: {avg}/10")
-        lines.append(f"- **Best Market**: {best['country_name']} ({best['overall_viability_score']}/10)")
+        lines.append(
+            f"- **Best Market**: {best['country_name']} ({best['overall_viability_score']}/10)"
+        )
         lines.append("")
 
-        lines.append(md_table(
-            ["Market", "Demand", "Competition", "Barriers", "Cultural", "Viability"],
-            [[r["country_name"],
-              f"{r['market_demand_score']}/10",
-              r["competition_level"].title(),
-              r["regulatory_barriers"].title(),
-              r["cultural_fit"].title(),
-              f"{r['overall_viability_score']}/10"]
-             for r in sorted(sector_results,
-                            key=lambda x: x["overall_viability_score"],
-                            reverse=True)],
-        ))
+        lines.append(
+            md_table(
+                [
+                    "Market",
+                    "Demand",
+                    "Competition",
+                    "Barriers",
+                    "Cultural",
+                    "Viability",
+                ],
+                [
+                    [
+                        r["country_name"],
+                        f"{r['market_demand_score']}/10",
+                        r["competition_level"].title(),
+                        r["regulatory_barriers"].title(),
+                        r["cultural_fit"].title(),
+                        f"{r['overall_viability_score']}/10",
+                    ]
+                    for r in sorted(
+                        sector_results,
+                        key=lambda x: x["overall_viability_score"],
+                        reverse=True,
+                    )
+                ],
+            )
+        )
         lines.append("")
 
     # Methodology
@@ -650,11 +785,15 @@ def build_report(all_results: list[dict], deep_dive_results: list[dict],
     lines.append("- **LLM Model**: Local Ollama inference (no API costs)")
     lines.append("- **Scoring Scale**: 1-10 (1 = very poor fit, 10 = excellent fit)")
     lines.append("- **Competition/Barriers/Cultural Fit**: low/medium/high")
-    lines.append("- **Data Source**: Failed startups from the `failed_startups` database")
+    lines.append(
+        "- **Data Source**: Failed startups from the `failed_startups` database"
+    )
     lines.append("- **Cache**: Results cached locally; use `--no-cache` to re-evaluate")
-    lines.append("- **Limitations**: LLM-based analysis reflects model training data; "
-                 "market conditions may have changed; regulatory details should be "
-                 "verified with local counsel")
+    lines.append(
+        "- **Limitations**: LLM-based analysis reflects model training data; "
+        "market conditions may have changed; regulatory details should be "
+        "verified with local counsel"
+    )
     lines.append("")
 
     return "\n".join(lines)
@@ -663,6 +802,7 @@ def build_report(all_results: list[dict], deep_dive_results: list[dict],
 # ---------------------------------------------------------------------------
 # Core analysis (called by both CLI and agent)
 # ---------------------------------------------------------------------------
+
 
 def run_analysis(
     conn,
@@ -685,8 +825,9 @@ def run_analysis(
     if sectors_filter:
         sectors = [s for s in sectors if s["sector"] in sectors_filter]
 
-    _logger.info("Analyzing %d sectors across %d markets",
-                 len(sectors), len(TARGET_COUNTRIES))
+    _logger.info(
+        "Analyzing %d sectors across %d markets", len(sectors), len(TARGET_COUNTRIES)
+    )
 
     # Phase 1: Sector-level evaluations
     all_results = []
@@ -694,8 +835,9 @@ def run_analysis(
 
     for sector_info in sectors:
         sector = sector_info["sector"]
-        sub_sectors = [s.strip() for s in sector_info["sub_sectors"].split(",")
-                       if s.strip()]
+        sub_sectors = [
+            s.strip() for s in sector_info["sub_sectors"].split(",") if s.strip()
+        ]
         companies = query_example_companies(conn, sector)
 
         for cc, cname in TARGET_COUNTRIES.items():
@@ -703,13 +845,22 @@ def run_analysis(
                 continue
             try:
                 result = evaluate_sector_country(
-                    sector, sub_sectors, companies,
-                    cc, cname, model, url, delay, cache,
+                    sector,
+                    sub_sectors,
+                    companies,
+                    cc,
+                    cname,
+                    model,
+                    url,
+                    delay,
+                    cache,
                 )
                 all_results.append(result)
                 _logger.info(
                     "  %s in %s: viability=%d/10%s",
-                    sector[:25], cname, result["overall_viability_score"],
+                    sector[:25],
+                    cname,
+                    result["overall_viability_score"],
                     " (cached)" if result["cached"] else "",
                 )
             except Exception as e:
@@ -718,13 +869,16 @@ def run_analysis(
 
     # Save cache after sector evaluations
     save_cache(CACHE_FILE, cache)
-    _logger.info("Sector evaluations complete: %d results, %d errors",
-                 len(all_results), len(errors))
+    _logger.info(
+        "Sector evaluations complete: %d results, %d errors",
+        len(all_results),
+        len(errors),
+    )
 
     # Phase 2: Deep-dive into top combinations
-    scored = sorted(all_results,
-                    key=lambda x: x["overall_viability_score"],
-                    reverse=True)
+    scored = sorted(
+        all_results, key=lambda x: x["overall_viability_score"], reverse=True
+    )
     top_combos = scored[:top_combinations]
 
     deep_dive_results = []
@@ -733,21 +887,33 @@ def run_analysis(
         for company in companies:
             try:
                 dive = deep_dive_company(
-                    company, combo["sector"],
-                    combo["country_code"], combo["country_name"],
+                    company,
+                    combo["sector"],
+                    combo["country_code"],
+                    combo["country_name"],
                     combo["reasoning"],
-                    model, url, delay, cache,
+                    model,
+                    url,
+                    delay,
+                    cache,
                 )
                 deep_dive_results.append(dive)
                 _logger.info(
                     "  Deep-dive: %s in %s: %s",
-                    company["name"], combo["country_name"],
+                    company["name"],
+                    combo["country_name"],
                     dive["go_no_go"],
                 )
             except Exception as e:
-                _logger.error("Deep-dive failed: %s/%s: %s",
-                              company["name"], combo["country_code"], e)
-                errors.append(f"deep-dive/{company['name']}/{combo['country_code']}: {e}")
+                _logger.error(
+                    "Deep-dive failed: %s/%s: %s",
+                    company["name"],
+                    combo["country_code"],
+                    e,
+                )
+                errors.append(
+                    f"deep-dive/{company['name']}/{combo['country_code']}: {e}"
+                )
 
     # Save cache after deep-dives
     save_cache(CACHE_FILE, cache)
@@ -766,24 +932,39 @@ def run_analysis(
 # CLI entry point
 # ---------------------------------------------------------------------------
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Global Market Viability Analysis using local Ollama LLM"
     )
-    parser.add_argument("--output", default="Global_Market_Viability.md",
-                        help="Output markdown report path")
-    parser.add_argument("--model", default=DEFAULT_MODEL,
-                        help="Ollama model name (default: llama3)")
-    parser.add_argument("--ollama-url", default=DEFAULT_OLLAMA_URL,
-                        help="Ollama API endpoint")
-    parser.add_argument("--delay", type=float, default=DEFAULT_DELAY_SECONDS,
-                        help="Delay between LLM calls in seconds (default: 3.0)")
-    parser.add_argument("--sectors", default=None,
-                        help="Comma-separated sectors to analyze (default: all)")
-    parser.add_argument("--countries", default=None,
-                        help="Comma-separated country codes (default: all)")
-    parser.add_argument("--no-cache", action="store_true",
-                        help="Ignore and invalidate cache")
+    parser.add_argument(
+        "--output",
+        default="Global_Market_Viability.md",
+        help="Output markdown report path",
+    )
+    parser.add_argument(
+        "--model", default=DEFAULT_MODEL, help="Ollama model name (default: llama3)"
+    )
+    parser.add_argument(
+        "--ollama-url", default=DEFAULT_OLLAMA_URL, help="Ollama API endpoint"
+    )
+    parser.add_argument(
+        "--delay",
+        type=float,
+        default=DEFAULT_DELAY_SECONDS,
+        help="Delay between LLM calls in seconds (default: 3.0)",
+    )
+    parser.add_argument(
+        "--sectors",
+        default=None,
+        help="Comma-separated sectors to analyze (default: all)",
+    )
+    parser.add_argument(
+        "--countries", default=None, help="Comma-separated country codes (default: all)"
+    )
+    parser.add_argument(
+        "--no-cache", action="store_true", help="Ignore and invalidate cache"
+    )
     args = parser.parse_args()
 
     conn = get_connection()

@@ -54,7 +54,9 @@ def calculate_score_delta(
             "change": new_score,
             "trend_previous": None,
             "trend_current": current.get("trend_direction", "stable"),
-            "signal_deltas": _extract_signal_contributions(current.get("attribution", [])),
+            "signal_deltas": _extract_signal_contributions(
+                current.get("attribution", [])
+            ),
             "is_first_score": True,
             "detected_at": datetime.now(timezone.utc).isoformat(),
         }
@@ -97,7 +99,7 @@ def calculate_and_store_delta(conn, current: dict[str, Any]) -> dict[str, Any] |
     """
     entity_name = current.get("entity_name", "")
     entity_type = current.get("entity_type", "company")
-    new_score = current.get("composite_score", 0.0)
+    current.get("composite_score", 0.0)
 
     try:
         cursor = conn.cursor()
@@ -215,7 +217,9 @@ def format_delta_message(delta: dict[str, Any]) -> str:
     signal_deltas = delta.get("signal_deltas", {})
     if signal_deltas:
         signal_parts = []
-        for sig, val in sorted(signal_deltas.items(), key=lambda x: abs(x[1]), reverse=True)[:3]:
+        for sig, val in sorted(
+            signal_deltas.items(), key=lambda x: abs(x[1]), reverse=True
+        )[:3]:
             s = "+" if val >= 0 else ""
             signal_parts.append(f"{sig} {s}{val:.1f}")
         parts.append(": " + ", ".join(signal_parts))

@@ -55,9 +55,13 @@ class SurvivalAnalysisAgent(BaseAgent):
             change["year"] = curr["year"]
             change["prev_year"] = prev["year"]
             if prev["age_1_yr_survival"] and curr["age_1_yr_survival"]:
-                change["change_1yr"] = round(curr["age_1_yr_survival"] - prev["age_1_yr_survival"], 2)
+                change["change_1yr"] = round(
+                    curr["age_1_yr_survival"] - prev["age_1_yr_survival"], 2
+                )
             if prev["age_5_yr_survival"] and curr["age_5_yr_survival"]:
-                change["change_5yr"] = round(curr["age_5_yr_survival"] - prev["age_5_yr_survival"], 2)
+                change["change_5yr"] = round(
+                    curr["age_5_yr_survival"] - prev["age_5_yr_survival"], 2
+                )
             yoy_changes.append(change)
         insights["year_over_year_changes"] = yoy_changes
 
@@ -68,7 +72,9 @@ class SurvivalAnalysisAgent(BaseAgent):
                 fp = {
                     "year": row["year"],
                     "failure_rate_1yr": round(100 - row["age_1_yr_survival"], 1),
-                    "failure_rate_5yr": round(100 - row["age_5_yr_survival"], 1) if row["age_5_yr_survival"] else None,
+                    "failure_rate_5yr": round(100 - row["age_5_yr_survival"], 1)
+                    if row["age_5_yr_survival"]
+                    else None,
                     "establishments_at_risk": row["establishment_count"],
                 }
                 failure_probs.append(fp)
@@ -109,8 +115,11 @@ class SurvivalAnalysisAgent(BaseAgent):
         conn.close()
 
         avg_5yr = insights.get("average_survival", {}).get("avg_5yr", 0)
-        _logger.info("SurvivalAnalysisAgent: %d data points, avg 5yr survival: %.1f%%",
-                     len(survival_trends), avg_5yr or 0)
+        _logger.info(
+            "SurvivalAnalysisAgent: %d data points, avg 5yr survival: %.1f%%",
+            len(survival_trends),
+            avg_5yr or 0,
+        )
 
         return AgentResult(
             agent_name=self.name,
@@ -118,9 +127,12 @@ class SurvivalAnalysisAgent(BaseAgent):
             data={
                 "data_points": len(survival_trends),
                 "avg_5yr_survival": round(avg_5yr, 1) if avg_5yr else None,
-                "avg_1yr_failure_rate": round(100 - (insights.get("average_survival", {}).get("avg_1yr", 0)), 1),
+                "avg_1yr_failure_rate": round(
+                    100 - (insights.get("average_survival", {}).get("avg_1yr", 0)), 1
+                ),
                 "records_affected": len(survival_trends),
                 "top_insight": f"Avg 5yr manufacturing survival: {round(avg_5yr, 1)}% (failure rate: {round(100 - avg_5yr, 1)}%)"
-                    if avg_5yr else "Insufficient BLS data",
+                if avg_5yr
+                else "Insufficient BLS data",
             },
         )

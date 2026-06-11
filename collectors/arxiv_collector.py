@@ -12,7 +12,6 @@ import logging
 import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
-from urllib.parse import quote
 
 from collectors.base import BaseCollector, CollectionResult
 from utils.http_client import get_http_session
@@ -59,8 +58,9 @@ class ArxivCollector(BaseCollector):
             q = f"{q} AND ({cat_clause})"
         return q
 
-    def _fetch_papers(self, session, base_url: str,
-                      query: str, max_results: int = 50) -> list[dict]:
+    def _fetch_papers(
+        self, session, base_url: str, query: str, max_results: int = 50
+    ) -> list[dict]:
         """Fetch papers from arXiv API and parse Atom XML response."""
         params = {
             "search_query": query,
@@ -95,7 +95,9 @@ class ArxivCollector(BaseCollector):
         """Extract paper metadata from an Atom entry element."""
         # arXiv ID from <id> tag (e.g., http://arxiv.org/abs/2401.12345v1)
         arxiv_url = entry.findtext("atom:id", default="", namespaces=_NS)
-        arxiv_id = arxiv_url.split("/abs/")[-1].split("v")[0] if "/abs/" in arxiv_url else ""
+        arxiv_id = (
+            arxiv_url.split("/abs/")[-1].split("v")[0] if "/abs/" in arxiv_url else ""
+        )
 
         if not arxiv_id:
             _logger.warning("Skipping entry without arXiv ID")
@@ -187,7 +189,9 @@ class ArxivCollector(BaseCollector):
         pub_str = paper.get("published_date")
         if pub_str:
             try:
-                pub_dt = datetime.strptime(pub_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                pub_dt = datetime.strptime(pub_str, "%Y-%m-%d").replace(
+                    tzinfo=timezone.utc
+                )
                 age_days = (datetime.now(timezone.utc) - pub_dt).days
                 if age_days < 7:
                     score += 40
@@ -210,8 +214,9 @@ class ArxivCollector(BaseCollector):
 
         return min(score, 100.0)
 
-    def _insert_paper(self, cursor, paper: dict, search_term: str,
-                      result: CollectionResult) -> None:
+    def _insert_paper(
+        self, cursor, paper: dict, search_term: str, result: CollectionResult
+    ) -> None:
         """Insert paper into arxiv_papers and raw_signals."""
         arxiv_id = paper["arxiv_id"]
         title = paper["title"]
@@ -298,10 +303,13 @@ class ArxivCollector(BaseCollector):
             result.status = "success"
             return result
 
-        search_queries = config.get("search_queries", [
-            {"terms": "machine learning", "categories": ["cs.AI", "cs.LG"]},
-            {"terms": "large language model", "categories": ["cs.CL", "cs.AI"]},
-        ])
+        search_queries = config.get(
+            "search_queries",
+            [
+                {"terms": "machine learning", "categories": ["cs.AI", "cs.LG"]},
+                {"terms": "large language model", "categories": ["cs.CL", "cs.AI"]},
+            ],
+        )
         base_url = config.get("base_url", _BASE_URL)
         max_results = config.get("max_results_per_query", 50)
         min_delay = config.get("min_delay_seconds", 3)
@@ -326,13 +334,16 @@ class ArxivCollector(BaseCollector):
                 try:
                     self._insert_paper(cursor, paper, terms, result)
                 except Exception as e:
-                    result.errors.append(f"Error inserting paper {paper.get('arxiv_id', '?')}: {e}")
+                    result.errors.append(
+                        f"Error inserting paper {paper.get('arxiv_id', '?')}: {e}"
+                    )
 
             time.sleep(min_delay)  # Polite delay
 
             _logger.info(
                 "ArxivCollector: query '%s' → %d papers",
-                terms, len(papers),
+                terms,
+                len(papers),
             )
 
         result.records_inserted = result.records_collected

@@ -20,7 +20,9 @@ TRACKER_FILE = get_project_root() / "data" / "cache" / "ollama_token_tracker.jso
 MAX_TRACKER_ENTRIES = 10_000
 
 
-def _track_inference(model_name: str, prompt_tokens: int, completion_tokens: int) -> None:
+def _track_inference(
+    model_name: str, prompt_tokens: int, completion_tokens: int
+) -> None:
     """Append inference data to the rolling tracker file.
 
     This is called by the dashboard's ``_ollama_api()`` helper whenever a
@@ -48,7 +50,9 @@ def _track_inference(model_name: str, prompt_tokens: int, completion_tokens: int
     # Recompute cumulative totals
     tracker["totals"] = {
         "total_prompt_tokens": sum(e["prompt_tokens"] for e in tracker["entries"]),
-        "total_completion_tokens": sum(e["completion_tokens"] for e in tracker["entries"]),
+        "total_completion_tokens": sum(
+            e["completion_tokens"] for e in tracker["entries"]
+        ),
         "total_tokens": sum(e["total_tokens"] for e in tracker["entries"]),
         "inference_count": len(tracker["entries"]),
     }
@@ -76,7 +80,9 @@ def compute_cost_equivalence(
     seen_providers: set[str] = set()
 
     # Use one model per provider for a clean comparison
-    for row in sorted(pricing_data, key=lambda r: (r["provider"], r["input_price_per_1m"])):
+    for row in sorted(
+        pricing_data, key=lambda r: (r["provider"], r["input_price_per_1m"])
+    ):
         provider = row["provider"]
         if provider in seen_providers:
             continue
@@ -84,7 +90,9 @@ def compute_cost_equivalence(
 
         input_cost = (prompt_tokens / 1_000_000) * row["input_price_per_1m"]
         output_cost = (completion_tokens / 1_000_000) * row["output_price_per_1m"]
-        costs[f"{provider.title()} — {row['model_name']}"] = round(input_cost + output_cost, 4)
+        costs[f"{provider.title()} — {row['model_name']}"] = round(
+            input_cost + output_cost, 4
+        )
 
     return costs
 
@@ -141,8 +149,12 @@ def take_usage_snapshot(conn=None) -> dict:
         last = cursor.fetchone()
 
         if last:
-            snapshot["delta_prompt_tokens"] = snapshot["total_prompt_tokens"] - last["prompt_tokens"]
-            snapshot["delta_completion_tokens"] = snapshot["total_completion_tokens"] - last["completion_tokens"]
+            snapshot["delta_prompt_tokens"] = (
+                snapshot["total_prompt_tokens"] - last["prompt_tokens"]
+            )
+            snapshot["delta_completion_tokens"] = (
+                snapshot["total_completion_tokens"] - last["completion_tokens"]
+            )
         else:
             snapshot["delta_prompt_tokens"] = snapshot["total_prompt_tokens"]
             snapshot["delta_completion_tokens"] = snapshot["total_completion_tokens"]
@@ -169,7 +181,10 @@ def take_usage_snapshot(conn=None) -> dict:
         vram_usage = 0
         try:
             import urllib.request
-            with urllib.request.urlopen("http://localhost:11434/api/ps", timeout=5) as resp:
+
+            with urllib.request.urlopen(
+                "http://localhost:11434/api/ps", timeout=5
+            ) as resp:
                 ps = json.loads(resp.read().decode())
                 vram_usage = sum(m.get("vram", 0) for m in ps.get("models", []))
         except Exception:

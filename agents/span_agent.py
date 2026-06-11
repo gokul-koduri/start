@@ -12,7 +12,6 @@ Runs after every pipeline execution (daily, weekly, full).
 Prints a health report with actionable suggestions to stdout.
 """
 
-import json
 import logging
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
@@ -46,7 +45,11 @@ class SpanAgent(BaseAgent):
         failure_rate = thresholds.get("failure_rate_pct", 10.0)
         data_drop_pct = thresholds.get("data_drop_pct", 50.0)
 
-        _logger.info("SpanAgent: Analyzing pipeline '%s' health (lookback=%dd)", pipeline_name, lookback_days)
+        _logger.info(
+            "SpanAgent: Analyzing pipeline '%s' health (lookback=%dd)",
+            pipeline_name,
+            lookback_days,
+        )
 
         try:
             conn = get_connection()
@@ -61,7 +64,9 @@ class SpanAgent(BaseAgent):
             snapshots_inserted = 0
 
             # Fetch recent agent runs
-            cutoff = (datetime.now(timezone.utc) - timedelta(days=lookback_days)).strftime("%Y-%m-%d %H:%M:%S")
+            cutoff = (
+                datetime.now(timezone.utc) - timedelta(days=lookback_days)
+            ).strftime("%Y-%m-%d %H:%M:%S")
             cursor.execute(
                 """SELECT pipeline_name, agent_name, started_at, completed_at,
                           status, records_affected, error_message
@@ -108,7 +113,9 @@ class SpanAgent(BaseAgent):
                 records = []
 
                 for run in agent_history:
-                    dur = self._parse_duration(run.get("started_at"), run.get("completed_at"))
+                    dur = self._parse_duration(
+                        run.get("started_at"), run.get("completed_at")
+                    )
                     if dur is not None:
                         durations.append(dur)
                     statuses.append(run.get("status", "unknown"))
@@ -142,7 +149,10 @@ class SpanAgent(BaseAgent):
                 # Anomaly: high failure rate
                 if failure_pct > failure_rate and len(statuses) >= 3:
                     anomaly_type = anomaly_type or "high_failure"
-                    anomaly_detail = anomaly_detail or f"Failure rate {failure_pct:.1f}% ({failure_count}/{len(statuses)})"
+                    anomaly_detail = (
+                        anomaly_detail
+                        or f"Failure rate {failure_pct:.1f}% ({failure_count}/{len(statuses)})"
+                    )
                     suggestions.append(
                         f"  [FAIL] {agent_name}: {anomaly_detail}. "
                         f"Review error logs and check data source availability."
@@ -154,26 +164,33 @@ class SpanAgent(BaseAgent):
                     drop_pct = ((prev_records - last_records) / prev_records) * 100
                     if drop_pct > data_drop_pct:
                         anomaly_type = anomaly_type or "data_drop"
-                        anomaly_detail = anomaly_detail or f"Records dropped {drop_pct:.0f}% ({prev_records} -> {last_records})"
+                        anomaly_detail = (
+                            anomaly_detail
+                            or f"Records dropped {drop_pct:.0f}% ({prev_records} -> {last_records})"
+                        )
                         suggestions.append(
                             f"  [DROP] {agent_name}: {anomaly_detail}. "
                             f"Verify data source hasn't changed format or rate-limited."
                         )
 
                 # Health score
-                health_score = self._compute_health(avg_duration, last_duration, failure_pct, last_records)
+                health_score = self._compute_health(
+                    avg_duration, last_duration, failure_pct, last_records
+                )
 
                 # Health report entry
-                health_report.append({
-                    "agent": agent_name,
-                    "runs": len(agent_history),
-                    "avg_duration": avg_duration,
-                    "last_duration": last_duration,
-                    "failure_pct": failure_pct,
-                    "avg_records": avg_records,
-                    "health": health_score,
-                    "anomaly": anomaly_type,
-                })
+                health_report.append(
+                    {
+                        "agent": agent_name,
+                        "runs": len(agent_history),
+                        "avg_duration": avg_duration,
+                        "last_duration": last_duration,
+                        "failure_pct": failure_pct,
+                        "avg_records": avg_records,
+                        "health": health_score,
+                        "anomaly": anomaly_type,
+                    }
+                )
 
                 # Insert snapshot
                 now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
@@ -183,7 +200,10 @@ class SpanAgent(BaseAgent):
                         status, anomaly_detected, anomaly_type, anomaly_detail, snapshot_at)
                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                     (
-                        pipeline_name, agent_name, last_duration, last_records,
+                        pipeline_name,
+                        agent_name,
+                        last_duration,
+                        last_records,
                         last_status,
                         1 if anomaly_type else 0,
                         anomaly_type,
@@ -202,7 +222,9 @@ class SpanAgent(BaseAgent):
 
             _logger.info(
                 "SpanAgent: Done — %d agents analyzed, %d anomalies, %d snapshots",
-                len(health_report), anomalies_found, snapshots_inserted,
+                len(health_report),
+                anomalies_found,
+                snapshots_inserted,
             )
 
             return AgentResult(
@@ -216,7 +238,9 @@ class SpanAgent(BaseAgent):
                     "suggestions": suggestions,
                     "records_affected": snapshots_inserted,
                 },
-                errors=[f"{anomalies_found} anomalies detected"] if anomalies_found else [],
+                errors=[f"{anomalies_found} anomalies detected"]
+                if anomalies_found
+                else [],
             )
 
         except Exception as e:
@@ -225,7 +249,9 @@ class SpanAgent(BaseAgent):
         finally:
             conn.close()
 
-    def _parse_duration(self, started_at: str | None, completed_at: str | None) -> float | None:
+    def _parse_duration(
+        self, started_at: str | None, completed_at: str | None
+    ) -> float | None:
         """Parse duration from timestamp strings."""
         if not started_at or not completed_at:
             return None
@@ -238,8 +264,9 @@ class SpanAgent(BaseAgent):
         except ValueError:
             return None
 
-    def _compute_health(self, avg_dur: float, last_dur: float,
-                       failure_pct: float, records: int) -> str:
+    def _compute_health(
+        self, avg_dur: float, last_dur: float, failure_pct: float, records: int
+    ) -> str:
         """Compute a simple health score: green, yellow, or red."""
         if failure_pct > 20:
             return "red"
@@ -260,11 +287,15 @@ class SpanAgent(BaseAgent):
         print(f"\n{'='*60}")
         print("  PIPELINE HEALTH REPORT")
         print(f"{'='*60}")
-        print(f"  {'Agent':<25} {'Runs':>4} {'Avg(s)':>7} {'Last(s)':>7} {'Fail%':>6} {'Health':>7}")
+        print(
+            f"  {'Agent':<25} {'Runs':>4} {'Avg(s)':>7} {'Last(s)':>7} {'Fail%':>6} {'Health':>7}"
+        )
         print(f"  {'-'*25} {'-'*4} {'-'*7} {'-'*7} {'-'*6} {'-'*7}")
 
         for entry in report:
-            health_icon = {"green": "OK", "yellow": "WARN", "red": "FAIL"}.get(entry["health"], "?")
+            health_icon = {"green": "OK", "yellow": "WARN", "red": "FAIL"}.get(
+                entry["health"], "?"
+            )
             anomaly_flag = " !" if entry["anomaly"] else ""
             print(
                 f"  {entry['agent']:<25} {entry['runs']:>4} "
@@ -273,7 +304,7 @@ class SpanAgent(BaseAgent):
             )
 
         if suggestions:
-            print(f"\n  SUGGESTIONS:")
+            print("\n  SUGGESTIONS:")
             for s in suggestions:
                 print(s)
 

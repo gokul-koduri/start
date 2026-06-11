@@ -8,10 +8,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Mock pymysql before importing db modules
 mock_pymysql = MagicMock()
-sys.modules['pymysql'] = mock_pymysql
-sys.modules['pymysql.cursors'] = mock_pymysql.cursors
+sys.modules["pymysql"] = mock_pymysql
+sys.modules["pymysql.cursors"] = mock_pymysql.cursors
 
-from db.dedup import dedup_startup
+from db.dedup import dedup_startup  # noqa: E402
 
 
 class TestDedup:

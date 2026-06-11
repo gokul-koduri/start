@@ -6,10 +6,13 @@ _logger = logging.getLogger(__name__)
 
 try:
     import bcrypt
+
     HAS_BCRYPT = True
 except ImportError:
     HAS_BCRYPT = False
-    _logger.warning("bcrypt not installed — password hashing will use mock implementation")
+    _logger.warning(
+        "bcrypt not installed — password hashing will use mock implementation"
+    )
 
 
 def hash_password(password: str) -> str:
@@ -28,6 +31,7 @@ def hash_password(password: str) -> str:
     else:
         # Mock implementation for testing
         import hashlib
+
         return f"mock_bcrypt_{hashlib.sha256(password.encode()).hexdigest()}"
 
 
@@ -52,6 +56,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     else:
         # Mock verification
         import hashlib
+
         expected = f"mock_bcrypt_{hashlib.sha256(plain_password.encode()).hexdigest()}"
         return expected == hashed_password
 

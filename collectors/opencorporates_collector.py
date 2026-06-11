@@ -52,9 +52,15 @@ class OpenCorporatesCollector(BaseCollector):
         session.headers["Accept"] = "application/json"
         return session
 
-    def _fetch_search(self, session, base_url: str, token: str,
-                      query: str, jurisdictions: list[str] | None = None,
-                      per_page: int = 30) -> dict | None:
+    def _fetch_search(
+        self,
+        session,
+        base_url: str,
+        token: str,
+        query: str,
+        jurisdictions: list[str] | None = None,
+        per_page: int = 30,
+    ) -> dict | None:
         """Search OpenCorporates API for companies."""
         params = {"q": query, "per_page": per_page}
         if token:
@@ -66,15 +72,18 @@ class OpenCorporatesCollector(BaseCollector):
                 break  # API only supports one jurisdiction per request
 
         try:
-            resp = session.get(f"{base_url}/companies/search", params=params, timeout=30)
+            resp = session.get(
+                f"{base_url}/companies/search", params=params, timeout=30
+            )
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
             _logger.warning("OpenCorporates API search failed: %s — %s", query, e)
             return None
 
-    def _fetch_company(self, session, base_url: str, token: str,
-                       jurisdiction: str, company_number: str) -> dict | None:
+    def _fetch_company(
+        self, session, base_url: str, token: str, jurisdiction: str, company_number: str
+    ) -> dict | None:
         """Fetch individual company details."""
         params = {}
         if token:
@@ -86,8 +95,12 @@ class OpenCorporatesCollector(BaseCollector):
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
-            _logger.warning("OpenCorporates company fetch failed: %s/%s — %s",
-                           jurisdiction, company_number, e)
+            _logger.warning(
+                "OpenCorporates company fetch failed: %s/%s — %s",
+                jurisdiction,
+                company_number,
+                e,
+            )
             return None
 
     def _compute_score(self, company: dict) -> float:
@@ -113,7 +126,9 @@ class OpenCorporatesCollector(BaseCollector):
         if inc_date:
             try:
                 inc_dt = datetime.strptime(inc_date, "%Y-%m-%d")
-                age_years = (datetime.now(timezone.utc) - inc_dt.replace(tzinfo=timezone.utc)).days / 365
+                age_years = (
+                    datetime.now(timezone.utc) - inc_dt.replace(tzinfo=timezone.utc)
+                ).days / 365
                 if age_years < 2:
                     score += 30
                 elif age_years < 5:
@@ -138,11 +153,13 @@ class OpenCorporatesCollector(BaseCollector):
         officers = company_data.get("officers", [])
         return [
             {"name": o.get("name", ""), "position": o.get("position", "")}
-            for o in officers if o.get("name")
+            for o in officers
+            if o.get("name")
         ][:10]  # Cap at 10 officers
 
-    def _insert_company(self, cursor, company: dict, search_term: str,
-                        result: CollectionResult) -> None:
+    def _insert_company(
+        self, cursor, company: dict, search_term: str, result: CollectionResult
+    ) -> None:
         """Insert company into company_profiles and raw_signals."""
         company_data = company.get("company", {})
         name = company_data.get("name", "")
@@ -198,7 +215,9 @@ class OpenCorporatesCollector(BaseCollector):
                 "opencorporates",
                 registry_url,
                 f"{name} ({jurisdiction.upper()}) — {status}",
-                f"{address} | Type: {company_type} | Incorporated: {inc_date}" if address else "",
+                f"{address} | Type: {company_type} | Incorporated: {inc_date}"
+                if address
+                else "",
                 name,
                 inc_date,
                 datetime.now(timezone.utc).isoformat(),
@@ -237,11 +256,14 @@ class OpenCorporatesCollector(BaseCollector):
         base_url = config.get("base_url", _BASE_URL)
         token = config.get("api_token", "")
         session = self._build_session(config)
-        search_queries = config.get("search_queries", [
-            {"query": "AI startup", "jurisdictions": ["us", "gb"]},
-            {"query": "machine learning", "jurisdictions": ["us", "gb"]},
-            {"query": "fintech", "jurisdictions": ["us", "gb"]},
-        ])
+        search_queries = config.get(
+            "search_queries",
+            [
+                {"query": "AI startup", "jurisdictions": ["us", "gb"]},
+                {"query": "machine learning", "jurisdictions": ["us", "gb"]},
+                {"query": "fintech", "jurisdictions": ["us", "gb"]},
+            ],
+        )
         per_page = config.get("per_page", 30)
         min_delay = config.get("min_delay_seconds", 2)
 
@@ -252,8 +274,9 @@ class OpenCorporatesCollector(BaseCollector):
             jurisdictions = sq.get("jurisdictions", [])
 
             # Search with first jurisdiction (API limitation)
-            data = self._fetch_search(session, base_url, token,
-                                        query, jurisdictions, per_page)
+            data = self._fetch_search(
+                session, base_url, token, query, jurisdictions, per_page
+            )
 
             if not isinstance(data, dict):
                 continue
@@ -271,7 +294,8 @@ class OpenCorporatesCollector(BaseCollector):
 
             _logger.info(
                 "OpenCorporatesCollector: query '%s' → %d companies",
-                query, len(companies),
+                query,
+                len(companies),
             )
 
         result.records_inserted = result.records_collected

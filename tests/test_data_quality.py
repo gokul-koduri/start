@@ -13,6 +13,7 @@ class TestDataQualityAgent(unittest.TestCase):
     def test_agent_exists(self):
         """Test agent can be imported."""
         from agents.data_quality_agent import DataQualityAgent
+
         agent = DataQualityAgent()
         self.assertEqual(agent.name, "data_quality")
 

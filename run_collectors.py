@@ -11,7 +11,6 @@ Usage:
 import argparse
 import fcntl
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -49,7 +48,9 @@ def acquire_lock():
         fcntl.flock(LOCK_FILE, fcntl.LOCK_EX | fcntl.LOCK_NB)
         return True
     except (IOError, OSError) as e:
-        logging.error("Could not acquire lock — another collection run may be in progress: %s", e)
+        logging.error(
+            "Could not acquire lock — another collection run may be in progress: %s", e
+        )
         return False
 
 
@@ -70,8 +71,14 @@ def main():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--all", action="store_true", help="Run all enabled collectors")
     group.add_argument("--collector", type=str, help="Run a specific collector by name")
-    parser.add_argument("--dry-run", action="store_true", help="Log actions without writing to DB")
-    parser.add_argument("--force", action="store_true", help="Ignore incremental state, collect everything")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Log actions without writing to DB"
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Ignore incremental state, collect everything",
+    )
 
     args = parser.parse_args()
 
@@ -110,18 +117,31 @@ def main():
             collector_class = ALL_COLLECTORS[name]
             collector = collector_class(config=config, dry_run=args.dry_run)
             result = collector.run()
-            results.append((
-                name, result.status, result.records_collected,
-                result.records_inserted, result.records_skipped, result.errors,
-            ))
+            results.append(
+                (
+                    name,
+                    result.status,
+                    result.records_collected,
+                    result.records_inserted,
+                    result.records_skipped,
+                    result.errors,
+                )
+            )
 
         # Print summary
         _logger.info("=" * 60)
         _logger.info("COLLECTION SUMMARY")
         _logger.info("=" * 60)
         for name, status, collected, inserted, skipped, errors in results:
-            _logger.info("  %-25s status=%-8s collected=%-4d inserted=%-4d skipped=%-4d errors=%d",
-                         name, status, collected, inserted, skipped, len(errors))
+            _logger.info(
+                "  %-25s status=%-8s collected=%-4d inserted=%-4d skipped=%-4d errors=%d",
+                name,
+                status,
+                collected,
+                inserted,
+                skipped,
+                len(errors),
+            )
 
         # Exit code
         has_failure = any(s == "failed" for _, s, *_ in results)

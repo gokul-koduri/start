@@ -24,12 +24,10 @@ Usage:
 """
 
 import ast
-import os
 import re
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
 
 from agents.base import AgentResult, BaseAgent
 
@@ -143,10 +141,12 @@ class SolutionArchitectAgent(BaseAgent):
 
                 # Large files
                 if lines > 500:
-                    metrics["files_over_500_lines"].append({
-                        "file": str(pyfile),
-                        "lines": lines,
-                    })
+                    metrics["files_over_500_lines"].append(
+                        {
+                            "file": str(pyfile),
+                            "lines": lines,
+                        }
+                    )
 
                 # Long functions
                 try:
@@ -156,11 +156,13 @@ class SolutionArchitectAgent(BaseAgent):
                             end = getattr(node, "end_lineno", node.lineno)
                             func_len = end - node.lineno + 1
                             if func_len > 50:
-                                metrics["functions_over_50_lines"].append({
-                                    "file": str(pyfile),
-                                    "function": node.name,
-                                    "lines": func_len,
-                                })
+                                metrics["functions_over_50_lines"].append(
+                                    {
+                                        "file": str(pyfile),
+                                        "function": node.name,
+                                        "lines": func_len,
+                                    }
+                                )
                 except SyntaxError:
                     pass
 
@@ -170,10 +172,13 @@ class SolutionArchitectAgent(BaseAgent):
         # Count agents and collectors
         metrics["agent_count"] = len(list(Path("agents").glob("*_agent.py")))
         metrics["agent_count"] += len(list(Path("agents").glob("*_agent_*.py")))
-        metrics["collector_count"] = len([
-            f for f in Path("collectors").glob("*.py")
-            if f.name not in ("__init__.py", "base.py") and "_stubs" not in str(f)
-        ])
+        metrics["collector_count"] = len(
+            [
+                f
+                for f in Path("collectors").glob("*.py")
+                if f.name not in ("__init__.py", "base.py") and "_stubs" not in str(f)
+            ]
+        )
 
         # Sort for readability
         metrics["files_over_500_lines"].sort(key=lambda x: -x["lines"])
@@ -203,20 +208,24 @@ class SolutionArchitectAgent(BaseAgent):
                         if re.search(pattern, line, re.IGNORECASE):
                             debt["total"] += 1
                             debt["by_type"][tag] = debt["by_type"].get(tag, 0) + 1
-                            debt["by_file"][str(pyfile)] = debt["by_file"].get(str(pyfile), 0) + 1
-                            debt["items"].append({
-                                "type": tag,
-                                "file": str(pyfile),
-                                "line": i,
-                                "text": line.strip()[:100],
-                            })
+                            debt["by_file"][str(pyfile)] = (
+                                debt["by_file"].get(str(pyfile), 0) + 1
+                            )
+                            debt["items"].append(
+                                {
+                                    "type": tag,
+                                    "file": str(pyfile),
+                                    "line": i,
+                                    "text": line.strip()[:100],
+                                }
+                            )
             except Exception:
                 pass
 
         # Top debt files
-        debt["top_debt_files"] = sorted(
-            debt["by_file"].items(), key=lambda x: -x[1]
-        )[:10]
+        debt["top_debt_files"] = sorted(debt["by_file"].items(), key=lambda x: -x[1])[
+            :10
+        ]
 
         return debt
 
@@ -235,7 +244,9 @@ class SolutionArchitectAgent(BaseAgent):
             if dd_path.exists():
                 content = dd_path.read_text()
                 status["total_adrs"] = content.count("ADR-")
-                status["location"] = "DOCUMENT_DECISIONS.md (should migrate to docs/adr/)"
+                status["location"] = (
+                    "DOCUMENT_DECISIONS.md (should migrate to docs/adr/)"
+                )
 
         # Known decisions that need ADRs
         status["undocumented_decisions"] = [
@@ -253,27 +264,36 @@ class SolutionArchitectAgent(BaseAgent):
         targets = []
 
         for f in metrics.get("files_over_500_lines", []):
-            targets.append({
-                "type": "large_file",
-                "file": f["file"],
-                "detail": f"{f['lines']} lines (max 500)",
-                "action": "Split into smaller modules",
-                "priority": "P1" if f["lines"] > 1000 else "P2",
-            })
+            targets.append(
+                {
+                    "type": "large_file",
+                    "file": f["file"],
+                    "detail": f"{f['lines']} lines (max 500)",
+                    "action": "Split into smaller modules",
+                    "priority": "P1" if f["lines"] > 1000 else "P2",
+                }
+            )
 
         for f in metrics.get("functions_over_50_lines", [])[:20]:
-            targets.append({
-                "type": "long_function",
-                "file": f["file"],
-                "detail": f"{f['function']}() = {f['lines']} lines (max 50)",
-                "action": "Extract helper functions",
-                "priority": "P1" if f["lines"] > 100 else "P2",
-            })
+            targets.append(
+                {
+                    "type": "long_function",
+                    "file": f["file"],
+                    "detail": f"{f['function']}() = {f['lines']} lines (max 50)",
+                    "action": "Extract helper functions",
+                    "priority": "P1" if f["lines"] > 100 else "P2",
+                }
+            )
 
-        return sorted(targets, key=lambda x: (
-            0 if x["priority"] == "P1" else 1,
-            -int(re.search(r'(\d+)', x["detail"]).group(1)) if re.search(r'(\d+)', x["detail"]) else 0
-        ))
+        return sorted(
+            targets,
+            key=lambda x: (
+                0 if x["priority"] == "P1" else 1,
+                -int(re.search(r"(\d+)", x["detail"]).group(1))
+                if re.search(r"(\d+)", x["detail"])
+                else 0,
+            ),
+        )
 
     def _grade_health(self, metrics: dict, debt: dict, refactoring: list) -> dict:
         """Grade overall architecture health (A through F)."""

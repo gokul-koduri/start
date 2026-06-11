@@ -59,7 +59,7 @@ def render():
     q_cnt = queries[0]["cnt"] if queries else 0
     c_cnt = chats[0]["cnt"] if chats else 0
     f_cnt = feedback[0]["cnt"] if feedback else 0
-    f_avg = (
+    (
         float(feedback[0]["avg_rating"])
         if feedback and feedback[0].get("avg_rating")
         else 0.0
@@ -82,7 +82,9 @@ def render():
         "GROUP BY query ORDER BY count DESC LIMIT 20"
     )
     if top_queries:
-        st.dataframe(pd.DataFrame(top_queries), use_container_width=True, hide_index=True)
+        st.dataframe(
+            pd.DataFrame(top_queries), use_container_width=True, hide_index=True
+        )
     else:
         st.info("No search queries recorded yet.")
 
@@ -111,7 +113,9 @@ def render():
             "GROUP BY rating ORDER BY rating"
         )
         if ratings:
-            st.dataframe(pd.DataFrame(ratings), use_container_width=True, hide_index=True)
+            st.dataframe(
+                pd.DataFrame(ratings), use_container_width=True, hide_index=True
+            )
         else:
             st.info("No score feedback yet.")
 

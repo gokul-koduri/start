@@ -1,7 +1,7 @@
 """Tests for tenant manager."""
 
 import unittest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock
 import sys
 from pathlib import Path
 
@@ -14,6 +14,7 @@ class TestTenantManager(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         from auth.tenant_manager import TenantManager
+
         self.manager = TenantManager({"tenant_id": "default"})
 
     def test_current_tenant(self):
@@ -130,7 +131,9 @@ class TestTenantManager(unittest.TestCase):
         mock_conn.cursor.return_value = mock_cursor
         mock_get_connection.return_value = mock_conn
 
-        tenant_id = self.manager.create_tenant("New Tenant", "new-tenant", {"feature": "premium"})
+        tenant_id = self.manager.create_tenant(
+            "New Tenant", "new-tenant", {"feature": "premium"}
+        )
 
         self.assertEqual(tenant_id, 42)
         mock_cursor.execute.assert_called_once()

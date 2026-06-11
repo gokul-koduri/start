@@ -27,10 +27,29 @@ _PYPI_API = "https://pypi.org/pypi"
 
 # Keywords/classifiers indicating startup relevance
 _RELEVANT_KEYWORDS = {
-    "startup", "saas", "api", "framework", "serverless", "microservices",
-    "deployment", "monitoring", "authentication", "database", "orm",
-    "machine-learning", "ai", "llm", "rag", "vector", "embedding",
-    "devops", "docker", "kubernetes", "graphql", "real-time", "websocket",
+    "startup",
+    "saas",
+    "api",
+    "framework",
+    "serverless",
+    "microservices",
+    "deployment",
+    "monitoring",
+    "authentication",
+    "database",
+    "orm",
+    "machine-learning",
+    "ai",
+    "llm",
+    "rag",
+    "vector",
+    "embedding",
+    "devops",
+    "docker",
+    "kubernetes",
+    "graphql",
+    "real-time",
+    "websocket",
 }
 
 _DEFAULT_PACKAGES = [
@@ -63,8 +82,9 @@ class NPMPyPICollector(BaseCollector):
         except (ValueError, TypeError):
             return None
 
-    def _fetch_npm_package(self, session, package_name: str,
-                           timeout: int = 15) -> dict | None:
+    def _fetch_npm_package(
+        self, session, package_name: str, timeout: int = 15
+    ) -> dict | None:
         """Fetch package metadata from NPM registry."""
         url = f"{_NPM_REGISTRY}/{quote(package_name)}"
         try:
@@ -72,15 +92,18 @@ class NPMPyPICollector(BaseCollector):
             resp.raise_for_status()
             data = resp.json()
         except Exception as e:
-            _logger.warning("NPMPyPICollector: NPM fetch failed for %s — %s", package_name, e)
+            _logger.warning(
+                "NPMPyPICollector: NPM fetch failed for %s — %s", package_name, e
+            )
             return None
 
         # Fetch downloads separately
         downloads = self._fetch_npm_downloads(session, package_name, timeout)
         return self._parse_npm(data, downloads)
 
-    def _fetch_npm_downloads(self, session, package_name: str,
-                             timeout: int = 15) -> int:
+    def _fetch_npm_downloads(
+        self, session, package_name: str, timeout: int = 15
+    ) -> int:
         """Fetch monthly download count from NPM downloads API."""
         url = f"{_NPM_DOWNLOADS}/{quote(package_name)}"
         try:
@@ -115,8 +138,9 @@ class NPMPyPICollector(BaseCollector):
             "updated_at_registry": modified_at,
         }
 
-    def _fetch_pypi_package(self, session, package_name: str,
-                            timeout: int = 15) -> dict | None:
+    def _fetch_pypi_package(
+        self, session, package_name: str, timeout: int = 15
+    ) -> dict | None:
         """Fetch package metadata from PyPI JSON API."""
         url = f"{_PYPI_API}/{quote(package_name)}/json"
         try:
@@ -124,7 +148,9 @@ class NPMPyPICollector(BaseCollector):
             resp.raise_for_status()
             data = resp.json()
         except Exception as e:
-            _logger.warning("NPMPyPICollector: PyPI fetch failed for %s — %s", package_name, e)
+            _logger.warning(
+                "NPMPyPICollector: PyPI fetch failed for %s — %s", package_name, e
+            )
             return None
 
         return self._parse_pypi(data)
@@ -138,7 +164,7 @@ class NPMPyPICollector(BaseCollector):
 
         # PyPI doesn't provide monthly downloads via JSON API
         # We use release count as a proxy for activity
-        releases = data.get("releases", {})
+        data.get("releases", {})
         version = info.get("version", "")
 
         return {
@@ -147,10 +173,16 @@ class NPMPyPICollector(BaseCollector):
             "version": version,
             "description": info.get("summary", ""),
             "monthly_downloads": 0,
-            "keywords": [k.strip() for k in info.get("keywords", "").split(",") if k.strip()] if info.get("keywords") else info.get("classifiers", []),
+            "keywords": [
+                k.strip() for k in info.get("keywords", "").split(",") if k.strip()
+            ]
+            if info.get("keywords")
+            else info.get("classifiers", []),
             "author": info.get("author", ""),
             "license_type": info.get("license", ""),
-            "project_url": (data.get("urls") or {}).get("project", info.get("project_url", "")),
+            "project_url": (data.get("urls") or {}).get(
+                "project", info.get("project_url", "")
+            ),
             "created_at_registry": None,  # PyPI doesn't expose creation date easily
             "updated_at_registry": None,
         }
@@ -200,11 +232,20 @@ class NPMPyPICollector(BaseCollector):
 
         return min(score, 100.0)
 
-    def _insert_package(self, cursor, pkg: dict, raw_score: float,
-                        result: CollectionResult) -> None:
+    def _insert_package(
+        self, cursor, pkg: dict, raw_score: float, result: CollectionResult
+    ) -> None:
         """Insert package into package_trends + raw_signals tables."""
-        created_iso = pkg["created_at_registry"].isoformat() if pkg.get("created_at_registry") else None
-        updated_iso = pkg["updated_at_registry"].isoformat() if pkg.get("updated_at_registry") else None
+        created_iso = (
+            pkg["created_at_registry"].isoformat()
+            if pkg.get("created_at_registry")
+            else None
+        )
+        updated_iso = (
+            pkg["updated_at_registry"].isoformat()
+            if pkg.get("updated_at_registry")
+            else None
+        )
 
         # Insert into package_trends
         cursor.execute(
@@ -230,7 +271,9 @@ class NPMPyPICollector(BaseCollector):
         )
 
         # Insert into raw_signals
-        signal_title = f"[{pkg['registry'].upper()}] {pkg['package_name']} v{pkg['version']}"
+        signal_title = (
+            f"[{pkg['registry'].upper()}] {pkg['package_name']} v{pkg['version']}"
+        )
         signal_body = pkg["description"][:500] if pkg["description"] else ""
 
         cursor.execute(
@@ -297,7 +340,9 @@ class NPMPyPICollector(BaseCollector):
             elif registry == "pypi":
                 pkg = self._fetch_pypi_package(session, pkg_name, timeout)
             else:
-                _logger.warning("NPMPyPICollector: unknown registry '%s' for %s", registry, pkg_name)
+                _logger.warning(
+                    "NPMPyPICollector: unknown registry '%s' for %s", registry, pkg_name
+                )
                 continue
 
             if pkg is None:
@@ -309,7 +354,8 @@ class NPMPyPICollector(BaseCollector):
                 self._insert_package(cursor, pkg, raw_score, result)
             except Exception as e:
                 result.errors.append(
-                    f"Error inserting package {pkg_name} ({registry}): {e}")
+                    f"Error inserting package {pkg_name} ({registry}): {e}"
+                )
 
             time.sleep(min_delay)
 

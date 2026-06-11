@@ -17,14 +17,12 @@ and track accuracy over time.
 
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
-from pathlib import Path
 from typing import Any
 
-from scoring.composite_scorer import CompositeScorer, ScoreResult
+from scoring.composite_scorer import CompositeScorer
 from scoring.signal_weights import SIGNAL_WEIGHTS
 
 _logger = logging.getLogger(__name__)
@@ -152,7 +150,6 @@ VALIDATION_SET: list[dict[str, Any]] = [
             "news_mention": {"raw_score": 80, "published_at": "recent"},
         },
     },
-
     # ── 10 Failed Startups ──
     {
         "entity_name": "Theranos",
@@ -396,7 +393,9 @@ def run_validation(
     report.precision = report.true_positives / max(1, predicted_positives) * 100
     report.recall = report.true_positives / max(1, actual_positives) * 100
     if report.precision + report.recall > 0:
-        report.f1_score = 2 * report.precision * report.recall / (report.precision + report.recall)
+        report.f1_score = (
+            2 * report.precision * report.recall / (report.precision + report.recall)
+        )
     else:
         report.f1_score = 0.0
 
@@ -414,8 +413,12 @@ def suggest_weight_tuning(report: ValidationReport) -> list[str]:
         return suggestions
 
     # Analyze failure patterns
-    false_positives = [r for r in report.results if not r.correct and r.predicted_outcome == "success"]
-    false_negatives = [r for r in report.results if not r.correct and r.predicted_outcome == "failure"]
+    false_positives = [
+        r for r in report.results if not r.correct and r.predicted_outcome == "success"
+    ]
+    false_negatives = [
+        r for r in report.results if not r.correct and r.predicted_outcome == "failure"
+    ]
 
     if false_positives:
         names = ", ".join(r.entity_name for r in false_positives)
@@ -448,14 +451,16 @@ def suggest_weight_tuning(report: ValidationReport) -> list[str]:
 def print_report(report: ValidationReport, verbose: bool = False):
     """Print a human-readable validation report."""
     print(f"\n{'=' * 60}")
-    print(f"SCORE VALIDATION REPORT")
+    print("SCORE VALIDATION REPORT")
     print(f"{'=' * 60}")
     print(f"Threshold: {report.threshold:.0f}")
-    print(f"Accuracy:  {report.accuracy:.1f}% ({report.correct}/{report.total} correct)")
+    print(
+        f"Accuracy:  {report.accuracy:.1f}% ({report.correct}/{report.total} correct)"
+    )
     print(f"Precision: {report.precision:.1f}%")
     print(f"Recall:    {report.recall:.1f}%")
     print(f"F1 Score:  {report.f1_score:.1f}%")
-    print(f"\nConfusion Matrix:")
+    print("\nConfusion Matrix:")
     print(f"  TP={report.true_positives}  FP={report.false_positives}")
     print(f"  FN={report.false_negatives}  TN={report.true_negatives}")
 
@@ -463,8 +468,10 @@ def print_report(report: ValidationReport, verbose: bool = False):
         print(f"\n{'─' * 60}")
         for r in sorted(report.results, key=lambda x: (-x.correct, x.score)):
             icon = "✓" if r.correct else "✗"
-            print(f"  [{icon}] {r.entity_name:25s} score={r.score:6.1f} "
-                  f"actual={r.actual_outcome:7s} predicted={r.predicted_outcome}")
+            print(
+                f"  [{icon}] {r.entity_name:25s} score={r.score:6.1f} "
+                f"actual={r.actual_outcome:7s} predicted={r.predicted_outcome}"
+            )
 
     suggestions = suggest_weight_tuning(report)
     if suggestions:

@@ -11,7 +11,7 @@ import json
 import logging
 import threading
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from typing import Any
 
 _logger = logging.getLogger(__name__)
@@ -152,6 +152,7 @@ class MetricsWriter:
         """
         try:
             import redis as redis_client
+
             r = redis_client.from_url(
                 self._redis_url,
                 socket_connect_timeout=2,

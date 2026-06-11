@@ -1,0 +1,146 @@
+name: Sprint Board Automation
+
+on:
+  issues:
+    types: [opened, closed, reopened, assigned, labeled, unlabeled]
+  pull_request:
+    types: [opened, closed, review_requested, ready_for_review, converted_to_draft]
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  # ── Auto-label issues by sprint ───────────────────────
+  auto-label:
+    name: Auto-label Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues'
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = (issue.body || '').toLowerCase();
+
+            // Auto-label by sprint mention in body or title
+            const sprintPatterns = [
+              { pattern: /sprint\s*1/i, label: 'sprint/1' },
+              { pattern: /sprint\s*2/i, label: 'sprint/2' },
+              { pattern: /sprint\s*3/i, label: 'sprint/3' },
+              { pattern: /sprint\s*4/i, label: 'sprint/4' },
+              { pattern: /sprint\s*5/i, label: 'sprint/5' },
+              { pattern: /sprint\s*6/i, label: 'sprint/6' },
+              { pattern: /sprint\s*7/i, label: 'sprint/7' },
+              { pattern: /sprint\s*8/i, label: 'sprint/8' },
+            ];
+
+            const labelsToAdd = [];
+            for (const { pattern, label } of sprintPatterns) {
+              if (pattern.test(body) || pattern.test(issue.title)) {
+                labelsToAdd.push(label);
+              }
+            }
+
+            // Auto-label by type keywords
+            const typePatterns = [
+              { pattern: /\bbug\b|\bfix\b|\bbroken\b/i, label: 'type/bug' },
+              { pattern: /\bfeature\b|\badd\b|\bnew\b/i, label: 'type/story' },
+              { pattern: /\bspike\b|\bresearch\b|\binvestigate\b/i, label: 'type/spike' },
+              { pattern: /\bchore\b|\bcleanup\b|\brefactor\b/i, label: 'type/chore' },
+            ];
+
+            for (const { pattern, label } of typePatterns) {
+              if (pattern.test(issue.title) && !issue.labels.some(l => l.name.startsWith('type/'))) {
+                labelsToAdd.push(label);
+              }
+            }
+
+            if (labelsToAdd.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: [...new Set(labelsToAdd)]
+              });
+            }
+
+  # ── Manage project board columns ─────────────────────
+  board-manage:
+    name: Update Board Status
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues'
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const action = context.payload.action;
+
+            // Add a status comment for new issues
+            if (action === 'opened') {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `📋 **Issue tracked** — Added to Backlog.\n\n` +
+                  `Use labels to assign: sprint, priority, type, component.\n` +
+                  `Link PRs with: "Closes #${issue.number}" in the description.`
+              });
+            }
+
+            // Celebration on close
+            if (action === 'closed') {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `🎉 **Completed!** This issue has been closed.`
+              });
+            }
+
+  # ── Link PR to Issue ─────────────────────────────────
+  link-pr:
+    name: Link PR to Issue
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+
+            // Find linked issue numbers
+            const issueMatches = body.match(/(?:closes|fixes|resolves|refs)\s*#(\d+)/gi) || [];
+
+            if (issueMatches.length === 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: `⚠️ **No linked issue found.**\n\n` +
+                  `Please link this PR to an issue using:\n` +
+                  `- \`Closes #123\`\n` +
+                  `- \`Fixes #123\`\n` +
+                  `- \`Resolves #123\``
+              });
+            }
+
+  # ── Stale Issue Management ───────────────────────────
+  stale-check:
+    name: Stale Issue Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-issue-message: "⚠️ This issue has been inactive for 7 days. It will be closed in 7 more days if no activity."
+          close-issue-message: "🔒 This issue was closed due to inactivity. Reopen if still relevant."
+          stale-issue-label: "stale"
+          days-before-stale: 7
+          days-before-close: 14
+          days-before-pr-stale: -1
+          days-before-pr-close: -1

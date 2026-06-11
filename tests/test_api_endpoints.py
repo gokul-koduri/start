@@ -1,7 +1,6 @@
 """API endpoint tests — validates route registration, response structure, and error handling (T-040)."""
 
 import unittest
-from unittest.mock import patch, MagicMock
 import sys
 from pathlib import Path
 
@@ -17,6 +16,7 @@ class TestAPIRoutesRegistered(unittest.TestCase):
         try:
             from fastapi.testclient import TestClient
             from api_server import app
+
             cls.client = TestClient(app)
             cls.app = app
         except ImportError:
@@ -126,6 +126,7 @@ class TestAPIResponseStructure(unittest.TestCase):
         try:
             from fastapi.testclient import TestClient
             from api_server import app
+
             cls.client = TestClient(app)
         except ImportError:
             raise unittest.SkipTest("FastAPI not installed")
@@ -178,7 +179,9 @@ class TestAPIRouteCount(unittest.TestCase):
             from api_server import app
         except ImportError:
             self.skipTest("FastAPI not installed")
-        get_routes = [r for r in app.routes if hasattr(r, 'methods') and 'GET' in r.methods]
+        get_routes = [
+            r for r in app.routes if hasattr(r, "methods") and "GET" in r.methods
+        ]
         self.assertGreaterEqual(len(get_routes), 30)
 
     def test_post_routes_registered(self):
@@ -187,7 +190,9 @@ class TestAPIRouteCount(unittest.TestCase):
             from api_server import app
         except ImportError:
             self.skipTest("FastAPI not installed")
-        post_routes = [r for r in app.routes if hasattr(r, 'methods') and 'POST' in r.methods]
+        post_routes = [
+            r for r in app.routes if hasattr(r, "methods") and "POST" in r.methods
+        ]
         self.assertGreaterEqual(len(post_routes), 5)
 
     def test_put_routes_registered(self):
@@ -196,7 +201,9 @@ class TestAPIRouteCount(unittest.TestCase):
             from api_server import app
         except ImportError:
             self.skipTest("FastAPI not installed")
-        put_routes = [r for r in app.routes if hasattr(r, 'methods') and 'PUT' in r.methods]
+        put_routes = [
+            r for r in app.routes if hasattr(r, "methods") and "PUT" in r.methods
+        ]
         self.assertGreaterEqual(len(put_routes), 1)
 
 
@@ -208,6 +215,7 @@ class TestAPIValidation(unittest.TestCase):
         try:
             from fastapi.testclient import TestClient
             from api_server import app
+
             cls.client = TestClient(app)
         except ImportError:
             raise unittest.SkipTest("FastAPI not installed")

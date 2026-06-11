@@ -2,7 +2,7 @@
 
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -25,8 +25,8 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.reddit_stream_collector import RedditStreamCollector, _CREATE_TABLE_SQL
-from collectors.base import CollectionResult
+from collectors.reddit_stream_collector import RedditStreamCollector, _CREATE_TABLE_SQL  # noqa: E402
+from collectors.base import CollectionResult  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -117,8 +117,10 @@ class TestRedditStreamCollectorConfig:
 
     def test_praw_not_available(self):
         c = RedditStreamCollector(config={"reddit_stream": {}})
-        with patch("collectors.reddit_stream_collector.RedditStreamCollector._init_praw",
-                   return_value=None):
+        with patch(
+            "collectors.reddit_stream_collector.RedditStreamCollector._init_praw",
+            return_value=None,
+        ):
             mock_conn = MagicMock()
             result = c.collect(mock_conn)
             assert result.status == "failed"
@@ -169,12 +171,20 @@ class TestRedditStreamCollectorInsertPosts:
         mock_cursor = MagicMock()
         result = CollectionResult(collector_name="reddit_stream")
 
-        posts = [{
-            "id": "abc", "title": "Test Post", "selftext": "Body",
-            "author": "user1", "score": 50, "num_comments": 10,
-            "url": "https://example.com", "permalink": "/r/test/abc",
-            "subreddit": "startups", "created_utc": 1700000000.0,
-        }]
+        posts = [
+            {
+                "id": "abc",
+                "title": "Test Post",
+                "selftext": "Body",
+                "author": "user1",
+                "score": 50,
+                "num_comments": 10,
+                "url": "https://example.com",
+                "permalink": "/r/test/abc",
+                "subreddit": "startups",
+                "created_utc": 1700000000.0,
+            }
+        ]
         c._insert_posts(mock_cursor, posts, result)
         assert result.records_collected == 1
         # 2 SQL calls: social_posts + raw_signals
@@ -186,10 +196,18 @@ class TestRedditStreamCollectorInsertPosts:
         result = CollectionResult(collector_name="reddit_stream")
 
         posts = [
-            {"id": f"p{i}", "title": f"Post {i}", "selftext": "",
-             "author": "u", "score": 10, "num_comments": 5,
-             "url": "https://ex.com", "permalink": f"/r/t/{i}",
-             "subreddit": "startups", "created_utc": 1700000000.0}
+            {
+                "id": f"p{i}",
+                "title": f"Post {i}",
+                "selftext": "",
+                "author": "u",
+                "score": 10,
+                "num_comments": 5,
+                "url": "https://ex.com",
+                "permalink": f"/r/t/{i}",
+                "subreddit": "startups",
+                "created_utc": 1700000000.0,
+            }
             for i in range(5)
         ]
         c._insert_posts(mock_cursor, posts, result)
@@ -200,12 +218,20 @@ class TestRedditStreamCollectorInsertPosts:
         mock_cursor = MagicMock()
         result = CollectionResult(collector_name="reddit_stream")
 
-        posts = [{
-            "id": "bad", "title": "Bad Post", "selftext": "",
-             "author": "u", "score": 10, "num_comments": 0,
-             "url": "https://ex.com", "permalink": "/r/t/bad",
-             "subreddit": "startups", "created_utc": None,
-        }]
+        posts = [
+            {
+                "id": "bad",
+                "title": "Bad Post",
+                "selftext": "",
+                "author": "u",
+                "score": 10,
+                "num_comments": 0,
+                "url": "https://ex.com",
+                "permalink": "/r/t/bad",
+                "subreddit": "startups",
+                "created_utc": None,
+            }
+        ]
         c._insert_posts(mock_cursor, posts, result)
         assert result.records_collected == 1
 
@@ -217,12 +243,20 @@ class TestRedditStreamCollectorInsertPosts:
         mock_cursor.execute.side_effect = [Exception("DB error"), None]
         result = CollectionResult(collector_name="reddit_stream")
 
-        posts = [{
-            "id": "err", "title": "Error Post", "selftext": "",
-             "author": "u", "score": 10, "num_comments": 0,
-             "url": "https://ex.com", "permalink": "/r/t/err",
-             "subreddit": "startups", "created_utc": 1700000000.0,
-        }]
+        posts = [
+            {
+                "id": "err",
+                "title": "Error Post",
+                "selftext": "",
+                "author": "u",
+                "score": 10,
+                "num_comments": 0,
+                "url": "https://ex.com",
+                "permalink": "/r/t/err",
+                "subreddit": "startups",
+                "created_utc": 1700000000.0,
+            }
+        ]
         c._insert_posts(mock_cursor, posts, result)
         # Post processing errored, so count should still be 0
         assert result.records_collected == 0
@@ -232,10 +266,12 @@ class TestRedditStreamCollectorInsertPosts:
 class TestRedditStreamCollectorStream:
     def test_stream_posts_with_submissions(self):
         c = RedditStreamCollector(config={"reddit_stream": {"max_posts": 2}})
-        mock_reddit = _make_mock_praw(submissions=[
-            _make_submission(sid="s1"),
-            _make_submission(sid="s2"),
-        ])
+        mock_reddit = _make_mock_praw(
+            submissions=[
+                _make_submission(sid="s1"),
+                _make_submission(sid="s2"),
+            ]
+        )
         result = CollectionResult(collector_name="reddit_stream")
         posts = c._stream_posts(mock_reddit, ["startups"], {"max_posts": 2}, result)
         assert len(posts) == 2
@@ -250,11 +286,13 @@ class TestRedditStreamCollectorStream:
 
     def test_stream_stops_at_max(self):
         c = RedditStreamCollector(config={"reddit_stream": {"max_posts": 1}})
-        mock_reddit = _make_mock_praw(submissions=[
-            _make_submission(sid="s1"),
-            _make_submission(sid="s2"),
-            _make_submission(sid="s3"),
-        ])
+        mock_reddit = _make_mock_praw(
+            submissions=[
+                _make_submission(sid="s1"),
+                _make_submission(sid="s2"),
+                _make_submission(sid="s3"),
+            ]
+        )
         result = CollectionResult(collector_name="reddit_stream")
         posts = c._stream_posts(mock_reddit, ["startups"], {"max_posts": 1}, result)
         assert len(posts) == 1
@@ -262,13 +300,15 @@ class TestRedditStreamCollectorStream:
 
 class TestRedditStreamCollectorComments:
     def test_collect_comments_enabled(self):
-        c = RedditStreamCollector(config={
-            "reddit_stream": {
-                "collect_comments": True,
-                "min_score": 5,
-                "comment_limit": 3,
-            },
-        })
+        c = RedditStreamCollector(
+            config={
+                "reddit_stream": {
+                    "collect_comments": True,
+                    "min_score": 5,
+                    "comment_limit": 3,
+                },
+            }
+        )
         mock_reddit = MagicMock()
         mock_cursor = MagicMock()
         result = CollectionResult(collector_name="reddit_stream")
@@ -280,6 +320,7 @@ class TestRedditStreamCollectorComments:
 
         class CommentList(list):
             """List subclass with replace_more() method for PRAW compatibility."""
+
             def replace_more(self, limit=0):
                 pass
 
@@ -287,47 +328,75 @@ class TestRedditStreamCollectorComments:
         mock_sub.comments = CommentList(comments_list)
         mock_reddit.submission.return_value = mock_sub
 
-        c._collect_comments(mock_reddit, posts, {
-            "collect_comments": True, "min_score": 5, "comment_limit": 3,
-        }, mock_cursor, result)
+        c._collect_comments(
+            mock_reddit,
+            posts,
+            {
+                "collect_comments": True,
+                "min_score": 5,
+                "comment_limit": 3,
+            },
+            mock_cursor,
+            result,
+        )
 
         assert result.records_collected == 3
         assert mock_cursor.execute.call_count >= 1  # CREATE TABLE + inserts
 
     def test_collect_comments_disabled(self):
-        c = RedditStreamCollector(config={
-            "reddit_stream": {"collect_comments": False},
-        })
+        c = RedditStreamCollector(
+            config={
+                "reddit_stream": {"collect_comments": False},
+            }
+        )
         mock_reddit = MagicMock()
         mock_cursor = MagicMock()
         result = CollectionResult(collector_name="reddit_stream")
         posts = [{"id": "p1", "score": 100, "subreddit": "startups"}]
 
-        c._collect_comments(mock_reddit, posts, {
-            "collect_comments": False,
-        }, mock_cursor, result)
+        c._collect_comments(
+            mock_reddit,
+            posts,
+            {
+                "collect_comments": False,
+            },
+            mock_cursor,
+            result,
+        )
 
         assert result.records_collected == 0
 
     def test_collect_comments_below_min_score(self):
-        c = RedditStreamCollector(config={
-            "reddit_stream": {"collect_comments": True, "min_score": 50},
-        })
+        c = RedditStreamCollector(
+            config={
+                "reddit_stream": {"collect_comments": True, "min_score": 50},
+            }
+        )
         mock_reddit = MagicMock()
         mock_cursor = MagicMock()
         result = CollectionResult(collector_name="reddit_stream")
         posts = [{"id": "p1", "score": 5, "subreddit": "startups"}]
 
-        c._collect_comments(mock_reddit, posts, {
-            "collect_comments": True, "min_score": 50, "comment_limit": 5,
-        }, mock_cursor, result)
+        c._collect_comments(
+            mock_reddit,
+            posts,
+            {
+                "collect_comments": True,
+                "min_score": 50,
+                "comment_limit": 5,
+            },
+            mock_cursor,
+            result,
+        )
 
         assert result.records_collected == 0
 
     def test_collect_comments_skip_deleted(self):
-        c = RedditStreamCollector(config={
-            "reddit_stream": {"collect_comments": True, "min_score": 5},
-        })
+        c = RedditStreamCollector(
+            config={
+                "reddit_stream": {"collect_comments": True, "min_score": 5},
+            }
+        )
         mock_reddit = MagicMock()
         mock_cursor = MagicMock()
         result = CollectionResult(collector_name="reddit_stream")
@@ -341,9 +410,17 @@ class TestRedditStreamCollectorComments:
         mock_sub.comments = CommentList([_make_comment(body="[deleted]")])
         mock_reddit.submission.return_value = mock_sub
 
-        c._collect_comments(mock_reddit, posts, {
-            "collect_comments": True, "min_score": 5, "comment_limit": 5,
-        }, mock_cursor, result)
+        c._collect_comments(
+            mock_reddit,
+            posts,
+            {
+                "collect_comments": True,
+                "min_score": 5,
+                "comment_limit": 5,
+            },
+            mock_cursor,
+            result,
+        )
 
         assert result.records_collected == 0
 
@@ -352,21 +429,25 @@ class TestRedditStreamCollectorIntegration:
     @patch("collectors.reddit_stream_collector.RedditStreamCollector._init_praw")
     def test_collect_full_flow(self, mock_init_praw):
         """Test the full collect() flow with mocked PRAW."""
-        mock_reddit = _make_mock_praw(submissions=[
-            _make_submission(sid="s1", score=200),
-            _make_submission(sid="s2", score=10),
-        ])
+        mock_reddit = _make_mock_praw(
+            submissions=[
+                _make_submission(sid="s1", score=200),
+                _make_submission(sid="s2", score=10),
+            ]
+        )
         mock_init_praw.return_value = mock_reddit
 
-        c = RedditStreamCollector(config={
-            "reddit_client_id": "test",
-            "reddit_client_secret": "test",
-            "reddit_stream": {
-                "subreddits": ["startups"],
-                "max_posts": 2,
-                "collect_comments": False,
-            },
-        })
+        c = RedditStreamCollector(
+            config={
+                "reddit_client_id": "test",
+                "reddit_client_secret": "test",
+                "reddit_stream": {
+                    "subreddits": ["startups"],
+                    "max_posts": 2,
+                    "collect_comments": False,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()

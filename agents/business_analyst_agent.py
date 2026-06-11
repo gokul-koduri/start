@@ -26,7 +26,6 @@ Usage:
     # Returns: requirements gap analysis, market fit score, ROI estimates
 """
 
-import json
 import logging
 from datetime import datetime, timezone
 
@@ -121,8 +120,13 @@ class BusinessAnalystAgent(BaseAgent):
 
     def _analyze_user_needs(self, cursor) -> dict:
         """Analyze what users search for and ask about."""
-        needs = {"top_queries": [], "top_chat_topics": [], "zero_result_queries": [],
-                 "total_queries": 0, "total_chats": 0}
+        needs = {
+            "top_queries": [],
+            "top_chat_topics": [],
+            "zero_result_queries": [],
+            "total_queries": 0,
+            "total_chats": 0,
+        }
 
         try:
             # Top search queries
@@ -133,8 +137,10 @@ class BusinessAnalystAgent(BaseAgent):
             )
             needs["top_queries"] = cursor.fetchall()
 
-            cursor.execute("SELECT COUNT(*) as cnt FROM query_log "
-                           "WHERE created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)")
+            cursor.execute(
+                "SELECT COUNT(*) as cnt FROM query_log "
+                "WHERE created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)"
+            )
             needs["total_queries"] = cursor.fetchone()["cnt"]
 
             # Top chat topics
@@ -145,8 +151,10 @@ class BusinessAnalystAgent(BaseAgent):
             )
             needs["top_chat_topics"] = cursor.fetchall()
 
-            cursor.execute("SELECT COUNT(*) as cnt FROM chat_log "
-                           "WHERE created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)")
+            cursor.execute(
+                "SELECT COUNT(*) as cnt FROM chat_log "
+                "WHERE created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)"
+            )
             needs["total_chats"] = cursor.fetchone()["cnt"]
 
         except Exception as e:
@@ -156,8 +164,12 @@ class BusinessAnalystAgent(BaseAgent):
 
     def _score_market_fit(self, cursor) -> dict:
         """Score how well current features match user needs."""
-        fit = {"score_feedback_avg": 0, "score_feedback_count": 0,
-               "positive_pct": 0, "negative_pct": 0}
+        fit = {
+            "score_feedback_avg": 0,
+            "score_feedback_count": 0,
+            "positive_pct": 0,
+            "negative_pct": 0,
+        }
 
         try:
             cursor.execute("SHOW TABLES LIKE 'score_feedback'")
@@ -192,26 +204,76 @@ class BusinessAnalystAgent(BaseAgent):
         """Rank planned features by estimated cost vs expected benefit."""
         # Based on PROBLEM_FEATURE_MAP.md priorities
         features = [
-            {"feature": "Collector Scheduler", "cost_hours": 16, "benefit": "high",
-             "priority": "P0", "roi_score": 9},
-            {"feature": "Alert Consumer", "cost_hours": 12, "benefit": "high",
-             "priority": "P0", "roi_score": 9},
-            {"feature": "WebSocket Score Push", "cost_hours": 8, "benefit": "high",
-             "priority": "P0", "roi_score": 8},
-            {"feature": "User Auth (JWT)", "cost_hours": 12, "benefit": "high",
-             "priority": "P0", "roi_score": 8},
-            {"feature": "Input Validation", "cost_hours": 4, "benefit": "high",
-             "priority": "P0", "roi_score": 10},
-            {"feature": "Rate Limiting", "cost_hours": 4, "benefit": "medium",
-             "priority": "P1", "roi_score": 7},
-            {"feature": "Watchlists", "cost_hours": 8, "benefit": "medium",
-             "priority": "P1", "roi_score": 6},
-            {"feature": "CSV Export", "cost_hours": 6, "benefit": "medium",
-             "priority": "P1", "roi_score": 5},
-            {"feature": "Stripe Pro Tier", "cost_hours": 16, "benefit": "high",
-             "priority": "P1", "roi_score": 8},
-            {"feature": "Feedback System", "cost_hours": 8, "benefit": "medium",
-             "priority": "P2", "roi_score": 5},
+            {
+                "feature": "Collector Scheduler",
+                "cost_hours": 16,
+                "benefit": "high",
+                "priority": "P0",
+                "roi_score": 9,
+            },
+            {
+                "feature": "Alert Consumer",
+                "cost_hours": 12,
+                "benefit": "high",
+                "priority": "P0",
+                "roi_score": 9,
+            },
+            {
+                "feature": "WebSocket Score Push",
+                "cost_hours": 8,
+                "benefit": "high",
+                "priority": "P0",
+                "roi_score": 8,
+            },
+            {
+                "feature": "User Auth (JWT)",
+                "cost_hours": 12,
+                "benefit": "high",
+                "priority": "P0",
+                "roi_score": 8,
+            },
+            {
+                "feature": "Input Validation",
+                "cost_hours": 4,
+                "benefit": "high",
+                "priority": "P0",
+                "roi_score": 10,
+            },
+            {
+                "feature": "Rate Limiting",
+                "cost_hours": 4,
+                "benefit": "medium",
+                "priority": "P1",
+                "roi_score": 7,
+            },
+            {
+                "feature": "Watchlists",
+                "cost_hours": 8,
+                "benefit": "medium",
+                "priority": "P1",
+                "roi_score": 6,
+            },
+            {
+                "feature": "CSV Export",
+                "cost_hours": 6,
+                "benefit": "medium",
+                "priority": "P1",
+                "roi_score": 5,
+            },
+            {
+                "feature": "Stripe Pro Tier",
+                "cost_hours": 16,
+                "benefit": "high",
+                "priority": "P1",
+                "roi_score": 8,
+            },
+            {
+                "feature": "Feedback System",
+                "cost_hours": 8,
+                "benefit": "medium",
+                "priority": "P2",
+                "roi_score": 5,
+            },
         ]
         return sorted(features, key=lambda x: -x["roi_score"])
 
@@ -220,27 +282,35 @@ class BusinessAnalystAgent(BaseAgent):
         gaps = []
 
         if user_needs.get("total_queries", 0) > 100:
-            gaps.append({
-                "gap": "High query volume but no search analytics",
-                "recommendation": "Build search analytics dashboard",
-                "priority": "P2",
-            })
+            gaps.append(
+                {
+                    "gap": "High query volume but no search analytics",
+                    "recommendation": "Build search analytics dashboard",
+                    "priority": "P2",
+                }
+            )
 
-        gaps.append({
-            "gap": "No user accounts or personalization",
-            "recommendation": "Implement auth + user profiles (Sprint 4)",
-            "priority": "P0",
-        })
-        gaps.append({
-            "gap": "No data export capability",
-            "recommendation": "Build CSV/PDF export (Sprint 6)",
-            "priority": "P1",
-        })
-        gaps.append({
-            "gap": "No scheduled/automated alerts",
-            "recommendation": "Build alert scheduler (Sprint 2)",
-            "priority": "P0",
-        })
+        gaps.append(
+            {
+                "gap": "No user accounts or personalization",
+                "recommendation": "Implement auth + user profiles (Sprint 4)",
+                "priority": "P0",
+            }
+        )
+        gaps.append(
+            {
+                "gap": "No data export capability",
+                "recommendation": "Build CSV/PDF export (Sprint 6)",
+                "priority": "P1",
+            }
+        )
+        gaps.append(
+            {
+                "gap": "No scheduled/automated alerts",
+                "recommendation": "Build alert scheduler (Sprint 2)",
+                "priority": "P0",
+            }
+        )
 
         return gaps
 

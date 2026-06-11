@@ -88,7 +88,7 @@ A **self-hosted, open-source platform** that continuously monitors **24+ data so
 COLLECT → ENRICH → SCORE → ALERT → REPORT → LEARN
    ↑                                        │
    └──────────── (continuous) ───────────────┘
-   
+
 24 sources    NLP/ML      Composite   Webhook/    Markdown    Self-tuning
               pipeline    scoring     Email/Slack  HTML/PDF    models
 ```
@@ -850,7 +850,7 @@ Phase 6:  6.1 → 6.2 → 6.3 → 6.4 → 6.5 → {6.7, 6.8, 6.9, 6.10}
 
 ```
                     REVENUE MODEL
-                    
+
   ┌─────────────────────────────────────────────┐
   │                                             │
   │   1. OPEN SOURCE (Free)                     │

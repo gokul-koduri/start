@@ -26,8 +26,8 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.newsletter_collector import NewsletterCollector
-from collectors.base import CollectionResult
+from collectors.newsletter_collector import NewsletterCollector  # noqa: E402
+from collectors.base import CollectionResult  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -37,16 +37,20 @@ for key, orig in _saved_db_modules.items():
         sys.modules.pop(key, None)
 
 
-def _make_html_response(title="Tech Startup Raises $10M Series A",
-                       author="Jane Smith",
-                       content="This startup just raised funding...",
-                       publish_date=None,
-                       source="technewsletter.com"):
+def _make_html_response(
+    title="Tech Startup Raises $10M Series A",
+    author="Jane Smith",
+    content="This startup just raised funding...",
+    publish_date=None,
+    source="technewsletter.com",
+):
     """Build a mock newsletter HTML response."""
     if publish_date is None:
         publish_date = datetime.now(timezone.utc) - timedelta(days=120)
 
-    date_str = publish_date.isoformat() if isinstance(publish_date, datetime) else publish_date
+    date_str = (
+        publish_date.isoformat() if isinstance(publish_date, datetime) else publish_date
+    )
 
     html = f"""<!DOCTYPE html>
 <html>
@@ -67,11 +71,13 @@ def _make_html_response(title="Tech Startup Raises $10M Series A",
     return html
 
 
-def _make_article_dict(title="Tech Startup Raises $10M Series A",
-                      source_name="technewsletter.com",
-                      author="Jane Smith",
-                      content_text="This startup just raised funding...",
-                      publish_date=None):
+def _make_article_dict(
+    title="Tech Startup Raises $10M Series A",
+    source_name="technewsletter.com",
+    author="Jane Smith",
+    content_text="This startup just raised funding...",
+    publish_date=None,
+):
     """Build a parsed article dict matching _parse_html output."""
     if publish_date is None:
         # Default to old date (NOT recent)
@@ -129,7 +135,7 @@ class TestNewsletterCollectorScoring:
         c = NewsletterCollector(config={})
         article = _make_article_dict(
             content_text="This startup just raised a seed round in series A funding",
-            publish_date=datetime.now(timezone.utc) - timedelta(days=3)
+            publish_date=datetime.now(timezone.utc) - timedelta(days=3),
         )
         score = c._compute_score(article)
         # Recent <7d (+35) + keywords (+25) + length >1000 (+10) = 70
@@ -140,7 +146,7 @@ class TestNewsletterCollectorScoring:
         article = _make_article_dict(
             title="Weather Report for Today",  # Override title to avoid keywords
             content_text="Random article about weather",  # Short content
-            publish_date=datetime.now(timezone.utc) - timedelta(days=120)
+            publish_date=datetime.now(timezone.utc) - timedelta(days=120),
         )
         score = c._compute_score(article)
         # No keywords, old date, short content = 0
@@ -150,7 +156,7 @@ class TestNewsletterCollectorScoring:
         c = NewsletterCollector(config={})
         article = _make_article_dict(
             content_text="Company launched new product",
-            publish_date=datetime.now(timezone.utc) - timedelta(days=15)
+            publish_date=datetime.now(timezone.utc) - timedelta(days=15),
         )
         score = c._compute_score(article)
         # Recent <30d (+20) = 20
@@ -161,7 +167,7 @@ class TestNewsletterCollectorScoring:
         long_text = "This startup " * 500  # >1000 chars
         article = _make_article_dict(
             content_text=long_text,
-            publish_date=datetime.now(timezone.utc) - timedelta(days=120)
+            publish_date=datetime.now(timezone.utc) - timedelta(days=120),
         )
         score = c._compute_score(article)
         # Length >1000 (+10) = 10
@@ -172,7 +178,7 @@ class TestNewsletterCollectorScoring:
         long_text = "This startup funding " * 1000  # Very long
         article = _make_article_dict(
             content_text=long_text,
-            publish_date=datetime.now(timezone.utc) - timedelta(days=1)
+            publish_date=datetime.now(timezone.utc) - timedelta(days=1),
         )
         score = c._compute_score(article)
         # Should be capped at 100
@@ -273,13 +279,17 @@ class TestNewsletterCollectorIntegration:
         html = _make_html_response(title="AI Startup Launch")
         session = _make_mock_session([html])
 
-        with patch("collectors.newsletter_collector.get_http_session", return_value=session):
-            c = NewsletterCollector(config={
-                "newsletter": {
-                    "sources": ["http://example.com/newsletter"],
-                    "min_delay_seconds": 0,
-                },
-            })
+        with patch(
+            "collectors.newsletter_collector.get_http_session", return_value=session
+        ):
+            c = NewsletterCollector(
+                config={
+                    "newsletter": {
+                        "sources": ["http://example.com/newsletter"],
+                        "min_delay_seconds": 0,
+                    },
+                }
+            )
 
             mock_conn = MagicMock()
             mock_cursor = MagicMock()
@@ -296,13 +306,17 @@ class TestNewsletterCollectorIntegration:
         html = "<html><body><p>No title here</p></body></html>"
         session = _make_mock_session([html])
 
-        with patch("collectors.newsletter_collector.get_http_session", return_value=session):
-            c = NewsletterCollector(config={
-                "newsletter": {
-                    "sources": ["http://example.com"],
-                    "min_delay_seconds": 0,
-                },
-            })
+        with patch(
+            "collectors.newsletter_collector.get_http_session", return_value=session
+        ):
+            c = NewsletterCollector(
+                config={
+                    "newsletter": {
+                        "sources": ["http://example.com"],
+                        "min_delay_seconds": 0,
+                    },
+                }
+            )
 
             mock_conn = MagicMock()
             mock_cursor = MagicMock()
@@ -319,16 +333,20 @@ class TestNewsletterCollectorIntegration:
         html2 = _make_html_response(title="Newsletter 2")
         session = _make_mock_session([html1, html2])
 
-        with patch("collectors.newsletter_collector.get_http_session", return_value=session):
-            c = NewsletterCollector(config={
-                "newsletter": {
-                    "sources": [
-                        "http://example1.com",
-                        "http://example2.com",
-                    ],
-                    "min_delay_seconds": 0,
-                },
-            })
+        with patch(
+            "collectors.newsletter_collector.get_http_session", return_value=session
+        ):
+            c = NewsletterCollector(
+                config={
+                    "newsletter": {
+                        "sources": [
+                            "http://example1.com",
+                            "http://example2.com",
+                        ],
+                        "min_delay_seconds": 0,
+                    },
+                }
+            )
 
             mock_conn = MagicMock()
             mock_cursor = MagicMock()
@@ -343,13 +361,17 @@ class TestNewsletterCollectorIntegration:
         html = _make_html_response()
         session = _make_mock_session([html])
 
-        with patch("collectors.newsletter_collector.get_http_session", return_value=session):
-            c = NewsletterCollector(config={
-                "newsletter": {
-                    "sources": ["http://example.com"],
-                    "min_delay_seconds": 0,
-                },
-            })
+        with patch(
+            "collectors.newsletter_collector.get_http_session", return_value=session
+        ):
+            c = NewsletterCollector(
+                config={
+                    "newsletter": {
+                        "sources": ["http://example.com"],
+                        "min_delay_seconds": 0,
+                    },
+                }
+            )
 
             call_count = {"n": 0}
 

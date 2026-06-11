@@ -22,6 +22,7 @@ class TestTechnologyStackAgent:
     @pytest.fixture
     def agent(self):
         from agents.technology_stack_agent import TechnologyStackAgent
+
         return TechnologyStackAgent(config={}, dry_run=False)
 
     def test_agent_name(self, agent):
@@ -37,10 +38,15 @@ class TestTechnologyStackAgent:
         so_cursor.fetchall.return_value = []
 
         mock_connection.cursor.side_effect = [
-            gh_cursor, so_cursor, gh_cursor, gh_cursor
+            gh_cursor,
+            so_cursor,
+            gh_cursor,
+            gh_cursor,
         ]
 
-        with patch("agents.technology_stack_agent.get_connection", return_value=mock_connection):
+        with patch(
+            "agents.technology_stack_agent.get_connection", return_value=mock_connection
+        ):
             with patch("agents.technology_stack_agent.schema"):
                 result = agent.execute()
 
@@ -49,11 +55,11 @@ class TestTechnologyStackAgent:
     def test_handles_empty_data(self, agent, mock_connection):
         cursor = MagicMock()
         cursor.fetchall.return_value = []
-        mock_connection.cursor.side_effect = [
-            cursor, cursor, cursor, cursor
-        ]
+        mock_connection.cursor.side_effect = [cursor, cursor, cursor, cursor]
 
-        with patch("agents.technology_stack_agent.get_connection", return_value=mock_connection):
+        with patch(
+            "agents.technology_stack_agent.get_connection", return_value=mock_connection
+        ):
             with patch("agents.technology_stack_agent.schema"):
                 result = agent.execute()
 

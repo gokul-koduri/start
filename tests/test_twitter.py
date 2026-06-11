@@ -27,8 +27,8 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.twitter_collector import TwitterCollector
-from collectors.base import CollectionResult
+from collectors.twitter_collector import TwitterCollector  # noqa: E402
+from collectors.base import CollectionResult  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -38,10 +38,13 @@ for key, orig in _saved_db_modules.items():
         sys.modules.pop(key, None)
 
 
-def _make_tweet_entry(author="@techfounder", text="We just raised Series A funding for our AI startup #startup #funding",
-                     published="2024-01-15T10:30:00Z",
-                     tweet_url="https://nitter.net/techfounder/status/12345",
-                     entry_id="tag:nitter.net,2024-01-15:status12345"):
+def _make_tweet_entry(
+    author="@techfounder",
+    text="We just raised Series A funding for our AI startup #startup #funding",
+    published="2024-01-15T10:30:00Z",
+    tweet_url="https://nitter.net/techfounder/status/12345",
+    entry_id="tag:nitter.net,2024-01-15:status12345",
+):
     """Build a mock Atom entry for a tweet."""
     return f"""<entry xmlns="http://www.w3.org/2005/Atom">
         <id>{entry_id}</id>
@@ -64,14 +67,18 @@ def _make_feed_response(entries=None):
 </feed>"""
 
 
-def _make_tweet_dict(author="@techfounder",
-                      text="We just raised Series A funding #startup",
-                      published_date=None, url="https://nitter.net/user/status/123"):
+def _make_tweet_dict(
+    author="@techfounder",
+    text="We just raised Series A funding #startup",
+    published_date=None,
+    url="https://nitter.net/user/status/123",
+):
     """Build a tweet dict matching _parse_entry output."""
     return {
         "author": author,
         "text": text,
-        "published_date": published_date or (datetime.now(timezone.utc) - timedelta(hours=12)).strftime("%Y-%m-%d"),
+        "published_date": published_date
+        or (datetime.now(timezone.utc) - timedelta(hours=12)).strftime("%Y-%m-%d"),
         "url": url,
     }
 
@@ -86,7 +93,11 @@ def _make_mock_session(responses=None):
         resp = MagicMock()
         resp.status_code = 200
         if response_list:
-            resp.content = response_list.pop(0).encode("utf-8") if isinstance(response_list and response_list[0], str) else b""
+            resp.content = (
+                response_list.pop(0).encode("utf-8")
+                if isinstance(response_list and response_list[0], str)
+                else b""
+            )
             # Reset for pop
         else:
             resp.content = b""
@@ -137,7 +148,8 @@ class TestTwitterCollectorScoring:
         c = TwitterCollector(config={})
         # Use today's date so the recency bonus applies (< 72h)
         tweet = _make_tweet_dict(
-            published_date=datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+            published_date=datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        )
         signals = [{"keyword": "funding", "category": "funding"}]
         score = c._compute_score(tweet, signals, [])
         # signals(+30) + recent_today(+25) = 55
@@ -146,8 +158,11 @@ class TestTwitterCollectorScoring:
     def test_old_no_signals(self):
         c = TwitterCollector(config={})
         tweet = _make_tweet_dict(
-            published_date=(datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d"),
-            text="Just a random tweet about nothing")
+            published_date=(datetime.now(timezone.utc) - timedelta(days=30)).strftime(
+                "%Y-%m-%d"
+            ),
+            text="Just a random tweet about nothing",
+        )
         score = c._compute_score(tweet, [], [])
         assert score == 0
 
@@ -155,7 +170,10 @@ class TestTwitterCollectorScoring:
         c = TwitterCollector(config={})
         tweet = _make_tweet_dict(
             text="Check out #saas tool",
-            published_date=(datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d"))
+            published_date=(datetime.now(timezone.utc) - timedelta(days=30)).strftime(
+                "%Y-%m-%d"
+            ),
+        )
         score = c._compute_score(tweet, [], ["#saas"])
         # hashtags(+10) + no signals/no recency = 10
         assert score == 10
@@ -164,7 +182,10 @@ class TestTwitterCollectorScoring:
         c = TwitterCollector(config={})
         tweet = _make_tweet_dict(
             text='Today "Tech Corp" launched their AI platform',
-            published_date=(datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d"))
+            published_date=(datetime.now(timezone.utc) - timedelta(days=30)).strftime(
+                "%Y-%m-%d"
+            ),
+        )
         score = c._compute_score(tweet, [], [])
         # entity(+15) = 15
         assert score == 15
@@ -172,9 +193,14 @@ class TestTwitterCollectorScoring:
     def test_capped_at_100(self):
         c = TwitterCollector(config={})
         tweet = _make_tweet_dict(
-            published_date=(datetime.now(timezone.utc) - timedelta(hours=1)).strftime("%Y-%m-%d"))
-        signals = [{"keyword": "funding", "category": "funding"},
-                   {"keyword": "launching", "category": "launch"}]
+            published_date=(datetime.now(timezone.utc) - timedelta(hours=1)).strftime(
+                "%Y-%m-%d"
+            )
+        )
+        signals = [
+            {"keyword": "funding", "category": "funding"},
+            {"keyword": "launching", "category": "launch"},
+        ]
         score = c._compute_score(tweet, signals, ["#ai", "#saas", "#startup"])
         assert score <= 100.0
 
@@ -307,7 +333,9 @@ class TestTwitterCollectorInsert:
         result = CollectionResult(collector_name="twitter")
 
         for i in range(5):
-            t = _make_tweet_dict(author=f"@user{i}", url=f"https://nitter.net/user/status/{i}")
+            t = _make_tweet_dict(
+                author=f"@user{i}", url=f"https://nitter.net/user/status/{i}"
+            )
             c._insert_tweet(mock_cursor, t, "test", [], [], 0, result)
         assert result.records_collected == 5
 
@@ -321,13 +349,15 @@ class TestTwitterCollectorIntegration:
         session = _make_mock_session([xml])
         mock_get_session.return_value = session
 
-        c = TwitterCollector(config={
-            "twitter": {
-                "nitter_instances": ["https://nitter.net"],
-                "search_queries": ["startup funding"],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = TwitterCollector(
+            config={
+                "twitter": {
+                    "nitter_instances": ["https://nitter.net"],
+                    "search_queries": ["startup funding"],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -344,13 +374,15 @@ class TestTwitterCollectorIntegration:
         session = _make_mock_session([xml])
         mock_get_session.return_value = session
 
-        c = TwitterCollector(config={
-            "twitter": {
-                "nitter_instances": ["https://nitter.net"],
-                "search_queries": ["nonexistent"],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = TwitterCollector(
+            config={
+                "twitter": {
+                    "nitter_instances": ["https://nitter.net"],
+                    "search_queries": ["nonexistent"],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -364,19 +396,26 @@ class TestTwitterCollectorIntegration:
     def test_collect_multiple_instances(self, mock_get_session):
         entry1 = _make_tweet_entry(author="@user1", text="Tweet one")
         entry2 = _make_tweet_entry(author="@user2", text="Tweet two")
-        session = _make_mock_session([
-            _make_feed_response([entry1]),
-            _make_feed_response([entry2]),
-        ])
+        session = _make_mock_session(
+            [
+                _make_feed_response([entry1]),
+                _make_feed_response([entry2]),
+            ]
+        )
         mock_get_session.return_value = session
 
-        c = TwitterCollector(config={
-            "twitter": {
-                "nitter_instances": ["https://nitter.net", "https://nitter.privacydev.net"],
-                "search_queries": ["startup"],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = TwitterCollector(
+            config={
+                "twitter": {
+                    "nitter_instances": [
+                        "https://nitter.net",
+                        "https://nitter.privacydev.net",
+                    ],
+                    "search_queries": ["startup"],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -391,13 +430,15 @@ class TestTwitterCollectorIntegration:
         session = _make_mock_session([_make_feed_response([entry])])
         mock_get_session.return_value = session
 
-        c = TwitterCollector(config={
-            "twitter": {
-                "nitter_instances": ["https://nitter.net"],
-                "search_queries": ["test"],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = TwitterCollector(
+            config={
+                "twitter": {
+                    "nitter_instances": ["https://nitter.net"],
+                    "search_queries": ["test"],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         call_count = {"n": 0}
 

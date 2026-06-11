@@ -16,6 +16,7 @@ _logger = logging.getLogger(__name__)
 @dataclass
 class AgentResult:
     """Result of an agent execution."""
+
     agent_name: str
     status: str = "pending"  # pending, running, success, partial, failed
     started_at: str | None = None
@@ -130,7 +131,9 @@ class BaseAgent(ABC):
                 upstream_results=upstream_results or [],
             )
         finally:
-            result.started_at = result.started_at or datetime.now(timezone.utc).isoformat()
+            result.started_at = (
+                result.started_at or datetime.now(timezone.utc).isoformat()
+            )
             result.completed_at = datetime.now(timezone.utc).isoformat()
 
             # Update agent_runs record
@@ -161,6 +164,8 @@ class BaseAgent(ABC):
 
         _logger.info(
             "=== %s: %s (errors=%d) ===",
-            self.name, result.status, len(result.errors),
+            self.name,
+            result.status,
+            len(result.errors),
         )
         return result

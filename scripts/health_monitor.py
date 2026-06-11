@@ -30,14 +30,13 @@ def check_mysql() -> dict:
     try:
         from db.connection import get_connection
         from contextlib import closing
+
         with closing(get_connection()) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT 1")
             cursor.execute("SELECT COUNT(*) as cnt FROM signal_events")
             signal_count = cursor.fetchone()["cnt"]
-            cursor.execute(
-                "SELECT MAX(collected_at) as latest FROM signal_events"
-            )
+            cursor.execute("SELECT MAX(collected_at) as latest FROM signal_events")
             row = cursor.fetchone()
             latest = str(row["latest"]) if row and row["latest"] else "never"
             cursor.close()
@@ -50,6 +49,7 @@ def check_redis() -> dict:
     """Check Redis connectivity (graceful if not installed)."""
     try:
         import redis
+
         r = redis.from_url(
             os.environ.get("REDIS_URL", "redis://localhost:6379/0"),
             socket_connect_timeout=2,
@@ -57,7 +57,10 @@ def check_redis() -> dict:
         r.ping()
         info = r.info("memory")
         r.close()
-        return {"status": "healthy", "used_memory_mb": round(info.get("used_memory", 0) / 1024 / 1024, 1)}
+        return {
+            "status": "healthy",
+            "used_memory_mb": round(info.get("used_memory", 0) / 1024 / 1024, 1),
+        }
     except ImportError:
         return {"status": "not_installed", "error": "redis-py not installed"}
     except Exception as e:
@@ -79,7 +82,12 @@ def check_disk() -> dict:
         else:
             status = "healthy"
 
-        return {"status": status, "free_gb": free_gb, "total_gb": total_gb, "usage_percent": pct}
+        return {
+            "status": status,
+            "free_gb": free_gb,
+            "total_gb": total_gb,
+            "usage_percent": pct,
+        }
     except Exception as e:
         return {"status": "unknown", "error": str(e)}
 
@@ -104,7 +112,9 @@ def check_docker() -> dict:
     try:
         result = subprocess.run(
             ["docker", "compose", "ps", "--format", "json"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
             cwd=str(PROJECT_ROOT),
         )
         if result.returncode != 0:
@@ -116,11 +126,13 @@ def check_docker() -> dict:
                 continue
             try:
                 svc = json.loads(line)
-                services.append({
-                    "name": svc.get("Name", svc.get("Service", "unknown")),
-                    "state": svc.get("State", "unknown"),
-                    "health": svc.get("Health", "unknown"),
-                })
+                services.append(
+                    {
+                        "name": svc.get("Name", svc.get("Service", "unknown")),
+                        "state": svc.get("State", "unknown"),
+                        "health": svc.get("Health", "unknown"),
+                    }
+                )
             except json.JSONDecodeError:
                 continue
 
@@ -128,7 +140,11 @@ def check_docker() -> dict:
         unhealthy = [s for s in running if s.get("health") == "unhealthy"]
 
         if unhealthy:
-            return {"status": "degraded", "unhealthy": [s["name"] for s in unhealthy], "running": len(running)}
+            return {
+                "status": "degraded",
+                "unhealthy": [s["name"] for s in unhealthy],
+                "running": len(running),
+            }
         return {"status": "healthy", "running": len(running), "total": len(services)}
     except FileNotFoundError:
         return {"status": "not_installed", "error": "docker compose not found"}
@@ -143,11 +159,10 @@ def check_pipeline_freshness() -> dict:
     try:
         from db.connection import get_connection
         from contextlib import closing
+
         with closing(get_connection()) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                "SELECT MAX(started_at) as latest FROM pipeline_runs"
-            )
+            cursor.execute("SELECT MAX(started_at) as latest FROM pipeline_runs")
             row = cursor.fetchone()
             cursor.close()
         if not row or not row["latest"]:
@@ -170,6 +185,7 @@ def check_errors() -> dict:
     try:
         from db.connection import get_connection
         from contextlib import closing
+
         with closing(get_connection()) as conn:
             cursor = conn.cursor()
             # Errors in last hour
@@ -258,18 +274,41 @@ def main():
         print("=" * 55)
         for name, result in report["checks"].items():
             status = result.get("status", "unknown")
-            icon = {"healthy": "+", "degraded": "~", "warning": "?",
-                    "unhealthy": "X", "critical": "!", "not_running": "X",
-                    "not_installed": "-", "not_available": "-", "unknown": "?", "timeout": "!"}
-            color = {"healthy": "\033[92m", "degraded": "\033[93m", "warning": "\033[93m",
-                     "unhealthy": "\033[91m", "critical": "\033[91m", "not_running": "\033[91m",
-                     "not_installed": "\033[90m", "not_available": "\033[90m", "unknown": "\033[93m",
-                     "timeout": "\033[91m"}
+            icon = {
+                "healthy": "+",
+                "degraded": "~",
+                "warning": "?",
+                "unhealthy": "X",
+                "critical": "!",
+                "not_running": "X",
+                "not_installed": "-",
+                "not_available": "-",
+                "unknown": "?",
+                "timeout": "!",
+            }
+            color = {
+                "healthy": "\033[92m",
+                "degraded": "\033[93m",
+                "warning": "\033[93m",
+                "unhealthy": "\033[91m",
+                "critical": "\033[91m",
+                "not_running": "\033[91m",
+                "not_installed": "\033[90m",
+                "not_available": "\033[90m",
+                "unknown": "\033[93m",
+                "timeout": "\033[91m",
+            }
             i = icon.get(status, "?")
             c = color.get(status, "\033[0m")
             r = "\033[0m"
             detail = ""
-            for key in ("error", "signals", "free_gb", "running", "hours_since_last_run"):
+            for key in (
+                "error",
+                "signals",
+                "free_gb",
+                "running",
+                "hours_since_last_run",
+            ):
                 if key in result:
                     detail = f" ({key}: {result[key]})"
                     break

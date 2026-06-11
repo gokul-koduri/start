@@ -16,7 +16,7 @@ Runs weekly via the ``weekly`` pipeline, after ``llm_portfolio``.
 
 import json
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 from agents.base import AgentResult, BaseAgent
 from db.connection import get_connection
@@ -117,7 +117,10 @@ class LLMCostOptimizerAgent(BaseAgent):
             _logger.info(
                 "LLMCostOptimizerAgent: Done — %d price changes, %d alternatives found, "
                 "%d alerts generated, ~%d%% potential savings",
-                price_changes, savings_found, alerts_generated, total_savings,
+                price_changes,
+                savings_found,
+                alerts_generated,
+                total_savings,
             )
 
             return AgentResult(
@@ -164,7 +167,8 @@ class LLMCostOptimizerAgent(BaseAgent):
         prev_lookup = {}
         for p in previous:
             prev_lookup[(p["provider"], p["model_name"])] = (
-                p["new_input_price"], p["new_output_price"],
+                p["new_input_price"],
+                p["new_output_price"],
             )
 
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
@@ -194,9 +198,14 @@ class LLMCostOptimizerAgent(BaseAgent):
                             output_change_pct, detected_at)
                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                         (
-                            curr["provider"], curr["model_name"],
-                            old_in, old_out, new_in, new_out,
-                            round(in_change * 100, 1), round(out_change * 100, 1),
+                            curr["provider"],
+                            curr["model_name"],
+                            old_in,
+                            old_out,
+                            new_in,
+                            new_out,
+                            round(in_change * 100, 1),
+                            round(out_change * 100, 1),
                             now,
                         ),
                     )
@@ -245,7 +254,9 @@ class LLMCostOptimizerAgent(BaseAgent):
         # For each "expensive" model (cost > $1/1M blended), find cheaper alternatives
         for expensive in all_models:
             exp_key = (expensive["provider"], expensive["model_name"])
-            exp_cost = expensive["input_price_per_1m"] + expensive["output_price_per_1m"]
+            exp_cost = (
+                expensive["input_price_per_1m"] + expensive["output_price_per_1m"]
+            )
 
             if exp_cost <= 1.0:
                 continue  # Skip already-cheap models
@@ -256,7 +267,9 @@ class LLMCostOptimizerAgent(BaseAgent):
 
             for candidate in all_models:
                 cand_key = (candidate["provider"], candidate["model_name"])
-                cand_cost = candidate["input_price_per_1m"] + candidate["output_price_per_1m"]
+                cand_cost = (
+                    candidate["input_price_per_1m"] + candidate["output_price_per_1m"]
+                )
 
                 # Candidate must be significantly cheaper
                 if cand_cost >= exp_cost * 0.8:
@@ -272,32 +285,39 @@ class LLMCostOptimizerAgent(BaseAgent):
                 if quality_ratio >= quality_threshold:
                     savings_pct = round((1 - cand_cost / exp_cost) * 100, 0)
 
-                    alternatives.append({
-                        "alert_type": "better_alternative",
-                        "title": (
-                            f"{candidate['model_name']} ({candidate['provider']}) is "
-                            f"{quality_ratio:.0%} as good as {expensive['model_name']} "
-                            f"but {savings_pct:.0f}% cheaper"
-                        ),
-                        "description": (
-                            f"Quality: {cand_quality:.1f} vs {exp_quality:.1f} "
-                            f"(ratio: {quality_ratio:.0%}). "
-                            f"Cost: ${cand_cost:.2f}/1M vs ${exp_cost:.2f}/1M tokens. "
-                            f"Savings: {savings_pct:.0f}%."
-                        ),
-                        "affected_models": [
-                            expensive["model_name"], candidate["model_name"],
-                        ],
-                        "estimated_savings_pct": savings_pct,
-                        "expensive_model": expensive["model_name"],
-                        "alternative_model": candidate["model_name"],
-                    })
+                    alternatives.append(
+                        {
+                            "alert_type": "better_alternative",
+                            "title": (
+                                f"{candidate['model_name']} ({candidate['provider']}) is "
+                                f"{quality_ratio:.0%} as good as {expensive['model_name']} "
+                                f"but {savings_pct:.0f}% cheaper"
+                            ),
+                            "description": (
+                                f"Quality: {cand_quality:.1f} vs {exp_quality:.1f} "
+                                f"(ratio: {quality_ratio:.0%}). "
+                                f"Cost: ${cand_cost:.2f}/1M vs ${exp_cost:.2f}/1M tokens. "
+                                f"Savings: {savings_pct:.0f}%."
+                            ),
+                            "affected_models": [
+                                expensive["model_name"],
+                                candidate["model_name"],
+                            ],
+                            "estimated_savings_pct": savings_pct,
+                            "expensive_model": expensive["model_name"],
+                            "alternative_model": candidate["model_name"],
+                        }
+                    )
 
         # Deduplicate: keep only the best alternative per expensive model
         best_alternatives: dict[str, dict] = {}
         for alt in alternatives:
             exp_model = alt["expensive_model"]
-            if exp_model not in best_alternatives or alt["estimated_savings_pct"] > best_alternatives[exp_model]["estimated_savings_pct"]:
+            if (
+                exp_model not in best_alternatives
+                or alt["estimated_savings_pct"]
+                > best_alternatives[exp_model]["estimated_savings_pct"]
+            ):
                 best_alternatives[exp_model] = alt
 
         return list(best_alternatives.values())
@@ -316,15 +336,17 @@ class LLMCostOptimizerAgent(BaseAgent):
         alerts = []
 
         if new_models:
-            alerts.append({
-                "title": f"{len(new_models)} new model(s) detected in benchmarks",
-                "description": (
-                    f"Models found in benchmark data but not yet in pricing: "
-                    f"{', '.join(sorted(new_models)[:10])}. "
-                    f"Consider adding pricing data for these models."
-                ),
-                "affected_models": sorted(new_models),
-            })
+            alerts.append(
+                {
+                    "title": f"{len(new_models)} new model(s) detected in benchmarks",
+                    "description": (
+                        f"Models found in benchmark data but not yet in pricing: "
+                        f"{', '.join(sorted(new_models)[:10])}. "
+                        f"Consider adding pricing data for these models."
+                    ),
+                    "affected_models": sorted(new_models),
+                }
+            )
 
         return alerts
 

@@ -4,7 +4,6 @@ import csv
 import sys
 from pathlib import Path
 
-import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -36,8 +35,8 @@ class TestMLTrainer:
         with open(csv_path, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["sector", "country", "funding", "founded", "status"])
-            writer.writerow(["SaaS", "US", "$10M", "2020", "1"])       # failed
-            writer.writerow(["Fintech", "UK", "$5M", "2019", "0"])    # operating
+            writer.writerow(["SaaS", "US", "$10M", "2020", "1"])  # failed
+            writer.writerow(["Fintech", "UK", "$5M", "2019", "0"])  # operating
             writer.writerow(["Crypto/Blockchain", "US", "$50M", "2021", "1"])  # failed
 
         features, labels = load_training_data_from_csv(str(csv_path))
@@ -69,7 +68,6 @@ class TestMLPredictor:
     def test_ml_predictor_skips_without_model(self, tmp_path):
         """MLPredictorAgent should return skip result when no model exists."""
         from agents.ml_predictor_agent import MLPredictorAgent
-        from agents.ml_trainer_agent import MLTrainer
 
         # Point to empty directory so no model files are found
         agent = MLPredictorAgent({"model_output_dir": str(tmp_path)})

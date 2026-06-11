@@ -10,7 +10,9 @@ _logger = logging.getLogger(__name__)
 _session_cache = None
 
 
-def get_http_session(user_agent: str | None = None, timeout: int = 30) -> requests.Session:
+def get_http_session(
+    user_agent: str | None = None, timeout: int = 30
+) -> requests.Session:
     """Get a configured requests.Session with retry logic.
 
     Args:

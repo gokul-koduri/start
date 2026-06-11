@@ -18,7 +18,6 @@ Usage:
     # Returns: test health, coverage, regressions, DoD compliance
 """
 
-import json
 import logging
 import subprocess
 import re
@@ -103,8 +102,12 @@ class QAEngineerAgent(BaseAgent):
     def _run_tests(self) -> dict:
         """Run pytest and collect results."""
         health = {
-            "total": 0, "passed": 0, "failed": 0, "skipped": 0,
-            "errors": 0, "duration_seconds": 0,
+            "total": 0,
+            "passed": 0,
+            "failed": 0,
+            "skipped": 0,
+            "errors": 0,
+            "duration_seconds": 0,
             "failed_tests": [],
         }
 
@@ -120,7 +123,7 @@ class QAEngineerAgent(BaseAgent):
 
             # Parse pytest summary line: "X passed, Y failed, Z skipped in Ts"
             summary_match = re.search(
-                r'(\d+) passed(?:, (\d+) failed)?(?:, (\d+) skipped)?(?:, (\d+) errors?)? in ([\d.]+)s',
+                r"(\d+) passed(?:, (\d+) failed)?(?:, (\d+) skipped)?(?:, (\d+) errors?)? in ([\d.]+)s",
                 output,
             )
             if summary_match:
@@ -128,7 +131,12 @@ class QAEngineerAgent(BaseAgent):
                 health["failed"] = int(summary_match.group(2) or 0)
                 health["skipped"] = int(summary_match.group(3) or 0)
                 health["errors"] = int(summary_match.group(4) or 0)
-                health["total"] = health["passed"] + health["failed"] + health["skipped"] + health["errors"]
+                health["total"] = (
+                    health["passed"]
+                    + health["failed"]
+                    + health["skipped"]
+                    + health["errors"]
+                )
                 health["duration_seconds"] = float(summary_match.group(5))
 
             # Parse failed test names
@@ -159,24 +167,39 @@ class QAEngineerAgent(BaseAgent):
         for tf in Path("tests").glob("test_*.py"):
             # Map test file to source module
             module = tf.stem.replace("test_", "")
-            coverage["test_files"].append({
-                "test_file": str(tf),
-                "module": module,
-            })
+            coverage["test_files"].append(
+                {
+                    "test_file": str(tf),
+                    "module": module,
+                }
+            )
 
         # Find source modules
         tested = {tf["module"] for tf in coverage["test_files"]}
 
-        for source_dir in ["agents", "collectors", "scoring", "stream", "db", "auth", "nlp", "ingestion", "monitoring", "webhooks"]:
+        for source_dir in [
+            "agents",
+            "collectors",
+            "scoring",
+            "stream",
+            "db",
+            "auth",
+            "nlp",
+            "ingestion",
+            "monitoring",
+            "webhooks",
+        ]:
             for sf in Path(source_dir).glob("*.py"):
                 if sf.name in ("__init__.py", "base.py"):
                     continue
                 module = sf.stem
                 has_test = module in tested
-                coverage["source_modules"].append({
-                    "module": str(sf),
-                    "has_test": has_test,
-                })
+                coverage["source_modules"].append(
+                    {
+                        "module": str(sf),
+                        "has_test": has_test,
+                    }
+                )
                 if has_test:
                     coverage["modules_with_tests"] += 1
                 else:
@@ -190,11 +213,13 @@ class QAEngineerAgent(BaseAgent):
 
         # Currently just report failed tests as potential regressions
         for failed_test in test_health.get("failed_tests", []):
-            regressions.append({
-                "test": failed_test,
-                "status": "FAILED",
-                "action": "Investigate and fix before merge",
-            })
+            regressions.append(
+                {
+                    "test": failed_test,
+                    "status": "FAILED",
+                    "action": "Investigate and fix before merge",
+                }
+            )
 
         return regressions
 
@@ -210,13 +235,36 @@ class QAEngineerAgent(BaseAgent):
         """Check Definition of Done compliance."""
         dod = {
             "checks": [
-                {"item": "Code implemented", "status": "N/A", "note": "Check per-feature"},
-                {"item": "Tests passing", "status": "FAIL" if test_health.get("failed", 0) > 0 else "PASS",
-                 "detail": f"{test_health.get('failed', 0)} tests failing"},
-                {"item": "Documentation updated", "status": "N/A", "note": "Check per-feature"},
-                {"item": "Code reviewed", "status": "N/A", "note": "Requires PR workflow"},
-                {"item": "Merged to develop", "status": "N/A", "note": "Requires branch strategy"},
-                {"item": "Deployment verified", "status": "N/A", "note": "Requires CI/CD"},
+                {
+                    "item": "Code implemented",
+                    "status": "N/A",
+                    "note": "Check per-feature",
+                },
+                {
+                    "item": "Tests passing",
+                    "status": "FAIL" if test_health.get("failed", 0) > 0 else "PASS",
+                    "detail": f"{test_health.get('failed', 0)} tests failing",
+                },
+                {
+                    "item": "Documentation updated",
+                    "status": "N/A",
+                    "note": "Check per-feature",
+                },
+                {
+                    "item": "Code reviewed",
+                    "status": "N/A",
+                    "note": "Requires PR workflow",
+                },
+                {
+                    "item": "Merged to develop",
+                    "status": "N/A",
+                    "note": "Requires branch strategy",
+                },
+                {
+                    "item": "Deployment verified",
+                    "status": "N/A",
+                    "note": "Requires CI/CD",
+                },
             ],
             "pass_count": 0,
             "total_checks": 6,
@@ -233,20 +281,22 @@ class QAEngineerAgent(BaseAgent):
         suggestions = []
 
         high_priority = [
-            "api_server",           # 0 test files
-            "composite_scorer",     # Critical path
-            "signal_normalizer",    # Critical path
-            "kafka_producer",       # Critical path
+            "api_server",  # 0 test files
+            "composite_scorer",  # Critical path
+            "signal_normalizer",  # Critical path
+            "kafka_producer",  # Critical path
         ]
 
         for module in high_priority:
             test_path = f"tests/test_{module}.py"
             if not Path(test_path).exists():
-                suggestions.append({
-                    "module": module,
-                    "suggested_test_file": test_path,
-                    "priority": "P0",
-                    "reason": "Critical path, no tests",
-                })
+                suggestions.append(
+                    {
+                        "module": module,
+                        "suggested_test_file": test_path,
+                        "priority": "P0",
+                        "reason": "Critical path, no tests",
+                    }
+                )
 
         return suggestions

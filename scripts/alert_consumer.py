@@ -27,7 +27,6 @@ import os
 import signal
 import sys
 import threading
-import time
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone
@@ -36,7 +35,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from config import get_project_root, setup_logging, load_config
+from config import get_project_root, setup_logging, load_config  # noqa: E402
 
 _logger = logging.getLogger("alert_consumer")
 
@@ -55,6 +54,7 @@ def _handle_shutdown(signum, frame):
 
 
 # ── Alert Preferences ─────────────────────────────────────
+
 
 def _load_preferences(conn) -> dict:
     """Load alert preferences from the alert_preferences table.
@@ -82,7 +82,9 @@ def _load_preferences(conn) -> dict:
     }
     try:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM alert_preferences ORDER BY updated_at DESC LIMIT 1")
+        cursor.execute(
+            "SELECT * FROM alert_preferences ORDER BY updated_at DESC LIMIT 1"
+        )
         row = cursor.fetchone()
         cursor.close()
         if row:
@@ -121,6 +123,7 @@ def _is_quiet_hours(prefs: dict) -> bool:
 
 
 # ── Channel Dispatchers ───────────────────────────────────
+
 
 def _send_email(config: dict, alert: dict) -> tuple[str, str | None]:
     """Send alert via SMTP email."""
@@ -215,7 +218,12 @@ def _send_discord(url: str, alert: dict) -> tuple[str, str | None]:
     score = alert.get("composite_score", 0)
     reason = _build_reason(alert)
 
-    colors = {"critical": 15158332, "high": 15105570, "medium": 15859728, "low": 4289794}
+    colors = {
+        "critical": 15158332,
+        "high": 15105570,
+        "medium": 15859728,
+        "low": 4289794,
+    }
     priority = "high" if score >= 90 else "medium"
 
     payload = {
@@ -226,8 +234,16 @@ def _send_discord(url: str, alert: dict) -> tuple[str, str | None]:
                 "color": colors.get(priority, 4289794),
                 "fields": [
                     {"name": "Score", "value": f"{score:.1f}", "inline": True},
-                    {"name": "Trend", "value": alert.get("trend_direction", "stable"), "inline": True},
-                    {"name": "Signals", "value": str(alert.get("signal_count", 0)), "inline": True},
+                    {
+                        "name": "Trend",
+                        "value": alert.get("trend_direction", "stable"),
+                        "inline": True,
+                    },
+                    {
+                        "name": "Signals",
+                        "value": str(alert.get("signal_count", 0)),
+                        "inline": True,
+                    },
                 ],
             }
         ]
@@ -245,7 +261,9 @@ def _post_webhook(url: str, payload: dict) -> tuple[str, str | None]:
     try:
         data = json.dumps(payload).encode()
         req = urllib.request.Request(
-            url, data=data, headers={"Content-Type": "application/json"},
+            url,
+            data=data,
+            headers={"Content-Type": "application/json"},
         )
         with urllib.request.urlopen(req, timeout=10) as resp:
             resp.read()
@@ -267,6 +285,7 @@ def _build_reason(alert: dict) -> str:
 
 
 # ── Dispatch Logic ────────────────────────────────────────
+
 
 def dispatch_alert(alert: dict, config: dict, prefs: dict, conn) -> dict:
     """Dispatch a single alert through enabled channels.
@@ -305,7 +324,14 @@ def dispatch_alert(alert: dict, config: dict, prefs: dict, conn) -> dict:
         if email_config.get("enabled") and email_config.get("smtp_host"):
             status, error = _send_email(email_config, alert)
             result["channels"]["email"] = {"status": status, "error": error}
-            _log_dispatch(conn, alert, "email", email_config.get("to_addresses", []), status, error)
+            _log_dispatch(
+                conn,
+                alert,
+                "email",
+                email_config.get("to_addresses", []),
+                status,
+                error,
+            )
             if status == "sent":
                 any_sent = True
             elif status == "failed":
@@ -317,7 +343,9 @@ def dispatch_alert(alert: dict, config: dict, prefs: dict, conn) -> dict:
         if slack_config.get("enabled") and slack_config.get("url"):
             status, error = _send_slack(slack_config["url"], alert)
             result["channels"]["slack"] = {"status": status, "error": error}
-            _log_dispatch(conn, alert, "webhook_slack", slack_config["url"], status, error)
+            _log_dispatch(
+                conn, alert, "webhook_slack", slack_config["url"], status, error
+            )
             if status == "sent":
                 any_sent = True
             elif status == "failed":
@@ -329,7 +357,9 @@ def dispatch_alert(alert: dict, config: dict, prefs: dict, conn) -> dict:
         if discord_config.get("enabled") and discord_config.get("url"):
             status, error = _send_discord(discord_config["url"], alert)
             result["channels"]["discord"] = {"status": status, "error": error}
-            _log_dispatch(conn, alert, "webhook_discord", discord_config["url"], status, error)
+            _log_dispatch(
+                conn, alert, "webhook_discord", discord_config["url"], status, error
+            )
             if status == "sent":
                 any_sent = True
             elif status == "failed":
@@ -341,7 +371,9 @@ def dispatch_alert(alert: dict, config: dict, prefs: dict, conn) -> dict:
         if custom_config.get("enabled") and custom_config.get("url"):
             status, error = _send_custom_webhook(custom_config["url"], alert)
             result["channels"]["custom"] = {"status": status, "error": error}
-            _log_dispatch(conn, alert, "webhook_custom", custom_config["url"], status, error)
+            _log_dispatch(
+                conn, alert, "webhook_custom", custom_config["url"], status, error
+            )
             if status == "sent":
                 any_sent = True
             elif status == "failed":
@@ -357,11 +389,17 @@ def dispatch_alert(alert: dict, config: dict, prefs: dict, conn) -> dict:
     return result
 
 
-def _log_dispatch(conn, alert: dict, channel: str, destination, status: str, error: str | None):
+def _log_dispatch(
+    conn, alert: dict, channel: str, destination, status: str, error: str | None
+):
     """Log a dispatch attempt to alert_dispatches table (best-effort)."""
     try:
         cursor = conn.cursor()
-        dest_str = ", ".join(destination) if isinstance(destination, list) else str(destination)
+        dest_str = (
+            ", ".join(destination)
+            if isinstance(destination, list)
+            else str(destination)
+        )
         # Try to find an alert_id in llm_optimization_alerts
         alert_id = alert.get("alert_id") or alert.get("id")
         if not alert_id:
@@ -384,8 +422,14 @@ def _log_dispatch(conn, alert: dict, channel: str, destination, status: str, err
             """INSERT INTO alert_dispatches
                (alert_id, channel, destination, dispatch_status, error_message, dispatched_at)
                VALUES (%s, %s, %s, %s, %s, %s)""",
-            (alert_id, channel, dest_str[:500], status, error,
-             datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")),
+            (
+                alert_id,
+                channel,
+                dest_str[:500],
+                status,
+                error,
+                datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+            ),
         )
         conn.commit()
         cursor.close()
@@ -394,6 +438,7 @@ def _log_dispatch(conn, alert: dict, channel: str, destination, status: str, err
 
 
 # ── Dead Letter Queue ─────────────────────────────────────
+
 
 def _move_to_dlq(conn, alert: dict, error: str, attempts: int):
     """Move a failed alert to the dead letter queue table."""
@@ -431,7 +476,11 @@ def _move_to_dlq(conn, alert: dict, error: str, attempts: int):
         )
         conn.commit()
         cursor.close()
-        _logger.info("Moved alert for '%s' to dead letter queue (attempts=%d)", alert.get("entity_name"), attempts)
+        _logger.info(
+            "Moved alert for '%s' to dead letter queue (attempts=%d)",
+            alert.get("entity_name"),
+            attempts,
+        )
     except Exception as e:
         _logger.error("Failed to move alert to DLQ: %s", e)
 
@@ -463,13 +512,18 @@ def _retry_dlq_alerts(conn, config: dict, prefs: dict, max_retries: int = 3):
 
             if result["status"] == "dispatched":
                 # Remove from DLQ on success
-                cursor.execute("DELETE FROM alert_dead_letters WHERE id = %s", (row["id"],))
+                cursor.execute(
+                    "DELETE FROM alert_dead_letters WHERE id = %s", (row["id"],)
+                )
                 recovered += 1
             else:
                 # Increment attempts
                 cursor.execute(
                     "UPDATE alert_dead_letters SET attempts = attempts + 1, last_attempt_at = %s WHERE id = %s",
-                    (datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"), row["id"]),
+                    (
+                        datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+                        row["id"],
+                    ),
                 )
 
         if retried > 0:
@@ -483,12 +537,15 @@ def _retry_dlq_alerts(conn, config: dict, prefs: dict, max_retries: int = 3):
 
 # ── Kafka Consumer ────────────────────────────────────────
 
+
 def _consume_from_kafka(config: dict, prefs: dict, conn):
     """Consume alerts from Kafka alerts.triggered topic."""
     try:
         from kafka import KafkaConsumer
     except ImportError:
-        _logger.error("kafka-python-ng not installed. Use --poll mode or install: pip install kafka-python-ng")
+        _logger.error(
+            "kafka-python-ng not installed. Use --poll mode or install: pip install kafka-python-ng"
+        )
         return
 
     stream_config = config.get("stream", {})
@@ -538,6 +595,7 @@ def _consume_from_kafka(config: dict, prefs: dict, conn):
 
 # ── DB Poll Mode ──────────────────────────────────────────
 
+
 def _poll_from_db(config: dict, prefs: dict, conn, interval: int = 60):
     """Poll opportunity_scores for high-value entities not yet alerted.
 
@@ -584,7 +642,8 @@ def _poll_from_db(config: dict, prefs: dict, conn, interval: int = 60):
 
                 _logger.info(
                     "Poll alert: %s (score=%.1f)",
-                    alert["entity_name"], alert["composite_score"],
+                    alert["entity_name"],
+                    alert["composite_score"],
                 )
                 result = dispatch_alert(alert, config, prefs, conn)
                 if result["status"] == "failed":
@@ -605,6 +664,7 @@ def _poll_from_db(config: dict, prefs: dict, conn, interval: int = 60):
 
 
 # ── One-shot Mode ─────────────────────────────────────────
+
 
 def run_once(config: dict):
     """Process all pending high-value opportunities and exit."""
@@ -631,7 +691,9 @@ def run_once(config: dict):
     cursor.close()
 
     if not rows:
-        _logger.info("No alerts to process (no entities above threshold %.1f)", min_score)
+        _logger.info(
+            "No alerts to process (no entities above threshold %.1f)", min_score
+        )
         conn.close()
         return
 
@@ -659,16 +721,27 @@ def run_once(config: dict):
             _move_to_dlq(conn, alert, "All channels failed", 1)
 
     conn.close()
-    _logger.info("One-shot complete: %d dispatched, %d failed, %d total",
-                 dispatched, failed, len(rows))
+    _logger.info(
+        "One-shot complete: %d dispatched, %d failed, %d total",
+        dispatched,
+        failed,
+        len(rows),
+    )
 
 
 # ── Main ──────────────────────────────────────────────────
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Alert Consumer for Opportunity Intelligence Platform")
-    parser.add_argument("--poll", action="store_true", help="Poll DB mode (no Kafka needed)")
-    parser.add_argument("--once", action="store_true", help="Process pending alerts and exit")
+    parser = argparse.ArgumentParser(
+        description="Alert Consumer for Opportunity Intelligence Platform"
+    )
+    parser.add_argument(
+        "--poll", action="store_true", help="Poll DB mode (no Kafka needed)"
+    )
+    parser.add_argument(
+        "--once", action="store_true", help="Process pending alerts and exit"
+    )
     args = parser.parse_args()
 
     setup_logging()

@@ -12,13 +12,19 @@ class TestFeedbackImport(unittest.TestCase):
     """Test feedback module can be imported."""
 
     def test_import_feedback_router(self):
-        from api.v2.feedback import router, submit_score_feedback, submit_feature_request
+        from api.v2.feedback import (
+            router,
+            submit_score_feedback,
+            submit_feature_request,
+        )
+
         self.assertIsNotNone(router)
         self.assertTrue(callable(submit_score_feedback))
         self.assertTrue(callable(submit_feature_request))
 
     def test_router_has_feedback_prefix(self):
         from api.v2.feedback import router
+
         self.assertEqual(router.prefix, "/v2/feedback")
 
 

@@ -1,10 +1,8 @@
 """Tests for the GitHub Deep Collector."""
 
-import json
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -27,7 +25,7 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.github_deep_collector import GithubDeepCollector, _CREATE_TABLE_SQL
+from collectors.github_deep_collector import GithubDeepCollector, _CREATE_TABLE_SQL  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -45,9 +43,16 @@ def _make_search_response(repos=None):
     }
 
 
-def _make_repo_item(name="org/repo", stars=100, forks=20, lang="Python",
-                    description="A test repo", topics=None, created="2024-01-01T00:00:00Z",
-                    pushed="2024-06-01T00:00:00Z"):
+def _make_repo_item(
+    name="org/repo",
+    stars=100,
+    forks=20,
+    lang="Python",
+    description="A test repo",
+    topics=None,
+    created="2024-01-01T00:00:00Z",
+    pushed="2024-06-01T00:00:00Z",
+):
     """Build a single repo item from search results."""
     return {
         "full_name": name,
@@ -70,7 +75,10 @@ def _make_mock_session(responses=None):
 
     def mock_get(url, params=None, timeout=None):
         resp = MagicMock()
-        resp.headers = {"X-RateLimit-Remaining": "4999", "X-RateLimit-Reset": "9999999999"}
+        resp.headers = {
+            "X-RateLimit-Remaining": "4999",
+            "X-RateLimit-Reset": "9999999999",
+        }
         try:
             resp.json.return_value = next(response_iter)
             resp.status_code = 200
@@ -106,26 +114,30 @@ class TestGithubDeepCollectorConfig:
 class TestGithubDeepCollectorScoring:
     def test_score_high_activity(self):
         c = GithubDeepCollector(config={"github_deep": {}})
-        score = c._compute_raw_score(stars=1000, commit_count=60,
-                                    contributor_count=30, recent_releases=5)
+        score = c._compute_raw_score(
+            stars=1000, commit_count=60, contributor_count=30, recent_releases=5
+        )
         assert score > 80
 
     def test_score_low_activity(self):
         c = GithubDeepCollector(config={"github_deep": {}})
-        score = c._compute_raw_score(stars=5, commit_count=2,
-                                    contributor_count=1, recent_releases=0)
+        score = c._compute_raw_score(
+            stars=5, commit_count=2, contributor_count=1, recent_releases=0
+        )
         assert score < 20
 
     def test_score_capped_at_100(self):
         c = GithubDeepCollector(config={"github_deep": {}})
-        score = c._compute_raw_score(stars=50000, commit_count=999,
-                                    contributor_count=500, recent_releases=100)
+        score = c._compute_raw_score(
+            stars=50000, commit_count=999, contributor_count=500, recent_releases=100
+        )
         assert score <= 100.0
 
     def test_score_zero(self):
         c = GithubDeepCollector(config={"github_deep": {}})
-        score = c._compute_raw_score(stars=0, commit_count=0,
-                                    contributor_count=0, recent_releases=0)
+        score = c._compute_raw_score(
+            stars=0, commit_count=0, contributor_count=0, recent_releases=0
+        )
         assert score == 0.0
 
 
@@ -136,15 +148,26 @@ class TestGithubDeepCollectorCollect:
         repo = _make_repo_item("openai/whisper", stars=60000)
         search_resp = _make_search_response([repo])
         # Detail endpoints return minimal data
-        repo_detail = {"license": {"spdx_id": "MIT"}, "open_issues_count": 42,
-                       "size": 5000, "default_branch": "main", "parent": None}
+        repo_detail = {
+            "license": {"spdx_id": "MIT"},
+            "open_issues_count": 42,
+            "size": 5000,
+            "default_branch": "main",
+            "parent": None,
+        }
         commits_resp = [{"sha": "abc"}]
         contrib_resp = [{"login": "user1"}, {"login": "user2"}]
         releases_resp = [{"published_at": "2024-05-01T00:00:00Z"}]
 
-        mock_session = _make_mock_session([
-            search_resp, repo_detail, commits_resp, contrib_resp, releases_resp,
-        ])
+        mock_session = _make_mock_session(
+            [
+                search_resp,
+                repo_detail,
+                commits_resp,
+                contrib_resp,
+                releases_resp,
+            ]
+        )
         mock_get_session.return_value = mock_session
 
         c = GithubDeepCollector(config={"github_deep": {"min_stars": 0}})
@@ -168,13 +191,14 @@ class TestGithubDeepCollectorCollect:
         repo_high = _make_repo_item("high/repo", stars=500)
 
         search_resp_low = _make_search_response([repo_low])
-        search_resp_high = _make_search_response([repo_high])
+        _make_search_response([repo_high])
         # Detail for high repo only
-        repo_detail = {"license": None, "open_issues_count": 0, "size": 100, "default_branch": "main"}
 
-        mock_session = _make_mock_session([
-            search_resp_low,  # First query returns low-star repo
-        ])
+        mock_session = _make_mock_session(
+            [
+                search_resp_low,  # First query returns low-star repo
+            ]
+        )
         mock_get_session.return_value = mock_session
 
         c = GithubDeepCollector(config={"github_deep": {"min_stars": 50}})
@@ -211,16 +235,20 @@ class TestGithubDeepCollectorCollect:
         ]
         search_resp = _make_search_response(repos)
         # Detail endpoints cycle for each repo
-        repo_detail = {"license": {"spdx_id": "Apache-2.0"}, "open_issues_count": 5,
-                       "size": 200, "default_branch": "main", "parent": None}
+        repo_detail = {
+            "license": {"spdx_id": "Apache-2.0"},
+            "open_issues_count": 5,
+            "size": 200,
+            "default_branch": "main",
+            "parent": None,
+        }
         commits_resp = []
         contrib_resp = [{"login": "dev1"}, {"login": "dev2"}, {"login": "dev3"}]
         releases_resp = []
 
         # For 3 repos: search + 4 detail calls each = search + 12 detail calls
         mock_session = _make_mock_session(
-            [search_resp] +
-            [repo_detail, commits_resp, contrib_resp, releases_resp] * 3
+            [search_resp] + [repo_detail, commits_resp, contrib_resp, releases_resp] * 3
         )
         mock_get_session.return_value = mock_session
 
@@ -284,7 +312,10 @@ class TestGithubDeepCollectorErrorHandling:
 
         def mock_get(url, params=None, timeout=None):
             resp = MagicMock()
-            resp.headers = {"X-RateLimit-Remaining": "4999", "X-RateLimit-Reset": "9999999999"}
+            resp.headers = {
+                "X-RateLimit-Remaining": "4999",
+                "X-RateLimit-Reset": "9999999999",
+            }
             resp.status_code = 200
             call_count["n"] += 1
             if "search" not in url:
@@ -298,12 +329,14 @@ class TestGithubDeepCollectorErrorHandling:
         mock_session.get = mock_get
         mock_get_session.return_value = mock_session
 
-        c = GithubDeepCollector(config={
-            "github_deep": {
-                "min_stars": 0,
-                "search_queries": ["created:>2024-01-01 stars:>100 topic:test"],
-            },
-        })
+        c = GithubDeepCollector(
+            config={
+                "github_deep": {
+                    "min_stars": 0,
+                    "search_queries": ["created:>2024-01-01 stars:>100 topic:test"],
+                },
+            }
+        )
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_conn.cursor.return_value = mock_cursor
@@ -320,16 +353,26 @@ class TestGithubDeepCollectorRepoDetail:
         """Test that fork parent is detected from repo metadata."""
         repo = _make_repo_item("fork/user-repo", stars=50)
         search_resp = _make_search_response([repo])
-        repo_detail = {"license": None, "open_issues_count": 0, "size": 100,
-                        "default_branch": "main",
-                        "parent": {"full_name": "original/user-repo"}}
+        repo_detail = {
+            "license": None,
+            "open_issues_count": 0,
+            "size": 100,
+            "default_branch": "main",
+            "parent": {"full_name": "original/user-repo"},
+        }
         commits_resp = []
         contrib_resp = []
         releases_resp = []
 
-        mock_session = _make_mock_session([
-            search_resp, repo_detail, commits_resp, contrib_resp, releases_resp,
-        ])
+        mock_session = _make_mock_session(
+            [
+                search_resp,
+                repo_detail,
+                commits_resp,
+                contrib_resp,
+                releases_resp,
+            ]
+        )
         mock_get_session.return_value = mock_session
 
         c = GithubDeepCollector(config={"github_deep": {"min_stars": 0}})
@@ -348,22 +391,31 @@ class TestGithubDeepCollectorRepoDetail:
         """Test that detail endpoints can be disabled via config."""
         repo = _make_repo_item("org/simple", stars=100)
         search_resp = _make_search_response([repo])
-        repo_detail = {"license": {"spdx_id": "MIT"}, "open_issues_count": 10,
-                       "size": 500, "default_branch": "main", "parent": None}
+        repo_detail = {
+            "license": {"spdx_id": "MIT"},
+            "open_issues_count": 10,
+            "size": 500,
+            "default_branch": "main",
+            "parent": None,
+        }
 
         # Only repo_detail called, no commits/contributors/releases
         mock_session = _make_mock_session([search_resp, repo_detail])
         mock_get_session.return_value = mock_session
 
-        c = GithubDeepCollector(config={"github_deep": {
-            "min_stars": 0,
-            "detail_endpoints": {
-                "commits": False,
-                "contributors": False,
-                "releases": False,
-                "lookback_days": 30,
-            },
-        }})
+        c = GithubDeepCollector(
+            config={
+                "github_deep": {
+                    "min_stars": 0,
+                    "detail_endpoints": {
+                        "commits": False,
+                        "contributors": False,
+                        "releases": False,
+                        "lookback_days": 30,
+                    },
+                }
+            }
+        )
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_conn.cursor.return_value = mock_cursor

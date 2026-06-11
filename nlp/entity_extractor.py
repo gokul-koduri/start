@@ -110,7 +110,9 @@ class UnifiedEntityExtractor:
         for item in ollama_results:
             norm = self._normalize_name(item.get("name", ""))
             if norm and norm not in spacy_names:
-                all_results.append({"name": item["name"], "type": item.get("type", "startup")})
+                all_results.append(
+                    {"name": item["name"], "type": item.get("type", "startup")}
+                )
 
         # Filter by target types if specified
         if target_types:
@@ -119,7 +121,9 @@ class UnifiedEntityExtractor:
         return all_results
 
     def extract_ner_results(
-        self, text: str, confidence_threshold: float = 0.7,
+        self,
+        text: str,
+        confidence_threshold: float = 0.7,
     ) -> list[NERResult]:
         """Extract entities and return full NERResult objects.
 
@@ -155,7 +159,8 @@ class UnifiedEntityExtractor:
             return []
 
         url = self._config.get(
-            "ollama_url", "http://localhost:11434/api/chat",
+            "ollama_url",
+            "http://localhost:11434/api/chat",
         )
         model = self._config.get("ollama_model", "llama3")
         timeout = self._config.get("ollama_timeout_seconds", 30)
@@ -181,7 +186,9 @@ class UnifiedEntityExtractor:
         try:
             data = json.dumps(payload).encode()
             req = urllib.request.Request(
-                url, data=data, headers={"Content-Type": "application/json"},
+                url,
+                data=data,
+                headers={"Content-Type": "application/json"},
             )
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 result = json.loads(resp.read().decode())

@@ -52,7 +52,9 @@ def render():
         "WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) "
         "AND response_ms > 0"
     )
-    avg_ms = round(avg_resp[0]["avg_ms"], 1) if avg_resp and avg_resp[0]["avg_ms"] else 0
+    avg_ms = (
+        round(avg_resp[0]["avg_ms"], 1) if avg_resp and avg_resp[0]["avg_ms"] else 0
+    )
     kpi2.metric("Avg Response (ms)", f"{avg_ms}")
 
     chats = _query_db(
@@ -93,7 +95,9 @@ def render():
         "GROUP BY error_type ORDER BY cnt DESC"
     )
     if error_types:
-        st.dataframe(pd.DataFrame(error_types), use_container_width=True, hide_index=True)
+        st.dataframe(
+            pd.DataFrame(error_types), use_container_width=True, hide_index=True
+        )
     else:
         st.info("No errors recorded. System is healthy.")
 
@@ -118,6 +122,7 @@ def render():
     try:
         import json
         import urllib.request
+
         req = urllib.request.Request(
             "http://localhost:8000/api/performance", method="GET"
         )
@@ -125,9 +130,15 @@ def render():
             perf_data = json.loads(resp.read().decode())
             cache_info = perf_data.get("cache", {})
             col1, col2 = st.columns(2)
-            col1.metric("In-Memory Cache Entries", cache_info.get("in_memory_entries", "N/A"))
-            col2.metric("Redis Available", "Yes" if cache_info.get("redis_available") else "No")
+            col1.metric(
+                "In-Memory Cache Entries", cache_info.get("in_memory_entries", "N/A")
+            )
+            col2.metric(
+                "Redis Available", "Yes" if cache_info.get("redis_available") else "No"
+            )
             if "redis_api_keys" in cache_info:
                 st.metric("Redis API Keys", cache_info["redis_api_keys"])
     except Exception:
-        st.info("API server not running — cache stats unavailable. Start with: python api_server.py")
+        st.info(
+            "API server not running — cache stats unavailable. Start with: python api_server.py"
+        )

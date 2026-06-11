@@ -58,7 +58,8 @@ def parse_signal_envelope(raw: bytes) -> tuple[str, SignalEnvelope]:
         entity_name=entity_name,
         entity_type=data.get("entity_type", "company"),
         published_at=_parse_datetime(data.get("published_at")),
-        collected_at=_parse_datetime(data.get("collected_at")) or datetime.now(timezone.utc),
+        collected_at=_parse_datetime(data.get("collected_at"))
+        or datetime.now(timezone.utc),
         raw_score=float(data.get("raw_score", 0.0)),
         metadata=data.get("metadata", {}),
         id=data.get("id", ""),
@@ -80,12 +81,31 @@ def enrich_signal(envelope: SignalEnvelope) -> SignalEnvelope:
     # Fast keyword-based sentiment (no external deps)
     body = (envelope.body_text + " " + envelope.title).lower()
     positive_words = {
-        "raise", "raised", "funded", "growth", "launch", "acquire",
-        "patent", "expand", "profit", "success", "milestone", "record",
+        "raise",
+        "raised",
+        "funded",
+        "growth",
+        "launch",
+        "acquire",
+        "patent",
+        "expand",
+        "profit",
+        "success",
+        "milestone",
+        "record",
     }
     negative_words = {
-        "fail", "bankrupt", "layoff", "shut down", "close", "loss",
-        "decline", "drop", "cut", "downsize", "restructure",
+        "fail",
+        "bankrupt",
+        "layoff",
+        "shut down",
+        "close",
+        "loss",
+        "decline",
+        "drop",
+        "cut",
+        "downsize",
+        "restructure",
     }
 
     pos_count = sum(1 for w in positive_words if w in body)
@@ -139,7 +159,9 @@ def build_signal_scores(signals: list[SignalEnvelope]) -> dict[str, dict[str, An
         if existing is None or score > existing["raw_score"]:
             best[stype] = {
                 "raw_score": score,
-                "published_at": sig.published_at or sig.collected_at or datetime.now(timezone.utc),
+                "published_at": sig.published_at
+                or sig.collected_at
+                or datetime.now(timezone.utc),
             }
     return best
 
@@ -150,8 +172,11 @@ def build_historical_values(signals: list[SignalEnvelope]) -> dict[str, list[flo
     Returns chronological list of raw_scores per signal type.
     """
     from collections import defaultdict
+
     history: dict[str, list[float]] = defaultdict(list)
-    for sig in sorted(signals, key=lambda s: s.published_at or s.collected_at or datetime.min):
+    for sig in sorted(
+        signals, key=lambda s: s.published_at or s.collected_at or datetime.min
+    ):
         history[sig.signal_type].append(sig.raw_score or 0.0)
     return dict(history)
 
@@ -224,6 +249,7 @@ def write_score_to_mysql(scored: dict[str, Any]) -> dict[str, Any]:
 
         # Attribution as JSON
         import json as _json
+
         attribution_json = _json.dumps(scored.get("attribution", []))
         signal_types_json = _json.dumps(scored.get("signal_types", []))
 
@@ -242,8 +268,15 @@ def write_score_to_mysql(scored: dict[str, Any]) -> dict[str, Any]:
                 signal_types_json = VALUES(signal_types_json),
                 last_updated = NOW()
             """,
-            (entity_name, entity_type, composite_score, signal_count,
-             trend, attribution_json, signal_types_json),
+            (
+                entity_name,
+                entity_type,
+                composite_score,
+                signal_count,
+                trend,
+                attribution_json,
+                signal_types_json,
+            ),
         )
 
         conn.commit()
@@ -257,7 +290,9 @@ def write_score_to_mysql(scored: dict[str, Any]) -> dict[str, Any]:
     return scored
 
 
-def emit_alert(scored: dict[str, Any], threshold: float = 80.0) -> dict[str, Any] | None:
+def emit_alert(
+    scored: dict[str, Any], threshold: float = 80.0
+) -> dict[str, Any] | None:
     """Create an alert dict if the composite score exceeds the threshold.
 
     Returns None if no alert should be emitted (filtered out downstream).

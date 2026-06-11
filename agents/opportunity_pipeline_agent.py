@@ -39,7 +39,7 @@ class OpportunityPipelineAgent(BaseAgent):
         upstream_data = {}
         if upstream_results:
             for r in upstream_results:
-                if hasattr(r, 'data'):
+                if hasattr(r, "data"):
                     upstream_data[r.agent_name] = r.data
 
         # 2. Cross-reference: Failed manufacturing startups vs. Revival industries
@@ -65,34 +65,50 @@ class OpportunityPipelineAgent(BaseAgent):
             # Score this opportunity
             score = 0
             # Higher funding = bigger market was validated
-            if m["funding_raised_usd"] and m["funding_raised_usd"] > 100_000_000: score += 25
-            elif m["funding_raised_usd"] and m["funding_raised_usd"] > 50_000_000: score += 15
-            elif m["funding_raised_usd"] and m["funding_raised_usd"] > 10_000_000: score += 10
+            if m["funding_raised_usd"] and m["funding_raised_usd"] > 100_000_000:
+                score += 25
+            elif m["funding_raised_usd"] and m["funding_raised_usd"] > 50_000_000:
+                score += 15
+            elif m["funding_raised_usd"] and m["funding_raised_usd"] > 10_000_000:
+                score += 10
             # Market fit confirmed
-            if m["market_fit"]: score += 20
+            if m["market_fit"]:
+                score += 20
             # Clear market size
-            if m["market_size_2030"]: score += 15
+            if m["market_size_2030"]:
+                score += 15
             # Capital or scale failure = revivable (not bad idea)
             reason = (m["failure_reason"] or "").lower()
-            if "capital" in reason or "funding" in reason: score += 15
-            if "scale" in reason or "pilot" in reason: score += 10
+            if "capital" in reason or "funding" in reason:
+                score += 15
+            if "scale" in reason or "pilot" in reason:
+                score += 10
             # Recent failure = fresher data
-            if m["year_shutdown"] and m["year_shutdown"] >= 2022: score += 10
+            if m["year_shutdown"] and m["year_shutdown"] >= 2022:
+                score += 10
 
-            opportunities.append({
-                "type": "revival_from_failure",
-                "startup": m["name"],
-                "sub_sector": m["manufacturing_sub_sector"],
-                "revival_industry": m["industry"],
-                "funding_lost": m["funding_raised_usd"],
-                "failure_reason": m["failure_reason"],
-                "region": m["region"],
-                "why_returning": m["why_returning"],
-                "market_size": m["market_size_2030"],
-                "opportunity_score": min(score, 100),
-                "risk_level": "low" if score >= 60 else "medium" if score >= 40 else "high",
-                "timing": "now" if m["year_shutdown"] and m["year_shutdown"] >= 2022 else "wait",
-            })
+            opportunities.append(
+                {
+                    "type": "revival_from_failure",
+                    "startup": m["name"],
+                    "sub_sector": m["manufacturing_sub_sector"],
+                    "revival_industry": m["industry"],
+                    "funding_lost": m["funding_raised_usd"],
+                    "failure_reason": m["failure_reason"],
+                    "region": m["region"],
+                    "why_returning": m["why_returning"],
+                    "market_size": m["market_size_2030"],
+                    "opportunity_score": min(score, 100),
+                    "risk_level": "low"
+                    if score >= 60
+                    else "medium"
+                    if score >= 40
+                    else "high",
+                    "timing": "now"
+                    if m["year_shutdown"] and m["year_shutdown"] >= 2022
+                    else "wait",
+                }
+            )
 
         # 3. Geographic opportunities (high failure density + revival potential)
         cursor = conn.cursor()
@@ -120,18 +136,26 @@ class OpportunityPipelineAgent(BaseAgent):
         for g in geo_opp:
             gd = dict(g)
             score = 30 + min(gd["failure_count"] * 10, 40)
-            if gd["revival_potential"]: score += 15
-            if gd["matching_industries"]: score += 15
-            opportunities.append({
-                "type": "geographic_opportunity",
-                "region": gd["area"],
-                "failure_count": gd["failure_count"],
-                "revival_potential": gd["revival_potential"],
-                "matching_industries": gd["matching_industries"],
-                "opportunity_score": min(score, 100),
-                "risk_level": "low" if score >= 60 else "medium" if score >= 40 else "high",
-                "timing": "now",
-            })
+            if gd["revival_potential"]:
+                score += 15
+            if gd["matching_industries"]:
+                score += 15
+            opportunities.append(
+                {
+                    "type": "geographic_opportunity",
+                    "region": gd["area"],
+                    "failure_count": gd["failure_count"],
+                    "revival_potential": gd["revival_potential"],
+                    "matching_industries": gd["matching_industries"],
+                    "opportunity_score": min(score, 100),
+                    "risk_level": "low"
+                    if score >= 60
+                    else "medium"
+                    if score >= 40
+                    else "high",
+                    "timing": "now",
+                }
+            )
 
         # 4. Whale-backing boost — load latest whale investor findings
         whale_sectors = set()
@@ -158,9 +182,16 @@ class OpportunityPipelineAgent(BaseAgent):
             _logger.warning("Could not load whale investor data for boost: %s", e)
 
         def opp_industry_text(o: dict) -> str:
-            return " ".join(str(o.get(k) or "") for k in
-                            ("sub_sector", "revival_industry", "matching_industries",
-                             "industry", "region")).lower()
+            return " ".join(
+                str(o.get(k) or "")
+                for k in (
+                    "sub_sector",
+                    "revival_industry",
+                    "matching_industries",
+                    "industry",
+                    "region",
+                )
+            ).lower()
 
         # Apply whale boost
         whale_boosted = 0
@@ -171,7 +202,9 @@ class OpportunityPipelineAgent(BaseAgent):
             for ws in whale_sectors:
                 if ws in o_text or any(w in o_text for w in ws.split()):
                     matched_whale_sectors.append(ws)
-                    matched_whale_investors.extend(whale_investors_by_sector.get(ws, []))
+                    matched_whale_investors.extend(
+                        whale_investors_by_sector.get(ws, [])
+                    )
             if matched_whale_sectors:
                 # Boost: +5 base, +5 if investors named, +5 if multiple sectors
                 boost = 5
@@ -222,8 +255,12 @@ class OpportunityPipelineAgent(BaseAgent):
         cursor.close()
         conn.close()
 
-        _logger.info("OpportunityPipelineAgent: %d opportunities (%d low risk, %d whale-boosted)",
-                     len(opportunities), risk_summary["low_risk"], whale_boosted)
+        _logger.info(
+            "OpportunityPipelineAgent: %d opportunities (%d low risk, %d whale-boosted)",
+            len(opportunities),
+            risk_summary["low_risk"],
+            whale_boosted,
+        )
 
         return AgentResult(
             agent_name=self.name,
@@ -232,7 +269,9 @@ class OpportunityPipelineAgent(BaseAgent):
                 "total_opportunities": len(opportunities),
                 "low_risk": risk_summary["low_risk"],
                 "medium_risk": risk_summary["medium_risk"],
-                "top_opportunity": opportunities[0]["startup"] if opportunities and opportunities[0]["type"] == "revival_from_failure" else "N/A",
+                "top_opportunity": opportunities[0]["startup"]
+                if opportunities and opportunities[0]["type"] == "revival_from_failure"
+                else "N/A",
                 "records_affected": len(opportunities),
                 "top_insight": f"{len(opportunities)} opportunities found: {risk_summary['low_risk']} low risk, {risk_summary['medium_risk']} medium risk",
             },

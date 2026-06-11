@@ -19,7 +19,6 @@ Config options:
 
 import json
 import logging
-import re
 from datetime import datetime, timezone
 
 from agents.base import AgentResult, BaseAgent
@@ -57,11 +56,11 @@ _SECTOR_RISK = {
 
 # Risk multiplier by funding range
 _FUNDING_RISK = [
-    (0, 1_000_000, 1.3),            # < $1M: underfunded
-    (1_000_000, 10_000_000, 1.0),   # $1-10M: normal
-    (10_000_000, 100_000_000, 0.85), # $10-100M: moderate backing
-    (100_000_000, 500_000_000, 0.75),# $100-500M: well-funded
-    (500_000_000, float("inf"), 0.9),# $500M+: overvalued risk
+    (0, 1_000_000, 1.3),  # < $1M: underfunded
+    (1_000_000, 10_000_000, 1.0),  # $1-10M: normal
+    (10_000_000, 100_000_000, 0.85),  # $10-100M: moderate backing
+    (100_000_000, 500_000_000, 0.75),  # $100-500M: well-funded
+    (500_000_000, float("inf"), 0.9),  # $500M+: overvalued risk
 ]
 
 # Risk multiplier by geography
@@ -77,18 +76,25 @@ _REGION_RISK = {
 
 # Risk multiplier by startup age (years since founding)
 _AGE_RISK = [
-    (0, 2, 1.4),    # Very young — high risk
-    (2, 5, 1.0),    # Early stage — baseline
-    (5, 10, 0.8),   # Established — lower risk
+    (0, 2, 1.4),  # Very young — high risk
+    (2, 5, 1.0),  # Early stage — baseline
+    (5, 10, 0.8),  # Established — lower risk
     (10, 20, 0.7),  # Mature — stable
     (20, float("inf"), 0.9),  # Legacy — disruption risk
 ]
 
 # Keywords in failure reason that indicate high risk
 _HIGH_RISK_KEYWORDS = [
-    "ran out of cash", "no market need", "ran_out_of_cash", "no_market_need",
-    "no business model", "pilot to scale gap", "supply chain", "regulatory",
-    "overvaluation", "competition",
+    "ran out of cash",
+    "no market need",
+    "ran_out_of_cash",
+    "no_market_need",
+    "no business model",
+    "pilot to scale gap",
+    "supply chain",
+    "regulatory",
+    "overvaluation",
+    "competition",
 ]
 
 
@@ -122,7 +128,13 @@ def score_startup(
                 sector_risk = val
                 break
     base_risk = sector_risk
-    factors.append({"factor": "sector", "value": sector or "Unknown", "impact": round(sector_risk, 2)})
+    factors.append(
+        {
+            "factor": "sector",
+            "value": sector or "Unknown",
+            "impact": round(sector_risk, 2),
+        }
+    )
 
     # 2. Funding risk modifier
     funding_mult = 1.0
@@ -131,16 +143,22 @@ def score_startup(
             if low <= funding_usd < high:
                 funding_mult = mult
                 break
-        factors.append({
-            "factor": "funding",
-            "value": f"${funding_usd / 1_000_000:.1f}M" if funding_usd else "Unknown",
-            "impact": round(funding_mult, 2),
-        })
+        factors.append(
+            {
+                "factor": "funding",
+                "value": f"${funding_usd / 1_000_000:.1f}M"
+                if funding_usd
+                else "Unknown",
+                "impact": round(funding_mult, 2),
+            }
+        )
 
     # 3. Region risk modifier
     region_mult = _REGION_RISK.get(region, 1.05)
     if region:
-        factors.append({"factor": "region", "value": region, "impact": round(region_mult, 2)})
+        factors.append(
+            {"factor": "region", "value": region, "impact": round(region_mult, 2)}
+        )
 
     # 4. Age risk modifier
     age_mult = 1.0
@@ -150,7 +168,9 @@ def score_startup(
             if low <= age < high:
                 age_mult = mult
                 break
-        factors.append({"factor": "age", "value": f"{age} years", "impact": round(age_mult, 2)})
+        factors.append(
+            {"factor": "age", "value": f"{age} years", "impact": round(age_mult, 2)}
+        )
 
     # 5. Historical failure pattern risk
     pattern_mult = 1.0
@@ -159,25 +179,45 @@ def score_startup(
         matched_keywords = [kw for kw in _HIGH_RISK_KEYWORDS if kw in reason_lower]
         if matched_keywords:
             pattern_mult = 1.0 + 0.1 * len(matched_keywords)
-        factors.append({
-            "factor": "failure_pattern",
-            "value": failure_reason[:60],
-            "impact": round(pattern_mult, 2),
-        })
+        factors.append(
+            {
+                "factor": "failure_pattern",
+                "value": failure_reason[:60],
+                "impact": round(pattern_mult, 2),
+            }
+        )
 
     # 6. Manufacturing-specific risk bonus
     mfg_mult = 1.0
-    if sector and any(kw in (sector or "").lower() for kw in
-                      ["manufacturing", "factory", "production", "battery", "semiconductor",
-                       "3d print", "robotics", "ev ", "automotive", "construction"]):
+    if sector and any(
+        kw in (sector or "").lower()
+        for kw in [
+            "manufacturing",
+            "factory",
+            "production",
+            "battery",
+            "semiconductor",
+            "3d print",
+            "robotics",
+            "ev ",
+            "automotive",
+            "construction",
+        ]
+    ):
         # Manufacturing has higher capital intensity = higher risk
         mfg_mult = 1.1
-        factors.append({"factor": "capital_intensity", "value": "manufacturing", "impact": 1.1})
+        factors.append(
+            {"factor": "capital_intensity", "value": "manufacturing", "impact": 1.1}
+        )
 
     # ── Calculate final score ──
-    risk_score = min(1.0, max(0.0,
-        base_risk * funding_mult * region_mult * age_mult * pattern_mult * mfg_mult
-    ))
+    risk_score = min(
+        1.0,
+        max(
+            0.0,
+            base_risk * funding_mult * region_mult * age_mult * pattern_mult * mfg_mult,
+        ),
+    )
 
     # ── Risk level ──
     if risk_score >= 0.75:
@@ -191,7 +231,9 @@ def score_startup(
         recommendation = "Average risk profile. Monitor key metrics closely and maintain 18+ month runway."
     else:
         risk_level = "low"
-        recommendation = "Below-average risk. Continue execution but watch for market shifts."
+        recommendation = (
+            "Below-average risk. Continue execution but watch for market shifts."
+        )
 
     return {
         "risk_score": round(risk_score, 3),
@@ -213,9 +255,11 @@ class RiskScorerAgent(BaseAgent):
 
     def execute(self, upstream_results: list | None = None) -> AgentResult:
         min_samples = self.config.get("min_training_samples", 100)
-        fallback = self.config.get("fallback_to_heuristic", True)
+        self.config.get("fallback_to_heuristic", True)
 
-        _logger.info("RiskScorerAgent: Starting risk scoring (min_samples=%d)", min_samples)
+        _logger.info(
+            "RiskScorerAgent: Starting risk scoring (min_samples=%d)", min_samples
+        )
 
         try:
             conn = get_connection()
@@ -292,7 +336,8 @@ class RiskScorerAgent(BaseAgent):
 
             _logger.info(
                 "RiskScorerAgent: Scored %d startups — %s",
-                scored, level_counts,
+                scored,
+                level_counts,
             )
 
             return AgentResult(

@@ -1,6 +1,5 @@
 """Tests for the Product Hunt Collector."""
 
-import json
 import sys
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -27,8 +26,8 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.producthunt_collector import ProductHuntCollector
-from collectors.base import CollectionResult
+from collectors.producthunt_collector import ProductHuntCollector  # noqa: E402
+from collectors.base import CollectionResult  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -38,9 +37,17 @@ for key, orig in _saved_db_modules.items():
         sys.modules.pop(key, None)
 
 
-def _make_post(ph_id="ph-123", name="AI Writer Pro", tagline="AI-powered writing assistant",
-               votes_count=300, comments_count=45, topics=None, makers=None,
-               featured=False, created_at=None):
+def _make_post(
+    ph_id="ph-123",
+    name="AI Writer Pro",
+    tagline="AI-powered writing assistant",
+    votes_count=300,
+    comments_count=45,
+    topics=None,
+    makers=None,
+    featured=False,
+    created_at=None,
+):
     """Build a post dict matching _parse_post output."""
     now = datetime.now(timezone.utc)
     return {
@@ -55,34 +62,41 @@ def _make_post(ph_id="ph-123", name="AI Writer Pro", tagline="AI-powered writing
         "makers": makers or ["Alice Smith", "Bob Jones"],
         "website_url": f"https://{name.lower().replace(' ', '')}.com",
         "featured": featured,
-        "created_at": created_at or (now - timedelta(hours=12)).strftime("%Y-%m-%d %H:%M:%S"),
-        "featured_at": (now - timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S") if featured else None,
+        "created_at": created_at
+        or (now - timedelta(hours=12)).strftime("%Y-%m-%d %H:%M:%S"),
+        "featured_at": (now - timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S")
+        if featured
+        else None,
     }
 
 
 def _make_graphql_response(posts=None, has_next_page=False, end_cursor="cursor123"):
     """Build a valid Product Hunt GraphQL response envelope."""
     edges = []
-    for p in (posts or []):
+    for p in posts or []:
         topics_edges = [{"node": {"name": t}} for t in p.get("topics", [])]
-        maker_edges = [{"node": {"id": f"m{i}", "name": m, "username": m.lower().replace(" ", "")}}
-                       for i, m in enumerate(p.get("makers", []))]
-        edges.append({
-            "node": {
-                "id": p["ph_id"],
-                "name": p["name"],
-                "tagline": p["tagline"],
-                "description": p["description"],
-                "url": p["product_url"],
-                "votesCount": p["votes_count"],
-                "commentsCount": p["comments_count"],
-                "createdAt": p["created_at"],
-                "featuredAt": p.get("featured_at"),
-                "topics": {"edges": topics_edges},
-                "website": {"url": p["website_url"]},
-                "makers": {"edges": maker_edges},
+        maker_edges = [
+            {"node": {"id": f"m{i}", "name": m, "username": m.lower().replace(" ", "")}}
+            for i, m in enumerate(p.get("makers", []))
+        ]
+        edges.append(
+            {
+                "node": {
+                    "id": p["ph_id"],
+                    "name": p["name"],
+                    "tagline": p["tagline"],
+                    "description": p["description"],
+                    "url": p["product_url"],
+                    "votesCount": p["votes_count"],
+                    "commentsCount": p["comments_count"],
+                    "createdAt": p["created_at"],
+                    "featuredAt": p.get("featured_at"),
+                    "topics": {"edges": topics_edges},
+                    "website": {"url": p["website_url"]},
+                    "makers": {"edges": maker_edges},
+                }
             }
-        })
+        )
 
     return {
         "data": {
@@ -91,7 +105,7 @@ def _make_graphql_response(posts=None, has_next_page=False, end_cursor="cursor12
                 "pageInfo": {
                     "hasNextPage": has_next_page,
                     "endCursor": end_cursor if has_next_page else None,
-                }
+                },
             }
         }
     }
@@ -141,35 +155,59 @@ class TestProductHuntCollectorConfig:
 class TestProductHuntCollectorScoring:
     def test_high_engagement_featured(self):
         c = ProductHuntCollector(config={})
-        post = _make_post(votes_count=600, comments_count=80, featured=True,
-                          topics=["ai", "saas"],
-                          created_at=(datetime.now(timezone.utc) - timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S"))
+        post = _make_post(
+            votes_count=600,
+            comments_count=80,
+            featured=True,
+            topics=["ai", "saas"],
+            created_at=(datetime.now(timezone.utc) - timedelta(hours=6)).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
+        )
         score = c._compute_score(post)
         # >500 votes(+35) + high comments(+15) + featured(+15) + relevant topic(+15) + <24h(+20) = 100
         assert score >= 90
 
     def test_low_engagement(self):
         c = ProductHuntCollector(config={})
-        post = _make_post(votes_count=5, comments_count=0, featured=False,
-                          topics=["design"],
-                          created_at=(datetime.now(timezone.utc) - timedelta(days=10)).strftime("%Y-%m-%d %H:%M:%S"))
+        post = _make_post(
+            votes_count=5,
+            comments_count=0,
+            featured=False,
+            topics=["design"],
+            created_at=(datetime.now(timezone.utc) - timedelta(days=10)).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
+        )
         score = c._compute_score(post)
         assert score < 20
 
     def test_medium_engagement(self):
         c = ProductHuntCollector(config={})
-        post = _make_post(votes_count=200, comments_count=30, featured=False,
-                          topics=["ai"],
-                          created_at=(datetime.now(timezone.utc) - timedelta(hours=36)).strftime("%Y-%m-%d %H:%M:%S"))
+        post = _make_post(
+            votes_count=200,
+            comments_count=30,
+            featured=False,
+            topics=["ai"],
+            created_at=(datetime.now(timezone.utc) - timedelta(hours=36)).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
+        )
         score = c._compute_score(post)
         # >100 votes(+20) + comments ratio(+15) + topic(+15) + <72h(+10) = 60
         assert score == 60
 
     def test_capped_at_100(self):
         c = ProductHuntCollector(config={})
-        post = _make_post(votes_count=9999, comments_count=9999, featured=True,
-                          topics=["ai", "developer-tools"],
-                          created_at=(datetime.now(timezone.utc) - timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S"))
+        post = _make_post(
+            votes_count=9999,
+            comments_count=9999,
+            featured=True,
+            topics=["ai", "developer-tools"],
+            created_at=(datetime.now(timezone.utc) - timedelta(hours=1)).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
+        )
         score = c._compute_score(post)
         assert score <= 100.0
 
@@ -230,7 +268,9 @@ class TestProductHuntCollectorFetch:
 
     def test_fetch_pagination(self):
         c = ProductHuntCollector(config={"producthunt": {"api_token": "test"}})
-        resp = _make_graphql_response([_make_post()], has_next_page=True, end_cursor="next123")
+        resp = _make_graphql_response(
+            [_make_post()], has_next_page=True, end_cursor="next123"
+        )
         session = _make_mock_session([resp])
         result_posts, cursor = c._fetch_posts(session, "https://api.example.com", 50)
         assert len(result_posts) == 1
@@ -288,15 +328,17 @@ class TestProductHuntCollectorIntegration:
         session = _make_mock_session([resp])
         mock_get_session.return_value = session
 
-        c = ProductHuntCollector(config={
-            "producthunt": {
-                "api_token": "test",
-                "posts_per_request": 50,
-                "max_requests": 3,
-                "min_delay_seconds": 0,
-                "topic_filter": [],
-            },
-        })
+        c = ProductHuntCollector(
+            config={
+                "producthunt": {
+                    "api_token": "test",
+                    "posts_per_request": 50,
+                    "max_requests": 3,
+                    "min_delay_seconds": 0,
+                    "topic_filter": [],
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -313,13 +355,15 @@ class TestProductHuntCollectorIntegration:
         session = _make_mock_session([resp])
         mock_get_session.return_value = session
 
-        c = ProductHuntCollector(config={
-            "producthunt": {
-                "api_token": "test",
-                "max_requests": 1,
-                "min_delay_seconds": 0,
-            },
-        })
+        c = ProductHuntCollector(
+            config={
+                "producthunt": {
+                    "api_token": "test",
+                    "max_requests": 1,
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -340,14 +384,16 @@ class TestProductHuntCollectorIntegration:
         session = _make_mock_session([resp])
         mock_get_session.return_value = session
 
-        c = ProductHuntCollector(config={
-            "producthunt": {
-                "api_token": "test",
-                "max_requests": 1,
-                "min_delay_seconds": 0,
-                "topic_filter": ["ai", "saas"],
-            },
-        })
+        c = ProductHuntCollector(
+            config={
+                "producthunt": {
+                    "api_token": "test",
+                    "max_requests": 1,
+                    "min_delay_seconds": 0,
+                    "topic_filter": ["ai", "saas"],
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -363,13 +409,15 @@ class TestProductHuntCollectorIntegration:
         session = _make_mock_session([resp])
         mock_get_session.return_value = session
 
-        c = ProductHuntCollector(config={
-            "producthunt": {
-                "api_token": "test",
-                "max_requests": 1,
-                "min_delay_seconds": 0,
-            },
-        })
+        c = ProductHuntCollector(
+            config={
+                "producthunt": {
+                    "api_token": "test",
+                    "max_requests": 1,
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         call_count = {"n": 0}
 

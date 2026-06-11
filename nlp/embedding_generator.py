@@ -43,13 +43,16 @@ class EmbeddingGenerator:
 
         try:
             from sentence_transformers import SentenceTransformer
+
             self._model = SentenceTransformer(
-                self._model_name, device=self._device,
+                self._model_name,
+                device=self._device,
             )
             self._loaded = True
             _logger.info(
                 "EmbeddingGenerator: loaded model '%s' on %s",
-                self._model_name, self._device,
+                self._model_name,
+                self._device,
             )
         except Exception as e:
             _logger.error("EmbeddingGenerator: failed to load model: %s", e)
@@ -75,7 +78,9 @@ class EmbeddingGenerator:
         """
         self.load()
         embedding = self._model.encode(
-            text, normalize_embeddings=True, show_progress_bar=False,
+            text,
+            normalize_embeddings=True,
+            show_progress_bar=False,
         )
         return embedding.tolist()
 
@@ -92,8 +97,10 @@ class EmbeddingGenerator:
         """
         self.load()
         embeddings = self._model.encode(
-            texts, normalize_embeddings=True,
-            batch_size=self._batch_size, show_progress_bar=False,
+            texts,
+            normalize_embeddings=True,
+            batch_size=self._batch_size,
+            show_progress_bar=False,
         )
         return [e.tolist() for e in embeddings]
 

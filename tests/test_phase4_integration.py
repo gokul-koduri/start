@@ -12,41 +12,49 @@ class TestPhase4CollectorsImportable:
     def test_import_regulatory_collector(self):
         """Test regulatory collector is importable."""
         from collectors.regulatory_collector import RegulatoryCollector
+
         assert RegulatoryCollector is not None
 
     def test_import_newsletter_collector(self):
         """Test newsletter collector is importable."""
         from collectors.newsletter_collector import NewsletterCollector
+
         assert NewsletterCollector is not None
 
     def test_import_arxiv_collector(self):
         """Test arXiv collector is importable."""
         from collectors.arxiv_collector import ArxivCollector
+
         assert ArxivCollector is not None
 
     def test_import_producthunt_collector(self):
         """Test Product Hunt collector is importable."""
         from collectors.producthunt_collector import ProductHuntCollector
+
         assert ProductHuntCollector is not None
 
     def test_import_website_monitor_collector(self):
         """Test Website Monitor collector is importable."""
         from collectors.website_monitor_collector import WebsiteMonitorCollector
+
         assert WebsiteMonitorCollector is not None
 
     def test_import_twitter_collector(self):
         """Test Twitter collector is importable."""
         from collectors.twitter_collector import TwitterCollector
+
         assert TwitterCollector is not None
 
     def test_import_stackoverflow_collector(self):
         """Test Stack Overflow collector is importable."""
         from collectors.stackoverflow_collector import StackOverflowCollector
+
         assert StackOverflowCollector is not None
 
     def test_import_npm_pypi_collector(self):
         """Test NPM/PyPI collector is importable."""
         from collectors.npm_pypi_collector import NPMPyPICollector
+
         assert NPMPyPICollector is not None
 
 
@@ -75,12 +83,14 @@ class TestPhase4CollectorsRegistered:
     def test_regulatory_registered(self):
         """Test regulatory collector is registered."""
         from agents.collection_agent import ALL_COLLECTORS
+
         assert "regulatory" in ALL_COLLECTORS
         assert ALL_COLLECTORS["regulatory"] is not None
 
     def test_newsletter_registered(self):
         """Test newsletter collector is registered."""
         from agents.collection_agent import ALL_COLLECTORS
+
         assert "newsletter" in ALL_COLLECTORS
         assert ALL_COLLECTORS["newsletter"] is not None
 
@@ -91,43 +101,49 @@ class TestPhase4CollectorInterface:
     def test_regulatory_has_name_property(self):
         """Test regulatory collector has name property."""
         from collectors.regulatory_collector import RegulatoryCollector
+
         c = RegulatoryCollector(config={})
-        assert hasattr(c, 'name')
+        assert hasattr(c, "name")
         assert c.name == "regulatory"
 
     def test_regulatory_has_collect_method(self):
         """Test regulatory collector has collect method."""
         from collectors.regulatory_collector import RegulatoryCollector
+
         c = RegulatoryCollector(config={})
-        assert hasattr(c, 'collect')
+        assert hasattr(c, "collect")
         assert callable(c.collect)
 
     def test_newsletter_has_name_property(self):
         """Test newsletter collector has name property."""
         from collectors.newsletter_collector import NewsletterCollector
+
         c = NewsletterCollector(config={})
-        assert hasattr(c, 'name')
+        assert hasattr(c, "name")
         assert c.name == "newsletter"
 
     def test_newsletter_has_collect_method(self):
         """Test newsletter collector has collect method."""
         from collectors.newsletter_collector import NewsletterCollector
+
         c = NewsletterCollector(config={})
-        assert hasattr(c, 'collect')
+        assert hasattr(c, "collect")
         assert callable(c.collect)
 
     def test_arxiv_has_name_property(self):
         """Test arXiv collector has name property."""
         from collectors.arxiv_collector import ArxivCollector
+
         c = ArxivCollector(config={})
-        assert hasattr(c, 'name')
+        assert hasattr(c, "name")
         assert c.name == "arxiv"
 
     def test_producthunt_has_name_property(self):
         """Test Product Hunt collector has name property."""
         from collectors.producthunt_collector import ProductHuntCollector
+
         c = ProductHuntCollector(config={})
-        assert hasattr(c, 'name')
+        assert hasattr(c, "name")
         assert c.name == "producthunt"
 
 
@@ -137,6 +153,7 @@ class TestPhase4ConfigLoading:
     def test_regulatory_config_exists(self):
         """Test regulatory config exists in settings."""
         from config import load_config
+
         config = load_config()
         assert "regulatory" in config
         assert "enabled" in config["regulatory"]
@@ -144,6 +161,7 @@ class TestPhase4ConfigLoading:
     def test_newsletter_config_exists(self):
         """Test newsletter config exists in settings."""
         from config import load_config
+
         config = load_config()
         assert "newsletter" in config
         assert "enabled" in config["newsletter"]
@@ -151,6 +169,7 @@ class TestPhase4ConfigLoading:
     def test_arxiv_config_exists(self):
         """Test arXiv config exists in settings."""
         from config import load_config
+
         config = load_config()
         assert "arxiv" in config
         assert "enabled" in config["arxiv"]
@@ -158,6 +177,7 @@ class TestPhase4ConfigLoading:
     def test_producthunt_config_exists(self):
         """Test Product Hunt config exists in settings."""
         from config import load_config
+
         config = load_config()
         assert "producthunt" in config
         assert "enabled" in config["producthunt"]
@@ -165,6 +185,7 @@ class TestPhase4ConfigLoading:
     def test_stackoverflow_config_exists(self):
         """Test Stack Overflow config exists in settings."""
         from config import load_config
+
         config = load_config()
         assert "stackoverflow" in config
         assert "enabled" in config["stackoverflow"]
@@ -172,6 +193,7 @@ class TestPhase4ConfigLoading:
     def test_npm_pypi_config_exists(self):
         """Test NPM/PyPI config exists in settings."""
         from config import load_config
+
         config = load_config()
         assert "npm_pypi" in config
         assert "enabled" in config["npm_pypi"]
@@ -235,7 +257,8 @@ class TestPhase4SchemaTables:
     def test_schema_version_is_14(self):
         """Test schema version is at least 14 (Phase 4 or later)."""
         schema_path = Path(__file__).parent.parent / "db" / "schema.py"
-        schema_content = schema_path.read_text()
+        schema_path.read_text()
         # Schema version should be at least 14 (any later version is fine)
         from db.schema import get_schema_version
+
         assert get_schema_version() >= 14

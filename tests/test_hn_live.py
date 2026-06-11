@@ -1,8 +1,6 @@
 """Tests for the HN Live Collector."""
 
-import json
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -27,8 +25,8 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.hn_live_collector import HNLiveCollector, _CREATE_TABLE_SQL
-from collectors.base import CollectionResult
+from collectors.hn_live_collector import HNLiveCollector, _CREATE_TABLE_SQL  # noqa: E402
+from collectors.base import CollectionResult  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -38,9 +36,17 @@ for key, orig in _saved_db_modules.items():
         sys.modules.pop(key, None)
 
 
-def _make_story(sid=12345, title="Tech Corp launches AI platform",
-               url="https://example.com", score=150, descendants=50,
-               author="pg", time=1700000000, story_type="story", text=None):
+def _make_story(
+    sid=12345,
+    title="Tech Corp launches AI platform",
+    url="https://example.com",
+    score=150,
+    descendants=50,
+    author="pg",
+    time=1700000000,
+    story_type="story",
+    text=None,
+):
     """Build a mock HN story object (Firebase API format)."""
     return {
         "id": sid,
@@ -55,21 +61,29 @@ def _make_story(sid=12345, title="Tech Corp launches AI platform",
     }
 
 
-def _make_algolia_item(story_id=12345, title="Tech Corp launches AI platform",
-                       points=150, children=None):
+def _make_algolia_item(
+    story_id=12345, title="Tech Corp launches AI platform", points=150, children=None
+):
     """Build a mock Algolia item response with nested comments."""
     return {
         "id": str(story_id),
         "title": title,
         "points": points,
-        "children": children or [
+        "children": children
+        or [
             {
-                "id": "c1", "author": "user1", "text": "Great product!",
-                "points": 25, "parent_id": story_id,
+                "id": "c1",
+                "author": "user1",
+                "text": "Great product!",
+                "points": 25,
+                "parent_id": story_id,
             },
             {
-                "id": "c2", "author": "user2", "text": "This will change the industry.",
-                "points": 18, "parent_id": story_id,
+                "id": "c2",
+                "author": "user2",
+                "text": "This will change the industry.",
+                "points": 18,
+                "parent_id": story_id,
             },
         ],
     }
@@ -194,7 +208,9 @@ class TestHNLiveCollectorInsertStories:
         result = CollectionResult(collector_name="hn_live")
 
         for i in range(5):
-            c._insert_story(mock_cursor, _make_story(sid=100 + i, title=f"Story {i}"), result)
+            c._insert_story(
+                mock_cursor, _make_story(sid=100 + i, title=f"Story {i}"), result
+            )
         assert result.records_collected == 5
 
     def test_insert_story_no_url(self):
@@ -219,37 +235,78 @@ class TestHNLiveCollectorInsertStories:
 class TestHNLiveCollectorComments:
     def test_fetch_comments_enabled(self):
         c = HNLiveCollector(config={"hn_live": {}})
-        algolia_item = _make_algolia_item(children=[
-            {"id": "c1", "author": "u1", "text": "Nice!", "points": 10, "parent_id": 12345},
-            {"id": "c2", "author": "u2", "text": "Agree.", "points": 5, "parent_id": 12345},
-        ])
+        algolia_item = _make_algolia_item(
+            children=[
+                {
+                    "id": "c1",
+                    "author": "u1",
+                    "text": "Nice!",
+                    "points": 10,
+                    "parent_id": 12345,
+                },
+                {
+                    "id": "c2",
+                    "author": "u2",
+                    "text": "Agree.",
+                    "points": 5,
+                    "parent_id": 12345,
+                },
+            ]
+        )
         mock_session = _make_mock_session([algolia_item])
-        comments = c._fetch_comments(mock_session, "https://algolia.example.com", 12345, "Test", 5)
+        comments = c._fetch_comments(
+            mock_session, "https://algolia.example.com", 12345, "Test", 5
+        )
         assert len(comments) == 2
         assert comments[0]["comment_id"] == "c1"
 
     def test_fetch_comments_deleted(self):
         c = HNLiveCollector(config={"hn_live": {}})
-        algolia_item = _make_algolia_item(children=[
-            {"id": "c1", "author": "u1", "text": "Deleted", "points": 0,
-             "parent_id": 12345, "deleted": True},
-            {"id": "c2", "author": "u2", "text": "Dead", "points": 0,
-             "parent_id": 12345, "dead": True},
-            {"id": "c3", "author": "u3", "text": "Alive", "points": 5,
-             "parent_id": 12345},
-        ])
+        algolia_item = _make_algolia_item(
+            children=[
+                {
+                    "id": "c1",
+                    "author": "u1",
+                    "text": "Deleted",
+                    "points": 0,
+                    "parent_id": 12345,
+                    "deleted": True,
+                },
+                {
+                    "id": "c2",
+                    "author": "u2",
+                    "text": "Dead",
+                    "points": 0,
+                    "parent_id": 12345,
+                    "dead": True,
+                },
+                {
+                    "id": "c3",
+                    "author": "u3",
+                    "text": "Alive",
+                    "points": 5,
+                    "parent_id": 12345,
+                },
+            ]
+        )
         mock_session = _make_mock_session([algolia_item])
-        comments = c._fetch_comments(mock_session, "https://algolia.example.com", 12345, "Test", 5)
+        comments = c._fetch_comments(
+            mock_session, "https://algolia.example.com", 12345, "Test", 5
+        )
         assert len(comments) == 1
         assert comments[0]["comment_id"] == "c3"
 
     def test_fetch_comments_no_author(self):
         c = HNLiveCollector(config={"hn_live": {}})
-        algolia_item = _make_algolia_item(children=[
-            {"id": "c1", "text": "No author", "points": 5, "parent_id": 12345},
-        ])
+        algolia_item = _make_algolia_item(
+            children=[
+                {"id": "c1", "text": "No author", "points": 5, "parent_id": 12345},
+            ]
+        )
         mock_session = _make_mock_session([algolia_item])
-        comments = c._fetch_comments(mock_session, "https://algolia.example.com", 12345, "Test", 5)
+        comments = c._fetch_comments(
+            mock_session, "https://algolia.example.com", 12345, "Test", 5
+        )
         assert len(comments) == 0  # Skipped because no author
 
     def test_insert_comments(self):
@@ -258,9 +315,15 @@ class TestHNLiveCollectorComments:
         result = CollectionResult(collector_name="hn_live")
 
         comments = [
-            {"comment_id": "c1", "story_id": "123", "author": "u1",
-             "body_text": "Great!", "score": 10, "parent_id": "123",
-             "story_title": "Test"},
+            {
+                "comment_id": "c1",
+                "story_id": "123",
+                "author": "u1",
+                "body_text": "Great!",
+                "score": 10,
+                "parent_id": "123",
+                "story_title": "Test",
+            },
         ]
         c._insert_comments(mock_cursor, comments, result)
         assert result.records_collected == 1
@@ -272,9 +335,15 @@ class TestHNLiveCollectorComments:
         result = CollectionResult(collector_name="hn_live")
 
         comments = [
-            {"comment_id": "c1", "story_id": "123", "author": "u1",
-             "body_text": "Great!", "score": 10, "parent_id": "123",
-             "story_title": "Test"},
+            {
+                "comment_id": "c1",
+                "story_id": "123",
+                "author": "u1",
+                "body_text": "Great!",
+                "score": 10,
+                "parent_id": "123",
+                "story_title": "Test",
+            },
         ]
         c._insert_comments(mock_cursor, comments, result)
         assert result.records_collected == 0
@@ -290,23 +359,39 @@ class TestHNLiveCollectorIntegration:
         # 2. /item/42.json → story1 (high engagement)
         # 3. /item/43.json → story2 (low engagement)
         # 4. Algolia /items/42 → comments for story1
-        story1 = _make_story(sid=42, title="AI Startup raises $100M", score=200, descendants=80)
-        story2 = _make_story(sid=43, title="Show HN: My side project", score=5, descendants=2)
-        algolia_resp = _make_algolia_item(story_id=42, title="AI Startup raises $100M", children=[
-            {"id": "c1", "author": "u1", "text": "Impressive!", "points": 50, "parent_id": 42},
-        ])
+        story1 = _make_story(
+            sid=42, title="AI Startup raises $100M", score=200, descendants=80
+        )
+        story2 = _make_story(
+            sid=43, title="Show HN: My side project", score=5, descendants=2
+        )
+        algolia_resp = _make_algolia_item(
+            story_id=42,
+            title="AI Startup raises $100M",
+            children=[
+                {
+                    "id": "c1",
+                    "author": "u1",
+                    "text": "Impressive!",
+                    "points": 50,
+                    "parent_id": 42,
+                },
+            ],
+        )
 
         mock_session = _make_mock_session([[42, 43], story1, story2, algolia_resp])
         mock_get_session.return_value = mock_session
 
-        c = HNLiveCollector(config={
-            "hn_live": {
-                "max_stories": 10,
-                "min_points": 10,
-                "collect_comments": True,
-                "comment_limit": 5,
-            },
-        })
+        c = HNLiveCollector(
+            config={
+                "hn_live": {
+                    "max_stories": 10,
+                    "min_points": 10,
+                    "collect_comments": True,
+                    "comment_limit": 5,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -327,12 +412,14 @@ class TestHNLiveCollectorIntegration:
         mock_session = _make_mock_session([[42, 43], story, poll])
         mock_get_session.return_value = mock_session
 
-        c = HNLiveCollector(config={
-            "hn_live": {
-                "max_stories": 10,
-                "collect_comments": False,
-            },
-        })
+        c = HNLiveCollector(
+            config={
+                "hn_live": {
+                    "max_stories": 10,
+                    "collect_comments": False,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -364,12 +451,14 @@ class TestHNLiveCollectorIntegration:
         mock_session = _make_mock_session([[42], story])
         mock_get_session.return_value = mock_session
 
-        c = HNLiveCollector(config={
-            "hn_live": {
-                "max_stories": 10,
-                "collect_comments": False,
-            },
-        })
+        c = HNLiveCollector(
+            config={
+                "hn_live": {
+                    "max_stories": 10,
+                    "collect_comments": False,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()

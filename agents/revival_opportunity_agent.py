@@ -113,16 +113,25 @@ class RevivalOpportunityAgent(BaseAgent):
             )
             reshoring = cursor.fetchone()
             cursor.close()
-            industry["reshoring_jobs"] = reshoring["jobs"] if reshoring and reshoring["jobs"] else 0
-            industry["reshoring_projects"] = reshoring["projects"] if reshoring and reshoring["projects"] else 0
+            industry["reshoring_jobs"] = (
+                reshoring["jobs"] if reshoring and reshoring["jobs"] else 0
+            )
+            industry["reshoring_projects"] = (
+                reshoring["projects"] if reshoring and reshoring["projects"] else 0
+            )
 
             # Simple scoring: market fit + reshoring activity + investor interest
             score = 0
-            if industry.get("market_fit"): score += 30
-            if industry.get("key_investors"): score += 20
-            if industry.get("reshoring_jobs", 0) > 0: score += 25
-            if industry.get("related_failures", 0) > 0: score += 15
-            if industry.get("market_size_2030"): score += 10
+            if industry.get("market_fit"):
+                score += 30
+            if industry.get("key_investors"):
+                score += 20
+            if industry.get("reshoring_jobs", 0) > 0:
+                score += 25
+            if industry.get("related_failures", 0) > 0:
+                score += 15
+            if industry.get("market_size_2030"):
+                score += 10
             industry["revival_score"] = min(score, 100)
             industry_scores.append(industry)
 
@@ -149,8 +158,12 @@ class RevivalOpportunityAgent(BaseAgent):
 
         top_industry = industry_scores[0]["industry"] if industry_scores else "N/A"
         top_score = industry_scores[0]["revival_score"] if industry_scores else 0
-        _logger.info("RevivalOpportunityAgent: %d candidates, top industry: %s (score: %d)",
-                     len(revival_candidates), top_industry, top_score)
+        _logger.info(
+            "RevivalOpportunityAgent: %d candidates, top industry: %s (score: %d)",
+            len(revival_candidates),
+            top_industry,
+            top_score,
+        )
 
         return AgentResult(
             agent_name=self.name,

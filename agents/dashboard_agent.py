@@ -6,7 +6,6 @@ import re
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone
-from pathlib import Path
 
 from agents.base import AgentResult, BaseAgent
 from config import get_project_root, load_config
@@ -711,7 +710,9 @@ class DashboardAgent(BaseAgent):
         try:
             import markdown
         except ImportError:
-            _logger.error("DashboardAgent: 'markdown' package not installed. Run: pip install markdown")
+            _logger.error(
+                "DashboardAgent: 'markdown' package not installed. Run: pip install markdown"
+            )
             return AgentResult(
                 agent_name=self.name,
                 status="failed",
@@ -764,7 +765,9 @@ class DashboardAgent(BaseAgent):
         # Global Market Viability monitoring
         gmv_stats = _fetch_gmv_status()
         gmv_monitor_html = _build_gmv_monitor_html(gmv_stats)
-        gmv_charts_html, gmv_chart_script = _build_gmv_charts(gmv_stats) if include_charts else ("", "")
+        gmv_charts_html, gmv_chart_script = (
+            _build_gmv_charts(gmv_stats) if include_charts else ("", "")
+        )
 
         # LLM Infrastructure status
         llm_status = _fetch_ollama_status()
@@ -778,7 +781,9 @@ class DashboardAgent(BaseAgent):
         ollama_usage_data = _fetch_ollama_usage_data()
         ollama_usage_html = _build_ollama_usage_html(ollama_usage_data)
         ollama_usage_charts_html, ollama_usage_chart_script = (
-            _build_ollama_usage_charts(ollama_usage_data) if include_charts else ("", "")
+            _build_ollama_usage_charts(ollama_usage_data)
+            if include_charts
+            else ("", "")
         )
 
         # LLM Model Portfolio
@@ -825,10 +830,21 @@ class DashboardAgent(BaseAgent):
         gated_benchmarks = _wrap_gated("pro", benchmark_html)
         gated_optimizer = _wrap_gated("pro", optimizer_html)
 
-        all_body = (gmv_monitor_html + gmv_charts_html + html_body + llm_infra_html
-                    + llm_pricing_html + ollama_usage_html + gated_portfolio
-                    + gated_benchmarks + gated_optimizer + kg_html + gated_revenue
-                    + span_html + pro_lock)
+        all_body = (
+            gmv_monitor_html
+            + gmv_charts_html
+            + html_body
+            + llm_infra_html
+            + llm_pricing_html
+            + ollama_usage_html
+            + gated_portfolio
+            + gated_benchmarks
+            + gated_optimizer
+            + kg_html
+            + gated_revenue
+            + span_html
+            + pro_lock
+        )
 
         # Pricing page section
         pricing_html = _build_pricing_html()
@@ -841,31 +857,47 @@ class DashboardAgent(BaseAgent):
             generated=datetime.now(timezone.utc).strftime("%B %d, %Y at %H:%M UTC"),
             nav=nav_html,
             stats=stats_html + gmv_monitor_html,
-            charts=(charts_html + gmv_charts_html + ollama_usage_charts_html
-                    + portfolio_charts_html + benchmark_charts_html + kg_charts_html
-                    + rev_charts_html),
+            charts=(
+                charts_html
+                + gmv_charts_html
+                + ollama_usage_charts_html
+                + portfolio_charts_html
+                + benchmark_charts_html
+                + kg_charts_html
+                + rev_charts_html
+            ),
             body=all_body,
             pricing_section=pricing_html,
-            chart_script=(chart_script + gmv_chart_script + ollama_usage_chart_script
-                          + portfolio_chart_script + benchmark_chart_script + kg_chart_script
-                          + rev_chart_script),
+            chart_script=(
+                chart_script
+                + gmv_chart_script
+                + ollama_usage_chart_script
+                + portfolio_chart_script
+                + benchmark_chart_script
+                + kg_chart_script
+                + rev_chart_script
+            ),
         )
 
         # Write output files
         site_dir.mkdir(parents=True, exist_ok=True)
         (site_dir / "index.html").write_text(full_html, encoding="utf-8")
         (site_dir / "data.json").write_text(
-            json.dumps({
-                **stats_json,
-                "gmv_monitoring": gmv_stats,
-                "llm_infrastructure": llm_status,
-                "llm_pricing": llm_pricing_data,
-                "ollama_usage": ollama_usage_data,
-                "llm_portfolio": portfolio_data,
-                "llm_benchmarks": benchmark_data,
-                "llm_optimizer": optimizer_data,
-                "knowledge_graph": kg_data,
-            }, indent=2, default=str),
+            json.dumps(
+                {
+                    **stats_json,
+                    "gmv_monitoring": gmv_stats,
+                    "llm_infrastructure": llm_status,
+                    "llm_pricing": llm_pricing_data,
+                    "ollama_usage": ollama_usage_data,
+                    "llm_portfolio": portfolio_data,
+                    "llm_benchmarks": benchmark_data,
+                    "llm_optimizer": optimizer_data,
+                    "knowledge_graph": kg_data,
+                },
+                indent=2,
+                default=str,
+            ),
             encoding="utf-8",
         )
         (site_dir / ".nojekyll").touch()
@@ -890,9 +922,7 @@ def _generate_nav(html_body: str) -> str:
     nav_items = []
 
     # Match headings WITH id attributes (primary path — what markdown library produces)
-    for match in re.finditer(
-        r'<(h[23])\s+id="([^"]*)"[^>]*>(.*?)</\1>', html_body
-    ):
+    for match in re.finditer(r'<(h[23])\s+id="([^"]*)"[^>]*>(.*?)</\1>', html_body):
         tag, heading_id, text = match.group(1), match.group(2), match.group(3)
         clean = re.sub(r"<[^>]+>", "", text)  # Strip HTML tags
         clean = re.sub(r"\s*\{#[^}]+\}", "", clean)  # Strip {#id} syntax
@@ -900,9 +930,7 @@ def _generate_nav(html_body: str) -> str:
         if not clean:
             continue
         css_class = "h2" if tag == "h2" else "h3"
-        nav_items.append(
-            f'<a href="#{heading_id}" class="{css_class}">{clean}</a>'
-        )
+        nav_items.append(f'<a href="#{heading_id}" class="{css_class}">{clean}</a>')
 
     # Fallback: headings WITHOUT id attributes
     if not nav_items:
@@ -914,9 +942,7 @@ def _generate_nav(html_body: str) -> str:
             if not anchor:
                 continue
             css_class = "h2" if tag == "h2" else "h3"
-            nav_items.append(
-                f'<a href="#{anchor}" class="{css_class}">{clean}</a>'
-            )
+            nav_items.append(f'<a href="#{anchor}" class="{css_class}">{clean}</a>')
 
     return "\n".join(nav_items[:50])
 
@@ -960,7 +986,10 @@ def _fetch_stats():
         conn.close()
     except Exception as e:
         _logger.warning("DashboardAgent: Could not fetch stats: %s", e)
-        stats_json = {"last_updated": datetime.now(timezone.utc).isoformat(), "error": str(e)}
+        stats_json = {
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "error": str(e),
+        }
 
     # Build stat cards HTML
     cards = [
@@ -983,19 +1012,23 @@ def _fetch_stats():
             f'<span class="icon">{icon}</span>'
             f'<div class="value">{value}</div>'
             f'<div class="label">{label}</div>'
-            f'</div>\n'
+            f"</div>\n"
         )
     stats_html += "</div>"
 
     return stats_html, stats_json
 
 
-def _ollama_api(endpoint: str, payload: dict | None = None, timeout: float = 5) -> dict | None:
+def _ollama_api(
+    endpoint: str, payload: dict | None = None, timeout: float = 5
+) -> dict | None:
     """Make a request to the Ollama API and return parsed JSON, or None on failure."""
     url = f"http://localhost:11434{endpoint}"
     try:
         data = json.dumps(payload).encode() if payload else None
-        req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+        req = urllib.request.Request(
+            url, data=data, headers={"Content-Type": "application/json"}
+        )
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             result = json.loads(resp.read().decode())
 
@@ -1019,6 +1052,7 @@ def _track_chat_tokens(result: dict, payload: dict | None = None) -> None:
 
     try:
         from agents.ollama_usage_tracker_agent import _track_inference
+
         _track_inference(model, prompt_tokens, completion_tokens)
     except Exception as e:
         _logger.debug("Could not track Ollama tokens: %s", e)
@@ -1051,10 +1085,16 @@ def _fetch_ollama_status() -> dict:
     ps = _ollama_api("/api/ps")
     if ps:
         info["loaded_models"] = [
-            {"name": m["name"], "size_bytes": m.get("size", 0), "vram_bytes": m.get("vram", 0)}
+            {
+                "name": m["name"],
+                "size_bytes": m.get("size", 0),
+                "vram_bytes": m.get("vram", 0),
+            }
             for m in ps.get("models", [])
         ]
-        info["total_vram_mb"] = round(sum(m.get("vram", 0) for m in ps.get("models", [])) / (1024 * 1024))
+        info["total_vram_mb"] = round(
+            sum(m.get("vram", 0) for m in ps.get("models", [])) / (1024 * 1024)
+        )
 
     # 3) Get detailed model info for first loaded model (or first available)
     primary_model = None
@@ -1074,7 +1114,9 @@ def _fetch_ollama_status() -> dict:
                 "format": details.get("format", ""),
                 "quantization_level": details.get("quantization_level", ""),
                 "parameter_count": model_info.get("general.parameter_count", 0),
-                "quantization_version": model_info.get("general.quantization_version", ""),
+                "quantization_version": model_info.get(
+                    "general.quantization_version", ""
+                ),
                 "license": show.get("license", "")[:120],
             }
 
@@ -1108,7 +1150,13 @@ def _build_llm_infrastructure_html(llm: dict) -> str:
 
     details = llm.get("model_details", {})
     params = details.get("parameter_count", 0)
-    params_str = f"{params / 1e9:.1f}B" if params >= 1e9 else f"{params / 1e6:.0f}M" if params else "N/A"
+    params_str = (
+        f"{params / 1e9:.1f}B"
+        if params >= 1e9
+        else f"{params / 1e6:.0f}M"
+        if params
+        else "N/A"
+    )
     vram = llm.get("total_vram_mb", 0)
     vram_str = f"{vram / 1024:.1f} GB" if vram >= 1024 else f"{vram} MB"
     latency = llm.get("test_latency_s", 0)
@@ -1131,7 +1179,11 @@ def _build_llm_infrastructure_html(llm: dict) -> str:
     for m in llm.get("models", []):
         size_gb = m.get("size_bytes", 0) / (1024**3)
         is_loaded = any(lm["name"] == m["name"] for lm in llm.get("loaded_models", []))
-        loaded_badge = '<span style="display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;background:#10B981;color:white;margin-left:6px;">LOADED</span>' if is_loaded else ""
+        loaded_badge = (
+            '<span style="display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;background:#10B981;color:white;margin-left:6px;">LOADED</span>'
+            if is_loaded
+            else ""
+        )
         models_list += f"""
         <tr>
           <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500;">{m['name']}</td>
@@ -1225,6 +1277,7 @@ def _build_llm_infrastructure_html(llm: dict) -> str:
 
 # ── LLM Pricing Comparison ──────────────────────────────────────────────
 
+
 def _fetch_llm_pricing_data() -> dict:
     """Fetch LLM pricing data from the database."""
     pricing: dict = {
@@ -1305,11 +1358,21 @@ def _build_llm_pricing_html(pricing: dict) -> str:
         else:
             ctx_str = str(ctx) if ctx else "N/A"
 
-        in_color = "#10B981" if in_price > 0 and in_price == cheapest_in_price else "inherit"
-        out_color = "#10B981" if out_price > 0 and out_price == cheapest_out_price else "inherit"
+        in_color = (
+            "#10B981" if in_price > 0 and in_price == cheapest_in_price else "inherit"
+        )
+        out_color = (
+            "#10B981"
+            if out_price > 0 and out_price == cheapest_out_price
+            else "inherit"
+        )
 
         notes = m.get("notes", "")
-        notes_cell = f'<span style="color:var(--text-secondary);font-size:11px;margin-left:6px;">{notes}</span>' if notes else ""
+        notes_cell = (
+            f'<span style="color:var(--text-secondary);font-size:11px;margin-left:6px;">{notes}</span>'
+            if notes
+            else ""
+        )
 
         table_rows += f"""
         <tr>
@@ -1388,6 +1451,7 @@ def _build_llm_pricing_html(pricing: dict) -> str:
 
 # ── Ollama Usage Tracking ───────────────────────────────────────────────
 
+
 def _fetch_ollama_usage_data() -> dict:
     """Fetch Ollama usage history and cost equivalence from DB + tracker."""
     usage: dict = {
@@ -1438,7 +1502,9 @@ def _fetch_ollama_usage_data() -> dict:
             ce = latest.get("cost_equivalence_json")
             if ce:
                 try:
-                    usage["cost_equivalence"] = json.loads(ce) if isinstance(ce, str) else ce
+                    usage["cost_equivalence"] = (
+                        json.loads(ce) if isinstance(ce, str) else ce
+                    )
                 except Exception:
                     pass
     except Exception as e:
@@ -1559,7 +1625,10 @@ def _build_ollama_usage_charts(usage: dict):
 
     # Reverse for chronological order
     snaps = list(reversed(snapshots))
-    labels = [s["snapshot_at"][:16] if len(s["snapshot_at"]) > 16 else s["snapshot_at"] for s in snaps]
+    labels = [
+        s["snapshot_at"][:16] if len(s["snapshot_at"]) > 16 else s["snapshot_at"]
+        for s in snaps
+    ]
     total_tokens = [s.get("total_tokens", 0) for s in snaps]
     prompt_tokens = [s.get("prompt_tokens", 0) for s in snaps]
     completion_tokens = [s.get("completion_tokens", 0) for s in snaps]
@@ -1606,7 +1675,7 @@ def _build_ollama_usage_charts(usage: dict):
         cost_data = [cost for _, cost in sorted_costs]
 
         charts_html += '<div class="chart-container"><h3>Cost Equivalence (USD)</h3><canvas id="ollamaCostChart"></canvas></div>'
-        charts_html += '</div>'
+        charts_html += "</div>"
 
         chart_script += f"""
         new Chart(document.getElementById('ollamaCostChart'), {{
@@ -1648,14 +1717,16 @@ def _build_ollama_usage_charts(usage: dict):
         }});
         """
     else:
-        charts_html += '</div>'
+        charts_html += "</div>"
 
     return charts_html, chart_script
 
 
 def _fetch_gmv_status():
     """Fetch Global Market Viability analysis status from cache + database."""
-    GMV_CACHE_FILE = get_project_root() / "data" / "cache" / "ollama_market_viability_cache.json"
+    GMV_CACHE_FILE = (
+        get_project_root() / "data" / "cache" / "ollama_market_viability_cache.json"
+    )
     GMV_TARGET_COUNTRIES_COUNT = 10  # 10 target markets
 
     stats = {
@@ -1697,13 +1768,16 @@ def _fetch_gmv_status():
 
             stats["evaluations_done"] = len(sector_results)
             stats["deep_dives_done"] = len(deep_dives)
-            num_sectors = len(set(r["sector"] for r in sector_results)) if sector_results else 42
+            num_sectors = (
+                len(set(r["sector"] for r in sector_results)) if sector_results else 42
+            )
             stats["total_expected"] = num_sectors * GMV_TARGET_COUNTRIES_COUNT
             stats["avg_viability"] = data.get("avg_viability_score", 0)
             stats["last_evaluated"] = row["analyzed_at"]
             stats["status"] = (
                 "complete"
-                if stats["evaluations_done"] >= stats["total_expected"] and stats["total_expected"] > 0
+                if stats["evaluations_done"] >= stats["total_expected"]
+                and stats["total_expected"] > 0
                 else "in_progress"
             )
 
@@ -1733,9 +1807,17 @@ def _fetch_gmv_status():
 
             stats["sectors_done"] = list(set(r["sector"] for r in sector_results))
 
-            go_count = sum(1 for d in deep_dives if str(d.get("go_no_go", "")).lower() == "go")
-            cautious_count = sum(1 for d in deep_dives if str(d.get("go_no_go", "")).lower() == "cautious")
-            nogo_count = sum(1 for d in deep_dives if str(d.get("go_no_go", "")).lower() == "no-go")
+            go_count = sum(
+                1 for d in deep_dives if str(d.get("go_no_go", "")).lower() == "go"
+            )
+            cautious_count = sum(
+                1
+                for d in deep_dives
+                if str(d.get("go_no_go", "")).lower() == "cautious"
+            )
+            nogo_count = sum(
+                1 for d in deep_dives if str(d.get("go_no_go", "")).lower() == "no-go"
+            )
             stats["deep_dive_go"] = go_count
             stats["deep_dive_cautious"] = cautious_count
             stats["deep_dive_nogo"] = nogo_count
@@ -1856,7 +1938,9 @@ def _build_gmv_charts(gmv_stats: dict):
         charts_html += '<div class="charts-grid">'
         charts_html += '<div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div>'
 
-        sorted_countries = sorted(country_scores.items(), key=lambda x: x[1]["avg"], reverse=True)
+        sorted_countries = sorted(
+            country_scores.items(), key=lambda x: x[1]["avg"], reverse=True
+        )
         labels = json.dumps([v["name"][:20] for _, v in sorted_countries])
         data = json.dumps([v["avg"] for _, v in sorted_countries])
         counts = json.dumps([v["count"] for _, v in sorted_countries])
@@ -1910,7 +1994,7 @@ def _build_gmv_charts(gmv_stats: dict):
         nogo = gmv_stats.get("deep_dive_nogo", 0)
 
         charts_html += '<div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div>'
-        charts_html += '</div>'
+        charts_html += "</div>"
 
         chart_script += f"""
         new Chart(document.getElementById('gmvGoNoGo'), {{
@@ -1998,7 +2082,7 @@ def _build_charts():
 
         if by_year:
             charts_html += '<div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div>'
-            charts_html += '</div>'
+            charts_html += "</div>"
 
             year_labels = json.dumps([str(r["year_shutdown"]) for r in by_year])
             year_data = json.dumps([r["cnt"] for r in by_year])
@@ -2035,9 +2119,15 @@ def _build_charts():
             charts_html += '<div class="charts-grid">'
             charts_html += '<div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div>'
 
-            s_1yr = json.dumps([r["age_1_yr_survival"] for r in survival if r["age_1_yr_survival"]])
-            s_5yr = json.dumps([r["age_5_yr_survival"] for r in survival if r["age_5_yr_survival"]])
-            s_years_1 = json.dumps([str(r["year"]) for r in survival if r["age_1_yr_survival"]])
+            s_1yr = json.dumps(
+                [r["age_1_yr_survival"] for r in survival if r["age_1_yr_survival"]]
+            )
+            s_5yr = json.dumps(
+                [r["age_5_yr_survival"] for r in survival if r["age_5_yr_survival"]]
+            )
+            s_years_1 = json.dumps(
+                [str(r["year"]) for r in survival if r["age_1_yr_survival"]]
+            )
 
             chart_script += f"""
             new Chart(document.getElementById('survivalChart'), {{
@@ -2074,7 +2164,7 @@ def _build_charts():
 
         if regions:
             charts_html += '<div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div>'
-            charts_html += '</div>'
+            charts_html += "</div>"
 
             reg_labels = json.dumps([r["reg"] for r in regions])
             reg_data = json.dumps([r["cnt"] for r in regions])
@@ -2108,6 +2198,7 @@ def _build_charts():
 
 
 # ── LLM Model Portfolio ──────────────────────────────────────────────────
+
 
 def _fetch_portfolio_data() -> dict:
     """Fetch LLM portfolio recommendations from database."""
@@ -2282,10 +2373,22 @@ def _build_portfolio_charts(data: dict):
             provider_wins[provider] = provider_wins.get(provider, 0) + 1
 
     if provider_wins:
-        sorted_providers = sorted(provider_wins.items(), key=lambda x: x[1], reverse=True)
+        sorted_providers = sorted(
+            provider_wins.items(), key=lambda x: x[1], reverse=True
+        )
         p_labels = json.dumps([p for p, _ in sorted_providers])
         p_data = json.dumps([c for _, c in sorted_providers])
-        colors = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#F97316", "#14B8A6", "#EC4899", "#6366F1"]
+        colors = [
+            "#3B82F6",
+            "#10B981",
+            "#F59E0B",
+            "#EF4444",
+            "#8B5CF6",
+            "#F97316",
+            "#14B8A6",
+            "#EC4899",
+            "#6366F1",
+        ]
 
         charts_html += '<div class="chart-container"><h3>Provider Market Share (Categories Won)</h3><canvas id="portfolioPieChart"></canvas></div>'
 
@@ -2312,10 +2415,12 @@ def _build_portfolio_charts(data: dict):
     if top_cats:
         cat_labels = [cat.replace("_", " ").title() for cat, _ in top_cats]
         primary_scores = [m[0]["composite_score"] if m else 0 for _, m in top_cats]
-        primary_quality = [m[0].get("quality_score", 0) if m else 0 for _, m in top_cats]
+        primary_quality = [
+            m[0].get("quality_score", 0) if m else 0 for _, m in top_cats
+        ]
 
         charts_html += '<div class="chart-container"><h3>Score vs Quality by Task Category</h3><canvas id="portfolioScoreChart"></canvas></div>'
-        charts_html += '</div>'
+        charts_html += "</div>"
 
         chart_script += f"""
         new Chart(document.getElementById('portfolioScoreChart'), {{
@@ -2345,6 +2450,7 @@ def _build_portfolio_charts(data: dict):
 
 
 # ── LLM Benchmark Tracker ────────────────────────────────────────────────
+
 
 def _fetch_benchmark_data() -> dict:
     """Fetch LLM benchmark data from database."""
@@ -2384,14 +2490,25 @@ def _fetch_benchmark_data() -> dict:
         for r in rows:
             key = f"{r['provider']}:{r['model_name']}"
             if key not in model_scores:
-                model_scores[key] = {"scores": [], "provider": r["provider"], "model_name": r["model_name"]}
+                model_scores[key] = {
+                    "scores": [],
+                    "provider": r["provider"],
+                    "model_name": r["model_name"],
+                }
             model_scores[key]["scores"].append(r["benchmark_score"])
 
-        top = sorted(model_scores.items(), key=lambda x: sum(x[1]["scores"]) / len(x[1]["scores"]), reverse=True)[:10]
+        top = sorted(
+            model_scores.items(),
+            key=lambda x: sum(x[1]["scores"]) / len(x[1]["scores"]),
+            reverse=True,
+        )[:10]
         data["top_models"] = [
-            {"provider": v["provider"], "model_name": v["model_name"],
-             "avg_score": round(sum(v["scores"]) / len(v["scores"]), 1),
-             "benchmarks": len(v["scores"])}
+            {
+                "provider": v["provider"],
+                "model_name": v["model_name"],
+                "avg_score": round(sum(v["scores"]) / len(v["scores"]), 1),
+                "benchmarks": len(v["scores"]),
+            }
             for _, v in top
         ]
 
@@ -2432,7 +2549,9 @@ def _build_benchmark_html(data: dict) -> str:
     # Category breakdown
     cat_badges = ""
     for cat, benchmarks in sorted(categories.items()):
-        avg = sum(b["benchmark_score"] for b in benchmarks if b["benchmark_score"]) / max(len([b for b in benchmarks if b["benchmark_score"]]), 1)
+        avg = sum(
+            b["benchmark_score"] for b in benchmarks if b["benchmark_score"]
+        ) / max(len([b for b in benchmarks if b["benchmark_score"]]), 1)
         cat_badges += f"""
         <span style="display:inline-block;padding:4px 10px;margin:3px;border-radius:6px;font-size:12px;background:var(--bg);border:1px solid var(--border);">
           {cat.replace('_', ' ').title()} <strong>{len(benchmarks)}</strong> &middot; avg {avg:.1f}
@@ -2575,16 +2694,20 @@ def _build_benchmark_charts(data: dict):
             datasets = []
             radar_colors = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"]
             for i, (provider, cat_scores) in enumerate(provider_cats.items()):
-                datasets.append({
-                    "label": provider.title(),
-                    "data": [cat_scores.get(c, 0) for c in cat_names],
-                    "borderColor": radar_colors[i % len(radar_colors)],
-                    "backgroundColor": radar_colors[i % len(radar_colors)].replace(")", ",0.1)").replace("rgb", "rgba"),
-                    "pointRadius": 4,
-                })
+                datasets.append(
+                    {
+                        "label": provider.title(),
+                        "data": [cat_scores.get(c, 0) for c in cat_names],
+                        "borderColor": radar_colors[i % len(radar_colors)],
+                        "backgroundColor": radar_colors[i % len(radar_colors)]
+                        .replace(")", ",0.1)")
+                        .replace("rgb", "rgba"),
+                        "pointRadius": 4,
+                    }
+                )
 
             charts_html += '<div class="chart-container"><h3>Provider Comparison Across Categories</h3><canvas id="benchmarkRadarChart"></canvas></div>'
-            charts_html += '</div>'
+            charts_html += "</div>"
 
             chart_script += f"""
             new Chart(document.getElementById('benchmarkRadarChart'), {{
@@ -2605,12 +2728,13 @@ def _build_benchmark_charts(data: dict):
             }});
             """
         else:
-            charts_html += '</div>'
+            charts_html += "</div>"
 
     return charts_html, chart_script
 
 
 # ── LLM Cost Optimizer ───────────────────────────────────────────────────
+
 
 def _fetch_optimizer_data() -> dict:
     """Fetch cost optimization alerts and price changes from database."""
@@ -2663,7 +2787,11 @@ def _fetch_optimizer_data() -> dict:
         data["alerts"] = alerts
         data["price_changes"] = changes
         data["active_alerts"] = len(alerts)
-        data["total_savings_pct"] = int(savings_row["avg_savings"]) if savings_row and savings_row["avg_savings"] else 0
+        data["total_savings_pct"] = (
+            int(savings_row["avg_savings"])
+            if savings_row and savings_row["avg_savings"]
+            else 0
+        )
 
     except Exception as e:
         _logger.warning("DashboardAgent: Could not fetch optimizer data: %s", e)
@@ -2683,7 +2811,10 @@ def _build_optimizer_html(data: dict) -> str:
 
     # Priority colors
     priority_colors = {
-        "critical": "#EF4444", "high": "#F97316", "medium": "#F59E0B", "low": "#10B981"
+        "critical": "#EF4444",
+        "high": "#F97316",
+        "medium": "#F59E0B",
+        "low": "#10B981",
     }
 
     # Alert cards
@@ -2823,7 +2954,7 @@ def _build_pricing_html() -> str:
         items = ""
         for f in features:
             label = f.replace("_", " ").title()
-            items += f'<li>{label}</li>\n'
+            items += f"<li>{label}</li>\n"
         return items
 
     html = f"""
@@ -2951,31 +3082,37 @@ def _build_knowledge_graph_html(kg_data: dict) -> str:
     entity_types = kg_data.get("entity_types", [])
     if entity_types:
         html += '<h3 style="font-size:14px;font-weight:600;margin:16px 0 8px 0;">Entity Types</h3>'
-        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:24px;">'
+        html += (
+            '<table style="width:100%;border-collapse:collapse;margin-bottom:24px;">'
+        )
         html += '<thead><tr style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;"><th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Type</th><th style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);">Count</th></tr></thead><tbody>'
         for et in entity_types:
             icon = et.get("icon", "")
             html += f'<tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">{icon} {et["type_name"]}</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">{et["entity_count"]}</td></tr>'
-        html += '</tbody></table>'
+        html += "</tbody></table>"
 
     top_entities = kg_data.get("top_entities", [])
     if top_entities:
         html += '<h3 style="font-size:14px;font-weight:600;margin:16px 0 8px 0;">Most Connected Entities</h3>'
-        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:24px;">'
+        html += (
+            '<table style="width:100%;border-collapse:collapse;margin-bottom:24px;">'
+        )
         html += '<thead><tr style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;"><th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Entity</th><th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Type</th><th style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);">Links</th><th style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);">Mentions</th></tr></thead><tbody>'
         for ent in top_entities[:10]:
             html += f'<tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">{ent["name"]}</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);">{ent["type_name"]}</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">{ent["connections"]}</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">{ent["mention_count"]}</td></tr>'
-        html += '</tbody></table>'
+        html += "</tbody></table>"
 
     rel_types = kg_data.get("relationship_types", [])
     if rel_types:
         html += '<h3 style="font-size:14px;font-weight:600;margin:16px 0 8px 0;">Relationship Types</h3>'
-        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:24px;">'
+        html += (
+            '<table style="width:100%;border-collapse:collapse;margin-bottom:24px;">'
+        )
         html += '<thead><tr style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;"><th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Type</th><th style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);">Count</th><th style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);">Avg Weight</th></tr></thead><tbody>'
         for rt in rel_types:
             avg_w = rt.get("avg_weight", 0) or 0
             html += f'<tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">{rt["relationship_type"]}</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">{rt["count"]}</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">{avg_w:.1f}</td></tr>'
-        html += '</tbody></table>'
+        html += "</tbody></table>"
 
     return html
 
@@ -3041,9 +3178,15 @@ def _build_knowledge_graph_charts(kg_data: dict):
 
 # ── Revenue Dashboard ──
 
+
 def _fetch_revenue_data():
     """Fetch revenue data from payment_events and subscription_metrics."""
-    data = {"payments": [], "metrics": [], "tier_distribution": {"free": 0, "pro": 0, "enterprise": 0}, "total_revenue": 0.0}
+    data = {
+        "payments": [],
+        "metrics": [],
+        "tier_distribution": {"free": 0, "pro": 0, "enterprise": 0},
+        "total_revenue": 0.0,
+    }
     try:
         conn = get_connection()
         cursor = conn.cursor()
@@ -3066,7 +3209,9 @@ def _fetch_revenue_data():
         for row in cursor.fetchall():
             data["tier_distribution"][row["tier"]] = row["cnt"]
 
-        cursor.execute("SELECT COALESCE(SUM(amount_usd), 0) FROM payment_events WHERE status = 'completed'")
+        cursor.execute(
+            "SELECT COALESCE(SUM(amount_usd), 0) FROM payment_events WHERE status = 'completed'"
+        )
         data["total_revenue"] = float(cursor.fetchone()[0])
 
         cursor.close()
@@ -3105,17 +3250,14 @@ def _build_revenue_html(rev_data):
     )
     for tier in ["free", "pro", "enterprise"]:
         pct = (td[tier] / total_licenses * 100) if total_licenses > 0 else 0
-        html += f'      <tr><td>{tier.title()}</td><td>{td[tier]}</td><td>{pct:.1f}%</td></tr>\n'
-    html += (
-        '    </tbody>\n'
-        '  </table>\n'
-    )
+        html += f"      <tr><td>{tier.title()}</td><td>{td[tier]}</td><td>{pct:.1f}%</td></tr>\n"
+    html += "    </tbody>\n" "  </table>\n"
     if active_payments:
         html += (
-            '  <h3>Recent Payments</h3>\n'
+            "  <h3>Recent Payments</h3>\n"
             '  <table class="data-table">\n'
-            '    <thead><tr><th>Date</th><th>Email</th><th>Tier</th><th>Amount</th><th>Status</th></tr></thead>\n'
-            '    <tbody>\n'
+            "    <thead><tr><th>Date</th><th>Email</th><th>Tier</th><th>Amount</th><th>Status</th></tr></thead>\n"
+            "    <tbody>\n"
         )
         for p in active_payments[:10]:
             email = (p["customer_email"] or "N/A")[:30]
@@ -3123,21 +3265,27 @@ def _build_revenue_html(rev_data):
                 f'      <tr><td>{p["created_at"][:10]}</td><td>{email}</td>'
                 f'<td>{p["tier"]}</td><td>${p["amount_usd"]:.2f}</td><td>{p["status"]}</td></tr>\n'
             )
-        html += '    </tbody>\n  </table>\n'
-    html += '</div>\n'
+        html += "    </tbody>\n  </table>\n"
+    html += "</div>\n"
     return html
 
 
 def _build_revenue_charts(rev_data):
     """Build revenue chart scripts (Pro-gated)."""
-    charts_html = '<div class="chart-container" style="position:relative;height:300px;">'
+    charts_html = (
+        '<div class="chart-container" style="position:relative;height:300px;">'
+    )
     charts_html += '<canvas id="revenueChart"></canvas></div>'
     chart_script = ""
 
     metrics = list(reversed(rev_data["metrics"][-30:]))
     if metrics:
-        labels = [m["metric_date"].strftime("%m/%d") if hasattr(m["metric_date"], "strftime")
-                  else str(m["metric_date"])[-5:] for m in metrics]
+        labels = [
+            m["metric_date"].strftime("%m/%d")
+            if hasattr(m["metric_date"], "strftime")
+            else str(m["metric_date"])[-5:]
+            for m in metrics
+        ]
         revenue_data = [float(m.get("revenue_usd", 0) or 0) for m in metrics]
 
         chart_script += f"""
@@ -3166,6 +3314,7 @@ def _build_revenue_charts(rev_data):
 
 
 # ── Pipeline Health (Span) ──
+
 
 def _fetch_span_data():
     """Fetch pipeline health data from span_snapshots."""
@@ -3250,14 +3399,14 @@ def _build_span_html(span_data):
             f'<td style="color:{health_color};font-weight:600">{health_badge}</td></tr>\n'
         )
 
-    html += '    </tbody>\n  </table>\n'
+    html += "    </tbody>\n  </table>\n"
 
     if span_data["anomalies"]:
         html += (
-            '  <h3>Recent Anomalies</h3>\n'
+            "  <h3>Recent Anomalies</h3>\n"
             '  <table class="data-table">\n'
-            '    <thead><tr><th>Agent</th><th>Type</th><th>Detail</th><th>When</th></tr></thead>\n'
-            '    <tbody>\n'
+            "    <thead><tr><th>Agent</th><th>Type</th><th>Detail</th><th>When</th></tr></thead>\n"
+            "    <tbody>\n"
         )
         for an in span_data["anomalies"][:10]:
             detail = (an.get("anomaly_detail") or "")[:80]
@@ -3267,7 +3416,7 @@ def _build_span_html(span_data):
                 f'<td>{an["anomaly_type"]}</td>'
                 f'<td>{detail}</td><td>{when}</td></tr>\n'
             )
-        html += '    </tbody>\n  </table>\n'
+        html += "    </tbody>\n  </table>\n"
 
-    html += '</div>\n'
+    html += "</div>\n"
     return html

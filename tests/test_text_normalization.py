@@ -15,6 +15,7 @@ from utils.text_normalization import (
 
 # ── normalize_funding ──────────────────────────────────────────────
 
+
 class TestNormalizeFunding:
     def test_dollar_millions(self):
         assert normalize_funding("$500M") == 500_000_000
@@ -47,6 +48,7 @@ class TestNormalizeFunding:
 
 # ── normalize_country ──────────────────────────────────────────────
 
+
 class TestNormalizeCountry:
     def test_usa(self):
         assert normalize_country("United States") == "US"
@@ -71,6 +73,7 @@ class TestNormalizeCountry:
 
 # ── get_region ─────────────────────────────────────────────────────
 
+
 class TestGetRegion:
     def test_us_is_global(self):
         assert get_region("US") == "US & Global"
@@ -89,6 +92,7 @@ class TestGetRegion:
 
 
 # ── normalize_failure_category ─────────────────────────────────────
+
 
 class TestNormalizeFailureCategory:
     def test_ran_out_of_cash(self):

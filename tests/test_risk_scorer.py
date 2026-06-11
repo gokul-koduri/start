@@ -11,7 +11,7 @@ mock_pymysql = MagicMock()
 sys.modules["pymysql"] = mock_pymysql
 sys.modules["pymysql.cursors"] = mock_pymysql.cursors
 
-from agents.risk_scorer_agent import score_startup
+from agents.risk_scorer_agent import score_startup  # noqa: E402
 
 
 class TestRiskScorer:
@@ -63,18 +63,26 @@ class TestRiskScorer:
     def test_manufacturing_bonus(self):
         """Manufacturing startups should get a capital intensity risk bonus."""
         normal = score_startup(sector="SaaS", funding_usd=50_000_000, year_founded=2018)
-        mfg = score_startup(sector="Battery Manufacturing", funding_usd=50_000_000, year_founded=2018)
+        mfg = score_startup(
+            sector="Battery Manufacturing", funding_usd=50_000_000, year_founded=2018
+        )
         assert mfg["risk_score"] >= normal["risk_score"]
 
     def test_funding_underfunded(self):
         """Underfunded startups should score higher risk."""
-        underfunded = score_startup(sector="EV/Automotive", funding_usd=500_000, year_founded=2022)
-        well_funded = score_startup(sector="EV/Automotive", funding_usd=200_000_000, year_founded=2022)
+        underfunded = score_startup(
+            sector="EV/Automotive", funding_usd=500_000, year_founded=2022
+        )
+        well_funded = score_startup(
+            sector="EV/Automotive", funding_usd=200_000_000, year_founded=2022
+        )
         assert underfunded["risk_score"] > well_funded["risk_score"]
 
     def test_age_risk_young(self):
         """Very young startups should score higher risk."""
-        young = score_startup(sector="Fintech", funding_usd=10_000_000, year_founded=2024)
+        young = score_startup(
+            sector="Fintech", funding_usd=10_000_000, year_founded=2024
+        )
         old = score_startup(sector="Fintech", funding_usd=10_000_000, year_founded=2010)
         assert young["risk_score"] > old["risk_score"]
 

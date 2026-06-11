@@ -10,7 +10,7 @@ filings to identify major corporate events, funding signals, and market movement
 import logging
 import time
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from urllib.parse import quote
 
 from collectors.base import BaseCollector, CollectionResult
@@ -46,7 +46,9 @@ class RegulatoryCollector(BaseCollector):
     def name(self) -> str:
         return "regulatory"
 
-    def _build_url(self, company: str = "", filing_types: list[str] | None = None) -> str:
+    def _build_url(
+        self, company: str = "", filing_types: list[str] | None = None
+    ) -> str:
         """Build EDGAR browse URL for a company or general filing search."""
         params = {
             "action": "getcompany",
@@ -74,8 +76,10 @@ class RegulatoryCollector(BaseCollector):
         """Fetch filings from SEC EDGAR RSS feed and parse Atom XML response."""
         try:
             headers = {
-                "User-Agent": self.config.get("regulatory", {}).get("user_agent",
-                    "StartupResearchBot/1.0 (educational research project)")
+                "User-Agent": self.config.get("regulatory", {}).get(
+                    "user_agent",
+                    "StartupResearchBot/1.0 (educational research project)",
+                )
             }
             resp = session.get(url, headers=headers, timeout=30)
             resp.raise_for_status()
@@ -121,7 +125,11 @@ class RegulatoryCollector(BaseCollector):
 
         if not filing_id:
             # Use URL hash as fallback ID
-            filing_id = filing_url.split("CIK=")[-1].split("&")[0] if "CIK=" in filing_url else ""
+            filing_id = (
+                filing_url.split("CIK=")[-1].split("&")[0]
+                if "CIK=" in filing_url
+                else ""
+            )
 
         # Title contains filing type and company info
         title = entry.findtext("atom:title", default="", namespaces=_NS).strip()
@@ -202,7 +210,9 @@ class RegulatoryCollector(BaseCollector):
         if filed_date:
             if isinstance(filed_date, str):
                 try:
-                    filed_date = datetime.fromisoformat(filed_date.replace("Z", "+00:00"))
+                    filed_date = datetime.fromisoformat(
+                        filed_date.replace("Z", "+00:00")
+                    )
                 except (ValueError, TypeError):
                     filed_date = None
 
@@ -302,9 +312,11 @@ class RegulatoryCollector(BaseCollector):
             result.status = "success"
             return result
 
-        search_companies = config.get("search_companies", ["AI startup", "tech company"])
+        search_companies = config.get(
+            "search_companies", ["AI startup", "tech company"]
+        )
         filing_types = config.get("filing_types", ["S-1", "8-K", "SC 13D"])
-        base_url = config.get("base_url", _BASE_URL)
+        config.get("base_url", _BASE_URL)
         max_results = config.get("max_results_per_query", 40)
         min_delay = config.get("min_delay_seconds", 3)
 
@@ -321,7 +333,9 @@ class RegulatoryCollector(BaseCollector):
             try:
                 self._insert_filing(cursor, filing, result)
             except Exception as e:
-                result.errors.append(f"Error inserting filing {filing.get('filing_id', '?')}: {e}")
+                result.errors.append(
+                    f"Error inserting filing {filing.get('filing_id', '?')}: {e}"
+                )
 
         _logger.info(
             "RegulatoryCollector: general feed → %d filings",
@@ -337,13 +351,16 @@ class RegulatoryCollector(BaseCollector):
                 try:
                     self._insert_filing(cursor, filing, result)
                 except Exception as e:
-                    result.errors.append(f"Error inserting filing {filing.get('filing_id', '?')}: {e}")
+                    result.errors.append(
+                        f"Error inserting filing {filing.get('filing_id', '?')}: {e}"
+                    )
 
             time.sleep(min_delay)  # Polite delay between requests
 
             _logger.info(
                 "RegulatoryCollector: company '%s' → %d filings",
-                company, len(company_filings[:max_results]),
+                company,
+                len(company_filings[:max_results]),
             )
 
         result.records_inserted = result.records_collected

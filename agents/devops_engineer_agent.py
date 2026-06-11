@@ -21,7 +21,6 @@ Usage:
 import json
 import logging
 import subprocess
-import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -116,7 +115,9 @@ class DevOpsEngineerAgent(BaseAgent):
         try:
             result = subprocess.run(
                 ["docker", "compose", "ps", "--format", "json"],
-                capture_output=True, text=True, timeout=30,
+                capture_output=True,
+                text=True,
+                timeout=30,
             )
             docker["available"] = True
 
@@ -153,11 +154,12 @@ class DevOpsEngineerAgent(BaseAgent):
 
         try:
             import shutil
+
             usage = shutil.disk_usage("/")
             infra["disk"] = {
-                "total_gb": round(usage.total / (1024 ** 3), 1),
-                "used_gb": round(usage.used / (1024 ** 3), 1),
-                "free_gb": round(usage.free / (1024 ** 3), 1),
+                "total_gb": round(usage.total / (1024**3), 1),
+                "used_gb": round(usage.used / (1024**3), 1),
+                "free_gb": round(usage.free / (1024**3), 1),
                 "usage_pct": round(usage.used / usage.total * 100, 1),
             }
         except Exception as e:
@@ -168,24 +170,61 @@ class DevOpsEngineerAgent(BaseAgent):
     def _check_deployment_readiness(self, docker_health: dict) -> dict:
         """Check deployment readiness against checklist."""
         checks = [
-            {"item": "Docker services running", "status": "PASS" if docker_health.get("running_count", 0) >= 5 else "FAIL",
-             "detail": f"{docker_health.get('running_count', 0)} services running"},
-            {"item": "No unhealthy services", "status": "PASS" if docker_health.get("unhealthy_count", 0) == 0 else "FAIL",
-             "detail": f"{docker_health.get('unhealthy_count', 0)} unhealthy"},
-            {"item": ".env file exists", "status": "PASS" if Path(".env").exists() else "FAIL"},
-            {"item": ".env.example complete", "status": "PASS" if Path(".env.example").exists() else "FAIL"},
-            {"item": "docker-compose.yml exists", "status": "PASS" if Path("docker-compose.yml").exists() else "FAIL"},
-            {"item": "Backup script exists", "status": "PASS" if Path("scripts/backup_db.sh").exists() else "FAIL"},
-            {"item": "Security scan script exists", "status": "PASS" if Path("scripts/security_scan.sh").exists() else "FAIL"},
-            {"item": "LICENSE file exists", "status": "FAIL", "detail": "Not created yet"},
-            {"item": "Git tag for release", "status": "FAIL", "detail": "No tags exist"},
-            {"item": "Tests all passing", "status": "FAIL", "detail": "12 tests failing in test_semantic_search.py"},
+            {
+                "item": "Docker services running",
+                "status": "PASS"
+                if docker_health.get("running_count", 0) >= 5
+                else "FAIL",
+                "detail": f"{docker_health.get('running_count', 0)} services running",
+            },
+            {
+                "item": "No unhealthy services",
+                "status": "PASS"
+                if docker_health.get("unhealthy_count", 0) == 0
+                else "FAIL",
+                "detail": f"{docker_health.get('unhealthy_count', 0)} unhealthy",
+            },
+            {
+                "item": ".env file exists",
+                "status": "PASS" if Path(".env").exists() else "FAIL",
+            },
+            {
+                "item": ".env.example complete",
+                "status": "PASS" if Path(".env.example").exists() else "FAIL",
+            },
+            {
+                "item": "docker-compose.yml exists",
+                "status": "PASS" if Path("docker-compose.yml").exists() else "FAIL",
+            },
+            {
+                "item": "Backup script exists",
+                "status": "PASS" if Path("scripts/backup_db.sh").exists() else "FAIL",
+            },
+            {
+                "item": "Security scan script exists",
+                "status": "PASS"
+                if Path("scripts/security_scan.sh").exists()
+                else "FAIL",
+            },
+            {
+                "item": "LICENSE file exists",
+                "status": "FAIL",
+                "detail": "Not created yet",
+            },
+            {
+                "item": "Git tag for release",
+                "status": "FAIL",
+                "detail": "No tags exist",
+            },
+            {
+                "item": "Tests all passing",
+                "status": "FAIL",
+                "detail": "12 tests failing in test_semantic_search.py",
+            },
         ]
 
         pass_count = sum(1 for c in checks if c["status"] == "PASS")
-        ready = pass_count >= 8 and all(
-            c["status"] == "PASS" for c in checks[:5]
-        )
+        ready = pass_count >= 8 and all(c["status"] == "PASS" for c in checks[:5])
 
         return {
             "ready": ready,
@@ -224,7 +263,9 @@ class DevOpsEngineerAgent(BaseAgent):
         try:
             result = subprocess.run(
                 ["crontab", "-l"],
-                capture_output=True, text=True, timeout=5,
+                capture_output=True,
+                text=True,
+                timeout=5,
             )
             if "backup_db" in result.stdout:
                 backups["cron_configured"] = True
@@ -234,9 +275,14 @@ class DevOpsEngineerAgent(BaseAgent):
         # Check for recent backup files
         backup_dir = Path("data/backups")
         if backup_dir.exists():
-            backup_files = sorted(backup_dir.glob("*.sql.gz"), key=lambda f: f.stat().st_mtime, reverse=True)
+            backup_files = sorted(
+                backup_dir.glob("*.sql.gz"),
+                key=lambda f: f.stat().st_mtime,
+                reverse=True,
+            )
             if backup_files:
                 from datetime import datetime
+
                 mtime = backup_files[0].stat().st_mtime
                 backups["last_backup"] = datetime.fromtimestamp(mtime).isoformat()
 
@@ -261,7 +307,9 @@ class DevOpsEngineerAgent(BaseAgent):
         try:
             result = subprocess.run(
                 ["git", "ls-files"],
-                capture_output=True, text=True, timeout=5,
+                capture_output=True,
+                text=True,
+                timeout=5,
             )
             tracked = result.stdout
             for secret in [".env", ".env.production", "secrets.json", "id_rsa"]:

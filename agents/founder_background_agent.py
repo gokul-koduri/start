@@ -49,14 +49,18 @@ class FounderBackgroundAgent(BaseAgent):
             "common_titles": {},
             "us_companies": 0,
             "eu_companies": 0,
-            "other_companies": 0
+            "other_companies": 0,
         }
 
         if company_profiles:
             total_officers = 0
             for profile in company_profiles:
                 try:
-                    officers = json.loads(profile.get("officers", "{}")) if isinstance(profile.get("officers"), str) else profile.get("officers", {})
+                    officers = (
+                        json.loads(profile.get("officers", "{}"))
+                        if isinstance(profile.get("officers"), str)
+                        else profile.get("officers", {})
+                    )
                     total_officers += len(officers) if isinstance(officers, dict) else 0
 
                     # Count jurisdictions
@@ -70,7 +74,9 @@ class FounderBackgroundAgent(BaseAgent):
                 except (json.JSONDecodeError, TypeError):
                     pass
 
-            founder_patterns["avg_officers_per_company"] = total_officers / len(company_profiles) if company_profiles else 0
+            founder_patterns["avg_officers_per_company"] = (
+                total_officers / len(company_profiles) if company_profiles else 0
+            )
 
         insights["founder_patterns"] = founder_patterns
 
@@ -85,14 +91,17 @@ class FounderBackgroundAgent(BaseAgent):
                 "founder_background_full",
                 json.dumps(insights, default=str),
                 datetime.now(timezone.utc).isoformat(),
-                len(company_profiles)
-            )
+                len(company_profiles),
+            ),
         )
         conn.commit()
         cursor.close()
         conn.close()
 
-        _logger.info("FounderBackgroundAgent: Analyzed %d company profiles", len(company_profiles))
+        _logger.info(
+            "FounderBackgroundAgent: Analyzed %d company profiles",
+            len(company_profiles),
+        )
 
         return AgentResult(
             agent_name=self.name,

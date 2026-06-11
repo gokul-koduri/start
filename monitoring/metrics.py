@@ -1,11 +1,11 @@
 """Prometheus metrics collection."""
 
 import logging
-from typing import Dict
 from collections import defaultdict
 
 try:
-    from prometheus_client import Counter, Histogram, Gauge, start_http_server
+    from prometheus_client import Counter, Histogram, Gauge  # noqa: F401 — start_http_server kept for availability check
+
     HAS_PROMETHEUS = True
 except ImportError:
     HAS_PROMETHEUS = False
@@ -20,27 +20,19 @@ class MetricsRegistry:
         """Initialize metrics."""
         if HAS_PROMETHEUS:
             self.request_count = Counter(
-                "api_requests_total",
-                "Total API requests",
-                ["endpoint", "method"]
+                "api_requests_total", "Total API requests", ["endpoint", "method"]
             )
             self.request_latency = Histogram(
-                "api_request_latency_seconds",
-                "API request latency"
+                "api_request_latency_seconds", "API request latency"
             )
             self.agent_runs = Counter(
-                "agent_runs_total",
-                "Total agent runs",
-                ["agent_name", "status"]
+                "agent_runs_total", "Total agent runs", ["agent_name", "status"]
             )
             self.collector_records = Counter(
-                "collector_records_total",
-                "Total records collected",
-                ["collector_name"]
+                "collector_records_total", "Total records collected", ["collector_name"]
             )
             self.active_connections = Gauge(
-                "active_connections",
-                "Active database connections"
+                "active_connections", "Active database connections"
             )
         else:
             _logger.warning("prometheus_client not installed — using mock metrics")

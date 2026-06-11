@@ -1,0 +1,81 @@
+name: Sprint Review & Metrics
+
+on:
+  workflow_dispatch:
+    inputs:
+      sprint_number:
+        description: "Sprint number to review (1-8)"
+        required: true
+        type: number
+  schedule:
+    # Every other Friday at 5 PM UTC (sprint end)
+    - cron: "0 17 1,15 * *"
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  review:
+    name: Generate Sprint Review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Generate Sprint Review Report
+        run: |
+          SPRINT=${{ github.event.inputs.sprint_number || 'current' }}
+          python scripts/agile_cli.py review --sprint "$SPRINT" --output docs/sprints/reviews/
+
+      - name: Run sprint gate check
+        run: python scripts/sprint_validator.py --gate || true
+
+      - name: Upload sprint review
+        uses: actions/upload-artifact@v4
+        with:
+          name: sprint-review
+          path: docs/sprints/reviews/
+
+      - name: Create sprint review summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const today = new Date().toISOString().split('T')[0];
+            const sprintNum = '${{ github.event.inputs.sprint_number }}' || 'current';
+
+            const body = `## 📊 Sprint Review — Sprint ${sprintNum}
+
+            Generated: ${today}
+
+            ### How to run locally
+            \`\`\`bash
+            python scripts/agile_cli.py review --sprint ${sprintNum}
+            python scripts/sprint_validator.py --sprint ${sprintNum} --detail
+            \`\`\`
+
+            ### Sprint Metrics
+            Run \`make sprint-status\` for full details.
+
+            ### Next Steps
+            - [ ] Review and discuss results
+            - [ ] Update product backlog
+            - [ ] Plan next sprint
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📊 Sprint Review — Sprint ${sprintNum} (${today})`,
+              body: body,
+              labels: ['type/chore', 'sprint-review']
+            });

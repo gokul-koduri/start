@@ -27,7 +27,6 @@ Usage:
 import json
 import logging
 from datetime import datetime, timezone
-from typing import Any
 
 from agents.base import AgentResult, BaseAgent
 from db.connection import get_connection
@@ -101,9 +100,11 @@ class ProductManagerAgent(BaseAgent):
                 "INSERT INTO analysis_failure_patterns "
                 "(analysis_type, insights_json, analyzed_at) "
                 "VALUES (%s, %s, %s)",
-                ("pm_report",
-                 json.dumps(result_data, default=str),
-                 datetime.now(timezone.utc).isoformat()),
+                (
+                    "pm_report",
+                    json.dumps(result_data, default=str),
+                    datetime.now(timezone.utc).isoformat(),
+                ),
             )
             conn.commit()
             cursor.close()
@@ -131,8 +132,13 @@ class ProductManagerAgent(BaseAgent):
 
     def _audit_backlog(self, cursor) -> dict:
         """Audit product backlog health."""
-        health = {"total_items": 0, "by_status": {}, "by_priority": {},
-                  "stale_count": 0, "unestimated": 0}
+        health = {
+            "total_items": 0,
+            "by_status": {},
+            "by_priority": {},
+            "stale_count": 0,
+            "unestimated": 0,
+        }
 
         try:
             # Check if backlog table exists
@@ -177,9 +183,13 @@ class ProductManagerAgent(BaseAgent):
 
     def _sprint_burndown(self, cursor) -> dict:
         """Calculate current sprint burndown."""
-        status = {"current_sprint": None, "total_points": 0,
-                  "completed_points": 0, "remaining_points": 0,
-                  "completion_pct": 0}
+        status = {
+            "current_sprint": None,
+            "total_points": 0,
+            "completed_points": 0,
+            "remaining_points": 0,
+            "completion_pct": 0,
+        }
 
         try:
             cursor.execute("SHOW TABLES LIKE 'backlog_items'")
@@ -197,7 +207,9 @@ class ProductManagerAgent(BaseAgent):
                 status["current_sprint"] = row["sprint"]
                 status["total_points"] = row["total"] or 0
                 status["completed_points"] = row["done"] or 0
-                status["remaining_points"] = status["total_points"] - status["completed_points"]
+                status["remaining_points"] = (
+                    status["total_points"] - status["completed_points"]
+                )
                 if status["total_points"] > 0:
                     status["completion_pct"] = round(
                         status["completed_points"] / status["total_points"] * 100, 1
@@ -209,8 +221,12 @@ class ProductManagerAgent(BaseAgent):
 
     def _mvp_completion(self, cursor) -> dict:
         """Check MVP feature completion percentage."""
-        progress = {"total_mvp_features": 0, "completed": 0,
-                    "completion_pct": 0, "features": []}
+        progress = {
+            "total_mvp_features": 0,
+            "completed": 0,
+            "completion_pct": 0,
+            "features": [],
+        }
 
         try:
             cursor.execute("SHOW TABLES LIKE 'backlog_items'")
@@ -239,39 +255,46 @@ class ProductManagerAgent(BaseAgent):
         risks = []
 
         if backlog.get("stale_count", 0) > 5:
-            risks.append({
-                "id": "PM-R001",
-                "severity": "warning",
-                "message": f"{backlog['stale_count']} backlog items stale (>14 days without update)",
-            })
+            risks.append(
+                {
+                    "id": "PM-R001",
+                    "severity": "warning",
+                    "message": f"{backlog['stale_count']} backlog items stale (>14 days without update)",
+                }
+            )
 
         if backlog.get("unestimated", 0) > 10:
-            risks.append({
-                "id": "PM-R002",
-                "severity": "warning",
-                "message": f"{backlog['unestimated']} items have no story point estimate",
-            })
+            risks.append(
+                {
+                    "id": "PM-R002",
+                    "severity": "warning",
+                    "message": f"{backlog['unestimated']} items have no story point estimate",
+                }
+            )
 
         if sprint.get("completion_pct", 0) < 50 and sprint.get("current_sprint"):
-            risks.append({
-                "id": "PM-R003",
-                "severity": "high",
-                "message": f"Sprint {sprint.get('current_sprint')} only {sprint.get('completion_pct')}% complete",
-            })
+            risks.append(
+                {
+                    "id": "PM-R003",
+                    "severity": "high",
+                    "message": f"Sprint {sprint.get('current_sprint')} only {sprint.get('completion_pct')}% complete",
+                }
+            )
 
         # Check for items blocking others
         try:
             cursor.execute(
-                "SELECT COUNT(*) as cnt FROM backlog_items "
-                "WHERE status = 'blocked'"
+                "SELECT COUNT(*) as cnt FROM backlog_items " "WHERE status = 'blocked'"
             )
             blocked = cursor.fetchone()["cnt"]
             if blocked > 0:
-                risks.append({
-                    "id": "PM-R004",
-                    "severity": "high",
-                    "message": f"{blocked} items are currently blocked",
-                })
+                risks.append(
+                    {
+                        "id": "PM-R004",
+                        "severity": "high",
+                        "message": f"{blocked} items are currently blocked",
+                    }
+                )
         except Exception:
             pass
 
@@ -289,14 +312,10 @@ class ProductManagerAgent(BaseAgent):
 
         high_risks = [r for r in risks if r.get("severity") == "high"]
         if high_risks:
-            recs.append(
-                f"Address {len(high_risks)} high-severity risks immediately."
-            )
+            recs.append(f"Address {len(high_risks)} high-severity risks immediately.")
 
         if backlog.get("unestimated", 0) > 0:
-            recs.append(
-                f"Estimate {backlog['unestimated']} unestimated backlog items."
-            )
+            recs.append(f"Estimate {backlog['unestimated']} unestimated backlog items.")
 
         if not recs:
             recs.append("Product health looks good. Keep shipping.")

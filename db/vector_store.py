@@ -90,7 +90,8 @@ class VectorStore:
                 )
                 _logger.info(
                     "VectorStore: created collection '%s' (dim=%d)",
-                    self._collection, self._embedding_dim,
+                    self._collection,
+                    self._embedding_dim,
                 )
 
             self._connected = True
@@ -138,7 +139,10 @@ class VectorStore:
             return False
 
     def upsert_batch(
-        self, ids: list[str], vectors: list[list[float]], payloads: list[dict],
+        self,
+        ids: list[str],
+        vectors: list[list[float]],
+        payloads: list[dict],
     ) -> int:
         """Batch upsert vectors.
 
@@ -166,7 +170,8 @@ class VectorStore:
             for i in range(0, len(points), self._batch_size):
                 batch = points[i : i + self._batch_size]
                 self._client.upsert(
-                    collection_name=self._collection, points=batch,
+                    collection_name=self._collection,
+                    points=batch,
                 )
                 upserted += len(batch)
 
@@ -204,7 +209,8 @@ class VectorStore:
                 for key, value in filters.items():
                     conditions.append(
                         models.FieldCondition(
-                            key=key, match=models.MatchValue(value=value),
+                            key=key,
+                            match=models.MatchValue(value=value),
                         )
                     )
                 qdrant_filter = models.Filter(must=conditions)

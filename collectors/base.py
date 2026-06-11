@@ -16,6 +16,7 @@ _logger = logging.getLogger(__name__)
 @dataclass
 class CollectionResult:
     """Result of a collection run."""
+
     collector_name: str
     records_collected: int = 0
     records_inserted: int = 0
@@ -52,6 +53,7 @@ class BaseCollector(ABC):
         if self._kafka_producer is None:
             try:
                 from ingestion.kafka_producer import SignalKafkaProducer
+
                 bootstrap = self.config.get("kafka_brokers") or "localhost:9092"
                 self._kafka_producer = SignalKafkaProducer(bootstrap_servers=bootstrap)
             except Exception:
@@ -89,8 +91,10 @@ class BaseCollector(ABC):
             return
         try:
             from ingestion.signal_normalizer import normalize_signal
+
             envelope = normalize_signal(
-                signal_type, self.name,
+                signal_type,
+                self.name,
                 source_url=source_url,
                 title=title,
                 body_text=body_text,
@@ -100,7 +104,9 @@ class BaseCollector(ABC):
             )
             producer.send(envelope)
         except Exception as e:
-            _logger.debug("Kafka publish failed for %s: %s (non-critical)", entity_name, e)
+            _logger.debug(
+                "Kafka publish failed for %s: %s (non-critical)", entity_name, e
+            )
 
     @property
     @abstractmethod
@@ -182,8 +188,11 @@ class BaseCollector(ABC):
 
             _logger.info(
                 "=== %s: Complete — %d collected, %d inserted, %d skipped, status=%s ===",
-                self.name, result.records_collected, result.records_inserted,
-                result.records_skipped, status,
+                self.name,
+                result.records_collected,
+                result.records_inserted,
+                result.records_skipped,
+                status,
             )
             return result
 
@@ -199,7 +208,11 @@ class BaseCollector(ABC):
                         """UPDATE collection_runs
                            SET completed_at = %s, status = 'failed', error_message = %s
                            WHERE id = %s""",
-                        (datetime.now(timezone.utc).isoformat(), f"{e}\n{tb}", self._run_id),
+                        (
+                            datetime.now(timezone.utc).isoformat(),
+                            f"{e}\n{tb}",
+                            self._run_id,
+                        ),
                     )
                     cursor.close()
                     conn.commit()

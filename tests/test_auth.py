@@ -1,7 +1,6 @@
 """Tests for auth package (JWT + RBAC)."""
 
 import unittest
-from unittest.mock import patch, MagicMock
 
 import sys
 from pathlib import Path
@@ -15,6 +14,7 @@ class TestJWTHandler(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         from auth.jwt_handler import JWTHandler
+
         self.handler = JWTHandler({"jwt_secret": "test-secret", "jwt_expiry_hours": 24})
 
     def test_create_token(self):
@@ -75,6 +75,7 @@ class TestRBAC(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         from auth.rbac import RBAC
+
         self.rbac = RBAC()
 
     def test_check_permission_viewer(self):

@@ -14,11 +14,13 @@ class TestFeedbackAnalyzerAgent(unittest.TestCase):
     def test_import_feedback_analyzer(self):
         """Feedback analyzer agent imports without error."""
         from agents.feedback_analyzer_agent import FeedbackAnalyzerAgent
+
         self.assertIsNotNone(FeedbackAnalyzerAgent)
 
     def test_feedback_analyzer_name(self):
         """Agent name is feedback_analyzer."""
         from agents.feedback_analyzer_agent import FeedbackAnalyzerAgent
+
         agent = FeedbackAnalyzerAgent(config={})
         self.assertEqual(agent.name, "feedback_analyzer")
 
@@ -26,6 +28,7 @@ class TestFeedbackAnalyzerAgent(unittest.TestCase):
         """Agent inherits from BaseAgent."""
         from agents.feedback_analyzer_agent import FeedbackAnalyzerAgent
         from agents.base import BaseAgent
+
         self.assertTrue(issubclass(FeedbackAnalyzerAgent, BaseAgent))
 
     @patch("db.connection.get_connection")
@@ -69,6 +72,7 @@ class TestOrchestratorFeedbackCheck(unittest.TestCase):
     def test_feedback_analyzer_registered_in_orchestrator(self):
         """Orchestrator can load feedback_analyzer agent."""
         from agents.orchestrator import _get_agent_class
+
         agent_class = _get_agent_class("feedback_analyzer")
         self.assertIsNotNone(agent_class)
 
@@ -81,7 +85,9 @@ class TestOrchestratorFeedbackCheck(unittest.TestCase):
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = {
             "trending_queries": json.dumps([{"query": "AI startups", "count": 50}]),
-            "top_feature_requests": json.dumps([{"feature": "Slack alerts", "upvotes": 10}]),
+            "top_feature_requests": json.dumps(
+                [{"feature": "Slack alerts", "upvotes": 10}]
+            ),
         }
         conn_instance = MagicMock()
         conn_instance.cursor.return_value = mock_cursor
@@ -125,6 +131,7 @@ class TestWeeklyReport(unittest.TestCase):
     def test_import_weekly_report(self):
         """Weekly report module imports."""
         from scripts.weekly_report import generate_report
+
         self.assertIsNotNone(generate_report)
 
     @patch("db.connection.get_connection")
@@ -135,10 +142,10 @@ class TestWeeklyReport(unittest.TestCase):
 
         mock_cursor = MagicMock()
         mock_cursor.fetchone.side_effect = [
-            None,          # analysis
-            {"cnt": 5},    # queries_week
-            {"cnt": 3},    # chats_week
-            {"cnt": 2},    # feedback_week
+            None,  # analysis
+            {"cnt": 5},  # queries_week
+            {"cnt": 3},  # chats_week
+            {"cnt": 2},  # feedback_week
         ]
         mock_cursor.fetchall.side_effect = [
             [],  # top_queries
@@ -185,7 +192,10 @@ class TestWeeklyReport(unittest.TestCase):
 
         mock_cursor = MagicMock()
         mock_cursor.fetchone.side_effect = [
-            None, {"cnt": 0}, {"cnt": 0}, {"cnt": 0},
+            None,
+            {"cnt": 0},
+            {"cnt": 0},
+            {"cnt": 0},
         ]
         mock_cursor.fetchall.side_effect = [[], []]
         conn_instance = MagicMock()
@@ -195,7 +205,7 @@ class TestWeeklyReport(unittest.TestCase):
         with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as f:
             path = f.name
 
-        report = generate_report(output_path=path)
+        generate_report(output_path=path)
         self.assertTrue(Path(path).exists())
         self.assertTrue(Path(path).stat().st_size > 0)
         Path(path).unlink()
@@ -207,16 +217,19 @@ class TestStreamlitFeedbackPage(unittest.TestCase):
     def test_feedback_page_import(self):
         """Streamlit feedback page module imports."""
         from streamlit.pages.feedback import render
+
         self.assertIsNotNone(render)
 
     def test_feedback_page_has_render(self):
         """Feedback page exports render function."""
         from streamlit.pages.feedback import render
+
         self.assertTrue(callable(render))
 
     def test_feedback_page_has_query_db(self):
         """Feedback page has _query_db helper."""
         from streamlit.pages.feedback import _query_db
+
         self.assertTrue(callable(_query_db))
 
 
@@ -226,23 +239,27 @@ class TestSchemaV21(unittest.TestCase):
     def test_schema_version_is_at_least_21(self):
         """Schema version is at least 21."""
         from db.schema import get_schema_version
+
         self.assertGreaterEqual(get_schema_version(), 21)
 
     def test_feedback_analysis_table_in_schema(self):
         """feedback_analysis table exists in schema."""
         from db.schema import _TABLES
+
         table_sql = " ".join(_TABLES)
         self.assertIn("feedback_analysis", table_sql)
 
     def test_error_log_table_in_schema(self):
         """error_log table exists in schema."""
         from db.schema import _TABLES
+
         table_sql = " ".join(_TABLES)
         self.assertIn("error_log", table_sql)
 
     def test_feedback_analysis_has_key_columns(self):
         """feedback_analysis has key columns."""
         from db.schema import _TABLES
+
         for t in _TABLES:
             if "feedback_analysis" in t:
                 self.assertIn("analysis_week", t)
@@ -254,6 +271,7 @@ class TestSchemaV21(unittest.TestCase):
     def test_error_log_has_key_columns(self):
         """error_log has key columns."""
         from db.schema import _TABLES
+
         for t in _TABLES:
             if "error_log" in t:
                 self.assertIn("fingerprint", t)
@@ -270,6 +288,7 @@ class TestStreamlitCaching(unittest.TestCase):
         """load_feedback_stats function exists in streamlit_app."""
         try:
             from streamlit_app import load_feedback_stats
+
             self.assertIsNotNone(load_feedback_stats)
         except (ImportError, AttributeError):
             self.skipTest("Streamlit not installed")
@@ -278,6 +297,7 @@ class TestStreamlitCaching(unittest.TestCase):
         """load_performance_stats function exists in streamlit_app."""
         try:
             from streamlit_app import load_performance_stats
+
             self.assertIsNotNone(load_performance_stats)
         except (ImportError, AttributeError):
             self.skipTest("Streamlit not installed")

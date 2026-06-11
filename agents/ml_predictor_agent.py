@@ -50,7 +50,11 @@ class MLPredictorAgent(BaseAgent):
             return AgentResult(
                 agent_name=self.name,
                 status="success",
-                data={"skipped": True, "reason": "no_trained_model", "records_affected": 0},
+                data={
+                    "skipped": True,
+                    "reason": "no_trained_model",
+                    "records_affected": 0,
+                },
             )
 
         _logger.info("MLPredictorAgent: Using model %s", model_name)
@@ -151,7 +155,9 @@ class MLPredictorAgent(BaseAgent):
 
             _logger.info(
                 "MLPredictorAgent: Scored %d startups with %s — %s",
-                scored, model_name, level_counts,
+                scored,
+                model_name,
+                level_counts,
             )
 
             return AgentResult(

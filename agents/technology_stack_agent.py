@@ -70,29 +70,38 @@ class TechnologyStackAgent(BaseAgent):
                 "github_repos": gt.get("repo_count", 0) or 0,
                 "avg_velocity": gt.get("avg_velocity", 0) or 0,
                 "stackoverflow_questions": 0,
-                "category": "language" if lang else "unknown"
+                "category": "language" if lang else "unknown",
             }
 
         # Add StackOverflow data (simplified tag parsing)
         for st in stackoverflow_trends:
             try:
-                tags = json.loads(st.get("tags", "[]")) if isinstance(st.get("tags"), str) else st.get("tags", [])
+                tags = (
+                    json.loads(st.get("tags", "[]"))
+                    if isinstance(st.get("tags"), str)
+                    else st.get("tags", [])
+                )
                 for tag in tags[:1]:  # Take first tag as primary
                     if tag and tag not in tech_map:
                         tech_map[tag] = {
                             "github_repos": 0,
                             "avg_velocity": 0,
                             "stackoverflow_questions": st.get("question_count", 0) or 0,
-                            "category": "framework"
+                            "category": "framework",
                         }
                     elif tag:
-                        tech_map[tag]["stackoverflow_questions"] = st.get("question_count", 0) or 0
+                        tech_map[tag]["stackoverflow_questions"] = (
+                            st.get("question_count", 0) or 0
+                        )
             except (json.JSONDecodeError, TypeError):
                 pass
 
         # Convert to list and calculate metrics
         for tech, metrics in tech_map.items():
-            adoption_score = min(1.0, (metrics["github_repos"] + metrics["stackoverflow_questions"]) / 1000)
+            adoption_score = min(
+                1.0,
+                (metrics["github_repos"] + metrics["stackoverflow_questions"]) / 1000,
+            )
 
             # Determine trend direction
             if metrics["avg_velocity"] > 50:
@@ -102,17 +111,20 @@ class TechnologyStackAgent(BaseAgent):
             else:
                 trend_direction = "declining"
 
-            tech_data.append({
-                "technology": tech,
-                "category": metrics["category"],
-                "adoption_score": adoption_score,
-                "trend_direction": trend_direction,
-                "github_repos": metrics["github_repos"],
-                "stackoverflow_questions": metrics["stackoverflow_questions"],
-                "avg_company_age": 3.0,  # Placeholder
-                "analyzed_at": datetime.now(timezone.utc).isoformat(),
-                "record_count": metrics["github_repos"] + metrics["stackoverflow_questions"]
-            })
+            tech_data.append(
+                {
+                    "technology": tech,
+                    "category": metrics["category"],
+                    "adoption_score": adoption_score,
+                    "trend_direction": trend_direction,
+                    "github_repos": metrics["github_repos"],
+                    "stackoverflow_questions": metrics["stackoverflow_questions"],
+                    "avg_company_age": 3.0,  # Placeholder
+                    "analyzed_at": datetime.now(timezone.utc).isoformat(),
+                    "record_count": metrics["github_repos"]
+                    + metrics["stackoverflow_questions"],
+                }
+            )
 
         insights["tech_data"] = tech_data
 
@@ -136,8 +148,8 @@ class TechnologyStackAgent(BaseAgent):
                     data["stackoverflow_questions"],
                     data["avg_company_age"],
                     data["analyzed_at"],
-                    data["record_count"]
-                )
+                    data["record_count"],
+                ),
             )
 
         conn.commit()

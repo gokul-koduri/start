@@ -10,7 +10,6 @@ Data sources:
 Both are free, no authentication required.
 """
 
-import json
 import logging
 import re
 from datetime import datetime, timezone
@@ -75,7 +74,7 @@ class HNLiveCollector(BaseCollector):
 
         # "$X raised ... CompanyName"
         match = re.search(
-            r'\$(\d[\d,.]*)[MmBb]?\b.*?(\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b)',
+            r"\$(\d[\d,.]*)[MmBb]?\b.*?(\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b)",
             combined,
         )
         if match:
@@ -83,14 +82,14 @@ class HNLiveCollector(BaseCollector):
 
         # "Company launches/releases/announces"
         match = re.search(
-            r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b\s+(?:launches?|releases?|announces?|raises?|debuts?)',
+            r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b\s+(?:launches?|releases?|announces?|raises?|debuts?)",
             combined,
         )
         if match:
             return match.group(1).strip(), "company"
 
         # Title case at start
-        match = re.match(r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)', combined)
+        match = re.match(r"^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)", combined)
         if match and len(match.group(1)) < 40:
             return match.group(1).strip(), "company"
 
@@ -117,9 +116,14 @@ class HNLiveCollector(BaseCollector):
         """Fetch individual story from Firebase /item/{id}.json."""
         return self._fetch_json(session, f"{firebase_base}/item/{story_id}.json")
 
-    def _fetch_comments(self, session, algolia_base: str,
-                        story_id: int, story_title: str,
-                        comment_limit: int) -> list[dict]:
+    def _fetch_comments(
+        self,
+        session,
+        algolia_base: str,
+        story_id: int,
+        story_title: str,
+        comment_limit: int,
+    ) -> list[dict]:
         """Fetch top-level comments for a story from Algolia API."""
         data = self._fetch_json(session, f"{algolia_base}/items/{story_id}")
         if not isinstance(data, dict):
@@ -132,15 +136,17 @@ class HNLiveCollector(BaseCollector):
                 # Skip deleted/dead comments
                 if child.get("deleted") or child.get("dead"):
                     continue
-                comments.append({
-                    "comment_id": str(child.get("id", "")),
-                    "story_id": str(story_id),
-                    "author": child.get("author", ""),
-                    "body_text": child.get("text", "")[:10000],
-                    "score": child.get("points", 0),
-                    "parent_id": str(child.get("parent_id", "")),
-                    "story_title": story_title[:1000],
-                })
+                comments.append(
+                    {
+                        "comment_id": str(child.get("id", "")),
+                        "story_id": str(story_id),
+                        "author": child.get("author", ""),
+                        "body_text": child.get("text", "")[:10000],
+                        "score": child.get("points", 0),
+                        "parent_id": str(child.get("parent_id", "")),
+                        "story_title": story_title[:1000],
+                    }
+                )
         return comments
 
     def _insert_story(self, cursor, story: dict, result: CollectionResult) -> None:
@@ -209,7 +215,8 @@ class HNLiveCollector(BaseCollector):
             "hn_live",
             title=title[:1000],
             entity_name=entity_name,
-            source_url=url or f"https://news.ycombinator.com/item?id={story.get('id', '')}",
+            source_url=url
+            or f"https://news.ycombinator.com/item?id={story.get('id', '')}",
             body_text=(story.get("text", "") or "")[:5000],
             raw_score=raw_score,
             points=points,
@@ -219,8 +226,9 @@ class HNLiveCollector(BaseCollector):
 
         result.records_collected += 1
 
-    def _insert_comments(self, cursor, comments: list[dict],
-                         result: CollectionResult) -> None:
+    def _insert_comments(
+        self, cursor, comments: list[dict], result: CollectionResult
+    ) -> None:
         """Insert comments into hn_live_comments table."""
         for comment in comments:
             try:
@@ -243,7 +251,9 @@ class HNLiveCollector(BaseCollector):
                 )
                 result.records_collected += 1
             except Exception as e:
-                result.errors.append(f"Error inserting HN comment {comment.get('comment_id', '?')}: {e}")
+                result.errors.append(
+                    f"Error inserting HN comment {comment.get('comment_id', '?')}: {e}"
+                )
 
     def collect(self, conn) -> CollectionResult:
         result = CollectionResult(collector_name=self.name)
@@ -255,10 +265,12 @@ class HNLiveCollector(BaseCollector):
 
         session = get_http_session(timeout=20)
         firebase_base = config.get("firebase", {}).get(
-            "base_url", _FIREBASE_BASE,
+            "base_url",
+            _FIREBASE_BASE,
         )
         algolia_base = config.get("algolia", {}).get(
-            "base_url", _ALGOLIA_BASE,
+            "base_url",
+            _ALGOLIA_BASE,
         )
         max_stories = config.get("max_stories", 50)
         min_points = config.get("min_points", 5)
@@ -296,9 +308,11 @@ class HNLiveCollector(BaseCollector):
                 self._insert_story(cursor, story, result)
 
                 # Track high-engagement stories for comment collection
-                if (collect_comments and
-                        story.get("score", 0) >= min_points and
-                        story.get("descendants", 0) > 0):
+                if (
+                    collect_comments
+                    and story.get("score", 0) >= min_points
+                    and story.get("descendants", 0) > 0
+                ):
                     stories_to_comment.append(story)
 
                 processed += 1
@@ -309,7 +323,8 @@ class HNLiveCollector(BaseCollector):
         for story in stories_to_comment:
             try:
                 comments = self._fetch_comments(
-                    session, algolia_base,
+                    session,
+                    algolia_base,
                     story.get("id", 0),
                     story.get("title", ""),
                     comment_limit,
@@ -322,7 +337,8 @@ class HNLiveCollector(BaseCollector):
 
         _logger.info(
             "HNLiveCollector: %d stories processed, %d queued for comments",
-            processed, len(stories_to_comment),
+            processed,
+            len(stories_to_comment),
         )
 
         result.records_inserted = result.records_collected

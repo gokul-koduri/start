@@ -1,7 +1,6 @@
 """Feed generator agent — generates RSS/Atom feeds."""
 
 import logging
-from typing import Dict
 from agents.base import BaseAgent, AgentResult
 from datetime import datetime, timezone
 from pathlib import Path

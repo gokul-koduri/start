@@ -160,7 +160,9 @@ class SearchIndex:
 
         try:
             self._client.index(
-                index=self._index, id=doc_id, body=document,
+                index=self._index,
+                id=doc_id,
+                body=document,
             )
             return True
         except Exception as e:
@@ -188,7 +190,8 @@ class SearchIndex:
             ]
 
             success, errors = bulk(
-                self._client, actions,
+                self._client,
+                actions,
                 chunk_size=self._batch_size,
                 raise_on_error=False,
             )
@@ -254,21 +257,21 @@ class SearchIndex:
 
             # Add filter terms
             if filters:
-                filter_clauses = [
-                    {"term": {k: v}} for k, v in filters.items()
-                ]
+                filter_clauses = [{"term": {k: v}} for k, v in filters.items()]
                 body["query"]["bool"]["filter"] = filter_clauses
 
             resp = self._client.search(index=self._index, body=body)
 
             results = []
             for hit in resp["hits"]["hits"]:
-                results.append(SearchHit(
-                    id=hit["_id"],
-                    score=hit["_score"],
-                    source=hit["_source"],
-                    highlights=hit.get("highlight", {}),
-                ))
+                results.append(
+                    SearchHit(
+                        id=hit["_id"],
+                        score=hit["_score"],
+                        source=hit["_source"],
+                        highlights=hit.get("highlight", {}),
+                    )
+                )
 
             return results
         except Exception as e:
@@ -332,13 +335,15 @@ class SearchIndex:
 
             results = []
             for hit in resp["hits"]["hits"]:
-                results.append(HybridResult(
-                    id=hit["_id"],
-                    score=hit["_score"],
-                    source=hit["_source"],
-                    bm25_score=hit["_score"],  # Combined score from ES
-                    vector_score=0.0,
-                ))
+                results.append(
+                    HybridResult(
+                        id=hit["_id"],
+                        score=hit["_score"],
+                        source=hit["_source"],
+                        bm25_score=hit["_score"],  # Combined score from ES
+                        vector_score=0.0,
+                    )
+                )
 
             return results
         except Exception as e:
@@ -350,8 +355,12 @@ class SearchIndex:
         if not self.is_connected:
             return False
         try:
-            actions = [{"_op_type": "delete", "_index": self._index, "_id": did} for did in doc_ids]
+            actions = [
+                {"_op_type": "delete", "_index": self._index, "_id": did}
+                for did in doc_ids
+            ]
             from elasticsearch.helpers import bulk
+
             bulk(self._client, actions, raise_on_error=False)
             return True
         except Exception as e:

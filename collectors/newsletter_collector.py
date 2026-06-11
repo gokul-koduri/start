@@ -10,7 +10,7 @@ launches, and market trends mentioned in curated newsletters.
 import logging
 import re
 import time
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 from collectors.base import BaseCollector, CollectionResult
 from utils.http_client import get_http_session
@@ -19,9 +19,17 @@ _logger = logging.getLogger(__name__)
 
 # Startup-related keywords for content filtering
 _STARTUP_KEYWORDS = [
-    "startup", "funding", "raised", "launched",
-    "series a", "seed round", "venture capital",
-    "ipo", "acquired", "exit", "unicorn",
+    "startup",
+    "funding",
+    "raised",
+    "launched",
+    "series a",
+    "seed round",
+    "venture capital",
+    "ipo",
+    "acquired",
+    "exit",
+    "unicorn",
 ]
 
 
@@ -45,7 +53,10 @@ class NewsletterCollector(BaseCollector):
     def _fetch_newsletter(self, session, url: str) -> str:
         """Fetch newsletter HTML content from URL."""
         try:
-            resp = session.get(url, timeout=self.config.get("newsletter", {}).get("timeout_seconds", 15))
+            resp = session.get(
+                url,
+                timeout=self.config.get("newsletter", {}).get("timeout_seconds", 15),
+            )
             resp.raise_for_status()
             return resp.text
         except Exception as e:
@@ -62,31 +73,41 @@ class NewsletterCollector(BaseCollector):
             return None
 
         # Extract title from <title> tag or <h1>
-        title_match = re.search(r'<title[^>]*>(.*?)</title>', html, re.IGNORECASE | re.DOTALL)
+        title_match = re.search(
+            r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL
+        )
         title = title_match.group(1).strip() if title_match else ""
 
         if not title:
-            h1_match = re.search(r'<h1[^>]*>(.*?)</h1>', html, re.IGNORECASE | re.DOTALL)
+            h1_match = re.search(
+                r"<h1[^>]*>(.*?)</h1>", html, re.IGNORECASE | re.DOTALL
+            )
             title = h1_match.group(1).strip() if h1_match else ""
 
         # Clean title (remove HTML tags)
-        title = re.sub(r'<[^>]+>', '', title)
+        title = re.sub(r"<[^>]+>", "", title)
         title = title.strip()
 
         if not title:
             return None
 
         # Extract main content from <body> or <article>
-        body_match = re.search(r'<body[^>]*>(.*?)</body>', html, re.IGNORECASE | re.DOTALL)
+        body_match = re.search(
+            r"<body[^>]*>(.*?)</body>", html, re.IGNORECASE | re.DOTALL
+        )
         content = body_match.group(1) if body_match else html
 
         # Remove script and style elements
-        content = re.sub(r'<script[^>]*>.*?</script>', '', content, flags=re.IGNORECASE | re.DOTALL)
-        content = re.sub(r'<style[^>]*>.*?</style>', '', content, flags=re.IGNORECASE | re.DOTALL)
+        content = re.sub(
+            r"<script[^>]*>.*?</script>", "", content, flags=re.IGNORECASE | re.DOTALL
+        )
+        content = re.sub(
+            r"<style[^>]*>.*?</style>", "", content, flags=re.IGNORECASE | re.DOTALL
+        )
 
         # Strip HTML tags to get plain text
-        content_text = re.sub(r'<[^>]+>', ' ', content)
-        content_text = ' '.join(content_text.split())  # Collapse whitespace
+        content_text = re.sub(r"<[^>]+>", " ", content)
+        content_text = " ".join(content_text.split())  # Collapse whitespace
         content_text = content_text.strip()
 
         # Limit content length
@@ -95,12 +116,16 @@ class NewsletterCollector(BaseCollector):
 
         # Extract author/source from meta tags or byline patterns
         author = ""
-        author_match = re.search(r'<meta[^>]*name="author"[^>]*content="([^"]+)"', html, re.IGNORECASE)
+        author_match = re.search(
+            r'<meta[^>]*name="author"[^>]*content="([^"]+)"', html, re.IGNORECASE
+        )
         if author_match:
             author = author_match.group(1).strip()
         else:
             # Try byline pattern
-            byline_match = re.search(r'(by|By)\s+([A-Z][a-z]+\s+[A-Z][a-z]+)', content_text[:500])
+            byline_match = re.search(
+                r"(by|By)\s+([A-Z][a-z]+\s+[A-Z][a-z]+)", content_text[:500]
+            )
             if byline_match:
                 author = byline_match.group(2).strip()
 
@@ -108,7 +133,8 @@ class NewsletterCollector(BaseCollector):
         publish_date = None
         date_match = re.search(
             r'<meta[^>]*(name|property)="[^"]*date[^"]*"[^>]*content="([^"]+)"',
-            html, re.IGNORECASE
+            html,
+            re.IGNORECASE,
         )
         if date_match:
             date_str = date_match.group(2).strip()
@@ -116,7 +142,7 @@ class NewsletterCollector(BaseCollector):
 
         # Extract source name from URL or domain
         source_name = ""
-        if url_match := re.search(r'https?://([^/]+)', html):
+        if url_match := re.search(r"https?://([^/]+)", html):
             source_name = url_match.group(1).replace("www.", "")
 
         return {
@@ -135,13 +161,13 @@ class NewsletterCollector(BaseCollector):
         # Try common formats
         formats = [
             "%Y-%m-%dT%H:%M:%S%z",  # ISO with timezone
-            "%Y-%m-%dT%H:%M:%SZ",   # ISO UTC
-            "%Y-%m-%dT%H:%M:%S",    # ISO without timezone
-            "%Y-%m-%d",             # Date only
-            "%B %d, %Y",            # January 15, 2024
-            "%d %B %Y",             # 15 January 2024
-            "%m/%d/%Y",             # 01/15/2024
-            "%m-%d-%Y",             # 01-15-2024
+            "%Y-%m-%dT%H:%M:%SZ",  # ISO UTC
+            "%Y-%m-%dT%H:%M:%S",  # ISO without timezone
+            "%Y-%m-%d",  # Date only
+            "%B %d, %Y",  # January 15, 2024
+            "%d %B %Y",  # 15 January 2024
+            "%m/%d/%Y",  # 01/15/2024
+            "%m-%d-%Y",  # 01-15-2024
         ]
 
         for fmt in formats:
@@ -172,7 +198,9 @@ class NewsletterCollector(BaseCollector):
         if publish_date:
             if isinstance(publish_date, str):
                 try:
-                    publish_date = datetime.fromisoformat(publish_date.replace("Z", "+00:00"))
+                    publish_date = datetime.fromisoformat(
+                        publish_date.replace("Z", "+00:00")
+                    )
                 except (ValueError, TypeError):
                     publish_date = None
 
@@ -206,7 +234,9 @@ class NewsletterCollector(BaseCollector):
 
         return min(score, 100.0)
 
-    def _insert_article(self, cursor, article: dict, url: str, result: CollectionResult) -> None:
+    def _insert_article(
+        self, cursor, article: dict, url: str, result: CollectionResult
+    ) -> None:
         """Insert article into newsletter_articles and raw_signals."""
         title = article["title"]
         source_name = article["source_name"]
@@ -316,7 +346,8 @@ class NewsletterCollector(BaseCollector):
 
             _logger.info(
                 "NewsletterCollector: source '%s' → %s",
-                url, "article found" if article else "no article",
+                url,
+                "article found" if article else "no article",
             )
 
         result.records_inserted = result.records_collected

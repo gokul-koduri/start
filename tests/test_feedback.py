@@ -1,7 +1,7 @@
 """Tests for feedback API router (api/v2/feedback.py)."""
 
 import unittest
-from unittest.mock import patch, MagicMock, PropertyMock
+from unittest.mock import patch, MagicMock
 import sys
 from pathlib import Path
 
@@ -14,11 +14,13 @@ class TestFeedbackRouterImport(unittest.TestCase):
     def test_import_feedback_module(self):
         """Feedback router module imports without error."""
         from api.v2.feedback import router
+
         self.assertIsNotNone(router)
 
     def test_router_has_routes(self):
         """Router has the expected 5 routes."""
         from api.v2.feedback import router
+
         routes = [r.path for r in router.routes]
         self.assertIn("/v2/feedback/score", routes)
         self.assertIn("/v2/feedback/feature", routes)
@@ -29,6 +31,7 @@ class TestFeedbackRouterImport(unittest.TestCase):
     def test_router_prefix(self):
         """Router has correct prefix."""
         from api.v2.feedback import router
+
         self.assertEqual(router.prefix, "/v2/feedback")
 
 
@@ -38,6 +41,7 @@ class TestHashIP(unittest.TestCase):
     def test_hash_ip_basic(self):
         """_hash_ip returns a 16-char hex string."""
         from api.v2.feedback import _hash_ip
+
         mock_request = MagicMock()
         mock_request.client.host = "192.168.1.1"
         result = _hash_ip(mock_request)
@@ -47,6 +51,7 @@ class TestHashIP(unittest.TestCase):
     def test_hash_ip_consistent(self):
         """Same IP produces same hash."""
         from api.v2.feedback import _hash_ip
+
         mock_request = MagicMock()
         mock_request.client.host = "10.0.0.1"
         h1 = _hash_ip(mock_request)
@@ -56,6 +61,7 @@ class TestHashIP(unittest.TestCase):
     def test_hash_ip_different_for_different_ips(self):
         """Different IPs produce different hashes."""
         from api.v2.feedback import _hash_ip
+
         r1 = MagicMock()
         r1.client.host = "10.0.0.1"
         r2 = MagicMock()
@@ -69,11 +75,13 @@ class TestFeedbackSchema(unittest.TestCase):
     def test_schema_version_bumped(self):
         """Schema version is at least 17 (feedback tables added)."""
         from db.schema import get_schema_version
+
         self.assertGreaterEqual(get_schema_version(), 17)
 
     def test_feedback_tables_in_schema(self):
         """Feedback table SQL is present in _TABLES."""
         from db.schema import _TABLES
+
         table_sql = " ".join(_TABLES)
         self.assertIn("query_log", table_sql)
         self.assertIn("chat_log", table_sql)
@@ -83,7 +91,8 @@ class TestFeedbackSchema(unittest.TestCase):
     def test_query_log_has_required_columns(self):
         """query_log table has essential columns."""
         from db.schema import _TABLES
-        table_sql = " ".join(_TABLES)
+
+        " ".join(_TABLES)
         # Find the query_log table definition
         for t in _TABLES:
             if "query_log" in t:
@@ -96,6 +105,7 @@ class TestFeedbackSchema(unittest.TestCase):
     def test_score_feedback_has_rating(self):
         """score_feedback table has rating column."""
         from db.schema import _TABLES
+
         for t in _TABLES:
             if "score_feedback" in t:
                 self.assertIn("rating", t)
@@ -105,6 +115,7 @@ class TestFeedbackSchema(unittest.TestCase):
     def test_feature_requests_has_upvotes(self):
         """feature_requests table has upvotes and status."""
         from db.schema import _TABLES
+
         for t in _TABLES:
             if "feature_requests" in t:
                 self.assertIn("upvotes", t)
@@ -124,7 +135,9 @@ class TestSubmitScoreFeedback(unittest.TestCase):
 
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = {"composite_score": 75.0}
-        mock_conn.return_value.__enter__ = MagicMock(return_value=MagicMock(cursor=MagicMock(return_value=mock_cursor)))
+        mock_conn.return_value.__enter__ = MagicMock(
+            return_value=MagicMock(cursor=MagicMock(return_value=mock_cursor))
+        )
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
 
         # Simulate context manager for connection
@@ -253,12 +266,13 @@ class TestFeedbackScoreStats(unittest.TestCase):
         mock_cursor = MagicMock()
 
         call_count = [0]
+
         def fetchall_side_effect():
             call_count[0] += 1
             if call_count[0] <= 1:
                 return []
             elif call_count[0] <= 2:
-                return {"total": 0, "avg_rating": None},
+                return ({"total": 0, "avg_rating": None},)
             return []
 
         mock_cursor.fetchall.side_effect = [

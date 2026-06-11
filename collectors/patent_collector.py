@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 import urllib.request
 import urllib.error
 from datetime import datetime, timedelta, timezone
@@ -70,7 +69,9 @@ class PatentCollector(BaseCollector):
                     result.records_collected += 1
                     patent_data = self._extract_patent_data(patent, classification)
 
-                    if not patent_data.get("patent_number") and not patent_data.get("title"):
+                    if not patent_data.get("patent_number") and not patent_data.get(
+                        "title"
+                    ):
                         result.records_skipped += 1
                         continue
 
@@ -87,7 +88,8 @@ class PatentCollector(BaseCollector):
             if len(patents) > 0:
                 _logger.info(
                     "PatentCollector: query '%s' → %d patents found",
-                    query, len(patents),
+                    query,
+                    len(patents),
                 )
 
         conn.commit()
@@ -96,7 +98,10 @@ class PatentCollector(BaseCollector):
         return result
 
     def _search_patents(
-        self, query: str, since_date: datetime, max_results: int,
+        self,
+        query: str,
+        since_date: datetime,
+        max_results: int,
     ) -> list[dict]:
         """Search USPTO for recent patent filings.
 
@@ -114,9 +119,12 @@ class PatentCollector(BaseCollector):
         )
 
         try:
-            req = urllib.request.Request(url, headers={
-                "User-Agent": "OpportunityIntel/1.0 (educational research)",
-            })
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "User-Agent": "OpportunityIntel/1.0 (educational research)",
+                },
+            )
             with urllib.request.urlopen(req, timeout=15) as resp:
                 data = json.loads(resp.read().decode())
 
@@ -129,7 +137,10 @@ class PatentCollector(BaseCollector):
             return self._fallback_search(query, since_date, max_results)
 
     def _fallback_search(
-        self, query: str, since_date: datetime, max_results: int,
+        self,
+        query: str,
+        since_date: datetime,
+        max_results: int,
     ) -> list[dict]:
         """Fallback patent search when USPTO API is unavailable.
 
@@ -144,11 +155,15 @@ class PatentCollector(BaseCollector):
         return []
 
     def _extract_patent_data(
-        self, patent: dict, classification: str,
+        self,
+        patent: dict,
+        classification: str,
     ) -> dict:
         """Extract structured patent data from API response."""
         return {
-            "patent_number": patent.get("patent_number", patent.get("application_number", "")),
+            "patent_number": patent.get(
+                "patent_number", patent.get("application_number", "")
+            ),
             "title": patent.get("title", patent.get("invention_title", "")),
             "assignee": patent.get("assignee", patent.get("applicants", "")),
             "abstract_text": patent.get("abstract", patent.get("abstract_text", "")),
@@ -224,10 +239,16 @@ class PatentCollector(BaseCollector):
                      citations_count = VALUES(citations_count),
                      claims_count = VALUES(claims_count)""",
                 (
-                    data["patent_number"], data["title"], data["assignee"],
-                    data["abstract_text"], data["filing_date"], data["grant_date"],
-                    data["classification"], data["inventors_json"],
-                    data["citations_count"], data["claims_count"],
+                    data["patent_number"],
+                    data["title"],
+                    data["assignee"],
+                    data["abstract_text"],
+                    data["filing_date"],
+                    data["grant_date"],
+                    data["classification"],
+                    data["inventors_json"],
+                    data["citations_count"],
+                    data["claims_count"],
                     data["document_url"],
                 ),
             )
@@ -258,8 +279,12 @@ class PatentCollector(BaseCollector):
                    VALUES (%s, %s, %s, %s, %s, %s, %s)
                    ON DUPLICATE KEY UPDATE title = VALUES(title)""",
                 (
-                    signal.signal_type, signal.source_name, signal.source_url,
-                    signal.title, signal.body_text, signal.entity_name,
+                    signal.signal_type,
+                    signal.source_name,
+                    signal.source_url,
+                    signal.title,
+                    signal.body_text,
+                    signal.entity_name,
                     signal.published_at,
                 ),
             )

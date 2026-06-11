@@ -10,7 +10,9 @@ from bs4 import BeautifulSoup
 from collectors.base import BaseCollector, CollectionResult
 from utils.http_client import get_http_session
 from utils.text_normalization import (
-    normalize_funding, normalize_country, get_region,
+    normalize_funding,
+    normalize_country,
+    get_region,
     normalize_failure_category,
 )
 from db.dedup import dedup_startup
@@ -68,7 +70,9 @@ class FailoryScraper(BaseCollector):
 
         # Step 3: Scrape each profile
         for i, url in enumerate(new_urls):
-            _logger.debug("Scraping Failory profile %d/%d: %s", i + 1, len(new_urls), url)
+            _logger.debug(
+                "Scraping Failory profile %d/%d: %s", i + 1, len(new_urls), url
+            )
 
             time.sleep(delay)
 
@@ -138,8 +142,9 @@ class FailoryScraper(BaseCollector):
 
         return result
 
-    def _get_profile_urls(self, session, base_url, failures_path,
-                          category_pages, max_profiles, result):
+    def _get_profile_urls(
+        self, session, base_url, failures_path, category_pages, max_profiles, result
+    ):
         """Discover profile URLs from Failory's category pages.
 
         Failory uses /startups/[category]-failures as list pages with
@@ -185,8 +190,9 @@ class FailoryScraper(BaseCollector):
                     if len(urls) >= max_profiles:
                         break
 
-            _logger.info("  Found %d profiles on %s (total: %d)",
-                         found, page_path, len(urls))
+            _logger.info(
+                "  Found %d profiles on %s (total: %d)", found, page_path, len(urls)
+            )
 
             if len(urls) >= max_profiles:
                 break
@@ -219,7 +225,7 @@ class FailoryScraper(BaseCollector):
                 text = title.get_text(strip=True)
                 for prefix in ["What Happened to ", "What happened to "]:
                     if text.startswith(prefix):
-                        name = text[len(prefix):].split(",")[0].split("?")[0].strip()
+                        name = text[len(prefix) :].split(",")[0].split("?")[0].strip()
                         if name:
                             profile["name"] = name
                             break
@@ -233,28 +239,50 @@ class FailoryScraper(BaseCollector):
         all_text = soup.get_text(separator="\n")
 
         # Category / Industry
-        profile["industry"] = self._extract_field(all_text, [
-            "Category:", "Industry:", "Sector:",
-        ])
+        profile["industry"] = self._extract_field(
+            all_text,
+            [
+                "Category:",
+                "Industry:",
+                "Sector:",
+            ],
+        )
 
         # Country
-        profile["country"] = self._extract_field(all_text, [
-            "Country:", "Location:", "HQ:",
-        ])
+        profile["country"] = self._extract_field(
+            all_text,
+            [
+                "Country:",
+                "Location:",
+                "HQ:",
+            ],
+        )
 
         # Failure cause
-        failure_reason = self._extract_field(all_text, [
-            "Cause:", "Failure Cause:", "Reason for failure:",
-            "Why it failed:", "Cause of Failure:",
-        ])
+        failure_reason = self._extract_field(
+            all_text,
+            [
+                "Cause:",
+                "Failure Cause:",
+                "Reason for failure:",
+                "Why it failed:",
+                "Cause of Failure:",
+            ],
+        )
         profile["failure_reason"] = failure_reason
         profile["failure_category"] = normalize_failure_category(failure_reason)
 
         # Funding
-        funding_text = self._extract_field(all_text, [
-            "Total Funding Amount:", "Total Funding:", "Funding:",
-            "Raised:", "Investment:",
-        ])
+        funding_text = self._extract_field(
+            all_text,
+            [
+                "Total Funding Amount:",
+                "Total Funding:",
+                "Funding:",
+                "Raised:",
+                "Investment:",
+            ],
+        )
         if funding_text and funding_text not in ("-", "N/A", "Unknown", ""):
             profile["funding_description"] = funding_text
             profile["funding_usd"] = normalize_funding(funding_text)
@@ -263,18 +291,29 @@ class FailoryScraper(BaseCollector):
             profile["funding_usd"] = None
 
         # Year founded
-        year_text = self._extract_field(all_text, [
-            "Started:", "Founded:", "Year Founded:",
-        ])
+        year_text = self._extract_field(
+            all_text,
+            [
+                "Started:",
+                "Founded:",
+                "Year Founded:",
+            ],
+        )
         if year_text:
             match = re.search(r"\d{4}", year_text)
             if match:
                 profile["year_founded"] = int(match.group())
 
         # Year failed/closed
-        fail_text = self._extract_field(all_text, [
-            "Closed:", "Failed:", "Shut Down:", "Outcome:",
-        ])
+        fail_text = self._extract_field(
+            all_text,
+            [
+                "Closed:",
+                "Failed:",
+                "Shut Down:",
+                "Outcome:",
+            ],
+        )
         if fail_text:
             match = re.search(r"\d{4}", fail_text)
             if match:
@@ -282,11 +321,24 @@ class FailoryScraper(BaseCollector):
 
         # Check for manufacturing connection
         all_text_lower = all_text.lower()
-        mfg_terms = ["manufacturing", "factory", "production", "hardware",
-                     "3d printing", "robotics", "battery", "semiconductor",
-                     "fabrication", "assembly", "automotive", "ev "]
+        mfg_terms = [
+            "manufacturing",
+            "factory",
+            "production",
+            "hardware",
+            "3d printing",
+            "robotics",
+            "battery",
+            "semiconductor",
+            "fabrication",
+            "assembly",
+            "automotive",
+            "ev ",
+        ]
         if any(t in all_text_lower for t in mfg_terms):
-            profile["manufacturing_sub_sector"] = profile.get("industry", "Manufacturing")
+            profile["manufacturing_sub_sector"] = profile.get(
+                "industry", "Manufacturing"
+            )
 
         return profile
 

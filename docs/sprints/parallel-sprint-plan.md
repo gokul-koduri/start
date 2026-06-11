@@ -122,7 +122,7 @@ WEEK 2 (Day 3-7) — 4 streams parallel:
 
 ## 🗓️ Phase 3: WATCHLISTS + EXPORT + BILLING (Week 4-5) — 102 hrs → 30 hrs wall-clock
 
-> **Key insight**: Sprint 5 (Watchlists), Sprint 6 (Export), Sprint 7 (Billing) 
+> **Key insight**: Sprint 5 (Watchlists), Sprint 6 (Export), Sprint 7 (Billing)
 > are independent features. Run all three in parallel.
 
 ### Dependency Graph

@@ -77,7 +77,9 @@ class OllamaSummarizer:
         try:
             data = json.dumps(payload).encode()
             req = urllib.request.Request(
-                self._url, data=data, headers={"Content-Type": "application/json"},
+                self._url,
+                data=data,
+                headers={"Content-Type": "application/json"},
             )
             with urllib.request.urlopen(req, timeout=self._timeout) as resp:
                 result = json.loads(resp.read().decode())
@@ -92,7 +94,9 @@ class OllamaSummarizer:
         return " ".join(words) + "..."
 
     def summarize_batch(
-        self, texts: list[str], delay: float = 1.0,
+        self,
+        texts: list[str],
+        delay: float = 1.0,
     ) -> list[str]:
         """Summarize multiple texts with rate limiting.
 

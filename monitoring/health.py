@@ -12,6 +12,7 @@ def check_database_health() -> Dict:
     """Check database connectivity."""
     try:
         from db.connection import get_connection
+
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT 1")
@@ -26,6 +27,7 @@ def check_redis_health() -> Dict:
     """Check Redis connectivity."""
     try:
         import redis
+
         r = redis.from_url("redis://localhost:6379/0", socket_connect_timeout=2)
         r.ping()
         r.close()

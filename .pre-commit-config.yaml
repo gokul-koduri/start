@@ -1,0 +1,53 @@
+# Pre-commit hooks for agile workflow
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        name: "🔍 Ruff Lint"
+      - id: ruff-format
+        name: "🎨 Ruff Format"
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        name: "🧹 Trim Trailing Whitespace"
+      - id: end-of-file-fixer
+        name: "📝 Fix End of File"
+      - id: check-yaml
+        name: "📄 Check YAML"
+        args: [--unsafe]
+      - id: check-json
+        name: "📄 Check JSON"
+      - id: check-merge-conflict
+        name: "⚠️ Check Merge Conflicts"
+      - id: check-added-large-files
+        name: "📦 Check Large Files"
+        args: [--maxkb=500]
+      - id: detect-private-key
+        name: "🔐 Detect Private Keys"
+      - id: no-commit-to-branch
+        name: "🚫 No Direct Main Commit"
+        args: [--branch, main]
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
+      - id: pytest-fast
+        name: "Fast Tests"
+        entry: python -m pytest tests/ -x -q --ignore=tests/test_phase -k "not slow"
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      - id: conventional-commit
+        name: "Conventional Commit"
+        entry: scripts/check-conventional-commit.sh
+        language: system
+        stages: [commit-msg]

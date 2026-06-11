@@ -2,7 +2,6 @@
 
 import unittest
 import sys
-import json
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
@@ -15,11 +14,12 @@ class TestParallelSpawner(unittest.TestCase):
     def test_import(self):
         """Test parallel_spawner can be imported."""
         from agents.parallel_spawner import (
-            spawn_task, update_task_status, record_artifacts,
-            get_task, find_task, list_tasks, get_task_log,
-            print_status, run_tests, spawn_and_track,
-            TaskStatus, TaskType,
+            spawn_task,
+            update_task_status,
+            record_artifacts,
+            print_status,
         )
+
         self.assertTrue(callable(spawn_task))
         self.assertTrue(callable(update_task_status))
         self.assertTrue(callable(record_artifacts))
@@ -28,6 +28,7 @@ class TestParallelSpawner(unittest.TestCase):
     def test_status_enum(self):
         """Test TaskStatus enum values."""
         from agents.parallel_spawner import TaskStatus
+
         self.assertEqual(TaskStatus.QUEUED.value, "queued")
         self.assertEqual(TaskStatus.DONE.value, "done")
         self.assertEqual(TaskStatus.FAILED.value, "failed")
@@ -35,6 +36,7 @@ class TestParallelSpawner(unittest.TestCase):
     def test_task_type_enum(self):
         """Test TaskType enum values."""
         from agents.parallel_spawner import TaskType
+
         self.assertEqual(TaskType.BUILD.value, "build")
         self.assertEqual(TaskType.FIX.value, "fix")
         self.assertEqual(TaskType.REFACTOR.value, "refactor")
@@ -49,8 +51,12 @@ class TestParallelSpawner(unittest.TestCase):
         mock_cursor.fetchone.return_value = None  # No existing task
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         # Mock _ensure_tables
         with patch("agents.parallel_spawner._ensure_tables"):
@@ -63,8 +69,11 @@ class TestParallelSpawner(unittest.TestCase):
 
         self.assertEqual(task_id, 1)
         # Verify INSERT was called
-        insert_calls = [c for c in mock_cursor.execute.call_args_list
-                        if "INSERT INTO parallel_tasks" in str(c)]
+        insert_calls = [
+            c
+            for c in mock_cursor.execute.call_args_list
+            if "INSERT INTO parallel_tasks" in str(c)
+        ]
         self.assertEqual(len(insert_calls), 1)
 
     @patch("agents.parallel_spawner.get_connection")
@@ -76,8 +85,12 @@ class TestParallelSpawner(unittest.TestCase):
         mock_cursor.fetchone.return_value = {"id": 1, "status": "building"}
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         with patch("agents.parallel_spawner._ensure_tables"):
             with self.assertRaises(ValueError) as ctx:
@@ -96,8 +109,12 @@ class TestParallelSpawner(unittest.TestCase):
         mock_cursor.fetchone.return_value = {"id": 1, "status": "done"}
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         with patch("agents.parallel_spawner._ensure_tables"):
             task_id = spawn_task(name="email-queue", description="v2")
@@ -112,8 +129,12 @@ class TestParallelSpawner(unittest.TestCase):
         mock_cursor.fetchone.return_value = None
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         update_task_status(1, "building", message="Started coding")
         # Should have UPDATE + INSERT (log)
@@ -133,8 +154,12 @@ class TestParallelSpawner(unittest.TestCase):
         }
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         record_artifacts(
             1,
@@ -143,8 +168,11 @@ class TestParallelSpawner(unittest.TestCase):
             tests_added=19,
             tests_passing=19,
         )
-        update_calls = [c for c in mock_cursor.execute.call_args_list
-                        if "UPDATE parallel_tasks" in str(c)]
+        update_calls = [
+            c
+            for c in mock_cursor.execute.call_args_list
+            if "UPDATE parallel_tasks" in str(c)
+        ]
         self.assertEqual(len(update_calls), 1)
 
 
@@ -154,6 +182,7 @@ class TestParallelSpawnerOrchestrated(unittest.TestCase):
     def test_orchestrated_wrapper_exists(self):
         """Test OrchestratedParallelSpawner can be imported."""
         from agents.parallel_spawner import OrchestratedParallelSpawner
+
         wrapper = OrchestratedParallelSpawner()
         self.assertEqual(wrapper.name, "parallel_spawner")
         self.assertTrue(wrapper.enabled)
@@ -162,6 +191,7 @@ class TestParallelSpawnerOrchestrated(unittest.TestCase):
     def test_orchestrated_no_tasks(self, mock_list):
         """Test wrapper returns success when no tasks queued."""
         from agents.parallel_spawner import OrchestratedParallelSpawner
+
         mock_list.return_value = []
 
         wrapper = OrchestratedParallelSpawner()
@@ -173,6 +203,7 @@ class TestParallelSpawnerOrchestrated(unittest.TestCase):
     def test_orchestrated_with_tasks(self, mock_list):
         """Test wrapper reports queued tasks."""
         from agents.parallel_spawner import OrchestratedParallelSpawner
+
         mock_list.return_value = [
             {"task_name": "email-queue", "priority": "P1"},
             {"task_name": "auth-fix", "priority": "P0"},
@@ -189,7 +220,11 @@ class TestParallelTasksSchema(unittest.TestCase):
 
     def test_tables_exist_in_ensure(self):
         """Test parallel_tasks table SQL is defined."""
-        from agents.parallel_spawner import _PARALLEL_TASKS_TABLE, _PARALLEL_TASK_LOG_TABLE
+        from agents.parallel_spawner import (
+            _PARALLEL_TASKS_TABLE,
+            _PARALLEL_TASK_LOG_TABLE,
+        )
+
         self.assertIn("parallel_tasks", _PARALLEL_TASKS_TABLE)
         self.assertIn("parallel_task_log", _PARALLEL_TASK_LOG_TABLE)
         self.assertIn("task_name", _PARALLEL_TASKS_TABLE)
@@ -204,6 +239,7 @@ class TestRunTests(unittest.TestCase):
     def test_run_tests_function_exists(self):
         """Test run_tests is callable."""
         from agents.parallel_spawner import run_tests
+
         self.assertTrue(callable(run_tests))
 
 

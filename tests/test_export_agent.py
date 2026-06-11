@@ -13,6 +13,7 @@ class TestExportAgent(unittest.TestCase):
     def test_agent_exists(self):
         """Test agent can be imported."""
         from agents.export_agent import ExportAgent
+
         agent = ExportAgent()
         self.assertEqual(agent.name, "export")
 

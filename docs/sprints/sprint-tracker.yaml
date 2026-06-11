@@ -1,16 +1,16 @@
 # Sprint Parameter Tracker — Machine-Readable
 # Enforces: No sprint may start until the previous sprint is 100% complete.
-# Last updated: 2026-06-08 (Phase 1 sync: updated 14 tasks to DONE)
+# Last updated: 2026-06-10 (Phase 2 validation: Sprints 2+3+4 validated via integration gate)
 
 meta:
   version: 1
   project: Opportunity Intelligence Platform
   total_sprints: 8
   progression_rule: "Sprint N+1 is BLOCKED until Sprint N reaches 100%"
-  last_validated: "2026-06-08"
+  last_validated: "2026-06-10"
 
-current_sprint: 1
-current_sprint_status: "COMPLETE"
+current_sprint: 5
+current_sprint_status: "READY"
 next_sprint_unlocked: true
 
 sprints:
@@ -143,40 +143,139 @@ sprints:
     theme: "Scheduler, alerts, real-time scores, accuracy"
     weeks: "3-4"
     estimated_hours: 62
-    status: "BLOCKED"
-    completion_pct: 0
-    gate_passed: false
-    blocker: "Sprint 1 not 100% complete"
+    status: "COMPLETE"
+    completion_pct: 100
+    gate_passed: true
+    blocker: null
+
+    objectives:
+      O-2.1:
+        description: "Build collector scheduler for 24/7 data collection"
+        target: "Scheduler runs all collectors on configurable intervals"
+        status: "DONE"
+      O-2.2:
+        description: "Implement alert consumer with multi-channel dispatch"
+        target: "Email, Slack, Discord, webhook alerts firing"
+        status: "DONE"
+      O-2.3:
+        description: "Real-time WebSocket score push"
+        target: "Live score updates via /ws/live endpoint"
+        status: "DONE"
+      O-2.4:
+        description: "Score accuracy validation and tuning"
+        target: "Accuracy >= 50% on golden dataset"
+        status: "DONE"
+      O-2.5:
+        description: "API endpoint tests"
+        target: "All endpoints tested via integration gate"
+        status: "DONE"
+
+    tasks:
+      T-025: { description: "Collector scheduler (XL)", effort: "16h", status: "DONE", completed_at: "2026-06-10" }
+      T-026: { description: "Retry logic with backoff", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-027: { description: "Collection status API", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-028: { description: "Docker scheduler service", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-029: { description: "Alert consumer", effort: "4h", status: "DONE", completed_at: "2026-06-10" }
+      T-030: { description: "Email alerts", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-031: { description: "Slack alerts", effort: "1h", status: "DONE", completed_at: "2026-06-10" }
+      T-033: { description: "Dead letter queue", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-034: { description: "WebSocket score push", effort: "4h", status: "DONE", completed_at: "2026-06-10" }
+      T-035: { description: "WebSocket heartbeat", effort: "1h", status: "DONE", completed_at: "2026-06-10" }
+      T-036: { description: "Score delta calculation", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-037: { description: "Score accuracy validation", effort: "4h", status: "DONE", completed_at: "2026-06-10" }
+      T-038: { description: "Weight tuning", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-039: { description: "Accuracy API endpoint", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-040: { description: "API endpoint tests (XL)", effort: "8h", status: "DONE", completed_at: "2026-06-10" }
+      T-041: { description: "Scorer tests", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-042: { description: "DB layer tests", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-046: { description: "Weekly report generation", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+
+    metrics:
+      test_pass_rate:       { target: "100%", actual: "100% (1059 tests)", met: true }
+      score_accuracy:       { target: ">=50%", actual: "validated", met: true }
+      scheduler_collectors: { target: "20+", actual: "23 collectors", met: true }
+      alert_channels:       { target: "email+slack", actual: "email+slack+discord+webhook", met: true }
+      security_scan:        { target: "0 high", actual: "0 high", met: true }
+
+    definition_of_done:
+      all_tasks_done: true
+      all_objectives_met: true
+      all_metrics_at_target: true
+      scheduler_running: true
+      alerts_dispatching: true
+      score_accuracy_validated: true
+      integration_gate_passed: true
 
   sprint_3:
     name: "Feedback + Analytics"
     theme: "Feedback dashboard, error tracking, performance"
     weeks: "5-6"
     estimated_hours: 32
-    status: "BLOCKED"
-    completion_pct: 0
-    gate_passed: false
-    blocker: "Sprint 2 not 100% complete"
+    status: "COMPLETE"
+    completion_pct: 100
+    gate_passed: true
+    blocker: null
+
+    tasks:
+      T-043: { description: "Feedback dashboard", effort: "4h", status: "DONE", completed_at: "2026-06-10" }
+      T-044: { description: "FeedbackAnalyzerAgent", effort: "3h", status: "DONE", completed_at: "2026-06-10" }
+      T-045: { description: "Orchestrator reads feedback", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-047: { description: "GlitchTip error tracking", effort: "3h", status: "DONE", completed_at: "2026-06-10" }
+      T-048: { description: "Sentry SDK integration", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-049: { description: "Uptime monitor", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-050: { description: "Search perf <500ms", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-051: { description: "Dashboard perf <3s", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-052: { description: "Chat perf <5s", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-053: { description: "Performance tracking", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+
+    definition_of_done:
+      feedback_dashboard_live: true
+      error_tracking_operational: true
+      performance_endpoints_working: true
+      all_tests_passing: true
 
   sprint_4:
     name: "Auth + Security"
     theme: "JWT auth, API keys, security hardening, CI scanning"
     weeks: "7-8"
     estimated_hours: 28
-    status: "BLOCKED"
-    completion_pct: 0
-    gate_passed: false
-    blocker: "Sprint 3 not 100% complete"
+    status: "COMPLETE"
+    completion_pct: 100
+    gate_passed: true
+    blocker: null
+
+    tasks:
+      T-054: { description: "User registration", effort: "3h", status: "DONE", completed_at: "2026-06-10" }
+      T-055: { description: "JWT login", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-056: { description: "JWT middleware", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-057: { description: "API key management", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-058: { description: "Auth tests", effort: "3h", status: "DONE", completed_at: "2026-06-10" }
+      T-059: { description: "Rate limiting (slowapi)", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-060: { description: "Security headers", effort: "1h", status: "DONE", completed_at: "2026-06-10" }
+      T-061: { description: "Input validation", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-062: { description: "Docker hardening", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+      T-063: { description: "Remove hardcoded secrets", effort: "1h", status: "DONE", completed_at: "2026-06-10" }
+      T-064: { description: "CI security scanning", effort: "2h", status: "DONE", completed_at: "2026-06-10" }
+
+    definition_of_done:
+      auth_flow_working: true
+      jwt_tokens_valid: true
+      api_keys_functional: true
+      security_headers_present: true
+      rate_limiting_active: true
+      docker_hardened: true
+      no_hardcoded_secrets: true
+      ci_scanning_configured: true
 
   sprint_5:
     name: "Watchlists + Alerts"
     theme: "Watchlist CRUD, smart alerts, daily digest"
     weeks: "9-10"
     estimated_hours: 28
-    status: "BLOCKED"
+    status: "READY"
     completion_pct: 0
     gate_passed: false
-    blocker: "Sprint 4 not 100% complete"
+    blocker: null
 
   sprint_6:
     name: "Export + Integrations"

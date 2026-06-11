@@ -15,61 +15,138 @@ from __future__ import annotations
 import logging
 import re
 
-from ingestion.signal_normalizer import VALID_SIGNAL_TYPES
 
 _logger = logging.getLogger(__name__)
 
 # Signal type classification patterns
 _SIGNAL_PATTERNS: dict[str, list[str]] = {
     "funding_round": [
-        r"\braised?\s+\$?\d", r"\bfunded\b", r"\bseries\s+[a-z]\b",
-        r"\bseed\s+round\b", r"\bventure\s+capital\b", r"\binvestment\b",
-        r"\bvaluation\b", r"\bipo\b", r"\bpre[- ]?seed\b",
+        r"\braised?\s+\$?\d",
+        r"\bfunded\b",
+        r"\bseries\s+[a-z]\b",
+        r"\bseed\s+round\b",
+        r"\bventure\s+capital\b",
+        r"\binvestment\b",
+        r"\bvaluation\b",
+        r"\bipo\b",
+        r"\bpre[- ]?seed\b",
     ],
     "sec_filing": [
-        r"\b10[- ]?[kKqQ]\b", r"\b8[- ]?K\b", r"\bS[- ]?1\b",
-        r"\bSEC\b", r"\bfiling\b", r"\bannual\s+report\b",
-        r"\bquarterly\s+report\b", r"\bproxy\s+statement\b",
+        r"\b10[- ]?[kKqQ]\b",
+        r"\b8[- ]?K\b",
+        r"\bS[- ]?1\b",
+        r"\bSEC\b",
+        r"\bfiling\b",
+        r"\bannual\s+report\b",
+        r"\bquarterly\s+report\b",
+        r"\bproxy\s+statement\b",
     ],
     "job_posting_spike": [
-        r"\bhiring\b", r"\bjob\s+posting\b", r"\brecruiting\b",
-        r"\bcareer\b", r"\bposition\b", r"\bopen\s+role\b",
+        r"\bhiring\b",
+        r"\bjob\s+posting\b",
+        r"\brecruiting\b",
+        r"\bcareer\b",
+        r"\bposition\b",
+        r"\bopen\s+role\b",
         r"\blooking\s+for\b.*\b(engineer|developer|scientist)\b",
     ],
     "github_trend": [
-        r"\bgithub\b", r"\bopen[- ]?source\b", r"\brepository\b",
-        r"\bstar(s|red|ting)?\b", r"\bfork(s|ed)?\b", r"\bPR\b",
-        r"\bpull\s+request\b", r"\bcommit\b",
+        r"\bgithub\b",
+        r"\bopen[- ]?source\b",
+        r"\brepository\b",
+        r"\bstar(s|red|ting)?\b",
+        r"\bfork(s|ed)?\b",
+        r"\bPR\b",
+        r"\bpull\s+request\b",
+        r"\bcommit\b",
     ],
     "patent_filed": [
-        r"\bpatent\b", r"\bUSPTO\b", r"\bintellectual\s+property\b",
-        r"\binvention\b", r"\bgrant(ed)?\b", r"\bclaim(s)?\b",
+        r"\bpatent\b",
+        r"\bUSPTO\b",
+        r"\bintellectual\s+property\b",
+        r"\binvention\b",
+        r"\bgrant(ed)?\b",
+        r"\bclaim(s)?\b",
     ],
     "social_buzz": [
-        r"\breddit\b", r"\bhacker\s+news\b", r"\bHN\b",
-        r"\bupvote\b", r"\bfront\s+page\b", r"\btrending\b",
+        r"\breddit\b",
+        r"\bhacker\s+news\b",
+        r"\bHN\b",
+        r"\bupvote\b",
+        r"\bfront\s+page\b",
+        r"\btrending\b",
     ],
     "news_mention": [
-        r"\bannounc(ed|es|ing|ement)\b", r"\breport(ed|s|ing)?\b",
-        r"\baccordin?g\s+to\b", r"\bsaid\b", r"\b spokes",
+        r"\bannounc(ed|es|ing|ement)\b",
+        r"\breport(ed|s|ing)?\b",
+        r"\baccordin?g\s+to\b",
+        r"\bsaid\b",
+        r"\b spokes",
     ],
 }
 
 # Sentiment keyword lists
 _POSITIVE_WORDS = {
-    "success", "growth", "profit", "revenue", "innovation", "breakthrough",
-    "leading", "impressive", "milestone", "launch", "expand", "thrive",
-    "record", "soar", "surge", "boom", "excellent", "outstanding",
-    "revolutionary", "transformative", "unicorn", "series", "funded",
-    "raised", "strategic", "partnership", "acquisition", "gain",
+    "success",
+    "growth",
+    "profit",
+    "revenue",
+    "innovation",
+    "breakthrough",
+    "leading",
+    "impressive",
+    "milestone",
+    "launch",
+    "expand",
+    "thrive",
+    "record",
+    "soar",
+    "surge",
+    "boom",
+    "excellent",
+    "outstanding",
+    "revolutionary",
+    "transformative",
+    "unicorn",
+    "series",
+    "funded",
+    "raised",
+    "strategic",
+    "partnership",
+    "acquisition",
+    "gain",
 }
 
 _NEGATIVE_WORDS = {
-    "fail", "bankrupt", "shutdown", "collapse", "crisis", "loss",
-    "decline", "struggle", "lawsuit", "fraud", "scandal", "downfall",
-    "layoff", "fire", "cut", "reduce", "negative", "warning",
-    "risk", "threat", "vulnerable", "distress", "delist", "pandemic",
-    "regulatory", "compliance", "violation", "penalty", "fine",
+    "fail",
+    "bankrupt",
+    "shutdown",
+    "collapse",
+    "crisis",
+    "loss",
+    "decline",
+    "struggle",
+    "lawsuit",
+    "fraud",
+    "scandal",
+    "downfall",
+    "layoff",
+    "fire",
+    "cut",
+    "reduce",
+    "negative",
+    "warning",
+    "risk",
+    "threat",
+    "vulnerable",
+    "distress",
+    "delist",
+    "pandemic",
+    "regulatory",
+    "compliance",
+    "violation",
+    "penalty",
+    "fine",
 }
 
 
@@ -99,7 +176,9 @@ class SignalTextClassifier:
             ]
 
     def classify_signal_type(
-        self, text: str, title: str = "",
+        self,
+        text: str,
+        title: str = "",
     ) -> tuple[str, float]:
         """Classify text into a signal type.
 
@@ -150,11 +229,15 @@ class SignalTextClassifier:
             return "neutral", 0.0
 
         score = (positive_count - negative_count) / total
-        label = "positive" if score > 0.2 else ("negative" if score < -0.2 else "neutral")
+        label = (
+            "positive" if score > 0.2 else ("negative" if score < -0.2 else "neutral")
+        )
         return label, score
 
     def classify(
-        self, text: str, title: str = "",
+        self,
+        text: str,
+        title: str = "",
     ) -> dict[str, str | float]:
         """Run all classifications and return combined result.
 

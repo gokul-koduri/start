@@ -36,8 +36,12 @@ class GoogleNewsRSSCollector(BaseCollector):
         queries = rss_config.get("queries", [])
         classify_config = self.config.get("classification", {})
 
-        mfg_keywords = set(kw.lower() for kw in classify_config.get("manufacturing_keywords", []))
-        failure_keywords = set(kw.lower() for kw in classify_config.get("failure_keywords", []))
+        mfg_keywords = set(
+            kw.lower() for kw in classify_config.get("manufacturing_keywords", [])
+        )
+        failure_keywords = set(
+            kw.lower() for kw in classify_config.get("failure_keywords", [])
+        )
 
         if not queries:
             result.errors.append("No Google News queries configured")
@@ -70,7 +74,9 @@ class GoogleNewsRSSCollector(BaseCollector):
             feed = feedparser.parse(resp.text)
 
             if feed.bozo and not feed.entries:
-                _logger.warning("Google News parse error for '%s': %s", query, feed.bozo_exception)
+                _logger.warning(
+                    "Google News parse error for '%s': %s", query, feed.bozo_exception
+                )
                 continue
 
             for entry in feed.entries:
@@ -84,7 +90,11 @@ class GoogleNewsRSSCollector(BaseCollector):
                 title = entry.get("title", "")
                 summary = entry.get("summary", "")
                 published = entry.get("published", "")
-                source_name = entry.get("source", {}).get("title", "Google News") if isinstance(entry.get("source"), dict) else "Google News"
+                source_name = (
+                    entry.get("source", {}).get("title", "Google News")
+                    if isinstance(entry.get("source"), dict)
+                    else "Google News"
+                )
 
                 # Classify
                 title_lower = title.lower()
@@ -92,7 +102,9 @@ class GoogleNewsRSSCollector(BaseCollector):
                 combined = f"{title_lower} {summary_lower}"
 
                 is_mfg = 1 if any(kw in combined for kw in mfg_keywords) else 0
-                mentions_fail = 1 if any(kw in combined for kw in failure_keywords) else 0
+                mentions_fail = (
+                    1 if any(kw in combined for kw in failure_keywords) else 0
+                )
 
                 # Extract startup name
                 startup_name = None
@@ -106,8 +118,13 @@ class GoogleNewsRSSCollector(BaseCollector):
                 if published:
                     try:
                         parsed = feedparser.parse(published)
-                        if hasattr(parsed, "published_parsed") and parsed.published_parsed:
-                            dt = datetime(*parsed.published_parsed[:6], tzinfo=timezone.utc)
+                        if (
+                            hasattr(parsed, "published_parsed")
+                            and parsed.published_parsed
+                        ):
+                            dt = datetime(
+                                *parsed.published_parsed[:6], tzinfo=timezone.utc
+                            )
                             pub_at = dt.strftime("%Y-%m-%d %H:%M:%S")
                     except Exception:
                         pub_at = published[:19] if len(published) >= 19 else published
@@ -119,9 +136,17 @@ class GoogleNewsRSSCollector(BaseCollector):
                            (title, url, source_name, source_feed, published_at, summary,
                             is_manufacturing, mentions_failure, startup_name_extracted)
                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                        (title, article_url, source_name, "google_news",
-                         pub_at, summary[:500] if summary else None,
-                         is_mfg, mentions_fail, startup_name),
+                        (
+                            title,
+                            article_url,
+                            source_name,
+                            "google_news",
+                            pub_at,
+                            summary[:500] if summary else None,
+                            is_mfg,
+                            mentions_fail,
+                            startup_name,
+                        ),
                     )
                     cursor.close()
                     conn.commit()
@@ -131,6 +156,7 @@ class GoogleNewsRSSCollector(BaseCollector):
 
             # Small delay between queries
             import time
+
             time.sleep(1)
 
         result.status = "partial" if result.errors else "success"

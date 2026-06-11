@@ -1,6 +1,5 @@
 """Tests for the arXiv Collector."""
 
-import json
 import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
@@ -28,8 +27,8 @@ sys.modules["db.schema"] = MagicMock()
 sys.modules["db.dedup"] = MagicMock()
 sys.modules["db.dedup"].dedup_startup = MagicMock(return_value=False)
 
-from collectors.arxiv_collector import ArxivCollector
-from collectors.base import CollectionResult
+from collectors.arxiv_collector import ArxivCollector  # noqa: E402
+from collectors.base import CollectionResult  # noqa: E402
 
 # Restore real db modules so other tests aren't poisoned
 for key, orig in _saved_db_modules.items():
@@ -42,7 +41,7 @@ for key, orig in _saved_db_modules.items():
 def _make_atom_response(entries=None):
     """Build a valid arXiv Atom XML response with given entries."""
     entries_xml = ""
-    for e in (entries or []):
+    for e in entries or []:
         authors_xml = ""
         for a in e.get("authors", []):
             authors_xml += f"<author><name>{a}</name></author>"
@@ -52,7 +51,11 @@ def _make_atom_response(entries=None):
             cats_xml += f'<category term="{c}" />'
 
         primary_cat = e.get("primary_category", "")
-        primary_xml = f'<arxiv:primary_category term="{primary_cat}" scheme="http://arxiv.org/schemas/atom" />' if primary_cat else ""
+        primary_xml = (
+            f'<arxiv:primary_category term="{primary_cat}" scheme="http://arxiv.org/schemas/atom" />'
+            if primary_cat
+            else ""
+        )
 
         doi_xml = f"<arxiv:doi>{e.get('doi', '')}</arxiv:doi>" if e.get("doi") else ""
 
@@ -84,10 +87,16 @@ def _make_atom_response(entries=None):
 </feed>"""
 
 
-def _make_paper(arxiv_id="2401.12345", title="Attention Is All You Need",
-                authors=None, abstract="We propose a new network architecture",
-                primary_category="cs.CL", categories=None,
-                published_date=None, doi=None):
+def _make_paper(
+    arxiv_id="2401.12345",
+    title="Attention Is All You Need",
+    authors=None,
+    abstract="We propose a new network architecture",
+    primary_category="cs.CL",
+    categories=None,
+    published_date=None,
+    doi=None,
+):
     """Build a paper dict matching _parse_entry output."""
     now = datetime.now(timezone.utc)
     default_date = (now - timedelta(days=3)).strftime("%Y-%m-%d")
@@ -98,8 +107,12 @@ def _make_paper(arxiv_id="2401.12345", title="Attention Is All You Need",
         "abstract": abstract,
         "primary_category": primary_category,
         "categories": categories or [primary_category, "cs.AI"],
-        "published_date": published_date if published_date is not None else default_date,
-        "updated_date": published_date if published_date is not None else now.strftime("%Y-%m-%d"),
+        "published_date": published_date
+        if published_date is not None
+        else default_date,
+        "updated_date": published_date
+        if published_date is not None
+        else now.strftime("%Y-%m-%d"),
         "pdf_url": f"http://arxiv.org/pdf/{arxiv_id}",
         "source_url": f"http://arxiv.org/abs/{arxiv_id}",
         "doi": doi or "",
@@ -116,8 +129,13 @@ def _make_mock_session(responses=None):
         resp = MagicMock()
         resp.status_code = 200
         try:
-            resp.content = next(response_iter).encode("utf-8") if isinstance(next(
-                iter([next(response_iter)] if False else []), None), bytes) else next(response_iter).encode("utf-8")
+            resp.content = (
+                next(response_iter).encode("utf-8")
+                if isinstance(
+                    next(iter([next(response_iter)] if False else []), None), bytes
+                )
+                else next(response_iter).encode("utf-8")
+            )
         except StopIteration:
             resp.content = b""
         return resp
@@ -180,7 +198,9 @@ class TestArxivCollectorScoring:
     def test_very_recent_relevant_paper(self):
         c = ArxivCollector(config={})
         paper = _make_paper(
-            published_date=(datetime.now(timezone.utc) - timedelta(days=2)).strftime("%Y-%m-%d"),
+            published_date=(datetime.now(timezone.utc) - timedelta(days=2)).strftime(
+                "%Y-%m-%d"
+            ),
             primary_category="cs.AI",
             authors=["A", "B", "C"],
         )
@@ -191,7 +211,9 @@ class TestArxivCollectorScoring:
     def test_old_irrelevant_paper(self):
         c = ArxivCollector(config={})
         paper = _make_paper(
-            published_date=(datetime.now(timezone.utc) - timedelta(days=180)).strftime("%Y-%m-%d"),
+            published_date=(datetime.now(timezone.utc) - timedelta(days=180)).strftime(
+                "%Y-%m-%d"
+            ),
             primary_category="physics.fluid-dyn",
             authors=["Single Author"],
         )
@@ -201,7 +223,9 @@ class TestArxivCollectorScoring:
     def test_medium_recency(self):
         c = ArxivCollector(config={})
         paper = _make_paper(
-            published_date=(datetime.now(timezone.utc) - timedelta(days=20)).strftime("%Y-%m-%d"),
+            published_date=(datetime.now(timezone.utc) - timedelta(days=20)).strftime(
+                "%Y-%m-%d"
+            ),
             primary_category="cs.LG",
             authors=["A", "B"],
         )
@@ -212,7 +236,9 @@ class TestArxivCollectorScoring:
     def test_capped_at_100(self):
         c = ArxivCollector(config={})
         paper = _make_paper(
-            published_date=(datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d"),
+            published_date=(datetime.now(timezone.utc) - timedelta(days=1)).strftime(
+                "%Y-%m-%d"
+            ),
             primary_category="cs.AI",
             authors=["A", "B", "C", "D"],
         )
@@ -221,7 +247,9 @@ class TestArxivCollectorScoring:
 
     def test_no_date(self):
         c = ArxivCollector(config={})
-        paper = _make_paper(published_date=None, primary_category="cs.CL", authors=["A", "B", "C"])
+        paper = _make_paper(
+            published_date=None, primary_category="cs.CL", authors=["A", "B", "C"]
+        )
         # Override to actually set None
         paper["published_date"] = None
         score = c._compute_score(paper)
@@ -312,7 +340,9 @@ class TestArxivCollectorInsert:
         result = CollectionResult(collector_name="arxiv")
 
         for i in range(5):
-            c._insert_paper(mock_cursor, _make_paper(arxiv_id=f"2401.{10000+i}"), "test", result)
+            c._insert_paper(
+                mock_cursor, _make_paper(arxiv_id=f"2401.{10000+i}"), "test", result
+            )
         assert result.records_collected == 5
 
     def test_insert_paper_no_authors(self):
@@ -326,6 +356,7 @@ class TestArxivCollectorInsert:
 
     def test_insert_paper_error(self):
         import pytest
+
         c = ArxivCollector(config={"arxiv": {}})
         mock_cursor = MagicMock()
         mock_cursor.execute.side_effect = Exception("DB error")
@@ -346,13 +377,17 @@ class TestArxivCollectorIntegration:
         session = _make_mock_session([xml])
         mock_get_session.return_value = session
 
-        c = ArxivCollector(config={
-            "arxiv": {
-                "search_queries": [{"terms": "machine learning", "categories": ["cs.AI"]}],
-                "max_results_per_query": 10,
-                "min_delay_seconds": 0,
-            },
-        })
+        c = ArxivCollector(
+            config={
+                "arxiv": {
+                    "search_queries": [
+                        {"terms": "machine learning", "categories": ["cs.AI"]}
+                    ],
+                    "max_results_per_query": 10,
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -370,12 +405,14 @@ class TestArxivCollectorIntegration:
         session = _make_mock_session([xml])
         mock_get_session.return_value = session
 
-        c = ArxivCollector(config={
-            "arxiv": {
-                "search_queries": [{"terms": "nonexistent", "categories": []}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = ArxivCollector(
+            config={
+                "arxiv": {
+                    "search_queries": [{"terms": "nonexistent", "categories": []}],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -395,15 +432,17 @@ class TestArxivCollectorIntegration:
         session = _make_mock_session([xml1, xml2])
         mock_get_session.return_value = session
 
-        c = ArxivCollector(config={
-            "arxiv": {
-                "search_queries": [
-                    {"terms": "query one", "categories": ["cs.AI"]},
-                    {"terms": "query two", "categories": ["cs.CL"]},
-                ],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = ArxivCollector(
+            config={
+                "arxiv": {
+                    "search_queries": [
+                        {"terms": "query one", "categories": ["cs.AI"]},
+                        {"terms": "query two", "categories": ["cs.CL"]},
+                    ],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -420,12 +459,14 @@ class TestArxivCollectorIntegration:
         session = _make_mock_session([xml])
         mock_get_session.return_value = session
 
-        c = ArxivCollector(config={
-            "arxiv": {
-                "search_queries": [{"terms": "test", "categories": []}],
-                "min_delay_seconds": 0,
-            },
-        })
+        c = ArxivCollector(
+            config={
+                "arxiv": {
+                    "search_queries": [{"terms": "test", "categories": []}],
+                    "min_delay_seconds": 0,
+                },
+            }
+        )
 
         call_count = {"n": 0}
 

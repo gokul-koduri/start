@@ -74,12 +74,17 @@ def generate_report(
         Path(tmp_path).unlink(missing_ok=True)
         raise
 
-    _logger.info("Report generated: %s (%d chars, %d sections)",
-                 out, len(full_report), len(parts))
+    _logger.info(
+        "Report generated: %s (%d chars, %d sections)",
+        out,
+        len(full_report),
+        len(parts),
+    )
     return str(out)
 
 
 # ── Section Renderers ──────────────────────────────────────────────
+
 
 def _render_header(conn) -> str:
     return """\
@@ -116,8 +121,12 @@ def _render_part1(conn) -> str:
     sections.append(_render_manufacturing_failures(conn))
 
     # Regional sections
-    for region_name, region_id in [("India", "India"), ("China", "China"),
-                                   ("Europe", "Europe"), ("Africa", "Africa")]:
+    for region_name, region_id in [
+        ("India", "India"),
+        ("China", "China"),
+        ("Europe", "Europe"),
+        ("Africa", "Africa"),
+    ]:
         sections.append(_render_regional_section(conn, region_name, region_id))
 
     # Part 1F: Manufacturing Failure Statistics
@@ -138,9 +147,15 @@ def _render_part1a(conn) -> str:
     stats = _query_startup_stats(conn, "US & Global")
     lines.append("### The Big Picture")
     if stats:
-        lines.append(f"- **{stats['total_startups']} tracked US/Global tech startups in the database**")
-        lines.append(f"- **{stats['manufacturing_count']} are manufacturing-specific** ({stats['manufacturing_pct']}%)")
-        lines.append(f"- **{stats['latest_year']} is the most recent shutdown year with data**")
+        lines.append(
+            f"- **{stats['total_startups']} tracked US/Global tech startups in the database**"
+        )
+        lines.append(
+            f"- **{stats['manufacturing_count']} are manufacturing-specific** ({stats['manufacturing_pct']}%)"
+        )
+        lines.append(
+            f"- **{stats['latest_year']} is the most recent shutdown year with data**"
+        )
     lines.append("")
 
     # Notable failed startups table
@@ -156,12 +171,18 @@ def _render_part1a(conn) -> str:
 
     lines.append("### Notable Failed Startups (2023–2025) With Funding")
     lines.append("")
-    lines.append("| # | Startup | Sector | Funding Raised | Year Shutdown | Primary Failure Reason |")
-    lines.append("|---|---------|--------|---------------|---------------|----------------------|")
+    lines.append(
+        "| # | Startup | Sector | Funding Raised | Year Shutdown | Primary Failure Reason |"
+    )
+    lines.append(
+        "|---|---------|--------|---------------|---------------|----------------------|"
+    )
     for i, s in enumerate(startups, 1):
         name = _bold(s["name"])
         funding = s["funding_description"] or "N/A"
-        lines.append(f"| {i} | {name} | {s['sector'] or 'N/A'} | {funding} | {s['year_shutdown']} | {s['failure_reason']} |")
+        lines.append(
+            f"| {i} | {name} | {s['sector'] or 'N/A'} | {funding} | {s['year_shutdown']} | {s['failure_reason']} |"
+        )
 
     # CB Insights failure reasons
     cursor = conn.cursor()
@@ -198,16 +219,28 @@ def _render_part1a(conn) -> str:
         lines.append("| Idea Category | Examples | Why It Failed | Market Reality |")
         lines.append("|---------------|----------|---------------|----------------|")
         for p in patterns:
-            lines.append(f"| {p['idea_category']} | {p['example_startups'] or 'Various'} | {p['why_failed']} | {p['market_reality']} |")
+            lines.append(
+                f"| {p['idea_category']} | {p['example_startups'] or 'Various'} | {p['why_failed']} | {p['market_reality']} |"
+            )
 
     lines.append("")
     lines.append("### Key Lessons for New Founders")
-    lines.append("1. **Validate demand BEFORE building** — 42% fail because nobody wants the product")
-    lines.append("2. **Run lean** — don't assume Series A will arrive (85% don't raise it)")
-    lines.append("3. **Build financial discipline early** — proper books, unit economics from day one")
+    lines.append(
+        "1. **Validate demand BEFORE building** — 42% fail because nobody wants the product"
+    )
+    lines.append(
+        "2. **Run lean** — don't assume Series A will arrive (85% don't raise it)"
+    )
+    lines.append(
+        "3. **Build financial discipline early** — proper books, unit economics from day one"
+    )
     lines.append("4. **Growth on borrowed money != product-market fit**")
-    lines.append("5. **Have a clear shutdown plan** — know what happens to IP, employees, obligations")
-    lines.append("6. **Don't compete with platforms that can ship your feature for free** (critical for AI startups)")
+    lines.append(
+        "5. **Have a clear shutdown plan** — know what happens to IP, employees, obligations"
+    )
+    lines.append(
+        "6. **Don't compete with platforms that can ship your feature for free** (critical for AI startups)"
+    )
 
     return "\n".join(lines)
 
@@ -230,7 +263,7 @@ def _render_manufacturing_failures(conn) -> str:
         "### Manufacturing-Specific Startup Failures (2024-2025) {#manufacturing-specific-failures}",
         "",
         "Manufacturing startups face uniquely brutal economics: long R&D cycles, massive capital requirements, "
-        "hardware reliability challenges, and the \"pilot-to-scale\" gap.",
+        'hardware reliability challenges, and the "pilot-to-scale" gap.',
         "",
         "| # | Startup | Manufacturing Sub-Sector | Funding | Shutdown Year | Primary Failure Reason |",
         "|---|---------|------------------------|---------|---------------|----------------------|",
@@ -244,9 +277,11 @@ def _render_manufacturing_failures(conn) -> str:
         )
 
     lines.append("")
-    lines.append("**Common manufacturing failure patterns:** Capital intensity and long cash conversion cycles "
-                 "make manufacturing startups highly vulnerable to funding downturns. The SPAC era (2020-2021) "
-                 "was particularly damaging. The \"pilot-to-scale\" chasm is another recurring theme.")
+    lines.append(
+        "**Common manufacturing failure patterns:** Capital intensity and long cash conversion cycles "
+        "make manufacturing startups highly vulnerable to funding downturns. The SPAC era (2020-2021) "
+        'was particularly damaging. The "pilot-to-scale" chasm is another recurring theme.'
+    )
     lines.append("")
 
     return "\n".join(lines)
@@ -254,34 +289,39 @@ def _render_manufacturing_failures(conn) -> str:
 
 def _render_regional_section(conn, region_name: str, region_id: str) -> str:
     cursor = conn.cursor()
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT name, sector, funding_description, year_shutdown, failure_reason
         FROM failed_startups
         WHERE region = %s AND notable = 1
         ORDER BY year_shutdown DESC, funding_raised_usd DESC
-    """, (region_id,))
+    """,
+        (region_id,),
+    )
     startups = cursor.fetchall()
     cursor.close()
 
     if not startups:
         return ""
 
-    _part_labels = ['', 'B', 'C', 'D', 'E']
-    _region_ids = ['India', 'China', 'Europe', 'Africa']
+    _part_labels = ["", "B", "C", "D", "E"]
+    _region_ids = ["India", "China", "Europe", "Africa"]
     _idx = _region_ids.index(region_id) + 1 if region_id in _region_ids else 0
-    _label = _part_labels[_idx] if _idx < len(_part_labels) else ''
+    _label = _part_labels[_idx] if _idx < len(_part_labels) else ""
 
     lines = [
         f"### Part 1{_label}: "
         f"{region_name} — Startup Failures {{#part-1{_label.lower()}}}",
         "",
-        f"| # | Startup | Sector | Funding Raised | Year Shutdown | Primary Failure Reason |",
+        "| # | Startup | Sector | Funding Raised | Year Shutdown | Primary Failure Reason |",
         "|---|---------|--------|---------------|---------------|----------------------|",
     ]
 
     for i, s in enumerate(startups, 1):
         funding = s["funding_description"] or "N/A"
-        lines.append(f"| {i} | {_bold(s['name'])} | {s['sector'] or 'N/A'} | {funding} | {s['year_shutdown']} | {s['failure_reason']} |")
+        lines.append(
+            f"| {i} | {_bold(s['name'])} | {s['sector'] or 'N/A'} | {funding} | {s['year_shutdown']} | {s['failure_reason']} |"
+        )
 
     return "\n".join(lines)
 
@@ -307,11 +347,17 @@ def _render_failure_statistics(conn) -> str:
     cursor.close()
 
     if bls_rows:
-        avg_survival = sum(r["age_5_yr_survival"] for r in bls_rows if r["age_5_yr_survival"]) / len([r for r in bls_rows if r["age_5_yr_survival"]])
+        avg_survival = sum(
+            r["age_5_yr_survival"] for r in bls_rows if r["age_5_yr_survival"]
+        ) / len([r for r in bls_rows if r["age_5_yr_survival"]])
         failure_rate = round(100 - avg_survival, 1)
-        lines.append(f"- **~{failure_rate}% of manufacturing startups fail** within 5 years (BLS Business Employment Dynamics data)")
+        lines.append(
+            f"- **~{failure_rate}% of manufacturing startups fail** within 5 years (BLS Business Employment Dynamics data)"
+        )
 
-    lines.append("- **2 out of 3 digital manufacturing pilots fail to scale** beyond pilot stage (McKinsey / Industry 4.0 survey data)")
+    lines.append(
+        "- **2 out of 3 digital manufacturing pilots fail to scale** beyond pilot stage (McKinsey / Industry 4.0 survey data)"
+    )
 
     # Failure categories
     cursor = conn.cursor()
@@ -327,18 +373,26 @@ def _render_failure_statistics(conn) -> str:
         lines.append("")
         lines.append("### Why Manufacturing Startups Fail: Root Cause Analysis")
         lines.append("")
-        lines.append("| Failure Category | Description | % of Mfg Failures (est.) | Examples |")
-        lines.append("|------------------|-------------|------------------------|----------|")
+        lines.append(
+            "| Failure Category | Description | % of Mfg Failures (est.) | Examples |"
+        )
+        lines.append(
+            "|------------------|-------------|------------------------|----------|"
+        )
         for c in cats:
-            lines.append(f"| {c['failure_category']} | {c['description']} | ~{int(c['estimated_pct'])}% | {c['example_startups'] or 'Various'} |")
+            lines.append(
+                f"| {c['failure_category']} | {c['description']} | ~{int(c['estimated_pct'])}% | {c['example_startups'] or 'Various'} |"
+            )
 
     lines.append("")
-    lines.append("### Key Insight: The \"Pilot-to-Scale\" Chasm")
+    lines.append('### Key Insight: The "Pilot-to-Scale" Chasm')
     lines.append("")
-    lines.append("The single most distinctive pattern in manufacturing startup failures is the gap between "
-                 "successful pilot/prototype and commercial-scale deployment. Software startups can iterate "
-                 "after launch; manufacturing startups must get it right *before* scale because physical "
-                 "production is unforgiving.")
+    lines.append(
+        "The single most distinctive pattern in manufacturing startup failures is the gap between "
+        "successful pilot/prototype and commercial-scale deployment. Software startups can iterate "
+        "after launch; manufacturing startups must get it right *before* scale because physical "
+        "production is unforgiving."
+    )
     lines.append("")
 
     return "\n".join(lines)
@@ -415,7 +469,9 @@ def _render_part2(conn) -> str:
         lines.append("| Region | Closed Facilities | Revival Potential |")
         lines.append("|--------|-----------------|-------------------|")
         for h in hotspots:
-            lines.append(f"| {h['region']} | {h['closed_facility_types']} | {h['revival_potential']} |")
+            lines.append(
+                f"| {h['region']} | {h['closed_facility_types']} | {h['revival_potential']} |"
+            )
 
     lines.append("")
     return "\n".join(lines)
@@ -446,7 +502,9 @@ def _render_part3(conn) -> str:
     for f in mfg_failures:
         sub = f["manufacturing_sub_sector"]
         names = f["names"][:80] + "..." if len(f["names"]) > 80 else f["names"]
-        lines.append(f"| **{sub}** ({names}) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |")
+        lines.append(
+            f"| **{sub}** ({names}) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |"
+        )
 
     lines.append("")
     return "\n".join(lines)
@@ -471,17 +529,25 @@ def _render_part4(conn) -> str:
 
     # Data-driven opportunities based on recent failures
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) as c FROM failed_startups WHERE manufacturing_sub_sector IS NOT NULL")
+    cursor.execute(
+        "SELECT COUNT(*) as c FROM failed_startups WHERE manufacturing_sub_sector IS NOT NULL"
+    )
     mfg_count = cursor.fetchone()
     cursor.close()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) as c FROM news_articles WHERE is_manufacturing = 1 AND mentions_failure = 1")
+    cursor.execute(
+        "SELECT COUNT(*) as c FROM news_articles WHERE is_manufacturing = 1 AND mentions_failure = 1"
+    )
     news_count = cursor.fetchone()
     cursor.close()
 
     lines.append("### Data-Driven Opportunities (from collected data)")
-    lines.append(f"- **{mfg_count['c']} manufacturing startup failures** in database suggest clear patterns to avoid")
-    lines.append(f"- **{news_count['c']} recent news articles** about manufacturing startup failures signal active market churn")
+    lines.append(
+        f"- **{mfg_count['c']} manufacturing startup failures** in database suggest clear patterns to avoid"
+    )
+    lines.append(
+        f"- **{news_count['c']} recent news articles** about manufacturing startup failures signal active market churn"
+    )
     lines.append("")
 
     return "\n".join(lines)
@@ -522,7 +588,9 @@ def _render_methodology(conn) -> str:
         lines.append("|-----------|----------|--------|---------|")
         for r in runs[:10]:
             started = r["started_at"][:19] if r["started_at"] else "N/A"
-            lines.append(f"| {r['collector_name']} | {started} | {r['status']} | {r['records_collected']} |")
+            lines.append(
+                f"| {r['collector_name']} | {started} | {r['status']} | {r['records_collected']} |"
+            )
 
     # Data source counts
     cursor = conn.cursor()
@@ -565,7 +633,9 @@ def _render_sources(conn) -> str:
             if s["source"] != current_source:
                 current_source = s["source"]
                 lines.append(f"### {current_source.title()}")
-            lines.append(f"- [{s['source_url']}]({s['source_url']}) ({s['cnt']} records)")
+            lines.append(
+                f"- [{s['source_url']}]({s['source_url']}) ({s['cnt']} records)"
+            )
 
     lines.append("")
     return "\n".join(lines)
@@ -584,20 +654,28 @@ def _render_news_monitoring(conn) -> str:
     total = cursor.fetchone()["cnt"]
     cursor.close()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) as cnt FROM news_articles WHERE is_manufacturing = 1")
+    cursor.execute(
+        "SELECT COUNT(*) as cnt FROM news_articles WHERE is_manufacturing = 1"
+    )
     mfg = cursor.fetchone()["cnt"]
     cursor.close()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) as cnt FROM news_articles WHERE mentions_failure = 1")
+    cursor.execute(
+        "SELECT COUNT(*) as cnt FROM news_articles WHERE mentions_failure = 1"
+    )
     fail = cursor.fetchone()["cnt"]
     cursor.close()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) as cnt FROM news_articles WHERE is_manufacturing = 1 AND mentions_failure = 1")
+    cursor.execute(
+        "SELECT COUNT(*) as cnt FROM news_articles WHERE is_manufacturing = 1 AND mentions_failure = 1"
+    )
     both = cursor.fetchone()["cnt"]
     cursor.close()
 
     lines.append("### Coverage Summary")
-    lines.append(f"- **{total}** articles collected from Google News and TechCrunch RSS feeds")
+    lines.append(
+        f"- **{total}** articles collected from Google News and TechCrunch RSS feeds"
+    )
     lines.append(f"- **{mfg}** mention manufacturing ({round(mfg/total*100, 1)}%)")
     lines.append(f"- **{fail}** mention startup failures ({round(fail/total*100, 1)}%)")
     lines.append(f"- **{both}** are in the intersection (manufacturing + failure)")
@@ -666,7 +744,9 @@ def _render_news_monitoring(conn) -> str:
         for n in named:
             pub = n["published_at"][:10] if n["published_at"] else ""
             title = n["title"][:50] + "..." if len(n["title"]) > 50 else n["title"]
-            lines.append(f"| {n['startup_name_extracted']} | [{title}]({n['url']}) | {n['source_name']} | {pub} |")
+            lines.append(
+                f"| {n['startup_name_extracted']} | [{title}]({n['url']}) | {n['source_name']} | {pub} |"
+            )
         lines.append("")
 
     return "\n".join(lines)
@@ -700,20 +780,24 @@ def _render_footer(conn) -> str:
 
 # ── Helpers ────────────────────────────────────────────────────────
 
+
 def _bold(text: str) -> str:
     return f"**{text}**"
 
 
 def _query_startup_stats(conn, region: str) -> dict | None:
     cursor = conn.cursor()
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT
             COUNT(*) as total_startups,
             SUM(CASE WHEN manufacturing_sub_sector IS NOT NULL THEN 1 ELSE 0 END) as manufacturing_count,
             MAX(year_shutdown) as latest_year
         FROM failed_startups
         WHERE region = %s
-    """, (region,))
+    """,
+        (region,),
+    )
     row = cursor.fetchone()
     cursor.close()
 

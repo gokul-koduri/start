@@ -1,11 +1,9 @@
 """Export agent — exports data to various formats."""
 
 import logging
-from typing import Dict
 from agents.base import BaseAgent, AgentResult
 import csv
 import json
-from io import StringIO
 from pathlib import Path
 
 _logger = logging.getLogger(__name__)

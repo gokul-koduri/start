@@ -11,6 +11,8 @@ Data sources: GitHub REST API v3 (search + repo + commits + contributors + relea
 Rate limit: 5,000 req/hour with token, 60 req/hour without.
 """
 
+from __future__ import annotations
+
 import logging
 import time
 from datetime import datetime, timedelta, timezone
@@ -67,7 +69,7 @@ class GithubDeepCollector(BaseCollector):
     def name(self) -> str:
         return "github_deep"
 
-    def _build_session(self, config: dict) -> "requests.Session":
+    def _build_session(self, config: dict) -> "requests.Session":  # noqa: F821
         """Build an HTTP session with GitHub auth headers."""
         session = get_http_session(timeout=20)
         api_conf = config.get("api", {})
@@ -84,10 +86,16 @@ class GithubDeepCollector(BaseCollector):
             reset_ts = int(resp.headers.get("X-RateLimit-Reset", "0"))
             if reset_ts:
                 wait = max(1, reset_ts - int(time.time()))
-                _logger.warning("GitHub rate limit low (%s remaining), sleeping %ds", remaining, wait)
+                _logger.warning(
+                    "GitHub rate limit low (%s remaining), sleeping %ds",
+                    remaining,
+                    wait,
+                )
                 time.sleep(wait)
 
-    def _fetch_json(self, session, url: str, params: dict | None = None) -> dict | list | None:
+    def _fetch_json(
+        self, session, url: str, params: dict | None = None
+    ) -> dict | list | None:
         """Fetch JSON from GitHub API with error handling."""
         try:
             resp = session.get(url, params=params, timeout=20)
@@ -101,8 +109,13 @@ class GithubDeepCollector(BaseCollector):
             _logger.warning("GitHub API fetch failed: %s — %s", url, e)
             return None
 
-    def _compute_raw_score(self, stars: int, commit_count: int,
-                           contributor_count: int, recent_releases: int) -> float:
+    def _compute_raw_score(
+        self,
+        stars: int,
+        commit_count: int,
+        contributor_count: int,
+        recent_releases: int,
+    ) -> float:
         """Compute composite signal strength (0-100).
 
         Weights:
@@ -115,10 +128,13 @@ class GithubDeepCollector(BaseCollector):
         commit_score = min(30, commit_count / 30 * 30)
         contrib_score = min(20, contributor_count / 20 * 20)
         release_score = min(20, recent_releases / 5 * 20)
-        return round(min(100, star_score + commit_score + contrib_score + release_score), 1)
+        return round(
+            min(100, star_score + commit_score + contrib_score + release_score), 1
+        )
 
-    def _fetch_repo_detail(self, session, owner: str, repo: str,
-                           detail_config: dict) -> dict:
+    def _fetch_repo_detail(
+        self, session, owner: str, repo: str, detail_config: dict
+    ) -> dict:
         """Fetch enriched repo detail from multiple GitHub endpoints."""
         detail = {
             "commit_count_30d": 0,
@@ -134,7 +150,9 @@ class GithubDeepCollector(BaseCollector):
         }
 
         lookback = detail_config.get("lookback_days", 30)
-        since_date = (datetime.now(timezone.utc) - timedelta(days=lookback)).strftime("%Y-%m-%dT00:00:00Z")
+        since_date = (datetime.now(timezone.utc) - timedelta(days=lookback)).strftime(
+            "%Y-%m-%dT00:00:00Z"
+        )
 
         # Repo metadata
         repo_data = self._fetch_json(session, _REPO_URL.format(owner=owner, repo=repo))
@@ -148,23 +166,34 @@ class GithubDeepCollector(BaseCollector):
 
         # Commits (last N days)
         if detail_config.get("commits", True):
-            commits = self._fetch_json(session, _COMMITS_URL.format(owner=owner, repo=repo),
-                                       params={"since": since_date, "per_page": 1})
+            commits = self._fetch_json(
+                session,
+                _COMMITS_URL.format(owner=owner, repo=repo),
+                params={"since": since_date, "per_page": 1},
+            )
             if isinstance(commits, list):
                 detail["commit_count_30d"] = len(commits)
 
         # Contributors
         if detail_config.get("contributors", True):
-            contributors = self._fetch_json(session, _CONTRIBUTORS_URL.format(owner=owner, repo=repo),
-                                           params={"per_page": 5})
+            contributors = self._fetch_json(
+                session,
+                _CONTRIBUTORS_URL.format(owner=owner, repo=repo),
+                params={"per_page": 5},
+            )
             if isinstance(contributors, list):
                 detail["contributor_count"] = len(contributors)
-                detail["top_contributors"] = [c.get("login", "") for c in contributors[:5]]
+                detail["top_contributors"] = [
+                    c.get("login", "") for c in contributors[:5]
+                ]
 
         # Releases (last 90 days)
         if detail_config.get("releases", True):
-            releases = self._fetch_json(session, _RELEASES_URL.format(owner=owner, repo=repo),
-                                        params={"per_page": 10})
+            releases = self._fetch_json(
+                session,
+                _RELEASES_URL.format(owner=owner, repo=repo),
+                params={"per_page": 10},
+            )
             if isinstance(releases, list):
                 release_since = datetime.now(timezone.utc) - timedelta(days=90)
                 recent = []
@@ -172,7 +201,9 @@ class GithubDeepCollector(BaseCollector):
                     published = r.get("published_at", "")
                     if published:
                         try:
-                            pub_dt = datetime.fromisoformat(published.replace("Z", "+00:00"))
+                            pub_dt = datetime.fromisoformat(
+                                published.replace("Z", "+00:00")
+                            )
                             if pub_dt >= release_since:
                                 recent.append(r)
                         except (ValueError, TypeError):
@@ -201,20 +232,26 @@ class GithubDeepCollector(BaseCollector):
         conn.commit()
 
         # Build search queries with {since} substitution
-        search_queries = config.get("search_queries", [
-            "created:>{since} stars:>50 language:python topic:ai",
-            "created:>{since} stars:>50 topic:llm topic:agent",
-            "created:>{since} stars:>100 topic:startup topic:saas",
-        ])
+        search_queries = config.get(
+            "search_queries",
+            [
+                "created:>{since} stars:>50 language:python topic:ai",
+                "created:>{since} stars:>50 topic:llm topic:agent",
+                "created:>{since} stars:>100 topic:startup topic:saas",
+            ],
+        )
         since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
         min_stars = config.get("min_stars", 50)
 
-        detail_config = config.get("detail_endpoints", {
-            "commits": True,
-            "contributors": True,
-            "releases": True,
-            "lookback_days": 30,
-        })
+        detail_config = config.get(
+            "detail_endpoints",
+            {
+                "commits": True,
+                "contributors": True,
+                "releases": True,
+                "lookback_days": 30,
+            },
+        )
 
         for raw_query in search_queries:
             query = raw_query.replace("{since}", since)
@@ -243,7 +280,9 @@ class GithubDeepCollector(BaseCollector):
                     owner, repo = parts
 
                     # Fetch enriched detail
-                    detail = self._fetch_repo_detail(session, owner, repo, detail_config)
+                    detail = self._fetch_repo_detail(
+                        session, owner, repo, detail_config
+                    )
 
                     description = item.get("description", "") or ""
                     topics = item.get("topics", [])
@@ -253,11 +292,14 @@ class GithubDeepCollector(BaseCollector):
                     language = item.get("language", "")
 
                     raw_score = self._compute_raw_score(
-                        stars, detail["commit_count_30d"],
-                        detail["contributor_count"], detail["recent_releases"],
+                        stars,
+                        detail["commit_count_30d"],
+                        detail["contributor_count"],
+                        detail["recent_releases"],
                     )
 
                     import json as _json
+
                     cursor.execute(
                         """INSERT INTO github_deep_repos
                            (repo_name, repo_url, description, stars, forks, open_issues,

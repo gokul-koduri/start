@@ -13,7 +13,6 @@ import logging
 import re
 import time
 from datetime import datetime, timezone
-from urllib.parse import quote, urlencode
 
 from collectors.base import BaseCollector, CollectionResult
 from utils.http_client import get_http_session
@@ -24,17 +23,45 @@ _BASE_URL = "https://api.stackexchange.com/2.3"
 
 # Tags relevant to startup/tech signal detection
 _RELEVANT_TAGS = {
-    "startup", "saas", "deployment", "kubernetes", "docker", "aws",
-    "microservices", "machine-learning", "scaling", "architecture",
-    "api-design", "devops", "serverless", "react", "node.js",
-    "python", "tensorflow", "pytorch", "graphql", "terraform",
+    "startup",
+    "saas",
+    "deployment",
+    "kubernetes",
+    "docker",
+    "aws",
+    "microservices",
+    "machine-learning",
+    "scaling",
+    "architecture",
+    "api-design",
+    "devops",
+    "serverless",
+    "react",
+    "node.js",
+    "python",
+    "tensorflow",
+    "pytorch",
+    "graphql",
+    "terraform",
 }
 
 # Default search queries
 _DEFAULT_QUERIES = [
-    {"terms": "startup SaaS deployment", "tags": ["deployment", "saas"], "min_score": 5},
-    {"terms": "machine learning production", "tags": ["machine-learning", "production"], "min_score": 10},
-    {"terms": "scaling microservices architecture", "tags": ["microservices", "architecture"], "min_score": 5},
+    {
+        "terms": "startup SaaS deployment",
+        "tags": ["deployment", "saas"],
+        "min_score": 5,
+    },
+    {
+        "terms": "machine learning production",
+        "tags": ["machine-learning", "production"],
+        "min_score": 10,
+    },
+    {
+        "terms": "scaling microservices architecture",
+        "tags": ["microservices", "architecture"],
+        "min_score": 5,
+    },
 ]
 
 
@@ -58,10 +85,11 @@ class StackOverflowCollector(BaseCollector):
         """Remove HTML tags from a string."""
         if not html_str:
             return ""
-        return re.sub(r'<[^>]+>', ' ', html_str).strip()
+        return re.sub(r"<[^>]+>", " ", html_str).strip()
 
-    def _fetch_questions(self, session, query: dict, max_results: int,
-                         site: str, timeout: int = 15) -> list[dict]:
+    def _fetch_questions(
+        self, session, query: dict, max_results: int, site: str, timeout: int = 15
+    ) -> list[dict]:
         """Fetch questions from Stack Exchange search API."""
         params = {
             "order": "desc",
@@ -203,8 +231,14 @@ class StackOverflowCollector(BaseCollector):
 
         return min(score, 100.0)
 
-    def _insert_post(self, cursor, post: dict, search_term: str,
-                     raw_score: float, result: CollectionResult) -> None:
+    def _insert_post(
+        self,
+        cursor,
+        post: dict,
+        search_term: str,
+        raw_score: float,
+        result: CollectionResult,
+    ) -> None:
         """Insert question into stackoverflow_posts + raw_signals tables."""
         created_iso = None
         if post.get("created_at"):
@@ -236,7 +270,7 @@ class StackOverflowCollector(BaseCollector):
         )
 
         # Insert into raw_signals
-        tags_str = ", ".join(post["tags"]) if post["tags"] else ""
+        ", ".join(post["tags"]) if post["tags"] else ""
         signal_title = f"[SO] {post['title']}"
         signal_body = post["body_text"][:500] if post["body_text"] else post["title"]
 
@@ -283,7 +317,7 @@ class StackOverflowCollector(BaseCollector):
         min_delay = config.get("min_delay_seconds", 2)
         site = config.get("site", "stackoverflow")
         timeout = config.get("timeout_seconds", 15)
-        base_url = config.get("base_url", _BASE_URL)
+        config.get("base_url", _BASE_URL)
 
         if not search_queries:
             _logger.info("StackOverflowCollector: no queries configured")
@@ -301,7 +335,9 @@ class StackOverflowCollector(BaseCollector):
             label = f"'{terms}' tags={tags}"
 
             posts = self._fetch_questions(session, query, max_results, site, timeout)
-            _logger.info("StackOverflowCollector: query %s → %d posts", label, len(posts))
+            _logger.info(
+                "StackOverflowCollector: query %s → %d posts", label, len(posts)
+            )
 
             for post in posts:
                 raw_score = self._compute_score(post)
@@ -310,7 +346,8 @@ class StackOverflowCollector(BaseCollector):
                     self._insert_post(cursor, post, terms, raw_score, result)
                 except Exception as e:
                     result.errors.append(
-                        f"Error inserting SO post {post.get('post_id')}: {e}")
+                        f"Error inserting SO post {post.get('post_id')}: {e}"
+                    )
 
             time.sleep(min_delay)
 

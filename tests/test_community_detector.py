@@ -1,6 +1,5 @@
 """Tests for agents/community_detector_agent.py"""
 
-
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -23,6 +22,7 @@ class TestCommunityDetectorAgent:
     @pytest.fixture
     def agent(self):
         from agents.community_detector_agent import CommunityDetectorAgent
+
         return CommunityDetectorAgent(config={}, dry_run=False)
 
     def test_agent_name(self, agent):
@@ -33,8 +33,11 @@ class TestCommunityDetectorAgent:
         cursor.fetchall.return_value = [{"sector": "AI", "count": 10}]
         mock_connection.cursor.side_effect = [cursor, cursor, cursor]
 
-        with patch(f"agents.community_detector_agent.get_connection", return_value=mock_connection):
-            with patch(f"agents.community_detector_agent.schema"):
+        with patch(
+            "agents.community_detector_agent.get_connection",
+            return_value=mock_connection,
+        ):
+            with patch("agents.community_detector_agent.schema"):
                 result = agent.execute()
 
         assert result.status == "success"
@@ -44,8 +47,11 @@ class TestCommunityDetectorAgent:
         cursor.fetchall.return_value = []
         mock_connection.cursor.side_effect = [cursor, cursor, cursor]
 
-        with patch(f"agents.community_detector_agent.get_connection", return_value=mock_connection):
-            with patch(f"agents.community_detector_agent.schema"):
+        with patch(
+            "agents.community_detector_agent.get_connection",
+            return_value=mock_connection,
+        ):
+            with patch("agents.community_detector_agent.schema"):
                 result = agent.execute()
 
         assert result.status == "success"

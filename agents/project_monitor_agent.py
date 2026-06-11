@@ -15,10 +15,8 @@ CLI usage:
 import argparse
 import importlib
 import logging
-import os
 import re
 import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -141,11 +139,15 @@ class ProjectMonitorAgent(BaseAgent):
         sessions = progress.get("sessions", {})
 
         # Get completed session IDs
-        completed = {sid for sid, s in sessions.items() if s.get("status") == "complete"}
+        completed = {
+            sid for sid, s in sessions.items() if s.get("status") == "complete"
+        }
         skipped = {sid for sid, s in sessions.items() if s.get("status") == "skipped"}
 
         # Sort by phase.session_number
-        for sid in sorted(sessions.keys(), key=lambda k: (int(k.split(".")[0]), int(k.split(".")[1]))):
+        for sid in sorted(
+            sessions.keys(), key=lambda k: (int(k.split(".")[0]), int(k.split(".")[1]))
+        ):
             session = sessions[sid]
             status = session.get("status", "pending")
 
@@ -161,11 +163,17 @@ class ProjectMonitorAgent(BaseAgent):
             return {
                 "id": sid,
                 "title": session.get("title", "Unknown"),
-                "reason": f"First incomplete session with all dependencies met."
-                          + (f" Dependencies: {', '.join(deps)}" if deps else " No dependencies."),
+                "reason": "First incomplete session with all dependencies met."
+                + (
+                    f" Dependencies: {', '.join(deps)}" if deps else " No dependencies."
+                ),
             }
 
-        return {"id": None, "title": "All sessions complete", "reason": "No remaining work."}
+        return {
+            "id": None,
+            "title": "All sessions complete",
+            "reason": "No remaining work.",
+        }
 
     # ── Validation ───────────────────────────────────────────────
 
@@ -177,7 +185,13 @@ class ProjectMonitorAgent(BaseAgent):
         sessions = progress.get("sessions", {})
         session = sessions.get(session_id)
         if session is None:
-            return [{"check": "session_exists", "status": "fail", "detail": f"Session {session_id} not found"}]
+            return [
+                {
+                    "check": "session_exists",
+                    "status": "fail",
+                    "detail": f"Session {session_id} not found",
+                }
+            ]
 
         results = []
         for check in session.get("validation", []):
@@ -192,22 +206,36 @@ class ProjectMonitorAgent(BaseAgent):
         if check_type == "file_exists":
             path = project_root / check["path"]
             status = "pass" if path.exists() else "fail"
-            return {"check": f"file_exists:{check['path']}", "status": status,
-                    "detail": f"File {'exists' if status == 'pass' else 'missing'}"}
+            return {
+                "check": f"file_exists:{check['path']}",
+                "status": status,
+                "detail": f"File {'exists' if status == 'pass' else 'missing'}",
+            }
 
         elif check_type == "tests_pass":
             tests = self._run_tests()
             status = tests.get("status", "fail")
-            return {"check": "tests_pass", "status": status,
-                    "detail": f"{tests.get('passing', '?')}/{tests.get('total', '?')} passing"}
+            return {
+                "check": "tests_pass",
+                "status": status,
+                "detail": f"{tests.get('passing', '?')}/{tests.get('total', '?')} passing",
+            }
 
         elif check_type == "import_clean":
             module = check.get("module", "")
             try:
                 importlib.import_module(module)
-                return {"check": f"import_clean:{module}", "status": "pass", "detail": "Import OK"}
+                return {
+                    "check": f"import_clean:{module}",
+                    "status": "pass",
+                    "detail": "Import OK",
+                }
             except Exception as e:
-                return {"check": f"import_clean:{module}", "status": "fail", "detail": str(e)}
+                return {
+                    "check": f"import_clean:{module}",
+                    "status": "fail",
+                    "detail": str(e),
+                }
 
         elif check_type == "registered_in":
             target_file = project_root / check["file"]
@@ -215,10 +243,16 @@ class ProjectMonitorAgent(BaseAgent):
             if target_file.exists():
                 content = target_file.read_text()
                 found = symbol in content
-                return {"check": f"registered_in:{symbol}", "status": "pass" if found else "fail",
-                        "detail": f"Symbol {'found' if found else 'not found'} in {check['file']}"}
-            return {"check": f"registered_in:{symbol}", "status": "fail",
-                    "detail": f"File {check['file']} not found"}
+                return {
+                    "check": f"registered_in:{symbol}",
+                    "status": "pass" if found else "fail",
+                    "detail": f"Symbol {'found' if found else 'not found'} in {check['file']}",
+                }
+            return {
+                "check": f"registered_in:{symbol}",
+                "status": "fail",
+                "detail": f"File {check['file']} not found",
+            }
 
         elif check_type == "schema_version_ge":
             min_version = check.get("version", 1)
@@ -231,14 +265,28 @@ class ProjectMonitorAgent(BaseAgent):
                     if match:
                         current = int(match.group(1))
                         status = "pass" if current >= min_version else "fail"
-                        return {"check": f"schema_version_ge:{min_version}", "status": status,
-                                "detail": f"Schema v{current} (need >={min_version})"}
-                return {"check": f"schema_version_ge:{min_version}", "status": "fail",
-                        "detail": "_SCHEMA_VERSION not found in db/schema.py"}
+                        return {
+                            "check": f"schema_version_ge:{min_version}",
+                            "status": status,
+                            "detail": f"Schema v{current} (need >={min_version})",
+                        }
+                return {
+                    "check": f"schema_version_ge:{min_version}",
+                    "status": "fail",
+                    "detail": "_SCHEMA_VERSION not found in db/schema.py",
+                }
             except Exception as e:
-                return {"check": f"schema_version_ge:{min_version}", "status": "fail", "detail": str(e)}
+                return {
+                    "check": f"schema_version_ge:{min_version}",
+                    "status": "fail",
+                    "detail": str(e),
+                }
 
-        return {"check": check_type, "status": "pass", "detail": "Unknown check type (skipped)"}
+        return {
+            "check": check_type,
+            "status": "pass",
+            "detail": "Unknown check type (skipped)",
+        }
 
     # ── Regression Detection ──────────────────────────────────────
 
@@ -252,12 +300,14 @@ class ProjectMonitorAgent(BaseAgent):
         tests = self._run_tests()
         actual_tests = tests.get("passing", 0)
         if actual_tests < expected_tests:
-            regressions.append({
-                "type": "test_count_decrease",
-                "expected": expected_tests,
-                "actual": actual_tests,
-                "detail": f"Tests dropped from {expected_tests} to {actual_tests}",
-            })
+            regressions.append(
+                {
+                    "type": "test_count_decrease",
+                    "expected": expected_tests,
+                    "actual": actual_tests,
+                    "detail": f"Tests dropped from {expected_tests} to {actual_tests}",
+                }
+            )
 
         return regressions
 
@@ -283,27 +333,56 @@ class ProjectMonitorAgent(BaseAgent):
 
         # Known files not in any session (infrastructure, existing code)
         known_extras = {
-            "api_server.py", "run_agent.py", "run_collectors.py", "run_report.py",
-            "seed_data.py", "streamlit_app.py",
-            "agents/base.py", "agents/__init__.py", "agents/orchestrator.py",
-            "agents/collection.py", "agents/report.py", "agents/dashboard.py",
-            "agents/git_publisher.py", "agents/alert_dispatcher_agent.py",
-            "agents/span_agent.py", "agents/license_agent.py",
+            "api_server.py",
+            "run_agent.py",
+            "run_collectors.py",
+            "run_report.py",
+            "seed_data.py",
+            "streamlit_app.py",
+            "agents/base.py",
+            "agents/__init__.py",
+            "agents/orchestrator.py",
+            "agents/collection.py",
+            "agents/report.py",
+            "agents/dashboard.py",
+            "agents/git_publisher.py",
+            "agents/alert_dispatcher_agent.py",
+            "agents/span_agent.py",
+            "agents/license_agent.py",
             "agents/stripe_webhook.py",
-            "agents/opportunity_scorer.py", "agents/risk_scorer.py",
-            "collectors/__init__.py", "collectors/base.py",
-            "collectors/crunchbase.py", "collectors/failory_scraper.py",
-            "collectors/google_news_rss.py", "collectors/techcrunch_rss.py",
-            "collectors/bls_survival_rates.py", "collectors/reshoring_pdf.py",
-            "db/__init__.py", "db/connection.py", "db/dedup.py", "db/schema.py",
-            "ingestion/__init__.py", "ingestion/kafka_producer.py", "ingestion/signal_normalizer.py",
+            "agents/opportunity_scorer.py",
+            "agents/risk_scorer.py",
+            "collectors/__init__.py",
+            "collectors/base.py",
+            "collectors/crunchbase.py",
+            "collectors/failory_scraper.py",
+            "collectors/google_news_rss.py",
+            "collectors/techcrunch_rss.py",
+            "collectors/bls_survival_rates.py",
+            "collectors/reshoring_pdf.py",
+            "db/__init__.py",
+            "db/connection.py",
+            "db/dedup.py",
+            "db/schema.py",
+            "ingestion/__init__.py",
+            "ingestion/kafka_producer.py",
+            "ingestion/signal_normalizer.py",
             "config/__init__.py",
-            "utils/__init__.py", "utils/http_client.py", "utils/rate_limiter.py",
-            "utils/date_parsing.py", "utils/text_normalization.py",
-            "scoring/__init__.py", "scoring/composite_scorer.py", "scoring/signal_weights.py",
-            "scoring/anomaly_detector.py", "scoring/feature_attribution.py", "scoring/time_decay.py",
-            "report/__init__.py", "report/generator.py",
-            "tests/__init__.py", "tests/conftest.py",
+            "utils/__init__.py",
+            "utils/http_client.py",
+            "utils/rate_limiter.py",
+            "utils/date_parsing.py",
+            "utils/text_normalization.py",
+            "scoring/__init__.py",
+            "scoring/composite_scorer.py",
+            "scoring/signal_weights.py",
+            "scoring/anomaly_detector.py",
+            "scoring/feature_attribution.py",
+            "scoring/time_decay.py",
+            "report/__init__.py",
+            "report/generator.py",
+            "tests/__init__.py",
+            "tests/conftest.py",
         }
 
         drift = []
@@ -348,7 +427,11 @@ class ProjectMonitorAgent(BaseAgent):
         """
         progress = self._load_progress()
         if progress is None:
-            return {"status": "error", "checks": [], "failures": ["Cannot load PROGRESS.yaml"]}
+            return {
+                "status": "error",
+                "checks": [],
+                "failures": ["Cannot load PROGRESS.yaml"],
+            }
 
         checks = self.validate_session(progress, session_id)
         failures = [c for c in checks if c["status"] == "fail"]
@@ -360,13 +443,17 @@ class ProjectMonitorAgent(BaseAgent):
         sessions = progress.get("sessions", {})
         if session_id in sessions:
             sessions[session_id]["status"] = "complete"
-            sessions[session_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
+            sessions[session_id]["completed_at"] = datetime.now(
+                timezone.utc
+            ).isoformat()
 
             # Get current git SHA
             try:
                 sha = subprocess.run(
                     ["git", "rev-parse", "--short", "HEAD"],
-                    capture_output=True, text=True, cwd=str(_PROJECT_ROOT),
+                    capture_output=True,
+                    text=True,
+                    cwd=str(_PROJECT_ROOT),
                 )
                 if sha.returncode == 0:
                     sessions[session_id]["commit_sha"] = sha.stdout.strip()
@@ -377,9 +464,12 @@ class ProjectMonitorAgent(BaseAgent):
             phase_key = f"phase_{sessions[session_id].get('phase', '')}"
             phases = progress.get("phases", {})
             if phase_key in phases:
-                done = sum(1 for s in sessions.values()
-                           if s.get("status") == "complete"
-                           and s.get("phase") == sessions[session_id].get("phase"))
+                done = sum(
+                    1
+                    for s in sessions.values()
+                    if s.get("status") == "complete"
+                    and s.get("phase") == sessions[session_id].get("phase")
+                )
                 phases[phase_key]["sessions_completed"] = done
                 if done >= phases[phase_key].get("sessions_total", 0):
                     phases[phase_key]["status"] = "complete"
@@ -394,9 +484,13 @@ class ProjectMonitorAgent(BaseAgent):
 
     # ── Deviation Tracking ───────────────────────────────────────
 
-    def log_deviation(self, session_id: str, reason: str,
-                      deviation_type: str = "skipped",
-                      replacement: str | None = None) -> bool:
+    def log_deviation(
+        self,
+        session_id: str,
+        reason: str,
+        deviation_type: str = "skipped",
+        replacement: str | None = None,
+    ) -> bool:
         """Log a deviation from the plan."""
         progress = self._load_progress()
         if progress is None:
@@ -458,11 +552,13 @@ class ProjectMonitorAgent(BaseAgent):
         last = progress.get("last_session_worked", "none")
 
         print(f"\n{'='*60}")
-        print(f"  OPPORTUNITY INTELLIGENCE PLATFORM — SESSION BRIEFING")
+        print("  OPPORTUNITY INTELLIGENCE PLATFORM — SESSION BRIEFING")
         print(f"{'='*60}")
         print(f"  Health:       {health.upper()}")
         print(f"  Progress:     {pct}% ({last} was last)")
-        print(f"  Tests:        {tests.get('passing', '?')}/{tests.get('total', '?')} passing")
+        print(
+            f"  Tests:        {tests.get('passing', '?')}/{tests.get('total', '?')} passing"
+        )
         if regressions:
             print(f"  Regressions:  {len(regressions)}")
             for r in regressions:
@@ -503,7 +599,9 @@ class ProjectMonitorAgent(BaseAgent):
             return
 
         sessions = progress.get("sessions", {})
-        completed = {sid for sid, s in sessions.items() if s.get("status") == "complete"}
+        completed = {
+            sid for sid, s in sessions.items() if s.get("status") == "complete"
+        }
         total_pass = 0
         total_fail = 0
 
@@ -521,16 +619,21 @@ class ProjectMonitorAgent(BaseAgent):
 
 # ── Module Entry Point ───────────────────────────────────────────
 
+
 def main():
     parser = argparse.ArgumentParser(description="Project progress monitor")
     parser.add_argument("--next", action="store_true", help="Recommend next session")
     parser.add_argument("--health", action="store_true", help="Quick health check")
     parser.add_argument("--validate", action="store_true", help="Full validation audit")
-    parser.add_argument("--complete", metavar="SESSION", help="Mark session as complete")
+    parser.add_argument(
+        "--complete", metavar="SESSION", help="Mark session as complete"
+    )
     parser.add_argument("--deviate", metavar="SESSION", help="Log a deviation")
     parser.add_argument("--reason", help="Reason for deviation")
     parser.add_argument("--replace", metavar="SESSION", help="Replacement session ID")
-    parser.add_argument("--briefing", action="store_true", help="Session briefing (default)")
+    parser.add_argument(
+        "--briefing", action="store_true", help="Session briefing (default)"
+    )
     args = parser.parse_args()
 
     monitor = ProjectMonitorAgent()

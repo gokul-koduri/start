@@ -39,13 +39,17 @@ def _get_kafka_module():
     if _kafka_module is None:
         try:
             import kafka_python as kp
+
             _kafka_module = kp
         except ImportError:
             try:
                 from kafka import KafkaProducer as KP
+
                 _kafka_module = type("kafka_module", (), {"KafkaProducer": KP})()
             except ImportError:
-                _logger.debug("kafka-python-ng not installed — Kafka publishing disabled")
+                _logger.debug(
+                    "kafka-python-ng not installed — Kafka publishing disabled"
+                )
                 return None
     return _kafka_module
 
@@ -80,7 +84,9 @@ class SignalKafkaProducer:
         """Initialize Kafka producer connection."""
         kp = _get_kafka_module()
         if kp is None:
-            _logger.info("Kafka not available — signals will only be persisted to MySQL")
+            _logger.info(
+                "Kafka not available — signals will only be persisted to MySQL"
+            )
             return
 
         try:
@@ -104,7 +110,9 @@ class SignalKafkaProducer:
             )
 
         except Exception as e:
-            _logger.warning("Kafka connection failed: %s — falling back to MySQL-only", e)
+            _logger.warning(
+                "Kafka connection failed: %s — falling back to MySQL-only", e
+            )
             self._enabled = False
 
     @property

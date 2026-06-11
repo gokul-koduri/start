@@ -51,7 +51,7 @@ class EntityState:
         self.signals.append(signal_dict)
         # Trim to max size (FIFO)
         if len(self.signals) > self.MAX_SIGNALS:
-            self.signals = self.signals[-self.MAX_SIGNALS:]
+            self.signals = self.signals[-self.MAX_SIGNALS :]
         self.total_processed += 1
         self.last_updated = _now_timestamp()
 
@@ -64,7 +64,7 @@ class EntityState:
         self.last_score = composite_score
         self.score_history.append((_now_timestamp(), composite_score))
         if len(self.score_history) > self.MAX_SCORE_HISTORY:
-            self.score_history = self.score_history[-self.MAX_SCORE_HISTORY:]
+            self.score_history = self.score_history[-self.MAX_SCORE_HISTORY :]
 
     def get_score_history(self) -> dict[str, list[float]]:
         """Extract historical values for anomaly detection.
@@ -73,6 +73,7 @@ class EntityState:
             {"funding_round": [85.0, 78.0, ...], "news_mention": [60.0, ...]}
         """
         from collections import defaultdict
+
         history: dict[str, list[float]] = defaultdict(list)
 
         for signal_dict in self.signals:

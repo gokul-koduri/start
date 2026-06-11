@@ -1,0 +1,113 @@
+# GitHub Repository Settings
+# Apply with: gh api -X PUT repos/OWNER/REPO/branches/main/protection --input branch-protection.json
+# Or use GitHub Settings app: https://github.com/apps/settings
+
+branch_protection:
+  main:
+    required_pull_request_reviews:
+      required_approving_review_count: 1
+      dismiss_stale_reviews: true
+      require_code_owner_reviews: false
+    required_status_checks:
+      strict: true
+      contexts:
+        - "Tests"
+        - "Lint & Format"
+        - "Security Scan"
+        - "PR Validation"
+        - "Sprint Gate Check"
+    enforce_admins: false
+    restrictions: null
+    required_linear_history: false
+    allow_force_pushes: false
+    allow_deletions: false
+
+  develop:
+    required_pull_request_reviews:
+      required_approving_review_count: 1
+      dismiss_stale_reviews: true
+    required_status_checks:
+      strict: false
+      contexts:
+        - "Tests"
+        - "Lint & Format"
+        - "Security Scan"
+    enforce_admins: false
+    restrictions: null
+
+labels:
+  - name: "sprint/1"
+    color: "1D76DB"
+    description: "Sprint 1 — Launch MVP"
+  - name: "sprint/2"
+    color: "1D76DB"
+    description: "Sprint 2 — Core Infrastructure"
+  - name: "sprint/3"
+    color: "1D76DB"
+    description: "Sprint 3 — Feedback + Analytics"
+  - name: "sprint/4"
+    color: "1D76DB"
+    description: "Sprint 4 — Auth + Security"
+  - name: "sprint/5"
+    color: "1D76DB"
+    description: "Sprint 5 — Watchlists + Alerts"
+  - name: "sprint/6"
+    color: "1D76DB"
+    description: "Sprint 6 — Export + Integrations"
+  - name: "sprint/7"
+    color: "1D76DB"
+    description: "Sprint 7 — Pro Tier + Billing"
+  - name: "sprint/8"
+    color: "1D76DB"
+    description: "Sprint 8 — Polish + V1 Release"
+  - name: "priority/P0"
+    color: "B60205"
+    description: "Critical — ship blocker"
+  - name: "priority/P1"
+    color: "D93F0B"
+    description: "Important — sprint goal"
+  - name: "priority/P2"
+    color: "FBCA04"
+    description: "Nice to have"
+  - name: "type/story"
+    color: "0E8A16"
+    description: "User story"
+  - name: "type/task"
+    color: "C2E0C6"
+    description: "Technical task"
+  - name: "type/spike"
+    color: "5319E7"
+    description: "Research / exploration"
+  - name: "type/bug"
+    color: "D73A4A"
+    description: "Bug fix"
+  - name: "type/chore"
+    color: "FEF2C0"
+    description: "Maintenance"
+  - name: "status/blocked"
+    color: "B60205"
+    description: "Blocked by dependency"
+  - name: "status/in-progress"
+    color: "FBCA04"
+    description: "Currently being worked on"
+  - name: "standup"
+    color: "C5DEF5"
+    description: "Daily standup issue"
+  - name: "sprint-review"
+    color: "C5DEF5"
+    description: "Sprint review issue"
+  - name: "stale"
+    color: "EDEDED"
+    description: "Stale / inactive"
+  - name: "size/S"
+    color: "28A745"
+    description: "Small (<100 lines changed)"
+  - name: "size/M"
+    color: "FBBD23"
+    description: "Medium (100-400 lines changed)"
+  - name: "size/L"
+    color: "F28A2E"
+    description: "Large (400-1000 lines changed)"
+  - name: "size/XL"
+    color: "E22B3D"
+    description: "Extra Large (>1000 lines changed)"

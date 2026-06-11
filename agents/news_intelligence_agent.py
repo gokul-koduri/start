@@ -81,10 +81,50 @@ class NewsIntelligenceAgent(BaseAgent):
         cursor.execute("SELECT title FROM news_articles")
         titles = cursor.fetchall()
         cursor.close()
-        stopwords = {"the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
-                     "of", "with", "by", "is", "it", "its", "was", "are", "has", "had", "be",
-                     "this", "that", "from", "as", "how", "not", "will", "can", "do", "we",
-                     "he", "she", "they", "their", "you", "your", "who", "what", "when", "which"}
+        stopwords = {
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+            "is",
+            "it",
+            "its",
+            "was",
+            "are",
+            "has",
+            "had",
+            "be",
+            "this",
+            "that",
+            "from",
+            "as",
+            "how",
+            "not",
+            "will",
+            "can",
+            "do",
+            "we",
+            "he",
+            "she",
+            "they",
+            "their",
+            "you",
+            "your",
+            "who",
+            "what",
+            "when",
+            "which",
+        }
         word_freq = Counter()
         for row in titles:
             words = row["title"].lower().split()
@@ -96,9 +136,7 @@ class NewsIntelligenceAgent(BaseAgent):
 
         # 5. Manufacturing keyword trends in titles
         cursor = conn.cursor()
-        cursor.execute(
-            """SELECT title FROM news_articles WHERE is_manufacturing = 1"""
-        )
+        cursor.execute("""SELECT title FROM news_articles WHERE is_manufacturing = 1""")
         mfg_titles = cursor.fetchall()
         cursor.close()
         mfg_word_freq = Counter()
@@ -144,8 +182,12 @@ class NewsIntelligenceAgent(BaseAgent):
 
         total = mfg_volume["total_articles"] if mfg_volume else 0
         mfg = mfg_volume["mfg_articles"] if mfg_volume else 0
-        _logger.info("NewsIntelligenceAgent: %d articles, %d manufacturing, top keyword: %s",
-                     total, mfg, list(word_freq.keys())[0] if word_freq else "N/A")
+        _logger.info(
+            "NewsIntelligenceAgent: %d articles, %d manufacturing, top keyword: %s",
+            total,
+            mfg,
+            list(word_freq.keys())[0] if word_freq else "N/A",
+        )
 
         return AgentResult(
             agent_name=self.name,

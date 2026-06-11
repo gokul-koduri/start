@@ -50,12 +50,13 @@ _logger = logging.getLogger(__name__)
 
 # ── Enums ────────────────────────────────────────────────────────────────────
 
+
 class TokenStatus(str, Enum):
-    BLOCKED = "blocked"      # Waiting for blocking task(s) to complete
-    READY = "ready"          # Blocking task(s) done, ready to be picked up
-    CLAIMED = "claimed"      # Someone is working on it
-    DONE = "done"            # Work complete
-    EXPIRED = "expired"      # Timed out or no longer relevant
+    BLOCKED = "blocked"  # Waiting for blocking task(s) to complete
+    READY = "ready"  # Blocking task(s) done, ready to be picked up
+    CLAIMED = "claimed"  # Someone is working on it
+    DONE = "done"  # Work complete
+    EXPIRED = "expired"  # Timed out or no longer relevant
 
 
 # ── DB tables ────────────────────────────────────────────────────────────────
@@ -164,8 +165,10 @@ def create_token(
         ValueError if no blockers provided (use a regular task instead)
     """
     if not blocked_by:
-        raise ValueError("Tokens must be blocked by at least one task. "
-                         "If nothing blocks you, use a regular parallel task.")
+        raise ValueError(
+            "Tokens must be blocked by at least one task. "
+            "If nothing blocks you, use a regular parallel task."
+        )
 
     _ensure_tables()
     conn = get_connection()
@@ -184,7 +187,9 @@ def create_token(
                     already_done.add(task_id)
 
             # If ALL blockers are done, token starts as "ready"
-            initial_status = "ready" if len(already_done) == len(blocked_by) else "blocked"
+            initial_status = (
+                "ready" if len(already_done) == len(blocked_by) else "blocked"
+            )
 
             cur.execute(
                 """INSERT INTO work_tokens
@@ -232,11 +237,13 @@ def create_token(
                     token_id,
                     f"Token created (blocked by {len(blocked_by)} task(s), "
                     f"{len(already_done)} already done)",
-                    json.dumps({
-                        "blocked_by": blocked_by,
-                        "already_done": list(already_done),
-                        "initial_status": initial_status,
-                    }),
+                    json.dumps(
+                        {
+                            "blocked_by": blocked_by,
+                            "already_done": list(already_done),
+                            "initial_status": initial_status,
+                        }
+                    ),
                     now,
                 ),
             )
@@ -244,7 +251,10 @@ def create_token(
         conn.commit()
         _logger.info(
             "create_token: Token #%d '%s' created (status=%s, blocked_by=%s)",
-            token_id, name, initial_status, blocked_by,
+            token_id,
+            name,
+            initial_status,
+            blocked_by,
         )
         return token_id
     finally:
@@ -310,7 +320,9 @@ def release_completed_blockers(task_id: int) -> list[int]:
                 released_tokens.append(rt["id"])
                 _logger.info(
                     "release_completed_blockers: Token #%d '%s' → ready (task #%d completed)",
-                    rt["id"], rt["token_name"], task_id,
+                    rt["id"],
+                    rt["token_name"],
+                    task_id,
                 )
 
         conn.commit()
@@ -419,13 +431,15 @@ def complete_token(
                 (
                     token_id,
                     f"Token completed: {result[:200]}",
-                    json.dumps({
-                        "result": result,
-                        "files_created": files_created or [],
-                        "files_modified": files_modified or [],
-                        "tests_added": tests_added,
-                        "tests_passing": tests_passing,
-                    }),
+                    json.dumps(
+                        {
+                            "result": result,
+                            "files_created": files_created or [],
+                            "files_modified": files_modified or [],
+                            "tests_added": tests_added,
+                            "tests_passing": tests_passing,
+                        }
+                    ),
                     now,
                 ),
             )
@@ -489,8 +503,9 @@ def get_token(token_id: int) -> Optional[dict]:
         conn.close()
 
 
-def list_tokens(status: Optional[str] = None,
-                task_id: Optional[int] = None) -> list[dict]:
+def list_tokens(
+    status: Optional[str] = None, task_id: Optional[int] = None
+) -> list[dict]:
     """List tokens, optionally filtered by status or related task."""
     _ensure_tables()
     conn = get_connection()
@@ -504,7 +519,9 @@ def list_tokens(status: Optional[str] = None,
                 conditions.append("status = %s")
                 params.append(status)
             if task_id:
-                conditions.append("(created_by_task_id = %s OR claimed_by_task_id = %s)")
+                conditions.append(
+                    "(created_by_task_id = %s OR claimed_by_task_id = %s)"
+                )
                 params.extend([task_id, task_id])
 
             if conditions:
@@ -596,20 +613,36 @@ def print_token_dashboard():
     print("  WORK TOKENS — BLOCKED WORK WAITING FOR SECTIONS TO COMPLETE")
     print("=" * 90)
     print()
-    print(f"  {'ID':<4} {'STATUS':<10} {'PRI':<5} {'NAME':<35} {'BLOCKED BY':<20} {'CREATED BY':>10}")
+    print(
+        f"  {'ID':<4} {'STATUS':<10} {'PRI':<5} {'NAME':<35} {'BLOCKED BY':<20} {'CREATED BY':>10}"
+    )
     print(f"  {'─'*4} {'─'*10} {'─'*5} {'─'*35} {'─'*20} {'─'*10}")
 
     for t in tokens:
         icon = status_icons.get(t["status"], "?")
-        name = t["token_name"][:33] + ".." if len(t["token_name"]) > 35 else t["token_name"]
+        name = (
+            t["token_name"][:33] + ".."
+            if len(t["token_name"]) > 35
+            else t["token_name"]
+        )
         blocked = f"task #{t.get('created_by_task_id') or '?'}"
-        created = f"task #{t['created_by_task_id']}" if t.get("created_by_task_id") else "manual"
-        claimed = f"→ task #{t['claimed_by_task_id']}" if t.get("claimed_by_task_id") else ""
-        print(f"  {t['id']:<4} {icon} {t['status']:<8} {t['priority']:<5} {name:<35} {blocked:<20} {created:>10} {claimed}")
+        created = (
+            f"task #{t['created_by_task_id']}"
+            if t.get("created_by_task_id")
+            else "manual"
+        )
+        claimed = (
+            f"→ task #{t['claimed_by_task_id']}" if t.get("claimed_by_task_id") else ""
+        )
+        print(
+            f"  {t['id']:<4} {icon} {t['status']:<8} {t['priority']:<5} {name:<35} {blocked:<20} {created:>10} {claimed}"
+        )
 
     stats = token_stats()
     print()
-    print(f"  🔒 Blocked: {stats['blocked']}  🟢 Ready: {stats['ready']}  "
-          f"🔧 Claimed: {stats['claimed']}  ✅ Done: {stats['done']}  ⏰ Expired: {stats['expired']}")
+    print(
+        f"  🔒 Blocked: {stats['blocked']}  🟢 Ready: {stats['ready']}  "
+        f"🔧 Claimed: {stats['claimed']}  ✅ Done: {stats['done']}  ⏰ Expired: {stats['expired']}"
+    )
     print("=" * 90)
     print()

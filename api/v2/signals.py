@@ -57,12 +57,16 @@ def signal_stats():
     cursor.execute(
         "SELECT signal_type, COUNT(*) as cnt FROM raw_signals GROUP BY signal_type ORDER BY cnt DESC"
     )
-    stats["by_type"] = {dict(r)["signal_type"]: dict(r)["cnt"] for r in cursor.fetchall()}
+    stats["by_type"] = {
+        dict(r)["signal_type"]: dict(r)["cnt"] for r in cursor.fetchall()
+    }
 
     cursor.execute(
         "SELECT processed, COUNT(*) as cnt FROM raw_signals GROUP BY processed"
     )
-    stats["processing_status"] = {str(dict(r)["processed"]): dict(r)["cnt"] for r in cursor.fetchall()}
+    stats["processing_status"] = {
+        str(dict(r)["processed"]): dict(r)["cnt"] for r in cursor.fetchall()
+    }
 
     cursor.close()
     conn.close()

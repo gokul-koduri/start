@@ -1,4 +1,6 @@
-.PHONY: install test run api docker-up docker-down clean lint
+.PHONY: install test run api docker-up docker-down clean lint \
+	sprint-status sprint-plan sprint-gate sprint-review sprint-retro standup backlog-refine \
+	pr lint-fix
 
 # ── Setup ───────────────────────────────────────────────
 install:
@@ -22,8 +24,8 @@ report:
 	python run_report.py
 
 # ── API Server ──────────────────────────────────────────
-api:
-	python api_server.py --reload
+api: ## Start the FastAPI REST API server
+	/opt/anaconda3/bin/python api_server.py --host 127.0.0.1 --port 8000 --reload
 
 # ── Chat ────────────────────────────────────────────────
 chat:
@@ -32,10 +34,6 @@ chat:
 # ── Streamlit Dashboard ─────────────────────────────────
 streamlit: ## Launch the interactive Streamlit dashboard
 	streamlit run streamlit_app.py --server.port 8501
-
-# ── API Server ──────────────────────────────────────────
-api: ## Start the FastAPI REST API server
-	/opt/anaconda3/bin/python api_server.py --host 127.0.0.1 --port 8000 --reload
 
 # ── Testing ─────────────────────────────────────────────
 test:
@@ -84,3 +82,52 @@ unschedule:
 	launchctl unload $(HOME)/Library/LaunchAgents/com.startup-research.daily.plist 2>/dev/null || true
 	launchctl unload $(HOME)/Library/LaunchAgents/com.startup-research.weekly.plist 2>/dev/null || true
 	@echo "Schedulers removed."
+
+# ── Linting ─────────────────────────────────────────────
+lint:
+	ruff check .
+
+lint-fix:
+	ruff check . --fix
+	ruff format .
+
+# ── Agile / Sprint ─────────────────────────────────────
+sprint-status: ## Show current sprint status
+	@python scripts/sprint_validator.py --sprint $$(python -c "import yaml; print(yaml.safe_load(open('docs/sprints/sprint-tracker.yaml')).get('current_sprint', 1))") -d || python scripts/sprint_validator.py
+
+sprint-plan: ## Sprint planning ceremony
+	@python scripts/agile_cli.py planning
+
+sprint-gate: ## Run sprint gate check (exit 0=pass, 1=fail)
+	@python scripts/sprint_validator.py --gate
+
+sprint-review: ## Generate sprint review report
+	@python scripts/agile_cli.py review
+
+sprint-retro: ## Generate retrospective template
+	@python scripts/agile_cli.py retrospective
+
+standup: ## Generate daily standup template
+	@python scripts/agile_cli.py standup
+
+backlog-refine: ## Show product backlog for refinement
+	@python scripts/agile_cli.py backlog
+
+sprint-metrics: ## Show velocity & metrics
+	@python scripts/agile_cli.py metrics
+
+sprint-burndown: ## Show burndown chart
+	@python scripts/agile_cli.py burndown
+
+sprint-labels: ## Print GitHub label creation commands
+	@python scripts/agile_cli.py labels
+
+sprint-all: ## Show all sprint statuses
+	@python scripts/sprint_validator.py --all
+
+# ── PR Helper ──────────────────────────────────────────
+pr: ## Create a PR (interactive)
+	@read -p "Branch name (e.g., feature/T-001-desc): " branch && \
+	git checkout -b $$branch develop && \
+	@echo "✅ Branch created. Push and open PR when ready."
+	@echo "Template: .github/pull_request_template.md"

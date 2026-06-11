@@ -7,7 +7,7 @@
 
 ## AI Product Development Team
 
-This project follows a **structured AI Product Development workflow** with 7 specialized agents:
+This project follows an **Agile ScrumBan workflow** ([AGILE_WORKFLOW.md](AGILE_WORKFLOW.md)) with 7 specialized AI agents:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -52,6 +52,9 @@ This project follows a **structured AI Product Development workflow** with 7 spe
 1. **All work broken into tasks ≤ 2 hours**
 2. Every task has: ID, Description, Acceptance Criteria, Estimated Time, Dependencies, Status
 3. No task may exceed 2 hours — split if needed
+4. **Sprint ceremonies** run via `make sprint-plan`, `make standup`, `make sprint-review`, `make sprint-retro`
+5. **Sprint gate**: next sprint blocked until current is 100% complete
+6. **CI/CD**: all PRs must pass tests, linting, and security scans
 
 ### 7-Phase Project Flow
 

@@ -3,7 +3,6 @@
 import html
 import logging
 import re
-from typing import Any
 
 _logger = logging.getLogger(__name__)
 
@@ -56,8 +55,10 @@ def sanitize_dict(data: dict, max_length: int = MAX_INPUT_LENGTH) -> dict:
             sanitized[key] = sanitize_dict(value, max_length)
         elif isinstance(value, list):
             sanitized[key] = [
-                sanitize_string(item, max_length) if isinstance(item, str)
-                else sanitize_dict(item, max_length) if isinstance(item, dict)
+                sanitize_string(item, max_length)
+                if isinstance(item, str)
+                else sanitize_dict(item, max_length)
+                if isinstance(item, dict)
                 else item
                 for item in value
             ]

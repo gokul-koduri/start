@@ -4,7 +4,6 @@ import unittest
 import sys
 from pathlib import Path
 from unittest.mock import patch, MagicMock
-from datetime import datetime, timezone
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -14,7 +13,13 @@ class TestEmailQueue(unittest.TestCase):
 
     def test_import(self):
         """Test email_queue can be imported."""
-        from utils.email_queue import queue_email, queue_bulk, queue_stats, render_template
+        from utils.email_queue import (
+            queue_email,
+            queue_bulk,
+            queue_stats,
+            render_template,
+        )
+
         self.assertTrue(callable(queue_email))
         self.assertTrue(callable(queue_bulk))
         self.assertTrue(callable(queue_stats))
@@ -30,8 +35,12 @@ class TestEmailQueue(unittest.TestCase):
         mock_cursor.lastrowid = 42
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         email_id = queue_email(
             recipient="test@example.com",
@@ -71,8 +80,12 @@ class TestEmailQueue(unittest.TestCase):
         mock_cursor.lastrowid = 1
         mock_conn.return_value.__enter__ = MagicMock(return_value=mock_conn)
         mock_conn.return_value.__exit__ = MagicMock(return_value=False)
-        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
-        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_conn.return_value.cursor.return_value.__enter__ = MagicMock(
+            return_value=mock_cursor
+        )
+        mock_conn.return_value.cursor.return_value.__exit__ = MagicMock(
+            return_value=False
+        )
 
         # First is not suppressed, second is
         mock_suppressed.side_effect = [False, True]
@@ -92,6 +105,7 @@ class TestEmailWorker(unittest.TestCase):
     def test_import(self):
         """Test email_worker can be imported."""
         from agents.email_worker import drain_queue, _build_mime
+
         self.assertTrue(callable(drain_queue))
         self.assertTrue(callable(_build_mime))
 
@@ -100,7 +114,13 @@ class TestEmailWorker(unittest.TestCase):
         """Test drain_queue returns empty stats when SMTP not configured."""
         from agents.email_worker import drain_queue
 
-        mock_cfg.return_value = {"host": "", "port": 587, "user": "", "password": "", "from_address": ""}
+        mock_cfg.return_value = {
+            "host": "",
+            "port": 587,
+            "user": "",
+            "password": "",
+            "from_address": "",
+        }
         stats = drain_queue()
         self.assertEqual(stats["sent"], 0)
         self.assertEqual(stats["skipped"], 0)
@@ -118,8 +138,13 @@ class TestEmailWorker(unittest.TestCase):
             "from_address": "noreply@example.com",
             "reply_to": None,
         }
-        cfg = {"from_address": "noreply@example.com", "host": "smtp.example.com",
-               "port": 587, "user": "", "password": ""}
+        cfg = {
+            "from_address": "noreply@example.com",
+            "host": "smtp.example.com",
+            "port": 587,
+            "user": "",
+            "password": "",
+        }
 
         msg = _build_mime(email_row, cfg)
 
@@ -142,54 +167,64 @@ class TestEmailTemplates(unittest.TestCase):
     def test_base_template_exists(self):
         """Test base.html template exists."""
         from utils.email_queue import _template_dir
+
         self.assertTrue((_template_dir / "base.html").exists())
 
     def test_digest_template_exists(self):
         """Test digest.html template exists."""
         from utils.email_queue import _template_dir
+
         self.assertTrue((_template_dir / "digest.html").exists())
 
     def test_report_template_exists(self):
         """Test report.html template exists."""
         from utils.email_queue import _template_dir
+
         self.assertTrue((_template_dir / "report.html").exists())
 
     def test_alert_template_exists(self):
         """Test alert.html template exists."""
         from utils.email_queue import _template_dir
+
         self.assertTrue((_template_dir / "alert.html").exists())
 
     def test_welcome_template_exists(self):
         """Test welcome.html template exists."""
         from utils.email_queue import _template_dir
+
         self.assertTrue((_template_dir / "welcome.html").exists())
 
     def test_render_template_fallback(self):
         """Test render_template handles missing templates gracefully."""
         from utils.email_queue import render_template
+
         result = render_template("nonexistent.html", {})
         self.assertIn("not found", result)
 
     def test_render_digest_basic(self):
         """Test rendering digest template with basic context."""
         from utils.email_queue import render_template
-        html = render_template("digest.html", {
-            "header_title": "Daily Digest",
-            "header_subtitle": "June 6, 2026",
-            "period_label": "daily",
-            "total_startups": "163",
-            "news_count": "42",
-            "high_value_count": "12",
-            "top_failures": [
-                {"category": "Supply Chain", "count": 35},
-                {"category": "Market Timing", "count": 22},
-            ],
-            "alerts": [],
-            "collection_runs": [],
-            "dashboard_url": "https://github.com/gokul-koduri/start",
-            "unsubscribe_url": "#",
-            "preferences_url": "#",
-        })
+
+        html = render_template(
+            "digest.html",
+            {
+                "header_title": "Daily Digest",
+                "header_subtitle": "June 6, 2026",
+                "period_label": "daily",
+                "total_startups": "163",
+                "news_count": "42",
+                "high_value_count": "12",
+                "top_failures": [
+                    {"category": "Supply Chain", "count": 35},
+                    {"category": "Market Timing", "count": 22},
+                ],
+                "alerts": [],
+                "collection_runs": [],
+                "dashboard_url": "https://github.com/gokul-koduri/start",
+                "unsubscribe_url": "#",
+                "preferences_url": "#",
+            },
+        )
         self.assertIn("Daily Digest", html)
         self.assertIn("163", html)
         self.assertIn("Supply Chain", html)
@@ -197,6 +232,7 @@ class TestEmailTemplates(unittest.TestCase):
     def test_plain_from_html(self):
         """Test HTML to plain text conversion."""
         from utils.email_queue import plain_from_html
+
         html = "<h1>Title</h1><p>Hello world</p><table><tr><td>A</td><td>B</td></tr></table>"
         text = plain_from_html(html)
         self.assertIn("Title", text)
@@ -211,12 +247,14 @@ class TestEmailDigestAgent(unittest.TestCase):
     def test_agent_exists(self):
         """Test agent can be imported."""
         from agents.email_digest_agent import EmailDigestAgent
+
         agent = EmailDigestAgent()
         self.assertEqual(agent.name, "email_digest")
 
     def test_agent_enabled_by_default(self):
         """Test agent is enabled by default."""
         from agents.email_digest_agent import EmailDigestAgent
+
         agent = EmailDigestAgent()
         self.assertTrue(agent.enabled)
 
@@ -227,11 +265,13 @@ class TestSchemaV23(unittest.TestCase):
     def test_schema_version_bumped(self):
         """Test schema version is 23."""
         from db.schema import get_schema_version
+
         self.assertEqual(get_schema_version(), 23)
 
     def test_email_tables_in_schema(self):
         """Test outbound_emails and related tables are defined."""
         from db.schema import _TABLES
+
         table_names = []
         for t in _TABLES:
             if "CREATE TABLE" in t:

@@ -90,7 +90,9 @@ def z_score_anomaly(
         return AnomalyResult(
             z_score=0.0,
             is_anomaly=False,
-            rolling_mean=float(statistics.mean(window_values)) if window_values else 0.0,
+            rolling_mean=float(statistics.mean(window_values))
+            if window_values
+            else 0.0,
             rolling_stddev=0.0,
         )
 

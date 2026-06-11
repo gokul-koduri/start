@@ -26,7 +26,11 @@ def _resolve_env_vars(value: str) -> str:
     def replacer(match):
         var_name = match.group(1)
         env_val = os.environ.get(var_name, "")
-        if env_val == "" and var_name in ("BLS_API_KEY", "CRUNCHBASE_API_KEY", "CB_INSIGHTS_API_KEY"):
+        if env_val == "" and var_name in (
+            "BLS_API_KEY",
+            "CRUNCHBASE_API_KEY",
+            "CB_INSIGHTS_API_KEY",
+        ):
             _logger.debug("No value for %s — API key not configured", var_name)
         return env_val
 
@@ -43,8 +47,10 @@ def _resolve_dict(d: dict) -> dict:
             resolved[key] = _resolve_dict(value)
         elif isinstance(value, list):
             resolved[key] = [
-                _resolve_env_vars(item) if isinstance(item, str)
-                else _resolve_dict(item) if isinstance(item, dict)
+                _resolve_env_vars(item)
+                if isinstance(item, str)
+                else _resolve_dict(item)
+                if isinstance(item, dict)
                 else item
                 for item in value
             ]
@@ -91,6 +97,7 @@ def setup_logging(config_path: str | None = None):
 
     # Update file handler path to be absolute
     import logging.config
+
     with open(config_path, "r") as f:
         log_config = yaml.safe_load(f)
 

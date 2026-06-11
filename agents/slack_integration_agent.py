@@ -28,12 +28,10 @@ class SlackIntegrationAgent(BaseAgent):
             )
 
         try:
-            from unittest.mock import MagicMock
             import requests
 
             message = self.config.get(
-                "message",
-                "Startup Research Alert: Pipeline completed successfully"
+                "message", "Startup Research Alert: Pipeline completed successfully"
             )
 
             if self.dry_run:

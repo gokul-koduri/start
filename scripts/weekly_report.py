@@ -6,7 +6,6 @@ Usage:
     python scripts/weekly_report.py --output data/reports/weekly_feedback.md
 """
 
-import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -28,9 +27,7 @@ def generate_report(output_path=None):
     week_str = now.strftime("%G-W%V")
 
     # --- Feedback Analysis (latest row) ---
-    cursor.execute(
-        "SELECT * FROM feedback_analysis ORDER BY analyzed_at DESC LIMIT 1"
-    )
+    cursor.execute("SELECT * FROM feedback_analysis ORDER BY analyzed_at DESC LIMIT 1")
     analysis = cursor.fetchone()
 
     # --- Raw stats ---

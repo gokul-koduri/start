@@ -12,7 +12,6 @@ Runs in the weekly pipeline (after collection) and full pipeline.
 
 import json
 import logging
-import os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -24,7 +23,6 @@ from utils.email_queue import (
     queue_bulk,
     get_active_recipients,
     render_template,
-    plain_from_html,
 )
 
 _logger = logging.getLogger(__name__)
@@ -50,13 +48,19 @@ class ReportGeneratorAgent(BaseAgent):
 
     def execute(self, upstream_results: list | None = None) -> AgentResult:
         pipeline_name = self.config.get("_pipeline_name", "weekly")
-        output_dir = Path(get_project_root() / self.config.get("output_dir", "data/reports"))
+        output_dir = Path(
+            get_project_root() / self.config.get("output_dir", "data/reports")
+        )
         formats = self.config.get("output_formats", ["markdown", "html"])
         email_config = self.config.get("email_delivery", {})
 
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        _logger.info("ReportGeneratorAgent: Generating reports (pipeline=%s, formats=%s)", pipeline_name, formats)
+        _logger.info(
+            "ReportGeneratorAgent: Generating reports (pipeline=%s, formats=%s)",
+            pipeline_name,
+            formats,
+        )
 
         try:
             conn = get_connection()
@@ -102,8 +106,13 @@ class ReportGeneratorAgent(BaseAgent):
                     """INSERT INTO generated_reports (report_type, format, file_path,
                        status, record_count, generated_at)
                        VALUES (%s, %s, %s, 'success', %s, %s)""",
-                    (report_type, fmt_name, fpath, records,
-                     datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")),
+                    (
+                        report_type,
+                        fmt_name,
+                        fpath,
+                        records,
+                        datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+                    ),
                 )
 
             # Queue email delivery (sent asynchronously by email_worker)
@@ -114,15 +123,20 @@ class ReportGeneratorAgent(BaseAgent):
                     """INSERT INTO generated_reports (report_type, format, file_path,
                        sent_to, status, record_count, generated_at)
                        VALUES (%s, 'email', '', %s, 'success', %s, %s)""",
-                    (report_type, json.dumps(sent_to), records,
-                     datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")),
+                    (
+                        report_type,
+                        json.dumps(sent_to),
+                        records,
+                        datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+                    ),
                 )
 
             conn.commit()
 
             _logger.info(
                 "ReportGeneratorAgent: Done — %d files, %d email recipients",
-                len(generated_files), len(sent_to),
+                len(generated_files),
+                len(sent_to),
             )
 
             return AgentResult(
@@ -180,25 +194,31 @@ class ReportGeneratorAgent(BaseAgent):
 
         return [
             f"# {title}",
-            f"",
+            "",
             f"**Generated:** {now.strftime('%Y-%m-%d %H:%M:%S')} UTC",
             f"**Database:** {startup_count:,} failed startups | {news_count:,} news articles",
-            f"",
+            "",
             "---",
-            f"",
+            "",
         ]
 
     def _section_data_summary(self, cursor) -> list[str]:
         """Data collection summary — recent additions."""
         lines = ["## Data Summary", ""]
-        cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S")
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
 
         cursor.execute(
-            "SELECT COUNT(*) as cnt FROM failed_startups WHERE collected_at >= %s", (cutoff,))
+            "SELECT COUNT(*) as cnt FROM failed_startups WHERE collected_at >= %s",
+            (cutoff,),
+        )
         new_startups = cursor.fetchone()["cnt"]
 
         cursor.execute(
-            "SELECT COUNT(*) as cnt FROM news_articles WHERE collected_at >= %s", (cutoff,))
+            "SELECT COUNT(*) as cnt FROM news_articles WHERE collected_at >= %s",
+            (cutoff,),
+        )
         new_articles = cursor.fetchone()["cnt"]
 
         lines.append(f"- **New startups (7d):** {new_startups:,}")
@@ -320,7 +340,6 @@ class ReportGeneratorAgent(BaseAgent):
 
     def _section_llm_portfolio(self, cursor) -> list[str]:
         """Extended LLM portfolio analysis for monthly reports."""
-        lines = ["## LLM Portfolio Analysis", ""]
         return self._section_llm_updates(cursor)
 
     def _section_active_alerts(self, cursor) -> list[str]:
@@ -335,7 +354,11 @@ class ReportGeneratorAgent(BaseAgent):
         alerts = cursor.fetchall()
         if alerts:
             for a in alerts:
-                savings = f" (~{a['estimated_savings_pct']:.0f}% savings)" if a["estimated_savings_pct"] else ""
+                savings = (
+                    f" (~{a['estimated_savings_pct']:.0f}% savings)"
+                    if a["estimated_savings_pct"]
+                    else ""
+                )
                 lines.append(f"- **[{a['priority'].upper()}]** {a['title']}{savings}")
             lines.append("")
         else:
@@ -380,9 +403,15 @@ class ReportGeneratorAgent(BaseAgent):
     def _section_recommendations(self, cursor) -> list[str]:
         """Actionable recommendations based on data analysis."""
         lines = ["## Recommendations", ""]
-        lines.append("1. **Monitor LLM pricing trends** — Review active alerts for cost optimization opportunities.")
-        lines.append("2. **Track emerging sectors** — Check weekly digest for new failure patterns in emerging industries.")
-        lines.append("3. **Review data freshness** — Ensure RSS collectors are running on schedule.")
+        lines.append(
+            "1. **Monitor LLM pricing trends** — Review active alerts for cost optimization opportunities."
+        )
+        lines.append(
+            "2. **Track emerging sectors** — Check weekly digest for new failure patterns in emerging industries."
+        )
+        lines.append(
+            "3. **Review data freshness** — Ensure RSS collectors are running on schedule."
+        )
         lines.append("")
         return lines
 
@@ -392,9 +421,14 @@ class ReportGeneratorAgent(BaseAgent):
         """Convert Markdown report to styled HTML using the markdown library."""
         try:
             import markdown as md_lib
-            html_body = md_lib.markdown(md_content, extensions=["tables", "fenced_code"])
+
+            html_body = md_lib.markdown(
+                md_content, extensions=["tables", "fenced_code"]
+            )
         except ImportError:
-            _logger.warning("ReportGeneratorAgent: markdown library not found, using basic conversion")
+            _logger.warning(
+                "ReportGeneratorAgent: markdown library not found, using basic conversion"
+            )
             html_body = md_content.replace("\n", "<br>\n")
 
         return (
@@ -423,8 +457,9 @@ class ReportGeneratorAgent(BaseAgent):
 
     # ── Email delivery (queued) ──
 
-    def _queue_report_email(self, md_content: str,
-                             report_type: str, now_str: str) -> list[str]:
+    def _queue_report_email(
+        self, md_content: str, report_type: str, now_str: str
+    ) -> list[str]:
         """Queue report email for Pro/Enterprise users. Sent asynchronously by email_worker."""
         try:
             recipients = get_active_recipients()
@@ -433,20 +468,25 @@ class ReportGeneratorAgent(BaseAgent):
             emails = []
 
         if not emails:
-            _logger.info("ReportGeneratorAgent: No active recipients for email delivery")
+            _logger.info(
+                "ReportGeneratorAgent: No active recipients for email delivery"
+            )
             return []
 
         # Build HTML using the report template (falls back to _convert_to_html)
         try:
-            html_content = render_template("report.html", {
-                "header_title": report_type.replace("_", " ").title(),
-                "header_subtitle": now_str,
-                "intro_text": f"Here is your {report_type.replace('_', ' ')} from the Opportunity Intelligence Platform.",
-                "sections": [],  # sections rendered from markdown below
-                "dashboard_url": "https://github.com/gokul-koduri/start",
-                "unsubscribe_url": "https://github.com/gokul-koduri/start#email-preferences",
-                "preferences_url": "https://github.com/gokul-koduri/start#email-preferences",
-            })
+            html_content = render_template(
+                "report.html",
+                {
+                    "header_title": report_type.replace("_", " ").title(),
+                    "header_subtitle": now_str,
+                    "intro_text": f"Here is your {report_type.replace('_', ' ')} from the Opportunity Intelligence Platform.",
+                    "sections": [],  # sections rendered from markdown below
+                    "dashboard_url": "https://github.com/gokul-koduri/start",
+                    "unsubscribe_url": "https://github.com/gokul-koduri/start#email-preferences",
+                    "preferences_url": "https://github.com/gokul-koduri/start#email-preferences",
+                },
+            )
         except Exception:
             html_content = self._convert_to_html(md_content)
 
@@ -465,7 +505,8 @@ class ReportGeneratorAgent(BaseAgent):
             )
             _logger.info(
                 "ReportGeneratorAgent: Queued %d report emails (type=%s)",
-                len(queued_ids), report_type,
+                len(queued_ids),
+                report_type,
             )
             return emails
         except Exception as e:

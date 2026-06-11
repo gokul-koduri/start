@@ -1,7 +1,5 @@
 """Analysis agent."""
 
-
-import json
 import logging
 from datetime import datetime, timezone
 
@@ -41,7 +39,7 @@ class CommunityDetectorAgent(BaseAgent):
         cursor.execute(
             """INSERT INTO analysis_community_detection (analyzed_at, record_count)
                VALUES (%s, %s)""",
-            (datetime.now(timezone.utc).isoformat(), len(results))
+            (datetime.now(timezone.utc).isoformat(), len(results)),
         )
         conn.commit()
         cursor.close()

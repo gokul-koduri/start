@@ -68,6 +68,7 @@ async def _validate_api_key(raw_key: str) -> dict:
     try:
         from db.connection import get_connection
         from db import schema
+
         conn = get_connection()
         schema.init_schema(conn)
         cursor = conn.cursor()
@@ -90,7 +91,9 @@ async def _validate_api_key(raw_key: str) -> dict:
         if not row["is_active"] or not row["user_active"]:
             cursor.close()
             conn.close()
-            raise HTTPException(status_code=401, detail="API key or account is deactivated")
+            raise HTTPException(
+                status_code=401, detail="API key or account is deactivated"
+            )
 
         # Update last_used_at (best-effort)
         try:
@@ -126,6 +129,7 @@ def require_role(*roles: str):
         async def admin_endpoint(user: dict = Depends(require_role("admin"))):
             ...
     """
+
     async def role_checker(current_user: dict = Depends(get_current_user)) -> dict:
         if current_user.get("role") not in roles:
             raise HTTPException(
@@ -133,6 +137,7 @@ def require_role(*roles: str):
                 detail=f"Role '{current_user.get('role')}' not permitted. Required: {', '.join(roles)}",
             )
         return current_user
+
     return role_checker
 
 
@@ -145,9 +150,12 @@ def require_permission(permission: str):
             ...
     """
     from auth.rbac import RBAC
+
     _rbac = RBAC()
 
-    async def permission_checker(current_user: dict = Depends(get_current_user)) -> dict:
+    async def permission_checker(
+        current_user: dict = Depends(get_current_user),
+    ) -> dict:
         role = current_user.get("role", "viewer")
         if not _rbac.check_permission(role, permission):
             raise HTTPException(
@@ -155,4 +163,5 @@ def require_permission(permission: str):
                 detail=f"Permission '{permission}' denied for role '{role}'",
             )
         return current_user
+
     return permission_checker

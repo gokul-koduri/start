@@ -13,6 +13,7 @@ class TestCostTrackingAgent(unittest.TestCase):
     def test_agent_exists(self):
         """Test agent can be imported."""
         from agents.cost_tracking_agent import CostTrackingAgent
+
         agent = CostTrackingAgent()
         self.assertEqual(agent.name, "cost_tracking")
 

@@ -2,7 +2,6 @@
 
 import logging
 from contextlib import contextmanager
-from typing import Optional
 
 from db.connection import get_connection
 from db import schema
@@ -162,7 +161,9 @@ class TenantManager:
             _logger.error("Failed to list tenants: %s", e)
             return []
 
-    def create_tenant(self, name: str, slug: str, config: dict | None = None) -> int | None:
+    def create_tenant(
+        self, name: str, slug: str, config: dict | None = None
+    ) -> int | None:
         """Create a new tenant.
 
         Args:
@@ -183,7 +184,7 @@ class TenantManager:
             cursor.execute(
                 """INSERT INTO tenants (name, slug, config, is_active)
                    VALUES (%s, %s, %s, 1)""",
-                (name, slug, json.dumps(config) if config else None)
+                (name, slug, json.dumps(config) if config else None),
             )
             tenant_id = cursor.lastrowid
             conn.commit()
@@ -211,8 +212,7 @@ class TenantManager:
             cursor = conn.cursor()
 
             cursor.execute(
-                "UPDATE tenants SET is_active = 1 WHERE id = %s",
-                (tenant_id,)
+                "UPDATE tenants SET is_active = 1 WHERE id = %s", (tenant_id,)
             )
             conn.commit()
             cursor.close()

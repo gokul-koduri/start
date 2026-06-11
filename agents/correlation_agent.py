@@ -79,9 +79,7 @@ class CorrelationAgent(BaseAgent):
                 try:
                     results[key] = fn(conn)
                 except Exception as e:
-                    _logger.warning(
-                        "CorrelationAgent: %s failed: %s", key, e
-                    )
+                    _logger.warning("CorrelationAgent: %s failed: %s", key, e)
                     errors.append(f"{key}: {e}")
                     results[key] = {
                         "title": key,

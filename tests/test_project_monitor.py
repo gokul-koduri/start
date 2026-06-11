@@ -1,6 +1,5 @@
 """Tests for the Project Monitor Agent."""
 
-import os
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
@@ -13,6 +12,7 @@ from agents.project_monitor_agent import ProjectMonitorAgent
 
 
 # ── Fixtures ─────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def minimal_progress():
@@ -29,10 +29,18 @@ def minimal_progress():
             "target": {"agents": 50, "tests": 400},
         },
         "phases": {
-            "phase_1": {"name": "Foundation", "status": "complete",
-                        "sessions_total": 8, "sessions_completed": 8},
-            "phase_4": {"name": "Deep Collection", "status": "not_started",
-                        "sessions_total": 15, "sessions_completed": 0},
+            "phase_1": {
+                "name": "Foundation",
+                "status": "complete",
+                "sessions_total": 8,
+                "sessions_completed": 8,
+            },
+            "phase_4": {
+                "name": "Deep Collection",
+                "status": "not_started",
+                "sessions_total": 15,
+                "sessions_completed": 0,
+            },
         },
         "sessions": {
             "4.1": {
@@ -43,8 +51,14 @@ def minimal_progress():
                 "files_to_create": ["collectors/github_deep_collector.py"],
                 "files_to_modify": ["agents/collection.py"],
                 "validation": [
-                    {"type": "file_exists", "path": "collectors/github_deep_collector.py"},
-                    {"type": "import_clean", "module": "collectors.github_deep_collector"},
+                    {
+                        "type": "file_exists",
+                        "path": "collectors/github_deep_collector.py",
+                    },
+                    {
+                        "type": "import_clean",
+                        "module": "collectors.github_deep_collector",
+                    },
                     {"type": "tests_pass"},
                 ],
             },
@@ -56,7 +70,10 @@ def minimal_progress():
                 "files_to_create": ["collectors/reddit_stream_collector.py"],
                 "files_to_modify": [],
                 "validation": [
-                    {"type": "file_exists", "path": "collectors/reddit_stream_collector.py"},
+                    {
+                        "type": "file_exists",
+                        "path": "collectors/reddit_stream_collector.py",
+                    },
                 ],
             },
             "4.3": {
@@ -83,6 +100,7 @@ def monitor():
 
 
 # ── Loading Tests ─────────────────────────────────────────────────
+
 
 class TestProgressLoading:
     def test_load_progress_returns_dict(self, monitor, minimal_progress):
@@ -119,6 +137,7 @@ class TestProgressLoading:
 
 # ── Progress Calculation ──────────────────────────────────────────
 
+
 class TestProgressCalculation:
     def test_progress_pct(self, monitor, minimal_progress):
         result = monitor._progress_pct(minimal_progress)
@@ -126,16 +145,20 @@ class TestProgressCalculation:
         assert result == pytest.approx(34.8, abs=0.1)
 
     def test_progress_pct_no_sessions(self, monitor):
-        progress = {"phases": {
-            "phase_1": {"sessions_total": 0, "sessions_completed": 0},
-        }}
+        progress = {
+            "phases": {
+                "phase_1": {"sessions_total": 0, "sessions_completed": 0},
+            }
+        }
         result = monitor._progress_pct(progress)
         assert result == 0.0
 
     def test_progress_pct_all_complete(self, monitor):
-        progress = {"phases": {
-            "phase_1": {"sessions_total": 5, "sessions_completed": 5},
-        }}
+        progress = {
+            "phases": {
+                "phase_1": {"sessions_total": 5, "sessions_completed": 5},
+            }
+        }
         result = monitor._progress_pct(progress)
         assert result == 100.0
 
@@ -147,6 +170,7 @@ class TestProgressCalculation:
 
 
 # ── Next Session Recommendation ───────────────────────────────────
+
 
 class TestNextSession:
     def test_next_session_no_deps(self, monitor, minimal_progress):
@@ -164,10 +188,24 @@ class TestNextSession:
         """When 4.1 is complete, 4.2 should be recommended."""
         progress = {
             "sessions": {
-                "4.1": {"title": "GitHub", "status": "complete", "dependencies": [], "phase": 4,
-                        "files_to_create": [], "files_to_modify": [], "validation": []},
-                "4.2": {"title": "Reddit", "status": "pending", "dependencies": ["4.1"], "phase": 4,
-                        "files_to_create": [], "files_to_modify": [], "validation": []},
+                "4.1": {
+                    "title": "GitHub",
+                    "status": "complete",
+                    "dependencies": [],
+                    "phase": 4,
+                    "files_to_create": [],
+                    "files_to_modify": [],
+                    "validation": [],
+                },
+                "4.2": {
+                    "title": "Reddit",
+                    "status": "pending",
+                    "dependencies": ["4.1"],
+                    "phase": 4,
+                    "files_to_create": [],
+                    "files_to_modify": [],
+                    "validation": [],
+                },
             },
             "phases": {},
         }
@@ -177,8 +215,15 @@ class TestNextSession:
     def test_next_session_all_complete(self, monitor):
         progress = {
             "sessions": {
-                "4.1": {"title": "GitHub", "status": "complete", "dependencies": [], "phase": 4,
-                        "files_to_create": [], "files_to_modify": [], "validation": []},
+                "4.1": {
+                    "title": "GitHub",
+                    "status": "complete",
+                    "dependencies": [],
+                    "phase": 4,
+                    "files_to_create": [],
+                    "files_to_modify": [],
+                    "validation": [],
+                },
             },
             "phases": {},
         }
@@ -190,10 +235,24 @@ class TestNextSession:
         """Skipped sessions should not block dependents."""
         progress = {
             "sessions": {
-                "4.1": {"title": "GitHub", "status": "skipped", "dependencies": [], "phase": 4,
-                        "files_to_create": [], "files_to_modify": [], "validation": []},
-                "4.2": {"title": "Reddit", "status": "pending", "dependencies": ["4.1"], "phase": 4,
-                        "files_to_create": [], "files_to_modify": [], "validation": []},
+                "4.1": {
+                    "title": "GitHub",
+                    "status": "skipped",
+                    "dependencies": [],
+                    "phase": 4,
+                    "files_to_create": [],
+                    "files_to_modify": [],
+                    "validation": [],
+                },
+                "4.2": {
+                    "title": "Reddit",
+                    "status": "pending",
+                    "dependencies": ["4.1"],
+                    "phase": 4,
+                    "files_to_create": [],
+                    "files_to_modify": [],
+                    "validation": [],
+                },
             },
             "phases": {},
         }
@@ -202,6 +261,7 @@ class TestNextSession:
 
 
 # ── Validation Checks ────────────────────────────────────────────
+
 
 class TestValidationChecks:
     def test_file_exists_pass(self, monitor):
@@ -225,12 +285,20 @@ class TestValidationChecks:
         assert result["status"] == "fail"
 
     def test_registered_in_pass(self, monitor):
-        check = {"type": "registered_in", "file": "agents/orchestrator.py", "symbol": "AGENT_REGISTRY"}
+        check = {
+            "type": "registered_in",
+            "file": "agents/orchestrator.py",
+            "symbol": "AGENT_REGISTRY",
+        }
         result = monitor._run_check(check, pm_module._PROJECT_ROOT)
         assert result["status"] == "pass"
 
     def test_registered_in_fail(self, monitor):
-        check = {"type": "registered_in", "file": "agents/orchestrator.py", "symbol": "NonexistentSymbol123"}
+        check = {
+            "type": "registered_in",
+            "file": "agents/orchestrator.py",
+            "symbol": "NonexistentSymbol123",
+        }
         result = monitor._run_check(check, pm_module._PROJECT_ROOT)
         assert result["status"] == "fail"
 
@@ -258,6 +326,7 @@ class TestValidationChecks:
 
 # ── Session Completion ────────────────────────────────────────────
 
+
 class TestSessionCompletion:
     @patch.object(pm_module, "_PROGRESS_FILE", Path("/nonexistent.yaml"))
     def test_complete_session_with_failures(self, monitor):
@@ -273,6 +342,7 @@ class TestSessionCompletion:
 
 # ── Deviation Tracking ───────────────────────────────────────────
 
+
 class TestDeviationTracking:
     def test_log_deviation(self, monitor, minimal_progress):
         """log_deviation returns False when PROGRESS.yaml can't be loaded."""
@@ -283,11 +353,14 @@ class TestDeviationTracking:
     def test_log_deviation_with_replace(self, monitor, minimal_progress):
         """log_deviation returns False when PROGRESS.yaml can't be loaded."""
         with patch.object(pm_module, "_PROGRESS_FILE", Path("/nonexistent.yaml")):
-            ok = monitor.log_deviation("4.1", "Split into two", "split", replacement="4.1a")
+            ok = monitor.log_deviation(
+                "4.1", "Split into two", "split", replacement="4.1a"
+            )
         assert ok is False
 
 
 # ── Scope Drift Detection ────────────────────────────────────────
+
 
 class TestScopeDrift:
     def test_drift_empty_progress(self, monitor):
@@ -315,17 +388,24 @@ class TestScopeDrift:
 
 # ── Regression Detection ─────────────────────────────────────────
 
+
 class TestRegressionDetection:
-    @patch.object(ProjectMonitorAgent, "_run_tests",
-                 return_value={"passing": 100, "total": 100, "status": "all_passing"})
+    @patch.object(
+        ProjectMonitorAgent,
+        "_run_tests",
+        return_value={"passing": 100, "total": 100, "status": "all_passing"},
+    )
     def test_regression_test_count(self, mock_tests, monitor):
         progress = {"project": {"test_count": 999}}  # Way higher than actual
         regressions = monitor._detect_regressions(progress)
         assert len(regressions) == 1
         assert regressions[0]["type"] == "test_count_decrease"
 
-    @patch.object(ProjectMonitorAgent, "_run_tests",
-                 return_value={"passing": 100, "total": 100, "status": "all_passing"})
+    @patch.object(
+        ProjectMonitorAgent,
+        "_run_tests",
+        return_value={"passing": 100, "total": 100, "status": "all_passing"},
+    )
     def test_no_regression(self, mock_tests, monitor):
         progress = {"project": {"test_count": 1}}  # Lower than actual
         regressions = monitor._detect_regressions(progress)
@@ -334,12 +414,18 @@ class TestRegressionDetection:
 
 # ── Health Assessment ────────────────────────────────────────────
 
+
 class TestHealthAssessment:
     @patch.object(ProjectMonitorAgent, "_detect_regressions", return_value=[])
     @patch.object(ProjectMonitorAgent, "_detect_scope_drift", return_value=[])
-    @patch.object(ProjectMonitorAgent, "_run_tests",
-                 return_value={"passing": 228, "total": 228, "status": "all_passing"})
-    def test_health_healthy(self, mock_tests, mock_drift, mock_reg, monitor, minimal_progress):
+    @patch.object(
+        ProjectMonitorAgent,
+        "_run_tests",
+        return_value={"passing": 228, "total": 228, "status": "all_passing"},
+    )
+    def test_health_healthy(
+        self, mock_tests, mock_drift, mock_reg, monitor, minimal_progress
+    ):
         health = monitor._assess_health(minimal_progress)
         assert health == "healthy"
 
@@ -349,6 +435,7 @@ class TestHealthAssessment:
 
 
 # ── Agent Interface ───────────────────────────────────────────────
+
 
 class TestAgentInterface:
     def test_name_property(self, monitor):

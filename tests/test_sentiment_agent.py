@@ -3,7 +3,6 @@
 import sys
 from pathlib import Path
 
-import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -14,21 +13,27 @@ class TestVaderSentiment:
     def test_positive_text(self):
         from agents.sentiment_agent import _vader_sentiment
 
-        score, label = _vader_sentiment("Amazing success! Company raises record $100M in exciting new funding round")
+        score, label = _vader_sentiment(
+            "Amazing success! Company raises record $100M in exciting new funding round"
+        )
         assert label == "positive"
         assert score > 0
 
     def test_negative_text(self):
         from agents.sentiment_agent import _vader_sentiment
 
-        score, label = _vader_sentiment("Startup shuts down after failing to raise capital")
+        score, label = _vader_sentiment(
+            "Startup shuts down after failing to raise capital"
+        )
         assert label == "negative"
         assert score < 0
 
     def test_neutral_text(self):
         from agents.sentiment_agent import _vader_sentiment
 
-        score, label = _vader_sentiment("The company was founded in 2020 in Silicon Valley")
+        score, label = _vader_sentiment(
+            "The company was founded in 2020 in Silicon Valley"
+        )
         assert label == "neutral"
 
     def test_empty_text(self):

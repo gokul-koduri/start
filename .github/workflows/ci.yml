@@ -1,0 +1,218 @@
+name: CI — Pull Request Checks
+
+on:
+  pull_request:
+    branches: [develop, main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [develop]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  # ── Test Suite ────────────────────────────────────────
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: startup_research_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        env:
+          MYSQL_HOST: "127.0.0.1"
+          MYSQL_PORT: "3306"
+          MYSQL_USER: "root"
+          MYSQL_PASSWORD: "root"
+          MYSQL_DATABASE: "startup_research_test"
+          TESTING: "1"
+        run: |
+          python -m pytest tests/ -v \
+            --tb=short \
+            --junitxml=test-results.xml \
+            -q
+
+      - name: Test Summary
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          path: test-results.xml
+          reporter: java-junit
+        continue-on-error: true
+
+  # ── Linting ───────────────────────────────────────────
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install linters
+        run: pip install ruff
+
+      - name: Ruff Check
+        run: ruff check . --output-format=github
+
+      - name: Ruff Format Check
+        run: ruff format --check .
+
+  # ── Security Scan ─────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tools
+        run: |
+          pip install bandit pip-audit
+
+      - name: Bandit Scan
+        run: |
+          bandit -r . -x tests,.git,venv,.venv,node_modules \
+            -f json -o bandit-results.json \
+            --severity-level medium \
+            || true
+
+      - name: pip-audit
+        run: pip-audit -r requirements.txt || true
+        continue-on-error: true
+
+      - name: Check for hardcoded secrets
+        run: |
+          ! grep -rn "password\s*=\s*['\"]" --include="*.py" \
+            --exclude-dir=.git --exclude-dir=venv . \
+            | grep -v "root\|example\|template\|env\|config\|test" || true
+
+  # ── PR Validation ─────────────────────────────────────
+  pr-checks:
+    name: PR Validation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 3
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check PR size
+        id: pr_size
+        run: |
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
+          LINES=$(git diff origin/${{ github.base_ref }}...HEAD --shortstat | grep -oP '\d+(?= insertion)' || echo "0")
+          echo "changed_files=$CHANGED" >> $GITHUB_OUTPUT
+          echo "lines_added=$LINES" >> $GITHUB_OUTPUT
+
+      - name: PR Size Label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const files = ${{ steps.pr_size.outputs.changed_files }};
+            const lines = ${{ steps.pr_size.outputs.lines_added }};
+            let label = 'size/S';
+            if (lines > 1000) label = 'size/XL';
+            else if (lines > 400) label = 'size/L';
+            else if (lines > 100) label = 'size/M';
+
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: [label]
+              });
+            } catch (e) { }
+
+      - name: Validate PR title format
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          if [[ ! "$TITLE" =~ ^(feat|fix|docs|test|refactor|chore|ci|perf|build|style)(\(.+\))?:\ .+ ]]; then
+            echo "::error::PR title must follow Conventional Commits: type(scope): description"
+            echo "Examples: feat(api): add search endpoint, fix(auth): resolve token expiry"
+            exit 1
+          fi
+
+  # ── Sprint Gate (main branch only) ────────────────────
+  sprint-gate:
+    name: Sprint Gate Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    timeout-minutes: 5
+    needs: [test, lint]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Run Sprint Gate Check
+        run: python scripts/sprint_validator.py --gate
+
+  # ── Summary ───────────────────────────────────────────
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [test, lint, security, pr-checks]
+    timeout-minutes: 2
+
+    steps:
+      - name: Check all jobs
+        run: |
+          echo "## CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.test.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | ${{ needs.security.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| PR Checks | ${{ needs.pr-checks.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY

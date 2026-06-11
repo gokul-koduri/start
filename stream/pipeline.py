@@ -68,13 +68,17 @@ def _op_ingest(raw: bytes) -> tuple[str, dict[str, Any]]:
     """
     try:
         from stream.operators import parse_signal_envelope
+
         entity_name, envelope = parse_signal_envelope(raw)
         _metrics.increment("signals_processed")
         return (entity_name, envelope.to_dict())
     except Exception as e:
         _metrics.increment("signals_errored")
         _logger.warning("Ingest failed: %s", e)
-        return ("__dlq__", {"raw": str(raw)[:500], "error": str(e), "timestamp": _now_iso()})
+        return (
+            "__dlq__",
+            {"raw": str(raw)[:500], "error": str(e), "timestamp": _now_iso()},
+        )
 
 
 def _op_enrich(key_entity: tuple[str, dict]) -> tuple[str, dict]:
@@ -102,6 +106,7 @@ def _op_enrich(key_entity: tuple[str, dict]) -> tuple[str, dict]:
         )
 
         from stream.operators import enrich_signal
+
         enriched = enrich_signal(envelope)
         _metrics.increment("signals_enriched")
         return (enriched.entity_name, enriched.to_dict())
@@ -124,20 +129,23 @@ def _op_score(key_entity: tuple[str, list[dict]]) -> tuple[str, dict]:
     try:
         envelopes = []
         for s in signals:
-            envelopes.append(SignalEnvelope(
-                signal_type=s.get("signal_type", ""),
-                source_name=s.get("source_name", ""),
-                title=s.get("title", ""),
-                body_text=s.get("body_text", ""),
-                entity_name=s.get("entity_name", entity_name),
-                entity_type=s.get("entity_type", "company"),
-                published_at=_parse_dt(s.get("published_at")),
-                collected_at=_parse_dt(s.get("collected_at")),
-                raw_score=float(s.get("raw_score", 0.0)),
-                metadata=s.get("metadata", {}),
-            ))
+            envelopes.append(
+                SignalEnvelope(
+                    signal_type=s.get("signal_type", ""),
+                    source_name=s.get("source_name", ""),
+                    title=s.get("title", ""),
+                    body_text=s.get("body_text", ""),
+                    entity_name=s.get("entity_name", entity_name),
+                    entity_type=s.get("entity_type", "company"),
+                    published_at=_parse_dt(s.get("published_at")),
+                    collected_at=_parse_dt(s.get("collected_at")),
+                    raw_score=float(s.get("raw_score", 0.0)),
+                    metadata=s.get("metadata", {}),
+                )
+            )
 
         from stream.operators import score_entity
+
         scored = score_entity(entity_name, envelopes)
         _metrics.increment("entities_scored")
         _metrics.increment("signals_scored", len(signals))
@@ -145,7 +153,10 @@ def _op_score(key_entity: tuple[str, list[dict]]) -> tuple[str, dict]:
     except Exception as e:
         _metrics.increment("signals_errored")
         _logger.error("Scoring failed for %s: %s", entity_name, e)
-        return (entity_name, {"entity_name": entity_name, "composite_score": 0.0, "error": str(e)})
+        return (
+            entity_name,
+            {"entity_name": entity_name, "composite_score": 0.0, "error": str(e)},
+        )
 
 
 def _op_write_mysql(key_entity: tuple[str, dict]) -> tuple[str, dict]:
@@ -159,6 +170,7 @@ def _op_write_mysql(key_entity: tuple[str, dict]) -> tuple[str, dict]:
 
     try:
         from stream.operators import write_score_to_mysql
+
         write_score_to_mysql(scored)
         _metrics.increment("scores_written")
     except Exception as e:
@@ -175,6 +187,7 @@ def _op_emit_alert(key_entity: tuple[str, dict]) -> tuple[str, dict] | None:
     entity_name, scored = key_entity
     try:
         from stream.operators import emit_alert
+
         alert = emit_alert(scored, threshold=_get_config()["alert_threshold"])
         if alert:
             _metrics.increment("alerts_emitted")
@@ -226,6 +239,7 @@ def build_pipeline() -> Any:
     # ── Stage 1: Ingest from Kafka ──
     try:
         from bytewax.connectors.kafka import KafkaSource
+
         config = _get_config()
         source = KafkaSource(
             brokers=config["kafka_brokers"].split(","),
@@ -234,7 +248,11 @@ def build_pipeline() -> Any:
             batch_size=100,
         )
         flow.input("kafka_in", source)
-        _logger.info("Connected to Kafka at %s, topic: %s", config["kafka_brokers"], config["kafka_topic_in"])
+        _logger.info(
+            "Connected to Kafka at %s, topic: %s",
+            config["kafka_brokers"],
+            config["kafka_topic_in"],
+        )
     except ImportError:
         _logger.warning("KafkaSource not available — using SimulatedInput for testing")
         flow.input("simulated", _simulated_source())
@@ -246,6 +264,7 @@ def build_pipeline() -> Any:
     # Group signals by entity_name within tumbling windows
     try:
         from bytewax.window import TumblingClocker
+
         window_seconds = int(os.environ.get("WINDOW_SECONDS", "300"))
         clock = TumblingClocker(window_seconds)
 
@@ -272,15 +291,19 @@ def build_pipeline() -> Any:
     # ── Stage 5b: Output to Kafka (scores) ──
     try:
         from bytewax.connectors.kafka import KafkaSink
+
         config = _get_config()
 
         def _serialize_score(item: tuple[str, dict]) -> bytes:
             return json.dumps(item[1]).encode("utf-8")
 
-        flow.output("kafka_scores", KafkaSink(
-            brokers=config["kafka_brokers"].split(","),
-            topic=config["kafka_topic_scores"],
-        ))
+        flow.output(
+            "kafka_scores",
+            KafkaSink(
+                brokers=config["kafka_brokers"].split(","),
+                topic=config["kafka_topic_scores"],
+            ),
+        )
         _logger.info("Output to Kafka topic: %s", config["kafka_topic_scores"])
     except ImportError:
         flow.output("stdout_scores", lambda x: print(f"SCORE: {x}"))
@@ -289,11 +312,15 @@ def build_pipeline() -> Any:
     flow.filter(_op_emit_alert)
     try:
         from bytewax.connectors.kafka import KafkaSink
+
         config = _get_config()
-        flow.output("kafka_alerts", KafkaSink(
-            brokers=config["kafka_brokers"].split(","),
-            topic=config["kafka_topic_alerts"],
-        ))
+        flow.output(
+            "kafka_alerts",
+            KafkaSink(
+                brokers=config["kafka_brokers"].split(","),
+                topic=config["kafka_topic_alerts"],
+            ),
+        )
     except ImportError:
         flow.output("stdout_alerts", lambda x: print(f"ALERT: {x}"))
 
@@ -354,7 +381,9 @@ def main():
 
     parser = argparse.ArgumentParser(description="Stream Processing Pipeline")
     parser.add_argument("--workers", type=int, default=1, help="Number of workers")
-    parser.add_argument("--test", action="store_true", help="Use simulated input (no Kafka)")
+    parser.add_argument(
+        "--test", action="store_true", help="Use simulated input (no Kafka)"
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose logging")
     args = parser.parse_args()
 
@@ -366,7 +395,9 @@ def main():
     if args.test:
         os.environ["KAFKA_BOOTSTRAP_SERVERS"] = "localhost:9999"  # Force simulated
 
-    _logger.info("Starting stream processor (workers=%d, test=%s)", args.workers, args.test)
+    _logger.info(
+        "Starting stream processor (workers=%d, test=%s)", args.workers, args.test
+    )
 
     # Start metrics writer
     config = _get_config()
@@ -379,6 +410,7 @@ def main():
 
     try:
         from bytewax import run
+
         flow = build_pipeline()
         _logger.info("Pipeline built — starting execution")
         run(flow)

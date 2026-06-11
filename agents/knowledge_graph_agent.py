@@ -18,7 +18,6 @@ import re
 import time
 import urllib.request
 import urllib.error
-from datetime import datetime, timezone
 
 from agents.base import AgentResult, BaseAgent
 from db.connection import get_connection
@@ -82,17 +81,23 @@ class KnowledgeGraphAgent(BaseAgent):
             # Step 2: Extract from failed_startups (structured, no Ollama)
             rels = self._extract_from_failed_startups(conn, type_map)
             total_relationships += rels
-            _logger.info("KnowledgeGraphAgent: failed_startups → %d relationships", rels)
+            _logger.info(
+                "KnowledgeGraphAgent: failed_startups → %d relationships", rels
+            )
 
             # Step 3: Extract from revival_industries (structured, no Ollama)
             rels = self._extract_from_revival_industries(conn, type_map)
             total_relationships += rels
-            _logger.info("KnowledgeGraphAgent: revival_industries → %d relationships", rels)
+            _logger.info(
+                "KnowledgeGraphAgent: revival_industries → %d relationships", rels
+            )
 
             # Step 4: Extract from geographic_hotspots (structured, no Ollama)
             rels = self._extract_from_geographic_hotspots(conn, type_map)
             total_relationships += rels
-            _logger.info("KnowledgeGraphAgent: geographic_hotspots → %d relationships", rels)
+            _logger.info(
+                "KnowledgeGraphAgent: geographic_hotspots → %d relationships", rels
+            )
 
             # Step 5: Extract from news_articles (Ollama-assisted for text)
             delay = float(self.config.get("delay_seconds", 1.0))
@@ -129,7 +134,9 @@ class KnowledgeGraphAgent(BaseAgent):
             # Step 6: Build cross-entity relationships
             rels = self._build_cross_relationships(conn, type_map)
             total_relationships += rels
-            _logger.info("KnowledgeGraphAgent: cross-relationships → %d relationships", rels)
+            _logger.info(
+                "KnowledgeGraphAgent: cross-relationships → %d relationships", rels
+            )
 
             # Count totals
             cursor = conn.cursor()
@@ -153,7 +160,8 @@ class KnowledgeGraphAgent(BaseAgent):
 
         _logger.info(
             "KnowledgeGraphAgent: Done — %d entities, %d relationships",
-            total_entities, total_relationships,
+            total_entities,
+            total_relationships,
         )
 
         return AgentResult(
@@ -180,7 +188,9 @@ class KnowledgeGraphAgent(BaseAgent):
                    ON DUPLICATE KEY UPDATE description = VALUES(description)""",
                 (type_name, description, icon),
             )
-            cursor.execute("SELECT id FROM kg_entity_types WHERE type_name = %s", (type_name,))
+            cursor.execute(
+                "SELECT id FROM kg_entity_types WHERE type_name = %s", (type_name,)
+            )
             type_map[type_name] = cursor.fetchone()["id"]
         conn.commit()
         cursor.close()
@@ -188,8 +198,14 @@ class KnowledgeGraphAgent(BaseAgent):
 
     # ── Entity and relationship upserts ──
 
-    def _upsert_entity(self, cursor, name: str, normalized: str, type_id: int,
-                        attributes: dict | None = None) -> int:
+    def _upsert_entity(
+        self,
+        cursor,
+        name: str,
+        normalized: str,
+        type_id: int,
+        attributes: dict | None = None,
+    ) -> int:
         """Upsert an entity and return its ID.
 
         Phase 2 enhancement: checks kg_entity_aliases first. If an alias
@@ -228,10 +244,16 @@ class KnowledgeGraphAgent(BaseAgent):
         )
         return cursor.fetchone()["id"]
 
-    def _upsert_relationship(self, cursor, source_id: int, target_id: int,
-                              rel_type: str, weight: float = 1.0,
-                              source_table: str | None = None,
-                              source_record_id: int | None = None) -> None:
+    def _upsert_relationship(
+        self,
+        cursor,
+        source_id: int,
+        target_id: int,
+        rel_type: str,
+        weight: float = 1.0,
+        source_table: str | None = None,
+        source_record_id: int | None = None,
+    ) -> None:
         """Upsert a relationship between two entities."""
         cursor.execute(
             """INSERT INTO kg_relationships
@@ -261,7 +283,9 @@ class KnowledgeGraphAgent(BaseAgent):
                 continue
 
             startup_id = self._upsert_entity(
-                cursor, startup_name, _normalize_name(startup_name),
+                cursor,
+                startup_name,
+                _normalize_name(startup_name),
                 type_map["startup"],
                 {"funding_raised_usd": r["funding_raised_usd"], "source_id": r["id"]},
             )
@@ -269,43 +293,74 @@ class KnowledgeGraphAgent(BaseAgent):
             # operates_in_sector
             if r["sector"]:
                 sector_id = self._upsert_entity(
-                    cursor, r["sector"], _normalize_name(r["sector"]),
+                    cursor,
+                    r["sector"],
+                    _normalize_name(r["sector"]),
                     type_map["sector"],
                 )
-                self._upsert_relationship(cursor, startup_id, sector_id, "operates_in_sector",
-                                           source_table="failed_startups", source_record_id=r["id"])
+                self._upsert_relationship(
+                    cursor,
+                    startup_id,
+                    sector_id,
+                    "operates_in_sector",
+                    source_table="failed_startups",
+                    source_record_id=r["id"],
+                )
                 relationships += 1
 
             # located_in
             location = r["region"] or r["country"]
             if location:
                 loc_id = self._upsert_entity(
-                    cursor, location, _normalize_name(location),
+                    cursor,
+                    location,
+                    _normalize_name(location),
                     type_map["region"],
                 )
-                self._upsert_relationship(cursor, startup_id, loc_id, "located_in",
-                                           source_table="failed_startups", source_record_id=r["id"])
+                self._upsert_relationship(
+                    cursor,
+                    startup_id,
+                    loc_id,
+                    "located_in",
+                    source_table="failed_startups",
+                    source_record_id=r["id"],
+                )
                 relationships += 1
 
             # failed_with_reason
             if r["failure_category"]:
                 reason_id = self._upsert_entity(
-                    cursor, r["failure_category"], _normalize_name(r["failure_category"]),
+                    cursor,
+                    r["failure_category"],
+                    _normalize_name(r["failure_category"]),
                     type_map["failure_reason"],
                 )
-                self._upsert_relationship(cursor, startup_id, reason_id, "failed_with_reason",
-                                           source_table="failed_startups", source_record_id=r["id"])
+                self._upsert_relationship(
+                    cursor,
+                    startup_id,
+                    reason_id,
+                    "failed_with_reason",
+                    source_table="failed_startups",
+                    source_record_id=r["id"],
+                )
                 relationships += 1
 
             # operates_in (industry sub-sector)
             if r["manufacturing_sub_sector"]:
                 industry_id = self._upsert_entity(
-                    cursor, r["manufacturing_sub_sector"],
+                    cursor,
+                    r["manufacturing_sub_sector"],
                     _normalize_name(r["manufacturing_sub_sector"]),
                     type_map["industry"],
                 )
-                self._upsert_relationship(cursor, startup_id, industry_id, "operates_in",
-                                           source_table="failed_startups", source_record_id=r["id"])
+                self._upsert_relationship(
+                    cursor,
+                    startup_id,
+                    industry_id,
+                    "operates_in",
+                    source_table="failed_startups",
+                    source_record_id=r["id"],
+                )
                 relationships += 1
 
         conn.commit()
@@ -317,7 +372,9 @@ class KnowledgeGraphAgent(BaseAgent):
     def _extract_from_revival_industries(self, conn, type_map: dict[str, int]) -> int:
         """Extract entities and relationships from revival_industries table."""
         cursor = conn.cursor()
-        cursor.execute("SELECT id, industry, why_returning, market_fit, market_size_2030, key_investors FROM revival_industries")
+        cursor.execute(
+            "SELECT id, industry, why_returning, market_fit, market_size_2030, key_investors FROM revival_industries"
+        )
         rows = cursor.fetchall()
         relationships = 0
 
@@ -328,10 +385,16 @@ class KnowledgeGraphAgent(BaseAgent):
                 continue
 
             industry_id = self._upsert_entity(
-                cursor, industry_name, _normalize_name(industry_name),
+                cursor,
+                industry_name,
+                _normalize_name(industry_name),
                 type_map["industry"],
-                {"why_returning": r["why_returning"], "market_fit": r["market_fit"],
-                 "market_size_2030": r["market_size_2030"], "source_id": r["id"]},
+                {
+                    "why_returning": r["why_returning"],
+                    "market_fit": r["market_fit"],
+                    "market_size_2030": r["market_size_2030"],
+                    "source_id": r["id"],
+                },
             )
 
             # Extract investors as entities
@@ -342,11 +405,19 @@ class KnowledgeGraphAgent(BaseAgent):
                     if len(inv_name) < 2:
                         continue
                     inv_id = self._upsert_entity(
-                        cursor, inv_name, _normalize_name(inv_name),
+                        cursor,
+                        inv_name,
+                        _normalize_name(inv_name),
                         type_map["investor"],
                     )
-                    self._upsert_relationship(cursor, inv_id, industry_id, "invested_in",
-                                               source_table="revival_industries", source_record_id=r["id"])
+                    self._upsert_relationship(
+                        cursor,
+                        inv_id,
+                        industry_id,
+                        "invested_in",
+                        source_table="revival_industries",
+                        source_record_id=r["id"],
+                    )
                     relationships += 1
 
         conn.commit()
@@ -358,7 +429,9 @@ class KnowledgeGraphAgent(BaseAgent):
     def _extract_from_geographic_hotspots(self, conn, type_map: dict[str, int]) -> int:
         """Extract entities and relationships from geographic_hotspots table."""
         cursor = conn.cursor()
-        cursor.execute("SELECT id, region, closed_facility_types, revival_potential FROM geographic_hotspots")
+        cursor.execute(
+            "SELECT id, region, closed_facility_types, revival_potential FROM geographic_hotspots"
+        )
         rows = cursor.fetchall()
         relationships = 0
 
@@ -369,7 +442,9 @@ class KnowledgeGraphAgent(BaseAgent):
                 continue
 
             region_id = self._upsert_entity(
-                cursor, region_name, _normalize_name(region_name),
+                cursor,
+                region_name,
+                _normalize_name(region_name),
                 type_map["region"],
                 {"revival_potential": r["revival_potential"], "source_id": r["id"]},
             )
@@ -382,11 +457,19 @@ class KnowledgeGraphAgent(BaseAgent):
                     if len(fac) < 2:
                         continue
                     fac_id = self._upsert_entity(
-                        cursor, fac, _normalize_name(fac),
+                        cursor,
+                        fac,
+                        _normalize_name(fac),
                         type_map["industry"],
                     )
-                    self._upsert_relationship(cursor, region_id, fac_id, "hotspot_region",
-                                               source_table="geographic_hotspots", source_record_id=r["id"])
+                    self._upsert_relationship(
+                        cursor,
+                        region_id,
+                        fac_id,
+                        "hotspot_region",
+                        source_table="geographic_hotspots",
+                        source_record_id=r["id"],
+                    )
                     relationships += 1
 
         conn.commit()
@@ -395,8 +478,9 @@ class KnowledgeGraphAgent(BaseAgent):
 
     # ── Ollama-assisted extraction: news_articles ──
 
-    def _extract_from_news_articles(self, conn, type_map: dict[str, int],
-                                      delay: float, batch_size: int) -> int:
+    def _extract_from_news_articles(
+        self, conn, type_map: dict[str, int], delay: float, batch_size: int
+    ) -> int:
         """Extract entities from news_articles using Ollama NER on summary text."""
         cursor = conn.cursor()
         cursor.execute(
@@ -413,13 +497,20 @@ class KnowledgeGraphAgent(BaseAgent):
             # First, use already-extracted startup name (structured)
             if r.get("startup_name_extracted"):
                 startup_id = self._upsert_entity(
-                    cursor, r["startup_name_extracted"],
+                    cursor,
+                    r["startup_name_extracted"],
                     _normalize_name(r["startup_name_extracted"]),
                     type_map["startup"],
                     {"source_id": r["id"]},
                 )
-                self._upsert_relationship(cursor, startup_id, startup_id, "mentioned_in_news",
-                                           source_table="news_articles", source_record_id=r["id"])
+                self._upsert_relationship(
+                    cursor,
+                    startup_id,
+                    startup_id,
+                    "mentioned_in_news",
+                    source_table="news_articles",
+                    source_record_id=r["id"],
+                )
                 relationships += 1
 
             # Then, use NER to extract additional entities from summary
@@ -435,12 +526,20 @@ class KnowledgeGraphAgent(BaseAgent):
                 if not kg_type or kg_type not in type_map or len(ent_name) < 2:
                     continue
                 ent_id = self._upsert_entity(
-                    cursor, ent_name, _normalize_name(ent_name),
+                    cursor,
+                    ent_name,
+                    _normalize_name(ent_name),
                     type_map[kg_type],
                 )
                 # Link the entity to the news mention
-                self._upsert_relationship(cursor, ent_id, ent_id, "mentioned_in_news",
-                                           source_table="news_articles", source_record_id=r["id"])
+                self._upsert_relationship(
+                    cursor,
+                    ent_id,
+                    ent_id,
+                    "mentioned_in_news",
+                    source_table="news_articles",
+                    source_record_id=r["id"],
+                )
                 relationships += 1
 
             if delay > 0 and i > 0 and i % 10 == 0:
@@ -482,10 +581,13 @@ class KnowledgeGraphAgent(BaseAgent):
 
         try:
             from nlp.entity_extractor import UnifiedEntityExtractor
+
             extractor = UnifiedEntityExtractor(self.config)
             return extractor.extract(text)
         except ImportError:
-            _logger.debug("KnowledgeGraphAgent: NLP package unavailable, using Ollama directly")
+            _logger.debug(
+                "KnowledgeGraphAgent: NLP package unavailable, using Ollama directly"
+            )
             return self._extract_with_ollama(text)
 
     def _extract_with_ollama(self, text: str) -> list[dict]:
@@ -510,7 +612,9 @@ class KnowledgeGraphAgent(BaseAgent):
         }
         try:
             data = json.dumps(payload).encode()
-            req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+            req = urllib.request.Request(
+                url, data=data, headers={"Content-Type": "application/json"}
+            )
             with urllib.request.urlopen(req, timeout=30) as resp:
                 result = json.loads(resp.read().decode())
             content = result.get("message", {}).get("content", "")
@@ -546,27 +650,57 @@ class KnowledgeGraphAgent(BaseAgent):
                 continue
 
             startup_id = self._upsert_entity(
-                cursor, company, _normalize_name(company), type_map["startup"],
-                {"round_type": r["round_type"], "amount_usd": r["amount_usd"], "source_id": r["id"]},
+                cursor,
+                company,
+                _normalize_name(company),
+                type_map["startup"],
+                {
+                    "round_type": r["round_type"],
+                    "amount_usd": r["amount_usd"],
+                    "source_id": r["id"],
+                },
             )
 
             investors_json = r.get("investors_json")
             if investors_json:
                 try:
-                    investors = json.loads(investors_json) if isinstance(investors_json, str) else investors_json
+                    investors = (
+                        json.loads(investors_json)
+                        if isinstance(investors_json, str)
+                        else investors_json
+                    )
                     if isinstance(investors, str):
-                        investors = [inv.strip() for inv in re.split(r"[,;]", investors) if inv.strip()]
+                        investors = [
+                            inv.strip()
+                            for inv in re.split(r"[,;]", investors)
+                            if inv.strip()
+                        ]
                 except (json.JSONDecodeError, TypeError):
-                    investors = [inv.strip() for inv in re.split(r"[,;]", str(investors_json)) if inv.strip()]
+                    investors = [
+                        inv.strip()
+                        for inv in re.split(r"[,;]", str(investors_json))
+                        if inv.strip()
+                    ]
 
                 for inv_name in investors:
                     if len(inv_name) < 2:
                         continue
-                    inv_id = self._upsert_entity(cursor, inv_name, _normalize_name(inv_name), type_map["investor"])
+                    inv_id = self._upsert_entity(
+                        cursor,
+                        inv_name,
+                        _normalize_name(inv_name),
+                        type_map["investor"],
+                    )
                     weight = 1.0 + (r["amount_usd"] or 0) / 50_000_000
-                    self._upsert_relationship(cursor, startup_id, inv_id, "funded_by",
-                                               weight=min(weight, 5.0),
-                                               source_table="funding_events", source_record_id=r["id"])
+                    self._upsert_relationship(
+                        cursor,
+                        startup_id,
+                        inv_id,
+                        "funded_by",
+                        weight=min(weight, 5.0),
+                        source_table="funding_events",
+                        source_record_id=r["id"],
+                    )
                     relationships += 1
 
         conn.commit()
@@ -592,7 +726,10 @@ class KnowledgeGraphAgent(BaseAgent):
                 continue
 
             startup_id = self._upsert_entity(
-                cursor, company, _normalize_name(company), type_map["startup"],
+                cursor,
+                company,
+                _normalize_name(company),
+                type_map["startup"],
                 {"filing_type": r["filing_type"], "source_id": r["id"]},
             )
 
@@ -608,9 +745,17 @@ class KnowledgeGraphAgent(BaseAgent):
                         continue
                     if _normalize_name(ent_name) == _normalize_name(company):
                         continue  # Skip self-reference
-                    ent_id = self._upsert_entity(cursor, ent_name, _normalize_name(ent_name), type_map[kg_type])
-                    self._upsert_relationship(cursor, startup_id, ent_id, "mentioned_in_news",
-                                               source_table="sec_filings", source_record_id=r["id"])
+                    ent_id = self._upsert_entity(
+                        cursor, ent_name, _normalize_name(ent_name), type_map[kg_type]
+                    )
+                    self._upsert_relationship(
+                        cursor,
+                        startup_id,
+                        ent_id,
+                        "mentioned_in_news",
+                        source_table="sec_filings",
+                        source_record_id=r["id"],
+                    )
                     relationships += 1
 
         conn.commit()
@@ -637,25 +782,46 @@ class KnowledgeGraphAgent(BaseAgent):
                 continue
 
             startup_id = self._upsert_entity(
-                cursor, company, _normalize_name(company), type_map["startup"],
+                cursor,
+                company,
+                _normalize_name(company),
+                type_map["startup"],
                 {"source_id": r["id"]},
             )
 
             skills_json = r.get("skills_json")
             if skills_json:
                 try:
-                    skills = json.loads(skills_json) if isinstance(skills_json, str) else skills_json
+                    skills = (
+                        json.loads(skills_json)
+                        if isinstance(skills_json, str)
+                        else skills_json
+                    )
                     if isinstance(skills, str):
-                        skills = [s.strip() for s in re.split(r"[,;]", skills) if s.strip()]
+                        skills = [
+                            s.strip() for s in re.split(r"[,;]", skills) if s.strip()
+                        ]
                 except (json.JSONDecodeError, TypeError):
-                    skills = [s.strip() for s in re.split(r"[,;]", str(skills_json)) if s.strip()]
+                    skills = [
+                        s.strip()
+                        for s in re.split(r"[,;]", str(skills_json))
+                        if s.strip()
+                    ]
 
                 for skill in skills:
                     if len(skill) < 2:
                         continue
-                    tech_id = self._upsert_entity(cursor, skill, _normalize_name(skill), type_map["technology"])
-                    self._upsert_relationship(cursor, startup_id, tech_id, "uses_tech",
-                                               source_table="job_postings", source_record_id=r["id"])
+                    tech_id = self._upsert_entity(
+                        cursor, skill, _normalize_name(skill), type_map["technology"]
+                    )
+                    self._upsert_relationship(
+                        cursor,
+                        startup_id,
+                        tech_id,
+                        "uses_tech",
+                        source_table="job_postings",
+                        source_record_id=r["id"],
+                    )
                     relationships += 1
 
         conn.commit()
@@ -681,30 +847,59 @@ class KnowledgeGraphAgent(BaseAgent):
 
             # Language as technology entity
             if language and len(language) >= 2:
-                tech_id = self._upsert_entity(cursor, language, _normalize_name(language), type_map["technology"])
-                repo_id = self._upsert_entity(cursor, repo, _normalize_name(repo), type_map["technology"],
-                                                   {"source_id": r["id"], "weekly_stars_delta": ""})
-                self._upsert_relationship(cursor, repo_id, tech_id, "uses_tech",
-                                           source_table="github_trends", source_record_id=r["id"])
+                tech_id = self._upsert_entity(
+                    cursor, language, _normalize_name(language), type_map["technology"]
+                )
+                repo_id = self._upsert_entity(
+                    cursor,
+                    repo,
+                    _normalize_name(repo),
+                    type_map["technology"],
+                    {"source_id": r["id"], "weekly_stars_delta": ""},
+                )
+                self._upsert_relationship(
+                    cursor,
+                    repo_id,
+                    tech_id,
+                    "uses_tech",
+                    source_table="github_trends",
+                    source_record_id=r["id"],
+                )
                 relationships += 1
 
             # Topic tags as technology or market entities
             topic_tags = r.get("topic_tags")
             if topic_tags:
                 try:
-                    tags = json.loads(topic_tags) if isinstance(topic_tags, str) else topic_tags
+                    tags = (
+                        json.loads(topic_tags)
+                        if isinstance(topic_tags, str)
+                        else topic_tags
+                    )
                     if isinstance(tags, str):
                         tags = [t.strip() for t in re.split(r"[,;]", tags) if t.strip()]
                 except (json.JSONDecodeError, TypeError):
-                    tags = [t.strip() for t in re.split(r"[,;]", str(topic_tags)) if t.strip()]
+                    tags = [
+                        t.strip()
+                        for t in re.split(r"[,;]", str(topic_tags))
+                        if t.strip()
+                    ]
 
                 for tag in tags:
                     if len(tag) < 2:
                         continue
-                    tag_type = "market" if any(m in tag.lower() for m in ("market", "industry", "sector")) else "technology"
+                    tag_type = (
+                        "market"
+                        if any(
+                            m in tag.lower() for m in ("market", "industry", "sector")
+                        )
+                        else "technology"
+                    )
                     if tag_type not in type_map:
                         tag_type = "technology"
-                    tag_id = self._upsert_entity(cursor, tag, _normalize_name(tag), type_map[tag_type])
+                    self._upsert_entity(
+                        cursor, tag, _normalize_name(tag), type_map[tag_type]
+                    )
                     relationships += 1
 
         conn.commit()
@@ -732,17 +927,32 @@ class KnowledgeGraphAgent(BaseAgent):
                 continue
 
             patent_id = self._upsert_entity(
-                cursor, title[:100], _normalize_name(title[:100]), type_map["patent"],
-                {"patent_number": r["patent_number"], "classification": r["classification"],
-                 "source_id": r["id"]},
+                cursor,
+                title[:100],
+                _normalize_name(title[:100]),
+                type_map["patent"],
+                {
+                    "patent_number": r["patent_number"],
+                    "classification": r["classification"],
+                    "source_id": r["id"],
+                },
             )
 
             if assignee and len(assignee) >= 2:
                 assignee_id = self._upsert_entity(
-                    cursor, assignee, _normalize_name(assignee), type_map["startup"],
+                    cursor,
+                    assignee,
+                    _normalize_name(assignee),
+                    type_map["startup"],
                 )
-                self._upsert_relationship(cursor, patent_id, assignee_id, "patent_held_by",
-                                           source_table="patent_filings", source_record_id=r["id"])
+                self._upsert_relationship(
+                    cursor,
+                    patent_id,
+                    assignee_id,
+                    "patent_held_by",
+                    source_table="patent_filings",
+                    source_record_id=r["id"],
+                )
                 relationships += 1
 
         conn.commit()
@@ -768,15 +978,24 @@ class KnowledgeGraphAgent(BaseAgent):
         sector_pairs = cursor.fetchall()
         for sp in sector_pairs:
             sector_id = self._upsert_entity(
-                cursor, sp["sector"], _normalize_name(sp["sector"]),
+                cursor,
+                sp["sector"],
+                _normalize_name(sp["sector"]),
                 type_map["sector"],
             )
             cat_id = self._upsert_entity(
-                cursor, sp["failure_category"], _normalize_name(sp["failure_category"]),
+                cursor,
+                sp["failure_category"],
+                _normalize_name(sp["failure_category"]),
                 type_map["failure_reason"],
             )
-            self._upsert_relationship(cursor, sector_id, cat_id, "shares_failure_pattern",
-                                       weight=float(sp["cnt"]))
+            self._upsert_relationship(
+                cursor,
+                sector_id,
+                cat_id,
+                "shares_failure_pattern",
+                weight=float(sp["cnt"]),
+            )
             relationships += 1
 
         conn.commit()

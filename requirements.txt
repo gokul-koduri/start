@@ -47,7 +47,7 @@ elasticsearch>=8.12.0
 praw>=7.7.0
 
 # Phase 3: Stream Processing + OLAP
-bytewax>=0.16.0
+bytewax>=0.21.1
 clickhouse-driver>=0.2.0
 # orjson is 2-3x faster than json for serialization
 orjson>=3.9.0

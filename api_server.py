@@ -31,11 +31,14 @@ Endpoints:
     GET  /api/entities/{name}/connections — Knowledge graph connections
 """
 
+import asyncio
+
 import argparse
 import json
 import logging
 import os
 import sys
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -49,7 +52,7 @@ from db import schema  # noqa: E402
 
 # FastAPI imports (graceful fallback)
 try:
-    from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+    from fastapi import FastAPI, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
     from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
     from fastapi.middleware.cors import CORSMiddleware
     import uvicorn
@@ -59,10 +62,29 @@ except ImportError:
     HAS_FASTAPI = False
 
 if HAS_FASTAPI:
+    # ── Startup: initialize schema once (T-086 perf fix) ──────
+    @asynccontextmanager
+    async def lifespan(app_instance):
+        try:
+            conn = get_connection()
+            schema.init_schema(conn)
+            conn.close()
+            _logger.info(
+                "Database schema initialized at startup (version %d)",
+                schema.get_schema_version(),
+            )
+        except Exception as e:
+            _logger.warning(
+                "Schema init at startup failed (will retry per-request): %s", e
+            )
+        yield
+        # shutdown: nothing to clean up for now
+
     app = FastAPI(
         title="Startup Research Report API",
         description="AI-powered startup failure research & analysis API",
         version="1.0.0",
+        lifespan=lifespan,
     )
 
     # CORS — allow dashboard to call API (restrict in production via CORS_ORIGIN env var)
@@ -77,6 +99,7 @@ if HAS_FASTAPI:
 
     # ── Security Headers (T-060) ──
     from starlette.middleware.base import BaseHTTPMiddleware
+    from auth.auth_middleware import _jwt_handler as _auth_jwt_handler, get_current_user
 
     class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         """Add security headers to all responses."""
@@ -222,12 +245,16 @@ if HAS_FASTAPI:
         from api.v2.webhooks import router as v2_webhooks_router
         from api.v2.export import router as v2_export_router
         from api.v2.feedback import router as v2_feedback_router
+        from api.v2.watchlists import router as v2_watchlists_router
+        from api.v2.billing import router as v2_billing_router
 
         app.include_router(v2_opportunities_router, prefix="/api")
         app.include_router(v2_signals_router, prefix="/api")
         app.include_router(v2_webhooks_router, prefix="/api")
         app.include_router(v2_export_router, prefix="/api")
         app.include_router(v2_feedback_router, prefix="/api")
+        app.include_router(v2_watchlists_router, prefix="/api")
+        app.include_router(v2_billing_router, prefix="/api")
     except ImportError as e:
         _logger.warning("Could not import API v2 routers: %s", e)
 
@@ -255,9 +282,7 @@ if HAS_FASTAPI:
 
     # ── Health ────────────────────────────────────────────────
 
-    @app.get("/api/health")
-    def health():
-        """Health check — confirms DB connectivity."""
+    def _health_response():
         try:
             conn = get_connection()
             cursor = conn.cursor()
@@ -270,17 +295,489 @@ if HAS_FASTAPI:
                 {"status": "unhealthy", "error": str(e)}, status_code=503
             )
 
+    @app.get("/api/health")
+    def health():
+        """Health check — confirms DB connectivity."""
+        return _health_response()
+
+    @app.get("/health")
+    def health_root():
+        """Public health check alias for load balancers and uptime probes."""
+        return _health_response()
+
+    # ── Legal & Compliance Pages ───────────────────────────────────
+
+    PRIVACY_POLICY = """
+# Privacy Policy
+
+**Last updated: July 2, 2026**
+
+## 1. Information We Collect
+
+We collect information you provide directly, including:
+- Email address and password (for account creation)
+- API keys you generate
+- Watchlists and preferences you create
+- Feedback and feature requests you submit
+
+## 2. How We Use Your Information
+
+- Provide and improve our services
+- Send you alerts and notifications (if opted in)
+- Analyze usage patterns to improve the platform
+- Process payments (via Stripe)
+
+## 3. Data Retention
+
+- Account data: Retained until you delete your account
+- API usage logs: Retained for 90 days
+- Payment records: Retained for 7 years (tax compliance)
+
+## 4. Your Rights (GDPR)
+
+You have the right to:
+- Access your personal data
+- Correct inaccurate data
+- Delete your data ("right to be forgotten")
+- Export your data in machine-readable format
+- Withdraw consent at any time
+
+To exercise these rights, use the `/api/v2/gdpr/export` and `/api/v2/gdpr/delete` endpoints.
+
+## 5. Data Security
+
+We use:
+- HTTPS encryption for all data in transit
+- bcrypt password hashing
+-Encrypted storage for sensitive data
+- Regular security audits
+
+## 6. Third-Party Services
+
+- Stripe (payment processing)
+- Ollama (local LLM inference - data never leaves your server)
+- MySQL (data storage)
+
+## 7. Contact
+
+For privacy concerns, contact: privacy@example.com
+"""
+
+    TERMS_OF_SERVICE = """
+# Terms of Service
+
+**Last updated: July 2, 2026**
+
+## 1. Acceptance
+
+By using this platform, you agree to these terms.
+
+## 2. Use of Service
+
+You agree to:
+- Use the service lawfully
+- Not attempt to breach security
+- Not exceed rate limits without permission
+- Keep your credentials secure
+
+## 3. Data
+
+- You retain ownership of your data
+- We may use anonymized data for improvements
+- Backups may exist for up to 30 days after deletion
+
+## 4. Availability
+
+We aim for 99.9% uptime but do not guarantee uninterrupted service.
+
+## 5. Limitation of Liability
+
+The service is provided "as is". We are not liable for decisions made based on platform data.
+
+## 6. Pricing
+
+- Free tier available for personal use
+- Pro tier: $X/month (see /api/v2/billing/entitlements)
+- Enterprise pricing available on request
+
+## 7. Termination
+
+We may suspend accounts that violate these terms.
+
+## 8. Changes
+
+We may update these terms with 30 days notice.
+
+## 9. Contact
+
+For questions, contact: legal@example.com
+"""
+
+    @app.get("/privacy")
+    def privacy_policy():
+        """Privacy policy page for legal compliance."""
+        return HTMLResponse(content=PRIVACY_POLICY, media_type="text/html")
+
+    @app.get("/terms")
+    def terms_of_service():
+        """Terms of service page for legal compliance."""
+        return HTMLResponse(content=TERMS_OF_SERVICE, media_type="text/html")
+
+    # ── GDPR Endpoints ─────────────────────────────────────────────
+
+    @app.get("/api/v2/gdpr/export")
+    def gdpr_export(current_user: dict = Depends(get_current_user)):
+        """Export all personal data for GDPR compliance.
+
+        Returns a JSON file containing all data associated with the user.
+        """
+        user_id = current_user.get("user_id")
+        export_data = {
+            "export_date": datetime.now(timezone.utc).isoformat(),
+            "user_id": user_id,
+            "user_email": current_user.get("email"),
+            "data": {}
+        }
+
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        try:
+            # Export user information
+            cursor.execute(
+                "SELECT id, email, display_name, role, created_at FROM users WHERE id = %s",
+                (user_id,)
+            )
+            export_data["data"]["user"] = cursor.fetchone()
+
+            # Export API keys (metadata only, not the actual keys)
+            cursor.execute(
+                "SELECT id, name, created_at, last_used_at FROM api_keys WHERE user_id = %s",
+                (user_id,)
+            )
+            export_data["data"]["api_keys"] = cursor.fetchall()
+
+            # Export watchlists
+            cursor.execute(
+                "SELECT id, name, created_at, updated_at FROM watchlists WHERE user_id = %s",
+                (user_id,)
+            )
+            export_data["data"]["watchlists"] = cursor.fetchall()
+
+            # Export alert preferences
+            cursor.execute(
+                "SELECT * FROM alert_preferences WHERE user_id = %s",
+                (user_id,)
+            )
+            export_data["data"]["alert_preferences"] = cursor.fetchall()
+
+            # Export subscription info
+            cursor.execute(
+                "SELECT * FROM user_licenses WHERE user_id = %s",
+                (user_id,)
+            )
+            export_data["data"]["subscription"] = cursor.fetchall()
+
+            # Export feedback
+            cursor.execute(
+                "SELECT * FROM score_feedback WHERE user_id = %s",
+                (user_id,)
+            )
+            export_data["data"]["feedback"] = cursor.fetchall()
+
+            # Export feature requests
+            cursor.execute(
+                "SELECT * FROM feature_requests WHERE user_id = %s",
+                (user_id,)
+            )
+            export_data["data"]["feature_requests"] = cursor.fetchall()
+
+            # Export usage events (limited)
+            cursor.execute(
+                "SELECT endpoint, units, created_at FROM api_usage_events WHERE user_id = %s ORDER BY created_at DESC LIMIT 1000",
+                (user_id,)
+            )
+            export_data["data"]["usage_events"] = cursor.fetchall()
+
+        finally:
+            cursor.close()
+            conn.close()
+
+        return JSONResponse(
+            content=export_data,
+            headers={
+                "Content-Disposition": f"attachment; filename=gdpr_export_{user_id}_{datetime.now().strftime('%Y%m%d')}.json"
+            }
+        )
+
+    @app.delete("/api/v2/gdpr/delete")
+    def gdpr_delete(current_user: dict = Depends(get_current_user)):
+        """Delete all personal data for GDPR "right to be forgotten".
+
+        This action is irreversible. All user data will be permanently deleted.
+        """
+        user_id = current_user.get("user_id")
+
+        # Verify no active subscription
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        try:
+            cursor.execute(
+                "SELECT * FROM user_licenses WHERE user_id = %s AND expires_at > NOW()",
+                (user_id,)
+            )
+            active_licenses = cursor.fetchall()
+            if active_licenses:
+                return JSONResponse(
+                    status_code=400,
+                    content={
+                        "error": "Cannot delete account with active subscription. Please cancel first via /api/v2/billing/subscription/cancel"
+                    }
+                )
+        finally:
+            cursor.close()
+            conn.close()
+
+        # Delete user data in correct order (respecting foreign keys)
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Delete in order: usage events, feedback, feature requests,
+            # API keys, watchlist items, watchlists, alert preferences, licenses, users
+            tables_and_conditions = [
+                ("api_usage_events", "user_id = %s"),
+                ("score_feedback", "user_id = %s"),
+                ("feature_requests", "user_id = %s"),
+                ("api_keys", "user_id = %s"),
+                ("watchlist_alert_history", "watchlist_id IN (SELECT id FROM watchlists WHERE user_id = %s)"),
+                ("watchlist_items", "watchlist_id IN (SELECT id FROM watchlists WHERE user_id = %s)"),
+                ("watchlists", "user_id = %s"),
+                ("alert_preferences", "user_id = %s"),
+                ("user_licenses", "user_id = %s"),
+                ("users", "id = %s"),
+            ]
+
+            deleted_counts = {}
+            for table, condition in tables_and_conditions:
+                cursor.execute(
+                    f"DELETE FROM {table} WHERE {condition}",
+                    (user_id, user_id, user_id)
+                )
+                deleted_counts[table] = cursor.rowcount
+
+            conn.commit()
+
+            return JSONResponse(content={
+                "message": "Account and all associated data have been permanently deleted",
+                "deleted_tables": deleted_counts,
+                "deleted_at": datetime.now(timezone.utc).isoformat()
+            })
+
+        except Exception as e:
+            conn.rollback()
+            return JSONResponse(
+                status_code=500,
+                content={"error": f"Failed to delete account: {str(e)}"}
+            )
+        finally:
+            cursor.close()
+            conn.close()
+
+    # ── Stream Pipeline Status & Health ─────────────────────────
+
+    @app.get("/api/stream/status")
+    def stream_status():
+        """Return pipeline metrics from Redis, and circuit breaker states.
+
+        Reads the most recent flush from Redis 'stream:metrics'.
+        Falls back to a summary dict if Redis is unavailable.
+        """
+        from utils.circuit_breaker import (
+            kafka_stream_breaker,
+            mysql_stream_breaker,
+            redis_stream_breaker,
+        )
+        import redis as redis_client
+        import os
+
+        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+
+        result = {
+            "circuit_breakers": {
+                "mysql": mysql_stream_breaker.status,
+                "kafka": kafka_stream_breaker.status,
+                "redis": redis_stream_breaker.status,
+            },
+            "metrics_source": "unavailable",
+            "metrics": None,
+        }
+
+        try:
+            r = redis_client.from_url(
+                redis_url, socket_connect_timeout=2, decode_responses=True
+            )
+            raw = r.get("stream:metrics")
+            r.close()
+            if raw:
+                data = json.loads(raw)
+                result["metrics_source"] = "redis"
+                result["metrics"] = data
+                # Compute DLQ rate if we have data
+                total = data.get("signals_processed", 0)
+                signal_errors = data.get("signals_errored", 0)
+                if total > 0:
+                    result["dlq_rate"] = round(signal_errors / total, 4)
+        except Exception:
+            result["metrics_source"] = "unavailable"
+
+        return result
+
+    @app.get("/api/stream/health")
+    def stream_health():
+        """Stream pipeline readiness probe for Kubernetes/load balancers.
+
+        Checks:
+        - MySQL connectivity (required)
+        - Redis connectivity (required)
+        - Circuit breaker states (warn if open)
+        """
+        from utils.circuit_breaker import mysql_stream_breaker, redis_stream_breaker
+        import redis as redis_client
+        import os
+
+        checks = {}
+        is_ready = True
+
+        # MySQL check
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.close()
+            conn.close()
+            checks["mysql"] = {"status": "ok"}
+        except Exception as e:
+            checks["mysql"] = {"status": "error", "detail": str(e)}
+            is_ready = False
+
+        # Redis check
+        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+        try:
+            r = redis_client.from_url(
+                redis_url, socket_connect_timeout=2, decode_responses=True
+            )
+            r.ping()
+            r.close()
+            checks["redis"] = {"status": "ok"}
+        except Exception as e:
+            checks["redis"] = {"status": "error", "detail": str(e)}
+            is_ready = False
+
+        # Circuit breaker states (warn but don't fail)
+        checks["mysql_breaker"] = {
+            "state": mysql_stream_breaker.state.value,
+            "failure_count": mysql_stream_breaker._failure_count,
+        }
+        checks["redis_breaker"] = {
+            "state": redis_stream_breaker.state.value,
+            "failure_count": redis_stream_breaker._failure_count,
+        }
+        if (
+            mysql_stream_breaker.state.value == "open"
+            or redis_stream_breaker.state.value == "open"
+        ):
+            checks["breakers_warn"] = True
+
+        response = {
+            "pipeline_status": "ready" if is_ready else "degraded",
+            "checks": checks,
+        }
+        status_code = 200 if is_ready else 503
+        return JSONResponse(content=response, status_code=status_code)
+
+    # ── WebSocket for live deltas (stream/ws/live) ─────────────
+
+    @app.websocket("/ws/live")
+    async def ws_live(websocket: WebSocket):
+        """Bidirectional WebSocket for live signal updates.
+
+        On connect, immediately sends the latest metrics snapshot.
+        Then subscribes to Redis 'stream:score_deltas' channel and
+        broadcasts incoming score deltas to all connected clients.
+        """
+        import redis as redis_client
+        import os
+        from fastapi import WebSocketDisconnect
+
+        await websocket.accept()
+
+        # Send initial metrics snapshot
+        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+        try:
+            r = redis_client.from_url(
+                redis_url, socket_connect_timeout=2, decode_responses=True
+            )
+            raw = r.get("stream:metrics")
+            r.close()
+            if raw:
+                snapshot = json.loads(raw)
+                await websocket.send_json(
+                    {"type": "metrics_snapshot", "data": snapshot}
+                )
+        except Exception:
+            pass
+
+        # Subscribe to Redis score_deltas channel
+        try:
+            r = redis_client.from_url(
+                redis_url, socket_connect_timeout=2, decode_responses=False
+            )
+            pubsub = r.pubsub()
+            pubsub.subscribe("stream:score_deltas")
+            _logger.debug("WebSocket client subscribed to stream:score_deltas")
+        except Exception:
+            pubsub = None
+            _logger.warning(
+                "Redis unavailable — WebSocket will not receive live deltas"
+            )
+
+        import json as _json
+
+        try:
+            while True:
+                if pubsub:
+                    msg = pubsub.get_message(
+                        ignore_subscribe_messages=True, timeout=1.0
+                    )
+                    if msg and msg["type"] == "message":
+                        delta = _json.loads(msg["data"])
+                        await websocket.send_json(
+                            {"type": "score_delta", "data": delta}
+                        )
+                else:
+                    await asyncio.sleep(1.0)
+        except WebSocketDisconnect:
+            pass
+        finally:
+            if pubsub:
+                try:
+                    pubsub.unsubscribe()
+                    pubsub.close()
+                except Exception:
+                    pass
+
     # ── Stats ─────────────────────────────────────────────────
 
     @app.get("/api/stats")
     def stats():
         """Database statistics summary."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         counts = {}
-        for table in [
+        tables = [
             "failed_startups",
             "news_articles",
             "bls_survival_rates",
@@ -290,7 +787,8 @@ if HAS_FASTAPI:
             "kg_entities",
             "kg_relationships",
             "llm_optimization_alerts",
-        ]:
+        ]
+        for table in tables:
             try:
                 cursor.execute(f"SELECT COUNT(*) as cnt FROM {table}")
                 counts[table] = cursor.fetchone()["cnt"]
@@ -309,7 +807,6 @@ if HAS_FASTAPI:
     ):
         """Show last run status for each collector."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         if collector:
@@ -372,7 +869,6 @@ if HAS_FASTAPI:
     ):
         """List failed startups with optional filters."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         conditions = []
@@ -422,7 +918,6 @@ if HAS_FASTAPI:
     def get_startup(startup_id: int):
         """Get a single startup by ID."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM failed_startups WHERE id = %s", (startup_id,))
         row = cursor.fetchone()
@@ -443,7 +938,6 @@ if HAS_FASTAPI:
     ):
         """Recent news articles."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         where = "WHERE is_manufacturing = 1" if manufacturing else ""
@@ -468,7 +962,6 @@ if HAS_FASTAPI:
     def news_sentiment():
         """Sentiment distribution across scored news articles."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         cursor.execute(
@@ -510,7 +1003,6 @@ if HAS_FASTAPI:
     ):
         """Startup failure risk scores."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         where = "WHERE r.risk_level = %s" if risk_level else ""
@@ -592,7 +1084,6 @@ if HAS_FASTAPI:
     def ml_models():
         """List trained ML models from the ml_models table."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
         cursor.execute(
             """SELECT model_name, model_type, model_path, trained_at, training_rows,
@@ -617,7 +1108,6 @@ if HAS_FASTAPI:
             from db.connection import get_connection as _gc
 
             conn = _gc()
-            schema.init_schema(conn)
             trainer = MLTrainer(
                 {
                     "min_training_samples": min_samples,
@@ -783,7 +1273,6 @@ if HAS_FASTAPI:
     ):
         """BLS survival rate data."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         conditions = []
@@ -818,7 +1307,6 @@ if HAS_FASTAPI:
     def revival_opportunities(limit: int = Query(20, ge=1, le=50)):
         """Revival industry opportunities."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM revival_industries LIMIT %s", (limit,))
         rows = [dict(r) for r in cursor.fetchall()]
@@ -832,7 +1320,6 @@ if HAS_FASTAPI:
     def list_alerts(limit: int = Query(20, ge=1, le=50)):
         """Active optimization and pipeline alerts."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
         cursor.execute(
             """SELECT id, alert_type, title, description, priority,
@@ -853,7 +1340,6 @@ if HAS_FASTAPI:
     def get_alert_preferences():
         """Get current alert notification preferences."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT * FROM alert_preferences ORDER BY updated_at DESC LIMIT 1"
@@ -923,7 +1409,6 @@ if HAS_FASTAPI:
                 updates[key] = int(updates[key])
 
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         # Check if preferences exist
@@ -955,7 +1440,6 @@ if HAS_FASTAPI:
     def list_dead_letters(limit: int = Query(20, ge=1, le=100)):
         """List failed alerts in the dead letter queue."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
         try:
             cursor.execute(
@@ -978,7 +1462,6 @@ if HAS_FASTAPI:
     def pipeline_runs(limit: int = Query(20, ge=1, le=100)):
         """Recent pipeline execution history."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
         cursor.execute(
             """SELECT id, pipeline_name, agent_name, started_at, completed_at,
@@ -1040,7 +1523,6 @@ if HAS_FASTAPI:
     ):
         """Knowledge graph entities and relationships."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         where = (
@@ -1311,7 +1793,6 @@ if HAS_FASTAPI:
             edges: [{source, target, relationship_type, weight}]
         """
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         # Resolve entity by name (check aliases too)
@@ -1474,7 +1955,6 @@ if HAS_FASTAPI:
             return {"valid": False, "error": "Invalid key format"}
 
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT tier, status, expires_at FROM user_licenses WHERE license_key = %s",
@@ -1528,7 +2008,6 @@ if HAS_FASTAPI:
     def license_metrics():
         """Subscription and license metrics."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         metrics = {}
@@ -1808,6 +2287,16 @@ if HAS_FASTAPI:
         """
         global _heartbeat_task, _score_push_task
 
+        token = websocket.query_params.get("token")
+        if not token:
+            await websocket.close(code=1008, reason="Missing token")
+            return
+        try:
+            _auth_jwt_handler.validate_token(token)
+        except ValueError:
+            await websocket.close(code=1008, reason="Invalid token")
+            return
+
         await ws_manager.connect(websocket)
 
         # Start background tasks on first connection
@@ -1913,7 +2402,6 @@ if HAS_FASTAPI:
             hours: Look back N hours (default 1)
         """
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
         try:
             if entity:
@@ -1971,7 +2459,6 @@ if HAS_FASTAPI:
 
                 report = run_validation()
                 conn = get_connection()
-                schema.init_schema(conn)
                 cursor = conn.cursor()
                 weights_json = json.dumps(
                     {k: v for k, v in report.weights_used.items()}
@@ -2006,7 +2493,6 @@ if HAS_FASTAPI:
 
         # Fetch accuracy history
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
         try:
             cursor.execute(
@@ -2056,7 +2542,6 @@ if HAS_FASTAPI:
             entity_type: Filter by entity_type (company, technology, market)
         """
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         query = "SELECT * FROM opportunity_scores WHERE composite_score >= %s"
@@ -2122,7 +2607,6 @@ if HAS_FASTAPI:
     def get_opportunity(entity_name: str):
         """Get detailed opportunity data for a specific entity."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         cursor.execute(
@@ -2179,7 +2663,6 @@ if HAS_FASTAPI:
             processed: Filter by processed status (0=pending, 1=enriched, 2=scored)
         """
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         query = "SELECT * FROM raw_signals WHERE 1=1"
@@ -2209,7 +2692,6 @@ if HAS_FASTAPI:
     def signal_stats():
         """Get statistics about signal collection."""
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         stats = {}
@@ -2311,7 +2793,7 @@ if HAS_FASTAPI:
             r = _redis.from_url(
                 _REDIS_URL, socket_connect_timeout=2, decode_responses=True
             )
-            r.setex(f"api:{key}", ttl, _json.dumps(value, default=str))
+            r.set(f"api:{key}", _json.dumps(value, default=str), ex=ttl)
             r.close()
         except Exception:
             pass
@@ -2342,7 +2824,6 @@ if HAS_FASTAPI:
             return cached
 
         conn = get_connection()
-        schema.init_schema(conn)
         cursor = conn.cursor()
 
         cursor.execute("SELECT COUNT(*) as cnt FROM failed_startups")

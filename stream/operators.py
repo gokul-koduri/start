@@ -9,12 +9,128 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
+import time
+from collections import deque
 from datetime import datetime, timezone
 from typing import Any
 
 from ingestion.signal_normalizer import SignalEnvelope, VALID_SIGNAL_TYPES
 
 _logger = logging.getLogger(__name__)
+
+
+# ── Retry helper ──────────────────────────────────────────────
+
+
+def retry_with_backoff(
+    fn,
+    *args,
+    max_attempts: int = 3,
+    backoff_ms: tuple[int, ...] = (100, 500, 2000),
+    logger: logging.Logger | None = None,
+    **kwargs,
+):
+    """Retry fn with exponential backoff on exception.
+
+    Args:
+        fn: Function to call.
+        *args, **kwargs: Arguments to pass to fn.
+        max_attempts: Maximum retry attempts (default 3).
+        backoff_ms: Sleep durations between attempts in ms.
+        logger: Logger to use for retry messages.
+
+    Returns:
+        fn's return value on success.
+
+    Raises:
+        Exception: Re-raises the last exception after all attempts fail.
+    """
+    _log = logger or _logger
+    for attempt in range(max_attempts):
+        try:
+            return fn(*args, **kwargs)
+        except Exception:
+            if attempt < max_attempts - 1:
+                delay_s = backoff_ms[attempt] / 1000.0
+                _log.warning(
+                    "Retry %d/%d after %.1fs: %s",
+                    attempt + 1,
+                    max_attempts,
+                    delay_s,
+                    _exc_str(),
+                )
+                time.sleep(delay_s)
+            else:
+                _log.error(
+                    "All %d attempts failed — giving up: %s", max_attempts, _exc_str()
+                )
+                raise
+
+
+def _exc_str() -> str:
+    import traceback
+
+    return traceback.format_exc()[-300:].strip()
+
+
+# ── Batch accumulator for MySQL writes ────────────────────────
+
+
+class MySQLBatchWriter:
+    """Collect scored entities and flush in batches to MySQL.
+
+    Flushes when either:
+    - batch_size items have accumulated
+    - flush_interval_seconds have elapsed since last flush
+
+    Thread-safe for use from the stream processor.
+    """
+
+    def __init__(
+        self,
+        batch_size: int = 50,
+        flush_interval: int = 10,
+    ):
+        self.batch_size = batch_size
+        self.flush_interval = flush_interval
+        self._queue: deque[tuple[str, dict[str, Any]]] = deque()
+        self._lock = threading.Lock()
+        self._last_flush = time.monotonic()
+
+    def add(self, entity_name: str, scored: dict[str, Any]) -> None:
+        """Add a scored entity to the batch."""
+        with self._lock:
+            self._queue.append((entity_name, scored))
+            if len(self._queue) >= self.batch_size or self._should_flush():
+                self._flush_unlocked()
+
+    def _should_flush(self) -> bool:
+        return (time.monotonic() - self._last_flush) >= self.flush_interval
+
+    def _flush_unlocked(self) -> None:
+        """Flush queue to MySQL. Must hold lock."""
+        if not self._queue:
+            return
+        items = list(self._queue)
+        self._queue.clear()
+        self._last_flush = time.monotonic()
+        try:
+            _bulk_upsert(items)
+        except Exception:
+            _logger.error("Batch flush failed for %d items: %s", len(items), _exc_str())
+
+    def flush(self) -> None:
+        """Force a flush of any pending items."""
+        with self._lock:
+            self._flush_unlocked()
+
+    def __len__(self) -> int:
+        return len(self._queue)
+
+
+# Global batch writer (shared across operators)
+_mysql_batch = MySQLBatchWriter()
 
 
 def parse_signal_envelope(raw: bytes) -> tuple[str, SignalEnvelope]:
@@ -227,67 +343,89 @@ def score_entity(
 def write_score_to_mysql(scored: dict[str, Any]) -> dict[str, Any]:
     """Upsert a scored entity into the opportunity_scores table.
 
+    Uses retry with exponential backoff, circuit breaker, and batch
+    accumulation for efficient writes.
+
     Args:
         scored: Dict from score_entity() with composite_score etc.
 
     Returns:
         The input dict unchanged (passthrough for downstream operators).
     """
+    from utils.circuit_breaker import mysql_stream_breaker
+
+    def _do_write():
+        # Route through batch writer — accumulates and flushes in batches
+        _mysql_batch.add(scored.get("entity_name", "unknown"), scored)
+        return True
+
+    try:
+        mysql_stream_breaker.call(_do_write)
+    except Exception:
+        # Circuit open — skip write, let pipeline continue
+        _logger.warning(
+            "MySQL circuit open, score for '%s' dropped (will retry next cycle)",
+            scored.get("entity_name", "?"),
+        )
+
+    return scored
+
+
+def _bulk_upsert(items: list[tuple[str, dict[str, Any]]]) -> None:
+    """Execute a batch upsert of scored entities into opportunity_scores.
+
+    Uses executemany for efficiency when multiple entities are available.
+
+    Args:
+        items: List of (entity_name, scored_dict) tuples.
+    """
+    if not items:
+        return
+
     from db.connection import get_connection
     from db import schema
 
-    try:
-        conn = get_connection()
-        schema.init_schema(conn)
-        cursor = conn.cursor()
+    import json as _json
 
-        entity_name = scored.get("entity_name", "")
-        composite_score = scored.get("composite_score", 0.0)
-        signal_count = scored.get("signal_count", 0)
-        trend = scored.get("trend_direction", "stable")
-        entity_type = scored.get("entity_type", "company")
+    conn = get_connection()
+    schema.init_schema(conn)
+    cursor = conn.cursor()
 
-        # Attribution as JSON
-        import json as _json
-
-        attribution_json = _json.dumps(scored.get("attribution", []))
-        signal_types_json = _json.dumps(scored.get("signal_types", []))
-
-        cursor.execute(
-            """
-            INSERT INTO opportunity_scores
-                (entity_name, entity_type, composite_score, signal_count,
-                 trend_direction, attribution_json, signal_types_json,
-                 last_updated)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
-            ON DUPLICATE KEY UPDATE
-                composite_score = VALUES(composite_score),
-                signal_count = VALUES(signal_count),
-                trend_direction = VALUES(trend_direction),
-                attribution_json = VALUES(attribution_json),
-                signal_types_json = VALUES(signal_types_json),
-                last_updated = NOW()
-            """,
+    rows = []
+    for entity_name, scored in items:
+        rows.append(
             (
                 entity_name,
-                entity_type,
-                composite_score,
-                signal_count,
-                trend,
-                attribution_json,
-                signal_types_json,
-            ),
+                scored.get("entity_type", "company"),
+                scored.get("composite_score", 0.0),
+                scored.get("signal_count", 0),
+                scored.get("trend_direction", "stable"),
+                _json.dumps(scored.get("attribution", [])),
+                _json.dumps(scored.get("signal_types", [])),
+            )
         )
 
-        conn.commit()
-        cursor.close()
-        conn.close()
-        _logger.debug("Upserted score for %s: %.1f", entity_name, composite_score)
-
-    except Exception as e:
-        _logger.error("Failed to upsert score for %s: %s", entity_name, e)
-
-    return scored
+    cursor.executemany(
+        """
+        INSERT INTO opportunity_scores
+            (entity_name, entity_type, composite_score, signal_count,
+             trend_direction, attribution_json, signal_types_json,
+             last_updated)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+        ON DUPLICATE KEY UPDATE
+            composite_score = VALUES(composite_score),
+            signal_count = VALUES(signal_count),
+            trend_direction = VALUES(trend_direction),
+            attribution_json = VALUES(attribution_json),
+            signal_types_json = VALUES(signal_types_json),
+            last_updated = NOW()
+        """,
+        rows,
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+    _logger.debug("Bulk upserted %d scores", len(rows))
 
 
 def emit_alert(

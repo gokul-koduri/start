@@ -263,10 +263,10 @@ class TestSchemaV23(unittest.TestCase):
     """Test that schema v23 includes email queue tables."""
 
     def test_schema_version_bumped(self):
-        """Test schema version is 23."""
+        """Test schema version is at least 24."""
         from db.schema import get_schema_version
 
-        self.assertEqual(get_schema_version(), 23)
+        self.assertGreaterEqual(get_schema_version(), 24)
 
     def test_email_tables_in_schema(self):
         """Test outbound_emails and related tables are defined."""

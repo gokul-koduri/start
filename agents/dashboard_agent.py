@@ -1533,7 +1533,8 @@ def _build_ollama_usage_html(usage: dict) -> str:
         return str(n)
 
     # Find max cost for context
-    max_cost = max(cost_equiv.values()) if cost_equiv else 1
+    non_zero_costs = [v for v in cost_equiv.values() if v] if cost_equiv else []
+    max_cost = max(non_zero_costs) if non_zero_costs else 1
     cost_rows = ""
     for name, cost in sorted(cost_equiv.items(), key=lambda x: x[1], reverse=True)[:8]:
         pct = (cost / max_cost * 100) if max_cost > 0 else 0

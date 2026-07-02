@@ -294,6 +294,11 @@ def _get_agent_class(name: str):
 
         AGENT_REGISTRY["cost_tracking"] = CostTrackingAgent
         return CostTrackingAgent
+    elif name == "watchlist_alert":
+        from agents.watchlist_alert_agent import WatchlistAlertAgent
+
+        AGENT_REGISTRY["watchlist_alert"] = WatchlistAlertAgent
+        return WatchlistAlertAgent
 
     # ── AI Product Development Team (7 agents) ──
     elif name == "product_manager":

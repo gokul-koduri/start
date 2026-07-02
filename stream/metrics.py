@@ -40,12 +40,15 @@ class PipelineMetrics:
     signals_enriched: int = 0
     signals_scored: int = 0
     signals_errored: int = 0
+    dead_letters_count: int = 0
     entities_scored: int = 0
     scores_written: int = 0
     alerts_emitted: int = 0
+    dead_letters_count: int = 0
     last_processed_at: float = 0.0
     started_at: float = field(default_factory=lambda: time.time())
     processing_lag_seconds: float = 0.0
+    error_rate_spike_emitted: bool = False
 
     # Throughput (computed)
     throughput_per_minute: float = 0.0
@@ -93,6 +96,7 @@ class PipelineMetrics:
             "entities_scored": self.entities_scored,
             "scores_written": self.scores_written,
             "alerts_emitted": self.alerts_emitted,
+            "dead_letters_count": self.dead_letters_count,
             "last_processed_at": self.last_processed_at,
             "started_at": self.started_at,
             "processing_lag_seconds": self.processing_lag_seconds,
@@ -161,10 +165,30 @@ class MetricsWriter:
             data = self._metrics.to_dict()
             r.set(self._key, json.dumps(data), ex=self._interval * 3)
             r.close()
+            self._check_error_rate()
             return True
         except Exception as e:
             _logger.debug("Metrics flush failed (Redis unavailable): %s", e)
             return False
+
+    def _check_error_rate(self) -> None:
+        """Log ERROR if dead letter or error rate exceeds threshold."""
+        m = self._metrics
+        total = m.signals_processed
+        if total < 10:
+            return
+        error_rate = m.signals_errored / total
+        if error_rate > 0.10 and not m.error_rate_spike_emitted:
+            _logger.error(
+                "Pipeline DLQ spike detected: %d/%d signals failed (%.1f%%). "
+                "Check Kafka dead.letters topic and upstream data quality.",
+                m.signals_errored,
+                total,
+                error_rate * 100,
+            )
+            m.error_rate_spike_emitted = True
+        elif error_rate <= 0.05 and m.error_rate_spike_emitted:
+            m.error_rate_spike_emitted = False
 
     def start(self) -> None:
         """Start the background flush thread."""

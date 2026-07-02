@@ -106,6 +106,31 @@ class EmailDigestAgent(BaseAgent):
                 for r in cursor.fetchall()
             ]
 
+            # Watchlist alerts (last 24h)
+            watchlist_alerts = []
+            try:
+                cursor.execute(
+                    """SELECT wah.alert_type, wah.entity_name, wah.old_score, wah.new_score,
+                              wah.delta, wah.created_at, w.name as watchlist_name
+                       FROM watchlist_alert_history wah
+                       JOIN watchlists w ON w.id = wah.watchlist_id
+                       WHERE wah.created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                       ORDER BY ABS(wah.delta) DESC LIMIT 10"""
+                )
+                watchlist_alerts = [
+                    {
+                        "type": r["alert_type"],
+                        "entity": r["entity_name"],
+                        "old": r["old_score"],
+                        "new": r["new_score"],
+                        "delta": r["delta"],
+                        "watchlist": r["watchlist_name"],
+                    }
+                    for r in cursor.fetchall()
+                ]
+            except Exception:
+                pass  # Best-effort — table may not exist yet
+
             cursor.close()
             conn.close()
 
@@ -133,6 +158,7 @@ class EmailDigestAgent(BaseAgent):
                 "top_failures": top_failures,
                 "alerts": alerts,
                 "collection_runs": collection_runs,
+                "watchlist_alerts": watchlist_alerts,
                 "dashboard_url": "https://github.com/gokul-koduri/start",
                 "unsubscribe_url": "https://github.com/gokul-koduri/start#email-preferences",
                 "preferences_url": "https://github.com/gokul-koduri/start#email-preferences",
@@ -160,6 +186,14 @@ class EmailDigestAgent(BaseAgent):
                 plain_lines.append("Active Alerts:")
                 for a in alerts:
                     plain_lines.append(f"  · [{a['priority'].upper()}] {a['title']}")
+                plain_lines.append("")
+            if watchlist_alerts:
+                plain_lines.append("Watchlist Score Changes:")
+                for wa in watchlist_alerts:
+                    plain_lines.append(
+                        f"  · {wa['entity']} ({wa['watchlist']}): "
+                        f"{wa['old']:.0f} → {wa['new']:.0f} ({wa['delta']:+.1f})"
+                    )
                 plain_lines.append("")
             plain_lines.append("View dashboard: https://github.com/gokul-koduri/start")
             plain_body = "\n".join(plain_lines)

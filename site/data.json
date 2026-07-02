@@ -1,144 +1,24 @@
 {
-  "last_updated": "2026-07-01T00:47:43.641726+00:00",
-  "total_startups": 163,
-  "manufacturing_startups": 44,
-  "total_articles": 1084,
-  "manufacturing_articles": 569,
-  "recent_failures": [
-    {
-      "name": "Zulily",
-      "sector": "e-Commerce",
-      "year_shutdown": 2024
-    },
-    {
-      "name": "Move Loot",
-      "sector": "e-Commerce",
-      "year_shutdown": 2016
-    },
-    {
-      "name": "Laurel & Wolf",
-      "sector": "e-Commerce",
-      "year_shutdown": 2024
-    },
-    {
-      "name": "Formspring",
-      "sector": "Social Media",
-      "year_shutdown": 2013
-    },
-    {
-      "name": "Dopplr",
-      "sector": "Travel",
-      "year_shutdown": 2024
-    }
-  ],
+  "last_updated": "2026-07-02T22:30:22.539216+00:00",
+  "total_startups": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
+  "manufacturing_startups": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
+  "total_articles": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
+  "manufacturing_articles": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
+  "recent_failures": [],
   "gmv_monitoring": {
-    "evaluations_done": 420,
+    "evaluations_done": 0,
     "total_expected": 420,
-    "deep_dives_done": 45,
-    "avg_viability": 6.8,
-    "top_opportunity": "E-commerce in China",
-    "top_score": 8,
-    "progress_pct": 100.0,
-    "sectors_done": [
-      "Marketing",
-      "Analytics",
-      "Healthtech/Genomics",
-      "PropTech/Construction",
-      "EV Ride-Hailing",
-      "Mobility/EV",
-      "Finances",
-      "Robotics",
-      "Entertainment",
-      "EdTech",
-      "Fintech",
-      "Fintech/Payments",
-      "Design",
-      "Transportation",
-      "EV",
-      "Semiconductors",
-      "E-commerce",
-      "Proptech",
-      "Health",
-      "Travel",
-      "Music",
-      "Education",
-      "Food & Beverage",
-      "Quick Commerce",
-      "Content/Social Commerce",
-      "Healthtech",
-      "Logistics",
-      "Flexible Display",
-      "BNPL/Fintech",
-      "Premium EV",
-      "Micro-mobility",
-      "Productivity",
-      "Biotech/Genomics",
-      "3D Printing",
-      "Fashion-tech",
-      "Software & Hardware",
-      "Social/Chat",
-      "Construction",
-      "Social Media",
-      "Battery Manufacturing",
-      "Beauty/D2C",
-      "EV/Automotive"
-    ],
-    "country_scores": {
-      "US": {
-        "name": "United States",
-        "avg": 6.8,
-        "count": 42
-      },
-      "UK": {
-        "name": "United Kingdom",
-        "avg": 7.4,
-        "count": 42
-      },
-      "Germany": {
-        "name": "Germany",
-        "avg": 7.1,
-        "count": 42
-      },
-      "India": {
-        "name": "India",
-        "avg": 7.0,
-        "count": 42
-      },
-      "China": {
-        "name": "China",
-        "avg": 6.8,
-        "count": 41
-      },
-      "Japan": {
-        "name": "Japan",
-        "avg": 6.9,
-        "count": 41
-      },
-      "Brazil": {
-        "name": "Brazil",
-        "avg": 6.7,
-        "count": 42
-      },
-      "Southeast_Asia": {
-        "name": "Southeast Asia (Indonesia, Vietnam, Thailand, Philippines)",
-        "avg": 7.1,
-        "count": 42
-      },
-      "Middle_East": {
-        "name": "Middle East (UAE, Saudi Arabia, Qatar)",
-        "avg": 6.7,
-        "count": 42
-      },
-      "Africa": {
-        "name": "Africa (Nigeria, Kenya, South Africa, Egypt)",
-        "avg": 6.2,
-        "count": 42
-      }
-    },
-    "status": "complete",
-    "last_evaluated": "2026-06-02T21:47:17.387938+00:00",
-    "deep_dive_go": 3,
-    "deep_dive_cautious": 41,
+    "deep_dives_done": 0,
+    "avg_viability": 0,
+    "top_opportunity": "",
+    "top_score": 0,
+    "progress_pct": 0.0,
+    "sectors_done": [],
+    "country_scores": {},
+    "status": "in_progress",
+    "last_evaluated": "",
+    "deep_dive_go": 0,
+    "deep_dive_cautious": 0,
     "deep_dive_nogo": 0
   },
   "llm_infrastructure": {
@@ -187,11 +67,11 @@
     "cheapest_output": {}
   },
   "ollama_usage": {
-    "total_prompt_tokens": 13582,
-    "total_completion_tokens": 1921,
-    "total_tokens": 15503,
-    "inference_count": 571,
-    "cost_equivalence": {},
+    "total_prompt_tokens": 13900,
+    "total_completion_tokens": 1972,
+    "total_tokens": 15872,
+    "inference_count": 586,
+    "cost_equivalence": "<MagicMock name='mock.connect().cursor().fetchall().__getitem__().get()' id='4678904880'>",
     "snapshots": [],
     "status": "tracking"
   },
@@ -199,7 +79,7 @@
     "categories": {},
     "total_recommendations": 0,
     "estimated_savings_pct": 0,
-    "last_recommended": ""
+    "last_recommended": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>"
   },
   "llm_benchmarks": {
     "models": [],
@@ -210,12 +90,12 @@
   "llm_optimizer": {
     "alerts": [],
     "price_changes": [],
-    "total_savings_pct": 0,
+    "total_savings_pct": 1,
     "active_alerts": 0
   },
   "knowledge_graph": {
-    "total_entities": 0,
-    "total_relationships": 0,
+    "total_entities": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
+    "total_relationships": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
     "entity_types": [],
     "top_entities": [],
     "relationship_types": [],

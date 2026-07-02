@@ -347,9 +347,13 @@ def _render_failure_statistics(conn) -> str:
     cursor.close()
 
     if bls_rows:
-        avg_survival = sum(
-            r["age_5_yr_survival"] for r in bls_rows if r["age_5_yr_survival"]
-        ) / len([r for r in bls_rows if r["age_5_yr_survival"]])
+        valid_rows = [r for r in bls_rows if r["age_5_yr_survival"]]
+        if valid_rows:
+            avg_survival = sum(r["age_5_yr_survival"] for r in valid_rows) / len(
+                valid_rows
+            )
+        else:
+            avg_survival = 0
         failure_rate = round(100 - avg_survival, 1)
         lines.append(
             f"- **~{failure_rate}% of manufacturing startups fail** within 5 years (BLS Business Employment Dynamics data)"

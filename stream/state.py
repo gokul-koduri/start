@@ -109,21 +109,27 @@ def init_entity_state(entity_name: str) -> EntityState:
 
 
 def update_entity_state(
-    state: EntityState, new_signals: list[dict[str, Any]]
+    state: EntityState, new_signals: list[dict[str, Any]] | dict[str, Any]
 ) -> tuple[EntityState, list[dict[str, Any]]]:
     """Stateful update function for Bytewax's stateful_map operator.
 
     Adds new signals to the entity's rolling buffer and returns the
     full accumulated signal list for downstream scoring.
+    Handles both single-signal (from stateful_map) and list-signal
+    (from batch window) inputs.
 
     Args:
         state: Current EntityState (or freshly initialized if first seen).
-        new_signals: List of signal dicts from the current window.
+        new_signals: List of signal dicts from the current window, or a
+            single signal dict (e.g. from stateful_map step receiving one item).
 
     Returns:
         Tuple of (updated_state, output_value) where output_value is the
         list of all accumulated signals ready for scoring.
     """
+    # Accept dict input from stateful_map (single-item step)
+    if isinstance(new_signals, dict):
+        new_signals = [new_signals]
     for sig in new_signals:
         state.add_signal(sig)
 

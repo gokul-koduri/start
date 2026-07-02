@@ -33,6 +33,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from ingestion.signal_normalizer import SignalEnvelope
 from stream.metrics import MetricsWriter, PipelineMetrics
+from stream.state import init_entity_state, update_entity_state
 
 _logger = logging.getLogger("stream.pipeline")
 
@@ -74,6 +75,7 @@ def _op_ingest(raw: bytes) -> tuple[str, dict[str, Any]]:
         return (entity_name, envelope.to_dict())
     except Exception as e:
         _metrics.increment("signals_errored")
+        _metrics.increment("dead_letters_count")
         _logger.warning("Ingest failed: %s", e)
         return (
             "__dlq__",
@@ -116,33 +118,32 @@ def _op_enrich(key_entity: tuple[str, dict]) -> tuple[str, dict]:
         return (entity_name, signal_dict)
 
 
-def _op_score(key_entity: tuple[str, list[dict]]) -> tuple[str, dict]:
-    """Stage 4: Run CompositeScorer on aggregated signals.
+def _op_score(key_signals: tuple[str, Any]) -> tuple[str, dict]:
+    """Stage 4: Run CompositeScorer on entity's accumulated signals.
 
-    Args:
-        key_entity: (entity_name, list_of_signal_dicts)
+    After stateful_map the item is (entity_name, list_of_signal_dicts)
+    from update_entity_state's output.
     """
-    entity_name, signals = key_entity
+    entity_name, signals = key_signals
     if not signals:
         return (entity_name, {"entity_name": entity_name, "composite_score": 0.0})
 
     try:
-        envelopes = []
-        for s in signals:
-            envelopes.append(
-                SignalEnvelope(
-                    signal_type=s.get("signal_type", ""),
-                    source_name=s.get("source_name", ""),
-                    title=s.get("title", ""),
-                    body_text=s.get("body_text", ""),
-                    entity_name=s.get("entity_name", entity_name),
-                    entity_type=s.get("entity_type", "company"),
-                    published_at=_parse_dt(s.get("published_at")),
-                    collected_at=_parse_dt(s.get("collected_at")),
-                    raw_score=float(s.get("raw_score", 0.0)),
-                    metadata=s.get("metadata", {}),
-                )
+        envelopes = [
+            SignalEnvelope(
+                signal_type=s.get("signal_type", ""),
+                source_name=s.get("source_name", ""),
+                title=s.get("title", ""),
+                body_text=s.get("body_text", ""),
+                entity_name=s.get("entity_name", entity_name),
+                entity_type=s.get("entity_type", "company"),
+                published_at=_parse_dt(s.get("published_at")),
+                collected_at=_parse_dt(s.get("collected_at")),
+                raw_score=float(s.get("raw_score", 0.0)),
+                metadata=s.get("metadata", {}),
             )
+            for s in signals
+        ]
 
         from stream.operators import score_entity
 
@@ -160,7 +161,7 @@ def _op_score(key_entity: tuple[str, list[dict]]) -> tuple[str, dict]:
 
 
 def _op_write_mysql(key_entity: tuple[str, dict]) -> tuple[str, dict]:
-    """Stage 5a: Write scored entity to MySQL opportunity_scores.
+    """Stage 5a: Write scored entity to MySQL + score_deltas table.
 
     Passthrough — returns input unchanged for downstream Kafka publish.
     """
@@ -170,8 +171,22 @@ def _op_write_mysql(key_entity: tuple[str, dict]) -> tuple[str, dict]:
 
     try:
         from stream.operators import write_score_to_mysql
+        from utils.circuit_breaker import mysql_stream_breaker
 
-        write_score_to_mysql(scored)
+        def _do_write():
+            write_score_to_mysql(scored)
+            # Also calculate and store delta
+            from stream.score_delta import calculate_and_store_delta
+            from db.connection import get_connection
+
+            conn = get_connection()
+            delta = calculate_and_store_delta(conn, scored)
+            if delta:
+                scored["_delta"] = delta
+            conn.close()
+            return True
+
+        mysql_stream_breaker.call(_do_write)
         _metrics.increment("scores_written")
     except Exception as e:
         _logger.error("MySQL write failed for %s: %s", entity_name, e)
@@ -260,27 +275,65 @@ def build_pipeline() -> Any:
     # ── Stage 2: Enrich ──
     flow.map(_op_enrich)
 
-    # ── Stage 3: Aggregate by entity (tumbling window) ──
-    # Group signals by entity_name within tumbling windows
-    try:
-        from bytewax.window import TumblingClocker
+    # ── Stage 2b: DLQ sink — route failed ingest messages to dead.letters ──
+    # DLQ items: (_is_dlq returns True) → dlq_flow branch
+    # Non-DLQ items: continue in main flow
+    def _is_dlq(item: tuple[str, Any]) -> bool:
+        """True for DLQ entities that should be routed to dead.letters topic."""
+        return item[0] == "__dlq__"
 
-        window_seconds = int(os.environ.get("WINDOW_SECONDS", "300"))
-        clock = TumblingClocker(window_seconds)
-
-        def _collect_signals(acc: list, item: tuple[str, dict]) -> list:
-            """Accumulate signals per entity within a window."""
-            entity_name, signal_dict = item
-            acc.append(signal_dict)
-            return acc
-
-        flow.reduce_window(
-            _collect_signals,
-            clock,
+    def _serialize_dlq(item: tuple[str, Any]) -> bytes:
+        return json.dumps({"dlq_payload": item[1], "routed_at": _now_iso()}).encode(
+            "utf-8"
         )
-    except ImportError:
-        # Fallback: simple group_by_key (no windowing)
-        flow.reduce_key(lambda acc, item: acc + [item[1]], lambda acc: acc or [])
+
+    try:
+        from bytewax import Dataflow
+
+        dlq_flow = Dataflow("dlq_branch")
+
+        try:
+            from bytewax.connectors.kafka import KafkaSink
+
+            config = _get_config()
+            dlq_flow.output(
+                "kafka_dlq",
+                KafkaSink(
+                    brokers=config["kafka_brokers"].split(","),
+                    topic=config["kafka_topic_dlq"],
+                ),
+            )
+            _logger.info("DLQ output to Kafka topic: %s", config["kafka_topic_dlq"])
+        except ImportError:
+            dlq_flow.output("stdout_dlq", lambda x: print(f"DLQ: {x}"))
+
+        flow.branch(_is_dlq, dlq_flow)
+
+    except (ImportError, NameError):
+        # Branch not available — filter DLQ items in main flow, log them
+        def _drop_dlq(item):
+            if _is_dlq(item):
+                _logger.warning(
+                    "DLQ item dropped (no branch support): %s", str(item)[:200]
+                )
+            return not _is_dlq(item)
+
+        flow.filter(_drop_dlq)
+
+    # ── Stage 3: Aggregate by entity (stateful per-entity state) ──
+    # Use stateful_map to maintain EntityState per entity across windows.
+    # EntityState rolls up signals in a bounded buffer (max 100 per entity).
+    try:
+        flow.stateful_map(
+            init_entity_state,
+            lambda state, item: update_entity_state(state, [item[1]]),
+        )
+    except (ImportError, AttributeError):
+        # Fallback for older Bytewax versions — use reduce_key
+        def _accumulate_signals(acc, item):
+            return (acc or []) + [item[1]]
+
+        flow.reduce_key(_accumulate_signals)
 
     # ── Stage 4: Score ──
     flow.map(_op_score)
@@ -288,14 +341,39 @@ def build_pipeline() -> Any:
     # ── Stage 5a: Write to MySQL ──
     flow.map(_op_write_mysql)
 
-    # ── Stage 5b: Output to Kafka (scores) ──
+    def _serialize_delta(item: tuple[str, dict]) -> bytes | None:
+        """Extract delta bytes from scored item, or None to drop."""
+        delta = item[1].get("_delta")
+        if delta:
+            return json.dumps(delta).encode("utf-8")
+        return None
+
+    # ── Stage 5b: Output to Kafka (score_deltas) ──
+    flow.map(lambda x: (x[0], _serialize_delta(x)))
+    flow.filter(lambda x: x[1] is not None)
     try:
         from bytewax.connectors.kafka import KafkaSink
 
         config = _get_config()
+        flow.output(
+            "kafka_deltas",
+            KafkaSink(
+                brokers=config["kafka_brokers"].split(","),
+                topic="score_deltas",
+            ),
+        )
+        _logger.info("Score deltas output to Kafka topic: score_deltas")
+    except ImportError:
+        flow.output("stdout_deltas", lambda x: print(f"DELTA: {json.loads(x[1])}"))
 
-        def _serialize_score(item: tuple[str, dict]) -> bytes:
-            return json.dumps(item[1]).encode("utf-8")
+    # ── Stage 5c: Output to Kafka (scores) ──
+    def _serialize_score(item: tuple[str, dict]) -> bytes:
+        return json.dumps(item[1]).encode("utf-8")
+
+    try:
+        from bytewax.connectors.kafka import KafkaSink
+
+        config = _get_config()
 
         flow.output(
             "kafka_scores",

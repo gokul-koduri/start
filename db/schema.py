@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 23
+_SCHEMA_VERSION = 24
 
 _TABLES = [
     """
@@ -1376,6 +1376,45 @@ _TABLES = [
         created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_es_email (email),
         INDEX idx_es_reason (reason)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS watchlists (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        user_id             INT NOT NULL COMMENT 'FK to users table',
+        name                VARCHAR(255) NOT NULL,
+        description         TEXT,
+        is_active           TINYINT DEFAULT 1,
+        alert_config_json   TEXT COMMENT 'JSON: threshold, channels, quiet_hours config',
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS watchlist_items (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        watchlist_id        INT NOT NULL COMMENT 'FK to watchlists table',
+        entity_name         VARCHAR(255) NOT NULL,
+        entity_type         VARCHAR(50) NOT NULL DEFAULT 'company' COMMENT 'company, technology, market',
+        notes               TEXT,
+        added_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_watchlist_entity (watchlist_id, entity_name, entity_type)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS watchlist_alert_history (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        watchlist_id        INT NOT NULL COMMENT 'FK to watchlists table',
+        alert_type          VARCHAR(50) NOT NULL COMMENT 'score_change, trend_change, threshold_breach',
+        entity_name         VARCHAR(255) NOT NULL,
+        old_score           FLOAT,
+        new_score           FLOAT,
+        delta               FLOAT NOT NULL COMMENT 'Score change amount',
+        alert_data_json     TEXT COMMENT 'JSON: additional alert context',
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_wah_watchlist (watchlist_id),
+        INDEX idx_wah_entity (entity_name),
+        INDEX idx_wah_created (created_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
 ]

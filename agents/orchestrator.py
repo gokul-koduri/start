@@ -139,6 +139,12 @@ def _get_agent_class(name: str):
 
         AGENT_REGISTRY["span_monitor"] = SpanAgent
         return SpanAgent
+    elif name == "span":
+        # Unified span agent (aliases span_monitor and adds pipeline + research)
+        from agents.span_agent import SpanAgent
+
+        AGENT_REGISTRY["span"] = SpanAgent
+        return SpanAgent
     elif name == "risk_scorer":
         from agents.risk_scorer_agent import RiskScorerAgent
 

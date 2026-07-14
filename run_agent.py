@@ -2,19 +2,28 @@
 """Entry point to run the automated agent pipeline.
 
 Usage:
+    # Traditional pipelines
     python run_agent.py --pipeline daily          # Daily: fast collectors + report + publish
     python run_agent.py --pipeline weekly         # Weekly: all collectors + research + publish
     python run_agent.py --pipeline analysis       # Run all analysis agents
     python run_agent.py --pipeline full           # Collection + analysis + dashboard + publish
-    python run_agent.py --pipeline collect-only   # Only run data collection
-    python run_agent.py --pipeline report-only    # Only generate report
-    python run_agent.py --pipeline publish-only   # Only publish (dashboard + git)
+
+    # Unified Span Agent (Tasks 2, 3, 4)
+    python run_agent.py --span run --pipeline daily    # Task 2: Run pipeline
+    python run_agent.py --span status                  # Task 2: Get pipeline status
+    python run_agent.py --span ask "query"             # Task 4: Research query
+    python run_agent.py --span report --type opportunity --topic "Ohio EV Battery"  # Task 3: Generate report
+    python run_agent.py --span report --list-templates # List available report templates
+    python run_agent.py --span opportunities --min-score 70  # Task 4: Find opportunities
+
+    # Direct chat
     python run_agent.py --chat "query"           # Ask a natural language question (AI Analyst)
     python run_agent.py --pipeline daily --dry-run
 """
 
 import argparse
 import fcntl
+import json
 import logging
 import sys
 from pathlib import Path
@@ -70,6 +79,12 @@ def main():
             "report-only",
             "publish-only",
             "dev-team",
+            "sprint-cycle",
+            "sprint-execution",
+            # Span mode pipelines
+            "span-only",
+            "span-report",
+            "span-research",
         ],
         default="daily",
         help="Which pipeline to run (default: daily)",
@@ -91,6 +106,61 @@ def main():
         type=str,
         default=None,
         help="Run a single agent by name (e.g. product_manager, qa_engineer)",
+    )
+    # Unified Span Agent CLI (Tasks 2, 3, 4)
+    parser.add_argument(
+        "--span",
+        type=str,
+        default=None,
+        choices=["run", "status", "ask", "report", "compare", "opportunities"],
+        help="Unified Span Agent operations: run pipeline, get status, ask queries, generate reports",
+    )
+    parser.add_argument(
+        "--pipeline-arg",
+        type=str,
+        default=None,
+        dest="pipeline_arg",
+        help="Pipeline name for --span run (default: daily)",
+    )
+    parser.add_argument(
+        "--type",
+        type=str,
+        default=None,
+        dest="report_type",
+        help="Report template type for --span report (opportunity_report, market_viability_report, startup_success_report)",
+    )
+    parser.add_argument(
+        "--topic",
+        type=str,
+        default=None,
+        help="Topic for --span report",
+    )
+    parser.add_argument(
+        "--query",
+        type=str,
+        default=None,
+        help="Query for --span ask or --span opportunities",
+    )
+    parser.add_argument(
+        "--sectors",
+        type=str,
+        nargs="+",
+        default=None,
+        help="Sectors for --span compare",
+    )
+    parser.add_argument(
+        "--min-score",
+        type=int,
+        default=None,
+        dest="min_score",
+        help="Minimum opportunity score for --span opportunities",
+    )
+    parser.add_argument(
+        "--list-templates",
+        action="store_true",
+        default=False,
+        dest="list_templates",
+        help="List available report templates",
     )
 
     args = parser.parse_args()
@@ -144,6 +214,60 @@ def main():
         if result.data:
             output["data"] = result.data
         print(_json.dumps(output, indent=2, default=str))
+
+        sys.exit(1 if result.status == "failed" else 0)
+
+    # ── Unified Span Agent Mode (Tasks 2, 3, 4) ──────────────────────────────
+    # Note: --list-templates is also handled here (requires --span report)
+    if args.span or args.list_templates:
+        from agents.span_agent import SpanAgent
+
+        # Always show templates if requested
+        if args.list_templates:
+            templates = [
+                {"name": "opportunity_report", "description": "Manufacturing revival opportunities"},
+                {"name": "market_viability_report", "description": "Global market analysis"},
+                {"name": "startup_success_report", "description": "Success pattern analysis"},
+            ]
+            print(json.dumps(templates, indent=2))
+            sys.exit(0)
+
+        _logger.info("Span Agent mode — action: %s", args.span)
+
+        span_config = config.get("agents", {}).get("span", {})
+        span_config["_pipeline_name"] = f"span-{args.span}"
+        span_config["_scheduled"] = False
+
+        span_agent = SpanAgent(config=span_config, dry_run=args.dry_run)
+
+        # Route to appropriate span method
+        if args.span == "status":
+            result = span_agent.run_unified("status")
+        elif args.span == "ask":
+            if not args.query:
+                _logger.error("--span ask requires --query")
+                sys.exit(1)
+            result = span_agent.run_unified("ask", query=args.query)
+        elif args.span == "report":
+            result = span_agent.run_unified(
+                "report",
+                type=args.report_type or "opportunity_report",
+                topic=args.topic or "",
+            )
+        elif args.span == "compare":
+            if not args.sectors:
+                _logger.error("--span compare requires --sectors")
+                sys.exit(1)
+            result = span_agent.run_unified("compare", sectors=args.sectors)
+        elif args.span == "opportunities":
+            criteria = {}
+            if args.min_score:
+                criteria["min_opportunity_score"] = args.min_score
+            result = span_agent.run_unified("opportunities", criteria=criteria)
+        else:
+            # args.span == "run"
+            pipeline_name = args.pipeline_arg or args.pipeline or "daily"
+            result = span_agent.run_unified("run", pipeline=pipeline_name)
 
         sys.exit(1 if result.status == "failed" else 0)
 
@@ -202,6 +326,9 @@ def main():
             "knowledge_graph",
             "ai_analyst",
             "alert_dispatcher",
+            "sprint_cycle",
+            "sprint_execution",
+            "sprint_execution_agent",
             "report_generator",
             "stripe_payments",
             "span_monitor",
@@ -223,6 +350,22 @@ def main():
 
         if args.force and "report" in orchestrator_config:
             orchestrator_config["report"]["only_on_new_data"] = False
+
+        # Sprint Cycle pipelines (continuous execution)
+        if args.pipeline == "sprint-cycle":
+            _logger.info("Starting Sprint Cycle Agent (continuous)")
+            from agents.cycle_agent import CycleAgent
+            sprint_config = config.get("sprint_cycle", {})
+            agent = CycleAgent(config=sprint_config, dry_run=args.dry_run)
+            agent.run_continuous()
+            sys.exit(0)
+
+        if args.pipeline == "sprint-execution":
+            _logger.info("Starting Sprint Execution Agent")
+            from agents.sprint_execution_agent import SprintExecutionAgent
+            agent = SprintExecutionAgent(config={}, dry_run=args.dry_run)
+            result = agent.run()
+            sys.exit(1 if result.status == "failed" else 0)
 
         orchestrator = OrchestratorAgent(
             config=orchestrator_config, dry_run=args.dry_run

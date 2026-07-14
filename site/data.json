@@ -1,24 +1,172 @@
 {
-  "last_updated": "2026-07-02T22:30:22.539216+00:00",
-  "total_startups": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
-  "manufacturing_startups": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
-  "total_articles": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
-  "manufacturing_articles": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
-  "recent_failures": [],
+  "last_updated": "2026-07-13T21:09:07.163025+00:00",
+  "total_startups": 246,
+  "manufacturing_startups": 121,
+  "total_articles": 1182,
+  "manufacturing_articles": 612,
+  "recent_failures": [
+    {
+      "name": "Matterport",
+      "sector": "PropTech",
+      "year_shutdown": 2024
+    },
+    {
+      "name": "Lordstown Motors",
+      "sector": "EV",
+      "year_shutdown": 2023
+    },
+    {
+      "name": "Volta Inc",
+      "sector": "EV Charging",
+      "year_shutdown": 2024
+    },
+    {
+      "name": "REE Automotive",
+      "sector": "EV Platform",
+      "year_shutdown": 2024
+    },
+    {
+      "name": "Electric Last Mile Solutions",
+      "sector": "EV",
+      "year_shutdown": 2022
+    }
+  ],
+  "pipeline": {
+    "total_companies": 41,
+    "failed_companies": 13,
+    "active_companies": 28,
+    "opportunities": 35,
+    "recent": [
+      {
+        "name": "Sensus",
+        "pipeline_type": "monitoring"
+      },
+      {
+        "name": "H2 Pipeline Systems",
+        "pipeline_type": "infrastructure"
+      },
+      {
+        "name": "Suez Water",
+        "pipeline_type": "management"
+      },
+      {
+        "name": "Xylem Inc",
+        "pipeline_type": "monitoring"
+      },
+      {
+        "name": "Emerson Electric",
+        "pipeline_type": "monitoring"
+      }
+    ]
+  },
   "gmv_monitoring": {
-    "evaluations_done": 0,
+    "evaluations_done": 420,
     "total_expected": 420,
-    "deep_dives_done": 0,
-    "avg_viability": 0,
-    "top_opportunity": "",
-    "top_score": 0,
-    "progress_pct": 0.0,
-    "sectors_done": [],
-    "country_scores": {},
-    "status": "in_progress",
-    "last_evaluated": "",
-    "deep_dive_go": 0,
-    "deep_dive_cautious": 0,
+    "deep_dives_done": 45,
+    "avg_viability": 6.8,
+    "top_opportunity": "E-commerce in China",
+    "top_score": 8,
+    "progress_pct": 100.0,
+    "sectors_done": [
+      "EV/Automotive",
+      "Logistics",
+      "Flexible Display",
+      "EV",
+      "Battery Manufacturing",
+      "3D Printing",
+      "Quick Commerce",
+      "Travel",
+      "Premium EV",
+      "Healthtech",
+      "Productivity",
+      "Construction",
+      "Fintech",
+      "Education",
+      "Design",
+      "Proptech",
+      "Food & Beverage",
+      "Fintech/Payments",
+      "Robotics",
+      "Content/Social Commerce",
+      "Micro-mobility",
+      "Transportation",
+      "Entertainment",
+      "Social Media",
+      "Marketing",
+      "Software & Hardware",
+      "Semiconductors",
+      "E-commerce",
+      "Biotech/Genomics",
+      "PropTech/Construction",
+      "Finances",
+      "Healthtech/Genomics",
+      "Beauty/D2C",
+      "Fashion-tech",
+      "Music",
+      "EdTech",
+      "Mobility/EV",
+      "EV Ride-Hailing",
+      "Social/Chat",
+      "Health",
+      "BNPL/Fintech",
+      "Analytics"
+    ],
+    "country_scores": {
+      "US": {
+        "name": "United States",
+        "avg": 6.8,
+        "count": 42
+      },
+      "UK": {
+        "name": "United Kingdom",
+        "avg": 7.4,
+        "count": 42
+      },
+      "Germany": {
+        "name": "Germany",
+        "avg": 7.1,
+        "count": 42
+      },
+      "India": {
+        "name": "India",
+        "avg": 7.0,
+        "count": 42
+      },
+      "China": {
+        "name": "China",
+        "avg": 6.8,
+        "count": 41
+      },
+      "Japan": {
+        "name": "Japan",
+        "avg": 6.9,
+        "count": 41
+      },
+      "Brazil": {
+        "name": "Brazil",
+        "avg": 6.7,
+        "count": 42
+      },
+      "Southeast_Asia": {
+        "name": "Southeast Asia (Indonesia, Vietnam, Thailand, Philippines)",
+        "avg": 7.1,
+        "count": 42
+      },
+      "Middle_East": {
+        "name": "Middle East (UAE, Saudi Arabia, Qatar)",
+        "avg": 6.7,
+        "count": 42
+      },
+      "Africa": {
+        "name": "Africa (Nigeria, Kenya, South Africa, Egypt)",
+        "avg": 6.2,
+        "count": 42
+      }
+    },
+    "status": "complete",
+    "last_evaluated": "2026-06-02T21:47:17.387938+00:00",
+    "deep_dive_go": 3,
+    "deep_dive_cautious": 41,
     "deep_dive_nogo": 0
   },
   "llm_infrastructure": {
@@ -38,15 +186,9 @@
         "size_bytes": 4661224676
       }
     ],
-    "loaded_models": [
-      {
-        "name": "llama3.2:latest",
-        "size_bytes": 2548417166,
-        "vram_bytes": 0
-      }
-    ],
+    "loaded_models": [],
     "total_vram_mb": 0,
-    "test_latency_s": 0.03,
+    "test_latency_s": 0.04,
     "test_tokens": 2,
     "model_details": {
       "name": "llama3.2:latest",
@@ -67,11 +209,11 @@
     "cheapest_output": {}
   },
   "ollama_usage": {
-    "total_prompt_tokens": 13900,
-    "total_completion_tokens": 1972,
-    "total_tokens": 15872,
-    "inference_count": 586,
-    "cost_equivalence": "<MagicMock name='mock.connect().cursor().fetchall().__getitem__().get()' id='4678904880'>",
+    "total_prompt_tokens": 14281,
+    "total_completion_tokens": 2014,
+    "total_tokens": 16295,
+    "inference_count": 601,
+    "cost_equivalence": {},
     "snapshots": [],
     "status": "tracking"
   },
@@ -79,7 +221,7 @@
     "categories": {},
     "total_recommendations": 0,
     "estimated_savings_pct": 0,
-    "last_recommended": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>"
+    "last_recommended": ""
   },
   "llm_benchmarks": {
     "models": [],
@@ -90,15 +232,188 @@
   "llm_optimizer": {
     "alerts": [],
     "price_changes": [],
-    "total_savings_pct": 1,
+    "total_savings_pct": 0,
     "active_alerts": 0
   },
   "knowledge_graph": {
-    "total_entities": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
-    "total_relationships": "<MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'>",
-    "entity_types": [],
-    "top_entities": [],
-    "relationship_types": [],
-    "status": "no_data"
+    "total_entities": 49,
+    "total_relationships": 28,
+    "entity_types": [
+      {
+        "type_name": "company",
+        "icon": "\ud83c\udfe2",
+        "entity_count": 15
+      },
+      {
+        "type_name": "technology",
+        "icon": "\ud83d\udd27",
+        "entity_count": 10
+      },
+      {
+        "type_name": "investor",
+        "icon": "\ud83d\udcb0",
+        "entity_count": 9
+      },
+      {
+        "type_name": "geographic",
+        "icon": "\ud83d\udccd",
+        "entity_count": 8
+      },
+      {
+        "type_name": "sector",
+        "icon": "\ud83d\udcca",
+        "entity_count": 7
+      },
+      {
+        "type_name": "person",
+        "icon": "\ud83d\udc64",
+        "entity_count": 0
+      },
+      {
+        "type_name": "metric",
+        "icon": "\ud83d\udcc8",
+        "entity_count": 0
+      },
+      {
+        "type_name": "event",
+        "icon": "\ud83d\udcc5",
+        "entity_count": 0
+      }
+    ],
+    "top_entities": [
+      {
+        "name": "EV Manufacturing",
+        "type_name": "sector",
+        "mention_count": 1,
+        "connections": 9
+      },
+      {
+        "name": "Semiconductor Manufacturing",
+        "type_name": "sector",
+        "mention_count": 1,
+        "connections": 5
+      },
+      {
+        "name": "Northvolt",
+        "type_name": "company",
+        "mention_count": 1,
+        "connections": 4
+      },
+      {
+        "name": "Tesla",
+        "type_name": "company",
+        "mention_count": 1,
+        "connections": 4
+      },
+      {
+        "name": "Battery Manufacturing",
+        "type_name": "sector",
+        "mention_count": 1,
+        "connections": 4
+      },
+      {
+        "name": "Lithium-ion Battery",
+        "type_name": "technology",
+        "mention_count": 1,
+        "connections": 3
+      },
+      {
+        "name": "Intel",
+        "type_name": "company",
+        "mention_count": 1,
+        "connections": 2
+      },
+      {
+        "name": "TSMC",
+        "type_name": "company",
+        "mention_count": 1,
+        "connections": 2
+      },
+      {
+        "name": "CVD Silicon Carbide",
+        "type_name": "technology",
+        "mention_count": 1,
+        "connections": 2
+      },
+      {
+        "name": "Rivian",
+        "type_name": "company",
+        "mention_count": 1,
+        "connections": 2
+      },
+      {
+        "name": "Ohio",
+        "type_name": "geographic",
+        "mention_count": 1,
+        "connections": 2
+      },
+      {
+        "name": "Solid State Battery",
+        "type_name": "technology",
+        "mention_count": 1,
+        "connections": 1
+      },
+      {
+        "name": "ARK Invest",
+        "type_name": "investor",
+        "mention_count": 1,
+        "connections": 1
+      },
+      {
+        "name": "Desktop Metal",
+        "type_name": "company",
+        "mention_count": 1,
+        "connections": 1
+      },
+      {
+        "name": "Smart PIGging",
+        "type_name": "technology",
+        "mention_count": 1,
+        "connections": 1
+      }
+    ],
+    "relationship_types": [
+      {
+        "relationship_type": "produces",
+        "count": 5,
+        "avg_weight": 1.0
+      },
+      {
+        "relationship_type": "operates_in",
+        "count": 5,
+        "avg_weight": 1.0
+      },
+      {
+        "relationship_type": "hosts",
+        "count": 5,
+        "avg_weight": 1.0
+      },
+      {
+        "relationship_type": "enables",
+        "count": 5,
+        "avg_weight": 1.0
+      },
+      {
+        "relationship_type": "invested_in",
+        "count": 4,
+        "avg_weight": 1.0
+      },
+      {
+        "relationship_type": "uses",
+        "count": 2,
+        "avg_weight": 1.0
+      },
+      {
+        "relationship_type": "requires",
+        "count": 1,
+        "avg_weight": 1.0
+      },
+      {
+        "relationship_type": "will_enable",
+        "count": 1,
+        "avg_weight": 1.0
+      }
+    ],
+    "status": "active"
   }
 }

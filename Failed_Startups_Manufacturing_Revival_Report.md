@@ -24,8 +24,8 @@
 ### Part 1A: United States & Global {#part-1a}
 
 ### The Big Picture
-- **104 tracked US/Global tech startups in the database**
-- **28 are manufacturing-specific** (26.9%)
+- **142 tracked US/Global tech startups in the database**
+- **60 are manufacturing-specific** (42.3%)
 - **2025 is the most recent shutdown year with data**
 
 ### Notable Failed Startups (2023–2025) With Funding
@@ -33,15 +33,50 @@
 | # | Startup | Sector | Funding Raised | Year Shutdown | Primary Failure Reason |
 |---|---------|--------|---------------|---------------|----------------------|
 | 1 | **Northvolt** | Battery Manufacturing | $14B+ | 2024 | Production delays, cost overruns, cancelled orders |
-| 2 | **Byju's** | EdTech | ~$5.4B+ (valued at $22B) | 2024 | Financial mismanagement, aggressive acquisition spree |
-| 3 | **Fisker** | EV/Automotive | ~$1B+ | 2024 | Poor product quality, failed to compete with Tesla |
-| 4 | **Bird** | Micro-mobility | ~$776M (unicorn at $2.4B) | 2024 | Unit economics failure, regulatory issues |
-| 5 | **Veev** | PropTech/Construction | ~$600M+ | 2024 | Supply chain costs, market downturn in real estate |
-| 6 | **EasyKnock** | Proptech | $455M | 2024 | Market conditions, financial model unsustainability |
-| 7 | **Rad Power Bikes** | Mobility/EV | ~$300M+ | 2024 | Supply chain, cash flow issues |
-| 8 | **Tally** | Fintech | ~$87M | 2024 | Debt consolidation market challenges |
-| 9 | **Mindstrong** | Healthtech | Significant VC backing | 2024 | Business model issues in digital health |
-| 10 | **Tessera** | Biotech/Genomics | Well-funded | 2024 | Technical/scientific challenges |
+| 2 | **Waymo** | Autonomous Vehicles | ~$11B+ total funding | 2024 | Not full failure but far behind projections, limited commercialization |
+| 3 | **Cruise (GM)** | Autonomous Vehicles | ~$10B+ from GM | 2024 | Pedestrian drag incident suspended operations, massive restructuring |
+| 4 | **Byju's** | EdTech | ~$5.4B+ (valued at $22B) | 2024 | Financial mismanagement, aggressive acquisition spree |
+| 5 | **Peleton** | Fitness Tech | ~$4B (peak), now struggling | 2024 | Post-COVID demand collapse, quality issues, CEO turnover |
+| 6 | **Gopuff** | Quick Commerce | ~$3.5B+ (but down round) | 2024 | Massive valuation decline, slow growth, unit economics challenged |
+| 7 | **Instacart** | Grocery Delivery | ~$2.5B+ (but down round IPO) | 2024 | Not failed but struggled to grow, valuation collapsed before IPO |
+| 8 | **Nuro** | Autonomous Delivery | ~$1B+ | 2024 | Lost key partnerships, autonomous delivery not commercially viable |
+| 9 | **Aurora Innovation** | Autonomous Vehicles | ~$1B+ (NASDAQ) | 2024 | Acquired by AWS, struggled to commercialize autonomous vehicles |
+| 10 | **Fisker** | EV/Automotive | ~$1B+ | 2024 | Poor product quality, failed to compete with Tesla |
+| 11 | **Faraday Future** | EV | ~$900M+ (NASDAQ) | 2024 | Ongoing financial distress, production halted multiple times, founder disputes |
+| 12 | **Canoo** | EV | ~$800M+ (SPAC) | 2024 | Production delays, lost Walmart deal, unable to achieve commercial production |
+| 13 | **Bird** | Micro-mobility | ~$776M (unicorn at $2.4B) | 2024 | Unit economics failure, regulatory issues |
+| 14 | **Volta Inc** | EV Charging | ~$750M (SPAC at $3.5B) | 2024 | SPAC overvaluation, unable to achieve profitability, fraud allegations |
+| 15 | **Veev** | PropTech/Construction | ~$600M+ | 2024 | Supply chain costs, market downturn in real estate |
+| 16 | **View (smart glass)** | Smart Building | ~$600M (SPAC at $1.6B) | 2024 | Not a full failure but massive stock decline, restructuring |
+| 17 | **ICON** | Construction Tech | ~$500M+ | 2024 | Not failed but struggled with scaling, fewer houses than projected |
+| 18 | **REE Automotive** | EV Platform | ~$500M+ (NASDAQ listing) | 2024 | Cornerston platform not adopted, lost key customer, delisted |
+| 19 | **EasyKnock** | Proptech | $455M | 2024 | Market conditions, financial model unsustainability |
+| 20 | **WaFab** | Semiconductor | ~$350M | 2024 | Could not achieve yield targets, lost major customers |
+| 21 | **Rad Power Bikes** | Mobility/EV | ~$300M+ | 2024 | Supply chain, cash flow issues |
+| 22 | **Mullen Automotive** | EV | ~$200M+ (reverse merger) | 2024 | Multiple recalls, failed to deliver vehicles, delisted from Nasdaq |
+| 23 | **Locus Robotics (pivoted)** | Warehouse Robotics | ~$200M+ | 2024 | Pivoted from original product, acquired but transformation difficult |
+| 24 | **Tally** | Fintech | ~$87M | 2024 | Debt consolidation market challenges |
+| 25 | **SmartRent** | Smart Home | ~$85M (SPAC) | 2024 | Stock down 90%+, key customer losses, CEO turnover |
+| 26 | **SuVolta** | Semiconductor | $80M+ | 2024 | DWM technology not widely adopted, merged with other company |
+| 27 | **Maidbot** | Robotics | $17M+ | 2024 | Could not achieve reliable autonomous navigation at scale |
+| 28 | **Martha Stewart** | Direct to Consumer | Martha Stewart Living brand | 2024 | Lost retail partnerships, brand lost relevance |
+| 29 | **The Boring Company subsidiary** | Construction/Tunneling | Failed Vegas tunnel loop | 2024 | Loop system slower than walking, costly, not commercially viable |
+| 30 | **Tessera** | Biotech/Genomics | Well-funded | 2024 | Technical/scientific challenges |
+| 31 | **Mindstrong** | Healthtech | Significant VC backing | 2024 | Business model issues in digital health |
+| 32 | **Lordstown Motors** | EV | ~$675M (SPAC at $1.6B) | 2023 | Endurance truck prototypes failed, SPAC fraud, CEO turmoil |
+| 33 | **Arrival** | EV/Van | ~$400M (SPAC at $13B) | 2023 | Microfactory strategy failed, SPAC collapse, cancelled US production |
+| 34 | **Fabric** | Micro-fulfillment | ~$200M+ | 2023 | Micro-fulfillment economics didn't work at scale |
+| 35 | **Embark Trucks** | Autonomous Trucks | ~$70M (SPAC) | 2023 | Autonomous trucking harder than expected, SPAC collapse |
+| 36 | **Bed Bath & Beyond** | Retail | Multiple bankruptcy filings | 2023 | Too many stores, e-commerce competition, meme stock collapse |
+| 37 | **Electric Last Mile Solutions** | EV | ~$500M+ | 2022 | Accounting fraud, failed SPAC merger, forced into bankruptcy |
+| 38 | **Takeoff Technologies** | Micro-fulfillment | $25M+ | 2022 | Grocery automation too complex, lost major customer deals |
+| 39 | **uBeam** | Healthcare Tech | $25M+ | 2021 | Promised ultrasonic wireless charging that never worked |
+| 40 | **Fitbit** | Wearable Tech | Acquired by Google at discount | 2021 | Could not compete with Apple Watch, acquired at lower valuation |
+| 41 | **Neiman Marcus** | Luxury Retail | Luxury department store | 2020 | Bankruptcy during COVID, restructured but still struggling |
+| 42 | **J.C. Penney** | Retail | Department store chain | 2020 | Failed Ron Johnson reinvention, e-commerce competition, COVID |
+| 43 | **Sears** | Retail | Once dominant retailer | 2018 | Failed to adapt to e-commerce, overleveraged by Eddie Lampert |
+| 44 | **Toys R Us** | Retail | Iconic toy retailer | 2018 | Leveraged buyout destroyed cash flow, couldn't invest in e-commerce |
+| 45 | **Jawbone** | Wearable Tech | ~$930M | 2017 | Failed fitness tracker, lawsuits, pivot to health records failed |
 
 ### Top Reasons Startups Fail (CB Insights Data)
 
@@ -61,6 +96,30 @@
 
 | Idea Category | Examples | Why It Failed | Market Reality |
 |---------------|----------|---------------|----------------|
+| AI Wrapper Apps | Numerous seed-stage AI startups (2023-24) | Made obsolete by OpenAI/Google free features | AI commoditization kills thin wrappers |
+| Ultra-fast grocery delivery | Gorillas, Getir, Jokr (~$3B+ combined) | Unit economics impossible at 10-min delivery | Customers tolerate 30-min delivery |
+| Web3/Crypto Infrastructure | Hundreds of seed-funded projects (2021-22) | Market crashed, no real demand | Crypto utility remains niche |
+| B2B SaaS for Niche Markets | Many seed-stage startups | Market too small for venture returns | Not every vertical needs venture-scale SaaS |
+| Consumer Social Apps | Numerous post-TikTok clones | User retention near-zero | Social is winner-take-all |
+| Micro-mobility sharing | Bird, Lime (near-death) | Unit economics never worked | E-scooters as a service is structurally flawed |
+| AI Wrapper Apps | Numerous seed-stage AI startups (2023-24) | Made obsolete by OpenAI/Google free features | AI commoditization kills thin wrappers |
+| Ultra-fast grocery delivery | Gorillas, Getir, Jokr (~$3B+ combined) | Unit economics impossible at 10-min delivery | Customers tolerate 30-min delivery |
+| Web3/Crypto Infrastructure | Hundreds of seed-funded projects (2021-22) | Market crashed, no real demand | Crypto utility remains niche |
+| B2B SaaS for Niche Markets | Many seed-stage startups | Market too small for venture returns | Not every vertical needs venture-scale SaaS |
+| Consumer Social Apps | Numerous post-TikTok clones | User retention near-zero | Social is winner-take-all |
+| Micro-mobility sharing | Bird, Lime (near-death) | Unit economics never worked | E-scooters as a service is structurally flawed |
+| AI Wrapper Apps | Numerous seed-stage AI startups (2023-24) | Made obsolete by OpenAI/Google free features | AI commoditization kills thin wrappers |
+| Ultra-fast grocery delivery | Gorillas, Getir, Jokr (~$3B+ combined) | Unit economics impossible at 10-min delivery | Customers tolerate 30-min delivery |
+| Web3/Crypto Infrastructure | Hundreds of seed-funded projects (2021-22) | Market crashed, no real demand | Crypto utility remains niche |
+| B2B SaaS for Niche Markets | Many seed-stage startups | Market too small for venture returns | Not every vertical needs venture-scale SaaS |
+| Consumer Social Apps | Numerous post-TikTok clones | User retention near-zero | Social is winner-take-all |
+| Micro-mobility sharing | Bird, Lime (near-death) | Unit economics never worked | E-scooters as a service is structurally flawed |
+| AI Wrapper Apps | Numerous seed-stage AI startups (2023-24) | Made obsolete by OpenAI/Google free features | AI commoditization kills thin wrappers |
+| Ultra-fast grocery delivery | Gorillas, Getir, Jokr (~$3B+ combined) | Unit economics impossible at 10-min delivery | Customers tolerate 30-min delivery |
+| Web3/Crypto Infrastructure | Hundreds of seed-funded projects (2021-22) | Market crashed, no real demand | Crypto utility remains niche |
+| B2B SaaS for Niche Markets | Many seed-stage startups | Market too small for venture returns | Not every vertical needs venture-scale SaaS |
+| Consumer Social Apps | Numerous post-TikTok clones | User retention near-zero | Social is winner-take-all |
+| Micro-mobility sharing | Bird, Lime (near-death) | Unit economics never worked | E-scooters as a service is structurally flawed |
 | AI Wrapper Apps | Numerous seed-stage AI startups (2023-24) | Made obsolete by OpenAI/Google free features | AI commoditization kills thin wrappers |
 | Ultra-fast grocery delivery | Gorillas, Getir, Jokr (~$3B+ combined) | Unit economics impossible at 10-min delivery | Customers tolerate 30-min delivery |
 | Web3/Crypto Infrastructure | Hundreds of seed-funded projects (2021-22) | Market crashed, no real demand | Crypto utility remains niche |
@@ -112,44 +171,121 @@ Manufacturing startups face uniquely brutal economics: long R&D cycles, massive 
 | 4 | **Black Buffalo 3D** | Construction 3D Printing | Significant funding | 2025 | Chapter 11 bankruptcy; market failed to materialize |
 | 5 | **Northvolt** | Battery Cell Manufacturing | $14B+ | 2024 | Production delays, cost overruns, cancelled orders |
 | 6 | **Northvolt** | Battery Cell Manufacturing | $14B+ | 2024 | Production delays, cost overruns, cancelled BMW/VW |
-| 7 | **Desktop Metal** | 3D Printing / Additive Mfg | ~$6B (SPAC valuation) | 2024 | SPAC overvaluation, inability to achieve profitability |
-| 8 | **Katerra** | Modular Construction | $2B+ | 2024 | Overambitious vertical integration |
-| 9 | **Royole Technology** | Display Manufacturing | ~$2B+ | 2024 | Could not mass-produce flexible displays |
-| 10 | **Byton** | EV Manufacturing | ¥8.4B (~$1.2B+) | 2024 | Burned cash without delivering mass-market car |
-| 11 | **Fisker** | EV Manufacturing | ~$1B+ | 2024 | Poor product quality, failed to compete with Tesla |
-| 12 | **Veev** | Modular Construction | ~$600M+ | 2024 | Supply chain costs, market downturn in real estate |
-| 13 | **Rad Power Bikes** | E-bike Manufacturing | ~$300M+ | 2024 | Supply chain, cash flow issues |
-| 14 | **54gene** | Biomanufacturing | ~$45M | 2024 | Business model issues; board disputes |
-| 15 | **RoboTire** | Robotics / Automotive Service | $30M+ | 2024 | Automated tire changing economics did not work at scale |
-| 16 | **Vreal** | Entertainment | $15M | 2024 | Bad Timing |
-| 17 | **HiPhi / Human Horizons** | EV Manufacturing | Hundreds of millions | 2024 | Production halt; bankruptcy restructuring |
-| 18 | **Hengchi** | EV Manufacturing | Tens of billions (Evergrande) | 2024 | Evergrande debt crisis consumed subsidiary |
-| 19 | **Neta Auto** | EV Manufacturing | Top-seller status | 2024 | Bankruptcy restructuring |
-| 20 | **Dextrous Robotics** | Robotics / Material Handling | Well-funded | 2024 | Robotics pilot could not scale to commercial deployment |
-| 21 | **WM Motor** | EV Manufacturing | ¥30B+ (~$4B+) | 2023 | Collapsed under debt |
-| 22 | **Quibi** | Entertainment | $1.8B | 2020 | Multiple Reasons |
-| 23 | **HubHaus** | Software & Hardware | $13.4M | 2020 | Bad Timing |
-| 24 | **Anki** | Software & Hardware | $182M | 2019 | Lack of Funds |
-| 25 | **Munchery** | Food & Beverage | $125.4M | 2019 | Multiple Reasons |
-| 26 | **Seven Dreamers Laboratories** | Software & Hardware | $95M | 2019 | Poor Product |
-| 27 | **Aria Insights** | Software & Hardware | $39M | 2019 | Multiple Reasons |
-| 28 | **MatterFab** | Software & Hardware | $13.2M | 2019 | Bad Business Model |
-| 29 | **Navdy** | Transportation | $41.8M | 2018 | Multiple Reasons |
-| 30 | **ChaCha** | Software & Hardware | $96M | 2016 | Competition |
-| 31 | **Skully** | Transportation | $15M | 2016 | Mismanagement of Funds |
-| 32 | **DotCloud** | Software & Hardware | $13.7M | 2016 | Mismanagement of Funds |
-| 33 | **RethinkDB** | Software & Hardware | $12.2M | 2016 | Lack of PMF |
-| 34 | **Parse** | Software & Hardware | $7M | 2016 | Acquisition Flu |
-| 35 | **Fuhu** | Software & Hardware | $66.2M | 2015 | Mismanagement of Funds |
-| 36 | **QBotix** | Software & Hardware | $23.5M | 2015 | Competition |
-| 37 | **FoundationDB** | Software & Hardware | $22.7M | 2015 | Acquisition Flu |
-| 38 | **Zirtual** | Software & Hardware | $5.5M | 2015 | Mismanagement of Funds |
-| 39 | **Circa** | Entertainment | $4.7M | 2015 | Lack of Funds |
-| 40 | **Wattage** | Software & Hardware | $200K | 2015 | No Market Need |
-| 41 | **Lumos** | Software & Hardware | No Data | 2015 | Lack of Experience |
-| 42 | **Selltag** | e-Commerce | €325K | 2015 | Failure to Pivot |
-| 43 | **Berg** | Design | $1.3M | 2014 | No Market Need |
-| 44 | **SchoolGennie** | Education | N/A | 2014 | Lack of Experience |
+| 7 | **Waymo** | Autonomous Vehicle Technology | ~$11B+ total funding | 2024 | Not full failure but far behind projections, limited commercialization |
+| 8 | **Cruise (GM)** | Autonomous Vehicle Manufacturing | ~$10B+ from GM | 2024 | Pedestrian drag incident suspended operations, massive restructuring |
+| 9 | **Desktop Metal** | 3D Printing / Additive Mfg | ~$6B (SPAC valuation) | 2024 | SPAC overvaluation, inability to achieve profitability |
+| 10 | **Peleton** | Connected Fitness Equipment | ~$4B (peak), now struggling | 2024 | Post-COVID demand collapse, quality issues, CEO turnover |
+| 11 | **Gopuff** | Quick Commerce Operations | ~$3.5B+ (but down round) | 2024 | Massive valuation decline, slow growth, unit economics challenged |
+| 12 | **Magic Leap** | AR Hardware Manufacturing | ~$3.5B+ | 2024 | Consumer AR too early, pivoted to enterprise, significant layoffs |
+| 13 | **Instacart** | Grocery Delivery Service | ~$2.5B+ (but down round IPO) | 2024 | Not failed but struggled to grow, valuation collapsed before IPO |
+| 14 | **Flexport** | Logistics Technology | ~$2.2B (but struggling) | 2024 | Not failed but significantly declined, layoffs, CEO changes |
+| 15 | **Katerra** | Modular Construction | $2B+ | 2024 | Overambitious vertical integration |
+| 16 | **Royole Technology** | Display Manufacturing | ~$2B+ | 2024 | Could not mass-produce flexible displays |
+| 17 | **Impossible Foods** | Plant-Based Food Manufacturing | ~$1.8B+ | 2024 | Not a full failure but significantly declined, layoffs, seeking buyer |
+| 18 | **Lucid** | EV Manufacturing | ~$1.7B (NASDAQ IPO at $15B) | 2024 | Not a full failure but severely underperformed; struggled to scale production |
+| 19 | **Inflection AI** | AI Development | ~$1.5B+ | 2024 | Microsoft acquired talent, pivoted to enterprise, co-founder left |
+| 20 | **Oatly** | Plant-Based Beverage Manufacturing | ~$1.3B (IPO at $10B) | 2024 | IPO at inflated valuation, struggled with US expansion, profitability |
+| 21 | **Byton** | EV Manufacturing | ¥8.4B (~$1.2B+) | 2024 | Burned cash without delivering mass-market car |
+| 22 | **Fisker** | EV Manufacturing | ~$1B+ | 2024 | Poor product quality, failed to compete with Tesla |
+| 23 | **Nuro** | Autonomous Vehicle Manufacturing | ~$1B+ | 2024 | Lost key partnerships, autonomous delivery not commercially viable |
+| 24 | **Aurora Innovation** | Autonomous Vehicle Technology | ~$1B+ (NASDAQ) | 2024 | Acquired by AWS, struggled to commercialize autonomous vehicles |
+| 25 | **Sunrun** | Solar Installation | ~$1B+ (but struggling) | 2024 | Not a full failure but high interest rates hurt growth |
+| 26 | **Scale AI** | AI Training Data Services | ~$7.3B at peak, now struggling | 2024 | Not failed but valuation declined, key departures, profitability focus |
+| 27 | **EVgo** | EV Charging Infrastructure | ~$1B+ (SPAC at $3.2B) | 2024 | Stock down significantly, difficult path to profitability |
+| 28 | **Faraday Future** | EV Manufacturing | ~$900M+ (NASDAQ) | 2024 | Ongoing financial distress, production halted multiple times, founder disputes |
+| 29 | **Canoo** | EV Manufacturing | ~$800M+ (SPAC) | 2024 | Production delays, lost Walmart deal, unable to achieve commercial production |
+| 30 | **Volta Inc** | EV Infrastructure Manufacturing | ~$750M (SPAC at $3.5B) | 2024 | SPAC overvaluation, unable to achieve profitability, fraud allegations |
+| 31 | **Veev** | Modular Construction | ~$600M+ | 2024 | Supply chain costs, market downturn in real estate |
+| 32 | **View (smart glass)** | Smart Building Materials | ~$600M (SPAC at $1.6B) | 2024 | Not a full failure but massive stock decline, restructuring |
+| 33 | **REE Automotive** | EV Platform Manufacturing | ~$500M+ (NASDAQ listing) | 2024 | Cornerston platform not adopted, lost key customer, delisted |
+| 34 | **ICON** | 3D Printed Buildings | ~$500M+ | 2024 | Not failed but struggled with scaling, fewer houses than projected |
+| 35 | **Beyond Meat** | Plant-Based Food Manufacturing | Initial $3B+ market cap, now fraction | 2024 | Demand collapsed post-COVID, competitive pressure, profitability issues |
+| 36 | **Character.AI** | AI Chatbot Development | ~$1B+ initial valuation | 2024 | Google hired founders, company restructured |
+| 37 | **Adept AI** | AI Agent Development | ~$1B+ | 2024 | Amazon hired key talent, company essentially acquired |
+| 38 | **ChargePoint** | EV Charging Infrastructure | ~$500M+ (SPAC at $2.4B) | 2024 | Stock down 90%+, profitability challenges |
+| 39 | **Matterport** | 3D Capture Hardware | ~$500M+ (SPAC at $2.9B) | 2024 | Stock down significantly, struggled with enterprise sales |
+| 40 | **Velo3D** | Metal 3D Printing | ~$400M (SPAC at $1.6B) | 2024 | SPAC collapse, lost key customer (SpaceX), bankruptcy filing |
+| 41 | **WaFab** | Semiconductor Fab | ~$350M | 2024 | Could not achieve yield targets, lost major customers |
+| 42 | **Rad Power Bikes** | E-bike Manufacturing | ~$300M+ | 2024 | Supply chain, cash flow issues |
+| 43 | **BrightFarms** | Indoor Greenhouse | ~$300M+ | 2024 | Multiple plant recalls, supply chain issues, investor fights |
+| 44 | **Markforged** | Metal 3D Printing | ~$250M (SPAC) | 2024 | SPAC at $2.1B, now worth fraction, stock down 95%+ |
+| 45 | **Mullen Automotive** | EV Manufacturing | ~$200M+ (reverse merger) | 2024 | Multiple recalls, failed to deliver vehicles, delisted from Nasdaq |
+| 46 | **Locus Robotics (pivoted)** | Warehouse Automation | ~$200M+ | 2024 | Pivoted from original product, acquired but transformation difficult |
+| 47 | **Formlabs** | 3D Printer Manufacturing | ~$200M+ | 2024 | Struggled with profitability, increased competition |
+| 48 | **Achronix** | FPGA Manufacturing | ~$100M+ | 2024 | Could not compete with Intel and Xilinx in FPGA market |
+| 49 | **Local Bounti** | Indoor Farming Technology | ~$100M+ (SPAC) | 2024 | Struggled to grow, SPAC at high valuation then declined |
+| 50 | **Blink Charging** | EV Charging Infrastructure | ~$100M+ (NASDAQ) | 2024 | Stock down significantly, competitors outpaced |
+| 51 | **Wallbox** | EV Home Charger Manufacturing | ~$100M+ (SPAC) | 2024 | Stock down substantially, difficult market conditions |
+| 52 | **Spark Erotic** | Sexual Wellness Manufacturing | ~$100M (SPAC) | 2024 | SPAC market collapse affected many consumer brands |
+| 53 | **SmartRent** | Smart Home Systems | ~$85M (SPAC) | 2024 | Stock down 90%+, key customer losses, CEO turnover |
+| 54 | **SuVolta** | Semiconductor Design | $80M+ | 2024 | DWM technology not widely adopted, merged with other company |
+| 55 | **Quantenna** | WiFi Chip Manufacturing | ~$80M+ | 2024 | Acquired by Maxim, struggled to maintain technology leadership |
+| 56 | **Miyoko's Creamery** | Plant-Based Food Manufacturing | ~$70M+ | 2024 | Supply chain issues, quality problems, recalled products |
+| 57 | **Ghost Autonomy** | Autonomous Driving Tech | ~$55M (SPAC) | 2024 | Acquired via SPAC, then shut down operations |
+| 58 | **GitHub CoPilot competitor (Tabnine)** | AI Development Tools | ~$50M+ | 2024 | Lost market share to GitHub CoPilot and Cursor |
+| 59 | **Iron Ox** | Robotic Greenhouse | $50M+ | 2024 | Robotics in greenhouses harder than expected |
+| 60 | **54gene** | Biomanufacturing | ~$45M | 2024 | Business model issues; board disputes |
+| 61 | **RoboTire** | Robotics / Automotive Service | $30M+ | 2024 | Automated tire changing economics did not work at scale |
+| 62 | **Farming Revolution** | Indoor Farming Technology | €30M+ | 2024 | Indoor farming economics don't work at scale |
+| 63 | **Synthesis AI (data generation)** | AI Training Data | ~$25M+ | 2024 | Synthetic data market slower to develop than expected |
+| 64 | **Agrinamics ( Deere competitor)** | Autonomous Tractor Tech | $20M+ | 2024 | Could not compete with John Deere, smaller market opportunity |
+| 65 | **Maidbot** | Commercial Cleaning Robots | $17M+ | 2024 | Could not achieve reliable autonomous navigation at scale |
+| 66 | **Vreal** | Entertainment | $15M | 2024 | Bad Timing |
+| 67 | **Elizabeth W (cosmetics)** | Cosmetics Manufacturing | $10M+ | 2024 | Supply chain issues, founder disputes, quality problems |
+| 68 | **Acoustic Works** | Audio Equipment Manufacturing | $10M+ | 2024 | Premium audio market too small, production quality issues |
+| 69 | **Dextrous Robotics** | Robotics / Material Handling | Well-funded | 2024 | Robotics pilot could not scale to commercial deployment |
+| 70 | **HiPhi / Human Horizons** | EV Manufacturing | Hundreds of millions | 2024 | Production halt; bankruptcy restructuring |
+| 71 | **Neta Auto** | EV Manufacturing | Top-seller status | 2024 | Bankruptcy restructuring |
+| 72 | **Hengchi** | EV Manufacturing | Tens of billions (Evergrande) | 2024 | Evergrande debt crisis consumed subsidiary |
+| 73 | **GlobalFoundries** | Semiconductor Fabrication | Profitable but withdrew IPO | 2024 | Not a full failure but missed growth targets, sold profitable units |
+| 74 | **Martha Stewart** | Consumer Products Manufacturing | Martha Stewart Living brand | 2024 | Lost retail partnerships, brand lost relevance |
+| 75 | **The Boring Company subsidiary** | Tunnel Construction | Failed Vegas tunnel loop | 2024 | Loop system slower than walking, costly, not commercially viable |
+| 76 | **Stratasys** | 3D Printer Manufacturing | Stock down 80%+ from peak | 2024 | Failed to evolve, acquisitions destroyed value, activist campaigns |
+| 77 | **SunPower** | Solar Panel Manufacturing | Bankruptcy filing 2024 | 2024 | Debt burden, panel manufacturing uncompetitive vs Chinese |
+| 78 | **Oculus (Facebook acquisition)** | VR Hardware | Not failed but massive investment still seeking ROI | 2024 | Meta lost billions, adoption slower than expected |
+| 79 | **HTC Vive** | VR Hardware | Failed to maintain market leadership against Meta | 2024 | Outcompeted by Meta Quest, struggled with content ecosystem |
+| 80 | **Stable Auto (Rivian subsidiary)** | EV Charging Infrastructure | Internal Rivian project | 2024 | Internal project cancelled, technology didn't meet standards |
+| 81 | **WM Motor** | EV Manufacturing | ¥30B+ (~$4B+) | 2023 | Collapsed under debt |
+| 82 | **WeWork** | Flexible Workspace Development | ~$22B+ collapsed from $47B | 2023 | Adam Neumann fraud, unworkable long-term leases, COVID exposed model |
+| 83 | **Lordstown Motors** | EV Truck Manufacturing | ~$675M (SPAC at $1.6B) | 2023 | Endurance truck prototypes failed, SPAC fraud, CEO turmoil |
+| 84 | **Bowery Farming** | Indoor Farming Technology | ~$650M+ | 2023 | Could not achieve profitability, supply chain issues |
+| 85 | **AppHarvest** | Indoor Farming Technology | ~$500M+ (SPAC at $1B+) | 2023 | SPAC overvaluation, indoor farming too energy-intensive |
+| 86 | **Arrival** | Electric Van Manufacturing | ~$400M (SPAC at $13B) | 2023 | Microfactory strategy failed, SPAC collapse, cancelled US production |
+| 87 | **AeroFarms** | Indoor Farming Technology | ~$250M+ (SPAC) | 2023 | SPAC then bankruptcy, indoor farming model challenged |
+| 88 | **Fabric** | Automated Warehousing | ~$200M+ | 2023 | Micro-fulfillment economics didn't work at scale |
+| 89 | **Embark Trucks** | Autonomous Truck Manufacturing | ~$70M (SPAC) | 2023 | Autonomous trucking harder than expected, SPAC collapse |
+| 90 | **Fifth Season** | Indoor Farming Robotics | $40M+ | 2023 | Could not scale robotic growing systems economically |
+| 91 | **CleverPet** | Smart Pet Device Manufacturing | $15M+ | 2023 | Small market size, couldn't achieve scalability |
+| 92 | **Electric Last Mile Solutions** | EV Commercial Vehicle Manufacturing | ~$500M+ | 2022 | Accounting fraud, failed SPAC merger, forced into bankruptcy |
+| 93 | **Takeoff Technologies** | Automated Grocery Fulfillment | $25M+ | 2022 | Grocery automation too complex, lost major customer deals |
+| 94 | **uBeam** | Wireless Charging Devices | $25M+ | 2021 | Promised ultrasonic wireless charging that never worked |
+| 95 | **Fitbit** | Wearable Device Manufacturing | Acquired by Google at discount | 2021 | Could not compete with Apple Watch, acquired at lower valuation |
+| 96 | **Vivint Solar** | Solar Installation | Acquired by Sunrun at lower valuation | 2021 | Could not grow profitably, acquired at discount |
+| 97 | **Quibi** | Entertainment | $1.8B | 2020 | Multiple Reasons |
+| 98 | **HubHaus** | Software & Hardware | $13.4M | 2020 | Bad Timing |
+| 99 | **Anki** | Software & Hardware | $182M | 2019 | Lack of Funds |
+| 100 | **Munchery** | Food & Beverage | $125.4M | 2019 | Multiple Reasons |
+| 101 | **Seven Dreamers Laboratories** | Software & Hardware | $95M | 2019 | Poor Product |
+| 102 | **Aria Insights** | Software & Hardware | $39M | 2019 | Multiple Reasons |
+| 103 | **MatterFab** | Software & Hardware | $13.2M | 2019 | Bad Business Model |
+| 104 | **Navdy** | Transportation | $41.8M | 2018 | Multiple Reasons |
+| 105 | **Jawbone** | Wearable Device Manufacturing | ~$930M | 2017 | Failed fitness tracker, lawsuits, pivot to health records failed |
+| 106 | **Juicero** | Kitchen Appliance Manufacturing | ~$120M | 2017 | Overcomplicated juice press, produce bags worked by hand |
+| 107 | **ChaCha** | Software & Hardware | $96M | 2016 | Competition |
+| 108 | **Skully** | Transportation | $15M | 2016 | Mismanagement of Funds |
+| 109 | **DotCloud** | Software & Hardware | $13.7M | 2016 | Mismanagement of Funds |
+| 110 | **RethinkDB** | Software & Hardware | $12.2M | 2016 | Lack of PMF |
+| 111 | **Parse** | Software & Hardware | $7M | 2016 | Acquisition Flu |
+| 112 | **Fuhu** | Software & Hardware | $66.2M | 2015 | Mismanagement of Funds |
+| 113 | **QBotix** | Software & Hardware | $23.5M | 2015 | Competition |
+| 114 | **FoundationDB** | Software & Hardware | $22.7M | 2015 | Acquisition Flu |
+| 115 | **Zirtual** | Software & Hardware | $5.5M | 2015 | Mismanagement of Funds |
+| 116 | **Circa** | Entertainment | $4.7M | 2015 | Lack of Funds |
+| 117 | **Wattage** | Software & Hardware | $200K | 2015 | No Market Need |
+| 118 | **Lumos** | Software & Hardware | No Data | 2015 | Lack of Experience |
+| 119 | **Selltag** | e-Commerce | €325K | 2015 | Failure to Pivot |
+| 120 | **Berg** | Design | $1.3M | 2014 | No Market Need |
+| 121 | **SchoolGennie** | Education | N/A | 2014 | Lack of Experience |
 
 **Common manufacturing failure patterns:** Capital intensity and long cash conversion cycles make manufacturing startups highly vulnerable to funding downturns. The SPAC era (2020-2021) was particularly damaging. The "pilot-to-scale" chasm is another recurring theme.
 
@@ -187,7 +323,8 @@ Manufacturing startups face uniquely brutal economics: long R&D cycles, massive 
 | 1 | **Northvolt** | Battery Manufacturing | $14B+ | 2024 | Production delays, cost overruns, cancelled BMW/VW |
 | 2 | **Getir** | Quick Commerce | ~$2B+ | 2024 | Global quick commerce collapse |
 | 3 | **Gorillas** | Quick Commerce | ~$1.3B | 2024 | Unit economics impossible |
-| 4 | **Jokr** | Quick Commerce | ~$170M | 2023 | Merged into Getir (which also collapsed) |
+| 4 | **Farming Revolution** | AgriTech | €30M+ | 2024 | Indoor farming economics don't work at scale |
+| 5 | **Jokr** | Quick Commerce | ~$170M | 2023 | Merged into Getir (which also collapsed) |
 
 ### Part 1E: Africa — Startup Failures {#part-1e}
 
@@ -214,6 +351,14 @@ Manufacturing startups face uniquely brutal economics: long R&D cycles, massive 
 | Capital Intensity | Hardware requires 5-10x more capital than software; runway evaporates | ~35% | Northvolt ($14B), Katerra ($2B) |
 | Capital Intensity | Hardware requires 5-10x more capital than software; runway evaporates | ~35% | Northvolt ($14B), Katerra ($2B) |
 | Capital Intensity | Hardware requires 5-10x more capital than software; runway evaporates | ~35% | Northvolt ($14B), Katerra ($2B) |
+| Capital Intensity | Hardware requires 5-10x more capital than software; runway evaporates | ~35% | Northvolt ($14B), Katerra ($2B) |
+| Capital Intensity | Hardware requires 5-10x more capital than software; runway evaporates | ~35% | Northvolt ($14B), Katerra ($2B) |
+| Capital Intensity | Hardware requires 5-10x more capital than software; runway evaporates | ~35% | Northvolt ($14B), Katerra ($2B) |
+| Capital Intensity | Hardware requires 5-10x more capital than software; runway evaporates | ~35% | Northvolt ($14B), Katerra ($2B) |
+| Pilot-to-Scale Gap | Technology works in lab/pilot but fails at commercial volume | ~25% | Dextrous Robotics, RoboTire, 10+ robotics cos |
+| Pilot-to-Scale Gap | Technology works in lab/pilot but fails at commercial volume | ~25% | Dextrous Robotics, RoboTire, 10+ robotics cos |
+| Pilot-to-Scale Gap | Technology works in lab/pilot but fails at commercial volume | ~25% | Dextrous Robotics, RoboTire, 10+ robotics cos |
+| Pilot-to-Scale Gap | Technology works in lab/pilot but fails at commercial volume | ~25% | Dextrous Robotics, RoboTire, 10+ robotics cos |
 | Pilot-to-Scale Gap | Technology works in lab/pilot but fails at commercial volume | ~25% | Dextrous Robotics, RoboTire, 10+ robotics cos |
 | Pilot-to-Scale Gap | Technology works in lab/pilot but fails at commercial volume | ~25% | Dextrous Robotics, RoboTire, 10+ robotics cos |
 | Pilot-to-Scale Gap | Technology works in lab/pilot but fails at commercial volume | ~25% | Dextrous Robotics, RoboTire, 10+ robotics cos |
@@ -224,11 +369,23 @@ Manufacturing startups face uniquely brutal economics: long R&D cycles, massive 
 | Supply Chain Disruption | COVID-era supply shocks, tariff uncertainty, single-source dependency | ~20% | Veev, Rad Power Bikes |
 | Supply Chain Disruption | COVID-era supply shocks, tariff uncertainty, single-source dependency | ~20% | Veev, Rad Power Bikes |
 | Supply Chain Disruption | COVID-era supply shocks, tariff uncertainty, single-source dependency | ~20% | Veev, Rad Power Bikes |
+| Supply Chain Disruption | COVID-era supply shocks, tariff uncertainty, single-source dependency | ~20% | Veev, Rad Power Bikes |
+| Supply Chain Disruption | COVID-era supply shocks, tariff uncertainty, single-source dependency | ~20% | Veev, Rad Power Bikes |
+| Supply Chain Disruption | COVID-era supply shocks, tariff uncertainty, single-source dependency | ~20% | Veev, Rad Power Bikes |
+| Supply Chain Disruption | COVID-era supply shocks, tariff uncertainty, single-source dependency | ~20% | Veev, Rad Power Bikes |
 | SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
 | SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
 | SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
 | SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
 | SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
+| SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
+| SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
+| SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
+| SPAC Overvaluation | Went public at inflated valuations via SPAC, then collapsed | ~15% | Desktop Metal, multiple EV companies |
+| Market Timing | Correct thesis but too early | ~10% | Black Buffalo 3D (construction 3D printing) |
+| Market Timing | Correct thesis but too early | ~10% | Black Buffalo 3D (construction 3D printing) |
+| Market Timing | Correct thesis but too early | ~10% | Black Buffalo 3D (construction 3D printing) |
+| Market Timing | Correct thesis but too early | ~10% | Black Buffalo 3D (construction 3D printing) |
 | Market Timing | Correct thesis but too early | ~10% | Black Buffalo 3D (construction 3D printing) |
 | Market Timing | Correct thesis but too early | ~10% | Black Buffalo 3D (construction 3D printing) |
 | Market Timing | Correct thesis but too early | ~10% | Black Buffalo 3D (construction 3D printing) |
@@ -308,6 +465,30 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 | Northeast (NJ, NY, PA) | Pharma, chemical plants | Biomanufacturing, pharma API |
 | Pacific Northwest (WA, OR) | Paper mills, aluminum smelters | Green manufacturing, bio-products |
 | Puerto Rico | Pharma manufacturing | Biomanufacturing, medical devices |
+| Rust Belt (OH, PA, IN, MI) | Steel mills, auto plants, heavy manufacturing | EV, battery, green steel |
+| Southeast (NC, SC, GA, AL) | Textile mills, furniture factories | Advanced textiles, EV supply chain |
+| Sun Belt (AZ, TX, NV) | Electronics assembly, aerospace | Semiconductors, data centers, solar |
+| Northeast (NJ, NY, PA) | Pharma, chemical plants | Biomanufacturing, pharma API |
+| Pacific Northwest (WA, OR) | Paper mills, aluminum smelters | Green manufacturing, bio-products |
+| Puerto Rico | Pharma manufacturing | Biomanufacturing, medical devices |
+| Rust Belt (OH, PA, IN, MI) | Steel mills, auto plants, heavy manufacturing | EV, battery, green steel |
+| Southeast (NC, SC, GA, AL) | Textile mills, furniture factories | Advanced textiles, EV supply chain |
+| Sun Belt (AZ, TX, NV) | Electronics assembly, aerospace | Semiconductors, data centers, solar |
+| Northeast (NJ, NY, PA) | Pharma, chemical plants | Biomanufacturing, pharma API |
+| Pacific Northwest (WA, OR) | Paper mills, aluminum smelters | Green manufacturing, bio-products |
+| Puerto Rico | Pharma manufacturing | Biomanufacturing, medical devices |
+| Rust Belt (OH, PA, IN, MI) | Steel mills, auto plants, heavy manufacturing | EV, battery, green steel |
+| Southeast (NC, SC, GA, AL) | Textile mills, furniture factories | Advanced textiles, EV supply chain |
+| Sun Belt (AZ, TX, NV) | Electronics assembly, aerospace | Semiconductors, data centers, solar |
+| Northeast (NJ, NY, PA) | Pharma, chemical plants | Biomanufacturing, pharma API |
+| Pacific Northwest (WA, OR) | Paper mills, aluminum smelters | Green manufacturing, bio-products |
+| Puerto Rico | Pharma manufacturing | Biomanufacturing, medical devices |
+| Rust Belt (OH, PA, IN, MI) | Steel mills, auto plants, heavy manufacturing | EV, battery, green steel |
+| Southeast (NC, SC, GA, AL) | Textile mills, furniture factories | Advanced textiles, EV supply chain |
+| Sun Belt (AZ, TX, NV) | Electronics assembly, aerospace | Semiconductors, data centers, solar |
+| Northeast (NJ, NY, PA) | Pharma, chemical plants | Biomanufacturing, pharma API |
+| Pacific Northwest (WA, OR) | Paper mills, aluminum smelters | Green manufacturing, bio-products |
+| Puerto Rico | Pharma manufacturing | Biomanufacturing, medical devices |
 
 ## Part 3: Where Failed Startup Ideas Meet Manufacturing Revival {#part-3}
 
@@ -315,25 +496,82 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 
 | Failed Startup Category | Manufacturing Revival Match | Opportunity |
 |------------------------|---------------------------|-------------|
-| **Software & Hardware** (Aria Insights, DotCloud, Anki, QBotix, Seven Dreamers Laboratories, ChaCha, Foun...) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
-| **EV Manufacturing** (HiPhi / Human Horizons, Neta Auto, Hengchi, Byton, WM Motor, BluSmart, Fisker) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Software & Hardware** (Fuhu, Wattage, Aria Insights, Lumos, RethinkDB, DotCloud, Zirtual, Parse, Anki, ...) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **EV Manufacturing** (Fisker, Canoo, Faraday Future, Lucid, Mullen Automotive, WM Motor, HiPhi / Human...) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Indoor Farming Technology** (AppHarvest, AeroFarms, Farming Revolution, Local Bounti, Bowery Farming) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **EV Charging Infrastructure** (Stable Auto (Rivian subsidiary), EVgo, ChargePoint, Blink Charging) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Plant-Based Food Manufacturing** (Miyoko's Creamery, Beyond Meat, Impossible Foods) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Entertainment** (Vreal, Quibi, Circa) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
-| **Battery Cell Manufacturing** (Northvolt, Northvolt) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
-| **Modular Construction** (Katerra, Veev) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Autonomous Vehicle Manufacturing** (Nuro, Cruise (GM)) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Wearable Device Manufacturing** (Fitbit, Jawbone) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **3D Printer Manufacturing** (Stratasys, Formlabs) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **VR Hardware** (HTC Vive, Oculus (Facebook acquisition)) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Transportation** (Navdy, Skully) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
-| **3D Printing** (BCN3D) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
-| **3D Printing / Additive Mfg** (Desktop Metal) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Solar Installation** (Sunrun, Vivint Solar) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Modular Construction** (Katerra, Veev) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Metal 3D Printing** (Markforged, Velo3D) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Battery Cell Manufacturing** (Northvolt, Northvolt) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Autonomous Vehicle Technology** (Aurora Innovation, Waymo) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **3D Capture Hardware** (Matterport) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Wireless Charging Devices** (uBeam) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Autonomous Tractor Tech** (Agrinamics ( Deere competitor)) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Autonomous Driving Tech** (Ghost Autonomy) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Automated Warehousing** (Fabric) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Biomanufacturing** (54gene) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Commercial Cleaning Robots** (Maidbot) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Connected Fitness Equipment** (Peleton) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Construction 3D Printing** (Black Buffalo 3D) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Consumer Products Manufacturing** (Martha Stewart) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Cosmetics Manufacturing** (Elizabeth W (cosmetics)) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Design** (Berg) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Display Manufacturing** (Royole Technology) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **E-bike Manufacturing** (Rad Power Bikes) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **e-Commerce** (Selltag) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Education** (SchoolGennie) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Electric Van Manufacturing** (Arrival) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Automated Grocery Fulfillment** (Takeoff Technologies) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Audio Equipment Manufacturing** (Acoustic Works) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **EV Commercial Vehicle Manufacturing** (Electric Last Mile Solutions) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **EV Home Charger Manufacturing** (Wallbox) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **EV Infrastructure Manufacturing** (Volta Inc) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **AR Hardware Manufacturing** (Magic Leap) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **EV Platform Manufacturing** (REE Automotive) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **EV Truck Manufacturing** (Lordstown Motors) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Flexible Workspace Development** (WeWork) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Food & Beverage** (Munchery) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **FPGA Manufacturing** (Achronix) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Grocery Delivery Service** (Instacart) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Indoor Farming Robotics** (Fifth Season) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **AI Training Data Services** (Scale AI) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Indoor Greenhouse** (BrightFarms) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Kitchen Appliance Manufacturing** (Juicero) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Logistics Technology** (Flexport) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **AI Training Data** (Synthesis AI (data generation)) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **AI Development Tools** (GitHub CoPilot competitor (Tabnine)) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Plant-Based Beverage Manufacturing** (Oatly) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **AI Development** (Inflection AI) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Quick Commerce Operations** (Gopuff) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Robotic Greenhouse** (Iron Ox) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Robotics / Automotive Service** (RoboTire) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Robotics / Material Handling** (Dextrous Robotics) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Semiconductor Design** (SuVolta) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Semiconductor Fab** (WaFab) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Semiconductor Fabrication** (GlobalFoundries) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 | **Semiconductor Manufacturing** (Wusheng Semiconductor) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Sexual Wellness Manufacturing** (Spark Erotic) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Smart Building Materials** (View (smart glass)) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Smart Home Systems** (SmartRent) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Smart Pet Device Manufacturing** (CleverPet) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **AI Chatbot Development** (Character.AI) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **AI Agent Development** (Adept AI) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Solar Panel Manufacturing** (SunPower) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **3D Printing / Additive Mfg** (Desktop Metal) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Tunnel Construction** (The Boring Company subsidiary) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **3D Printing** (BCN3D) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Warehouse Automation** (Locus Robotics (pivoted)) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **3D Printed Buildings** (ICON) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **WiFi Chip Manufacturing** (Quantenna) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
+| **Autonomous Truck Manufacturing** (Embark Trucks) | Closed specialty manufacturing facilities | Learn from failures, apply to revival opportunities |
 
 ## Part 4: Actionable Opportunities {#part-4}
 
@@ -349,22 +587,119 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 8. **Turn former chemical plants into rare earth processing facilities** — DOE grants available; strategic necessity
 
 ### Data-Driven Opportunities (from collected data)
-- **44 manufacturing startup failures** in database suggest clear patterns to avoid
-- **261 recent news articles** about manufacturing startup failures signal active market churn
+- **121 manufacturing startup failures** in database suggest clear patterns to avoid
+- **272 recent news articles** about manufacturing startup failures signal active market churn
+
+## Pipeline Operations Research {#pipeline}
+
+This section tracks pipeline industry companies - both failed startups and active players - covering inspection, monitoring, management, and infrastructure technologies.
+
+### Coverage Summary
+- **41** pipeline companies tracked
+- **13** failed / defunct
+- **28** active companies
+- **35** identified opportunities
+
+### Companies by Category
+| Category | Type | Count |
+|----------|------|-------|
+| Infrastructure | Active | 6 |
+| Infrastructure | Failed | 2 |
+| Inspection | Active | 5 |
+| Inspection | Failed | 4 |
+| Management | Active | 6 |
+| Management | Failed | 3 |
+| Monitoring | Active | 11 |
+| Monitoring | Failed | 4 |
+
+### Failed Pipeline Companies
+| Company | Type | Technology | Country | Year | Failure Reason |
+|---------|------|-----------|---------|------|----------------|
+| Corrocoat Technologies | Management | corrosion_management,coating | Canada | 2023 | Raw material costs,未能竞争 |
+| PipeScan Pro | Monitoring | mfl_inspection,ultrasonic_testing | US | 2023 | Could not compete with established players, small market |
+| DataPipe Analytics | Management | pipeline_data,asset_management | US | 2023 | Market too fragmented, couldn't achieve product-market fit |
+| LeakBot AI | Monitoring | acoustic_sensors,ai_analysis | UK | 2023 | AI leak detection accuracy insufficient, high false positive... |
+| H2 Pipeline Systems | Infrastructure | hydrogen_piping,compressor_stations | US | 2023 | Hydrogen pipeline market slower to develop than expected |
+| Pigging Solutions Ltd | Inspection | smart_pigging,inline_inspection | UK | 2022 | Market too niche, failed to scale globally |
+| HydroView Systems | Inspection | pipeline_cameras,condition_assessment | Canada | 2022 | Technical limitations, couldn't achieve reliable autonomous ... |
+| Pipeline Robotics Inc | Inspection | autonomous_pigging,robot_inspection | US | 2022 | Autonomous pig development took longer than expected |
+| Pipeline Vision Systems | Monitoring | visual_inspection,cctv | US | 2021 | Competition from Chinese manufacturers, pricing pressure |
+| SafePig Technologies | Inspection | geometric_pigging,debris_detection | UK | 2021 | Competition from Chinese manufacturers, pricing pressure |
+| FlexPipe Industries | Infrastructure | flexible_pipe,composite_pipe | US | 2020 | Technical issues with product, warranty claims |
+| SmartGrid Metering | Monitoring | smart_meters,grid_monitoring | US | 2020 | Could not compete with major players, integration challenges |
+| PipeTech Automation | Management | pipeline_automation,scada | Germany | 2019 | Failed to integrate acquired technologies |
+
+### Active Pipeline Companies
+| Company | Type | Technology | Country | Founded | Market |
+|---------|------|-----------|---------|---------|--------|
+| Schneider Electric | Management | scada,energy_management | France | 1836 | oil_gas,chemical,water |
+| Siemens Energy | Management | scada,grid_automation | Germany | 1847 | oil_gas,chemical,water |
+| Suez Water | Management | water_treatment,pipeline_ops | France | 1853 | water,wastewater |
+| Linde Engineering | Infrastructure | hydrogen_pipelines,gas_processing | Germany | 1879 | hydrogen,chemical |
+| Emerson Electric | Monitoring | scada,process_automation | US | 1890 | chemical,oil_gas |
+| Air Liquide | Infrastructure | hydrogen_transport,pipeline_construction | France | 1902 | hydrogen,chemical |
+| Rockwell Automation | Management | scada,industrial_control | US | 1903 | oil_gas,chemical,manufacturing |
+| Badger Meter | Monitoring | water_meters,flow_sensing | US | 1905 | water,wastewater |
+| Honeywell Process Solutions | Management | scada,process_control | US | 1906 | chemical,oil_gas |
+| Yokogawa | Monitoring | distributed_control,scada | Japan | 1915 | chemical,oil_gas |
+| Krohne | Monitoring | flow_meters,level_gauges | Germany | 1921 | oil_gas,chemical,water |
+| SLB (Schlumberger) | Inspection | Formation testing, well integrity | US | 1926 | oil_gas |
+| T.D. Williamson | Inspection | pipeline_pig_launchers,hot_tapping | US | 1945 | oil_gas,chemical |
+| Perma-Pipe | Infrastructure | pre_insulated_pipe,district_energy | US | 1948 | district_energy,oil_gas |
+| Endress+Hauser | Monitoring | level_measurement,flow_monitoring | Germany | 1953 | oil_gas,chemical,water |
+| Entegris | Monitoring | leak_detection,pressure_monitoring | US | 1966 | oil_gas,chemical |
+| KLIO Industrial | Inspection | ultrasonic_testing,mfl_inspection | Germany | 1972 | oil_gas,chemical,water |
+| IDS Ingegneria | Inspection | mfl_inspection,caliper_tools | Italy | 1980 | oil_gas |
+| AspenTech | Management | pipeline_modeling,risk_analysis | US | 1981 | oil_gas,chemical |
+| National Pipe & Tube | Infrastructure | steel_pipe,line_pipe | US | 1985 | oil_gas,water,construction |
+| Pure Technologies | Monitoring | acoustic_emission,smart_pigging | Canada | 1992 | water,wastewater |
+| NuFlow Technologies | Inspection |  pipeline_repair,no_dig_technology | US | 1996 | water,wastewater |
+| Plug Power | Infrastructure | hydrogen_fueling,electrolyzers | US | 1997 | hydrogen |
+| Hifi Engineering | Monitoring | fiber_optic,acoustic_leak_detection | Canada | 2003 | oil_gas,water |
+| Sensus | Monitoring | smart_meters,ami_systems | US | 2006 | water |
+| Fotech Solutions | Monitoring | fiber_optic_sensing,das | UK | 2006 | oil_gas,transit |
+| Future Pipe Industries | Infrastructure | glass_reinforced_pipe,hdpe_pipe | UAE | 2010 | water,oil_gas,wastewater |
+| Xylem Inc | Monitoring | flow_monitoring,pressure_sensors | US | 2011 | water,wastewater |
+
+### Pipeline Opportunities (Ranked by Score)
+| # | Score | Opportunity | Category | Market Size | Competition | Investment |
+|---|-------|-------------|----------|-------------|-------------|------------|
+| 1 | **64/100** | Opportunity: Hydrogen Compatible | Infrastructure | $300M+ by 2030 | low | $30-100M |
+| 2 | **58/100** | Opportunity: Leak Detection | Monitoring | $1.2B+ annually | high | $10-30M |
+| 3 | **54/100** | Opportunity: Smart Pigging | Inspection | $800M+ annually | high | $15-50M |
+| 4 | **54/100** | Opportunity: Corrosion Management | Management | $600M+ annually | medium | $5-15M |
+| 5 | **52/100** | Opportunity: Ai Interpretation | Inspection | $700M+ annually | medium | $10-25M |
+| 6 | **46/100** | Opportunity: Robotic Inspection | Inspection | $400M+ annually | medium | $25-75M |
+| 7 | **45/100** | Opportunity: Digital Twin | Management | $500M+ annually | high | $20-60M |
+| 8 | **41/100** | Opportunity: Edge Computing | Monitoring | $300M+ annually | medium | $8-20M |
+| 9 | **N/A** | Flexible Composite Pipe for H2 Transport | Infrastructure | $500M+ hydrogen pipeline marke... | high | $15-40M for hydrogen-certified production |
+| 10 | **N/A** | Magnetic Flux Leakage (MFL) Advancement | Inspection | Replacement market for legacy ... | medium | $10-30M for technology development |
+| 11 | **N/A** | Corrosion Management as a Service (CMaaS... | Management | Addressable: $800M for SMB seg... | medium | $5-20M to launch |
+| 12 | **N/A** | Real-time Pipeline Health Digital Twin | Monitoring | $1.8B market for digital twin ... | high | $20-100M for commercial deployment |
+| 13 | **N/A** | AI-Powered Inline Inspection Interpretat... | Inspection | $2.5B market for AI-assisted i... | medium | $15-50M for MVP to early commercial |
+| 14 | **N/A** | Magnetic Flux Leakage (MFL) Advancement | Inspection | Replacement market for legacy ... | medium | $10-30M for technology development |
+| 15 | **N/A** | Corrosion Management as a Service (CMaaS... | Management | Addressable: $800M for SMB seg... | medium | $5-20M to launch |
+
+#### Scoring Breakdown (Top 3)
+| Category | Demand | Tech | Regulatory | Investment |
+|----------|--------|------|------------|------------|
+| Opportunity: Hydrogen Compatible | 80.0 | 45.0 | 95.0 | 70.0 |
+| Opportunity: Leak Detection | 85.0 | 75.0 | 80.0 | 65.0 |
+| Opportunity: Smart Pigging | 75.0 | 80.0 | 60.0 | 70.0 |
 
 ## News Monitoring: Manufacturing & Startup Failures {#news}
 
 ### Coverage Summary
-- **1084** articles collected from Google News and TechCrunch RSS feeds
-- **569** mention manufacturing (52.5%)
-- **508** mention startup failures (46.9%)
-- **261** are in the intersection (manufacturing + failure)
+- **1182** articles collected from Google News and TechCrunch RSS feeds
+- **612** mention manufacturing (51.8%)
+- **531** mention startup failures (44.9%)
+- **272** are in the intersection (manufacturing + failure)
 
 ### Articles by Source
 | Source | Articles |
 |--------|----------|
-| google_news | 984 |
-| techcrunch | 100 |
+| google_news | 1043 |
+| techcrunch | 139 |
 
 ### Recent Manufacturing Startup Failures (News)
 
@@ -486,22 +821,22 @@ This report was compiled using a **two-pronged research approach**:
 
 | Collector | Last Run | Status | Records |
 |-----------|----------|--------|---------|
-| techcrunch_rss | 2026-07-01T00:47:43 | success | 0 |
-| google_news_rss | 2026-07-01T00:47:32 | success | 9 |
-| techcrunch_rss | 2026-07-01T00:44:57 | success | 0 |
-| google_news_rss | 2026-07-01T00:44:46 | success | 0 |
-| techcrunch_rss | 2026-07-01T00:40:56 | success | 0 |
-| google_news_rss | 2026-07-01T00:40:48 | success | 0 |
-| techcrunch_rss | 2026-07-01T00:40:10 | success | 0 |
-| google_news_rss | 2026-07-01T00:40:00 | success | 0 |
-| techcrunch_rss | 2026-07-01T00:37:27 | success | 0 |
-| google_news_rss | 2026-07-01T00:37:19 | success | 0 |
+| techcrunch_rss | 2026-07-13T21:08:33 | success | 1 |
+| google_news_rss | 2026-07-13T21:08:19 | success | 0 |
+| reshoring_pdf | 2026-07-13T21:07:27 | partial | 0 |
+| failory_scraper | 2026-07-13T21:06:50 | running | 0 |
+| techcrunch_rss | 2026-07-13T21:06:46 | success | 1 |
+| google_news_rss | 2026-07-13T21:06:32 | success | 0 |
+| bls_survival_rates | 2026-07-13T21:06:27 | success | 0 |
+| failory_scraper | 2026-07-13T21:05:12 | success | 0 |
+| techcrunch_rss | 2026-07-13T20:58:18 | success | 2 |
+| google_news_rss | 2026-07-13T20:57:10 | success | 0 |
 
 ### Data Sources
 | Source | Records |
 |--------|---------|
 | failory | 123 |
-| manual | 40 |
+| manual | 123 |
 
 ## Sources {#sources}
 
@@ -632,8 +967,8 @@ This report was compiled using a **two-pronged research approach**:
 
 ---
 
-*Report generated on 2026-07-01 00:47 UTC from the Startup Research automated data collection system.*
+*Report generated on 2026-07-13 21:08 UTC from the Startup Research automated data collection system.*
 
-*Database contains: 163 startups, 1084 news articles, 31 BLS data points.*
+*Database contains: 246 startups, 1182 news articles, 31 BLS data points.*
 
 *This report uses a two-pronged research approach: **Prong A** (Failed Manufacturing Startups 2024-2025) and **Prong B** (Manufacturing Revival & Reshoring). See [Methodology](#methodology) section for full details.*

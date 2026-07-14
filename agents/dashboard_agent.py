@@ -14,6 +14,38 @@ from db import schema
 
 _logger = logging.getLogger(__name__)
 
+# ── Constants ──────────────────────────────────────────────────────
+# Timeouts
+DEFAULT_HTTP_TIMEOUT = 5.0  # seconds for API health checks
+OLLAMA_INFERENCE_TIMEOUT = 30.0  # seconds for latency test
+INFERENCE_LATENCY_TIMEOUT = 120.0  # seconds for full inference test
+
+# Cache/limits
+OLLAMA_CACHE_FILE = "data/cache/ollama_token_tracker.json"
+NAV_MAX_ITEMS = 50  # max sidebar navigation items
+STATS_CACHE_TTL = 60  # seconds for cached stats
+
+# Infrastructure status thresholds
+LATENCY_THRESHOLD_FAST = 15.0  # tokens/sec - Fast
+LATENCY_THRESHOLD_MODERATE = 5.0  # tokens/sec - Moderate
+
+# Pricing thresholds
+PRICE_PCT_HIGH = 0.66  # relative cost for red highlighting
+PRICE_PCT_MEDIUM = 0.33  # relative cost for amber highlighting
+
+# GMV (Global Market Viability) constants
+GMV_TARGET_COUNTRIES_COUNT = 10
+GMV_STANDARD_SECTORS = 42
+
+# Token thresholds
+TOKEN_MILLION = 1_000_000
+TOKEN_THOUSAND = 1_000
+
+# Site generation defaults
+DEFAULT_SITE_DIR = "site"
+DEFAULT_REPORT_FILE = "Failed_Startups_Manufacturing_Revival_Report.md"
+DEFAULT_INCLUDE_CHARTS = True
+
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -972,6 +1004,21 @@ def _fetch_stats():
                ORDER BY collected_at DESC LIMIT 5"""
         )
         recent = cursor.fetchall()
+
+        # Pipeline Operations Stats
+        cursor.execute("SELECT COUNT(*) as cnt FROM pipeline_companies")
+        total_pipeline = cursor.fetchone()["cnt"]
+        cursor.execute("SELECT COUNT(*) as cnt FROM pipeline_companies WHERE company_type = 'failed'")
+        failed_pipeline = cursor.fetchone()["cnt"]
+        cursor.execute("SELECT COUNT(*) as cnt FROM pipeline_companies WHERE company_type = 'active'")
+        active_pipeline = cursor.fetchone()["cnt"]
+        cursor.execute("SELECT COUNT(*) as cnt FROM pipeline_opportunities")
+        pipeline_opportunities = cursor.fetchone()["cnt"]
+        cursor.execute(
+            """SELECT name, pipeline_type FROM pipeline_companies
+               ORDER BY collected_at DESC LIMIT 5"""
+        )
+        recent_pipeline = cursor.fetchall()
         cursor.close()
 
         stats_json = {
@@ -981,6 +1028,13 @@ def _fetch_stats():
             "total_articles": total_articles,
             "manufacturing_articles": mfg_articles,
             "recent_failures": [dict(r) for r in recent],
+            "pipeline": {
+                "total_companies": total_pipeline,
+                "failed_companies": failed_pipeline,
+                "active_companies": active_pipeline,
+                "opportunities": pipeline_opportunities,
+                "recent": [dict(r) for r in recent_pipeline],
+            },
         }
 
         conn.close()
@@ -998,15 +1052,39 @@ def _fetch_stats():
         ("total_articles", "News Articles", "&#128240;", "accent-green"),
         ("mfg_articles", "Mfg-Related News", "&#128202;", "accent-amber"),
     ]
+    pipeline_cards = [
+        ("pipeline_companies", "Pipeline Companies", "&#128736;", "accent-blue"),
+        ("pipeline_failed", "Failed Pipeline", "&#128165;", "accent-red"),
+        ("pipeline_active", "Active Pipeline", "&#9989;", "accent-green"),
+        ("pipeline_opps", "Opportunities", "&#128200;", "accent-amber"),
+    ]
     value_keys = {
         "total_startups": "total_startups",
         "mfg_startups": "manufacturing_startups",
         "total_articles": "total_articles",
         "mfg_articles": "manufacturing_articles",
     }
+    pipeline_value_keys = {
+        "pipeline_companies": ("pipeline", "total_companies"),
+        "pipeline_failed": ("pipeline", "failed_companies"),
+        "pipeline_active": ("pipeline", "active_companies"),
+        "pipeline_opps": ("pipeline", "opportunities"),
+    }
     stats_html = '<div class="stats-grid">\n'
     for key, label, icon, accent in cards:
         value = stats_json.get(value_keys[key], 0)
+        stats_html += (
+            f'<div class="stat-card {accent}">'
+            f'<span class="icon">{icon}</span>'
+            f'<div class="value">{value}</div>'
+            f'<div class="label">{label}</div>'
+            f"</div>\n"
+        )
+    # Pipeline stat cards
+    for key, label, icon, accent in pipeline_cards:
+        parent, child = pipeline_value_keys[key]
+        pipeline_data = stats_json.get(parent, {})
+        value = pipeline_data.get(child, 0)
         stats_html += (
             f'<div class="stat-card {accent}">'
             f'<span class="icon">{icon}</span>'
@@ -1020,16 +1098,17 @@ def _fetch_stats():
 
 
 def _ollama_api(
-    endpoint: str, payload: dict | None = None, timeout: float = 5
+    endpoint: str, payload: dict | None = None, timeout: float | None = None
 ) -> dict | None:
     """Make a request to the Ollama API and return parsed JSON, or None on failure."""
     url = f"http://localhost:11434{endpoint}"
+    _timeout = timeout if timeout is not None else DEFAULT_HTTP_TIMEOUT
     try:
         data = json.dumps(payload).encode() if payload else None
         req = urllib.request.Request(
             url, data=data, headers={"Content-Type": "application/json"}
         )
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with urllib.request.urlopen(req, timeout=_timeout) as resp:
             result = json.loads(resp.read().decode())
 
         # Track token usage from chat completions
@@ -1131,7 +1210,7 @@ def _fetch_ollama_status() -> dict:
             ],
             "stream": False,
         },
-        timeout=30,
+        timeout=INFERENCE_LATENCY_TIMEOUT,
     )
     if test_result:
         info["test_latency_s"] = round(test_result.get("eval_duration", 0) / 1e9, 2)
@@ -1164,10 +1243,10 @@ def _build_llm_infrastructure_html(llm: dict) -> str:
     tokens_per_sec = round(tokens / latency, 1) if latency > 0 and tokens > 0 else 0
 
     # Latency color coding
-    if tokens_per_sec >= 15:
+    if tokens_per_sec >= LATENCY_THRESHOLD_FAST:
         latency_color = "#10B981"
         latency_label = "FAST"
-    elif tokens_per_sec >= 5:
+    elif tokens_per_sec >= LATENCY_THRESHOLD_MODERATE:
         latency_color = "#F59E0B"
         latency_label = "MODERATE"
     else:
@@ -1538,7 +1617,11 @@ def _build_ollama_usage_html(usage: dict) -> str:
     cost_rows = ""
     for name, cost in sorted(cost_equiv.items(), key=lambda x: x[1], reverse=True)[:8]:
         pct = (cost / max_cost * 100) if max_cost > 0 else 0
-        bar_color = "#EF4444" if pct > 66 else "#F59E0B" if pct > 33 else "#10B981"
+        bar_color = (
+            "#EF4444" if pct > PRICE_PCT_HIGH * 100
+            else "#F59E0B" if pct > PRICE_PCT_MEDIUM * 100
+            else "#10B981"
+        )
         cost_rows += f"""
         <tr>
           <td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;">{name}</td>
@@ -1728,7 +1811,7 @@ def _fetch_gmv_status():
     GMV_CACHE_FILE = (
         get_project_root() / "data" / "cache" / "ollama_market_viability_cache.json"
     )
-    GMV_TARGET_COUNTRIES_COUNT = 10  # 10 target markets
+    # Use module-level constant - local override allowed for backward compat
 
     stats = {
         "evaluations_done": 0,
@@ -1770,7 +1853,9 @@ def _fetch_gmv_status():
             stats["evaluations_done"] = len(sector_results)
             stats["deep_dives_done"] = len(deep_dives)
             num_sectors = (
-                len(set(r["sector"] for r in sector_results)) if sector_results else 42
+                len(set(r["sector"] for r in sector_results))
+                if sector_results
+                else GMV_STANDARD_SECTORS
             )
             stats["total_expected"] = num_sectors * GMV_TARGET_COUNTRIES_COUNT
             stats["avg_viability"] = data.get("avg_viability_score", 0)

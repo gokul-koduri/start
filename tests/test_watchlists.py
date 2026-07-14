@@ -73,9 +73,8 @@ class TestWatchlistRouter(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         try:
-            from fastapi.testclient import TestClient
+            from fastapi.testclient import TestClient  # noqa: F401
             from api_server import app
-            from auth.auth_middleware import get_current_user
 
             cls.app = app
             cls._original_override = getattr(app, "dependency_overrides", {}).copy()
@@ -319,10 +318,10 @@ class TestWatchlistSchema(unittest.TestCase):
     """Test that schema includes watchlist tables."""
 
     def test_schema_version_bumped(self):
-        """Schema version should be 24."""
+        """Schema version should be 30."""
         from db.schema import get_schema_version
 
-        self.assertEqual(get_schema_version(), 24)
+        self.assertEqual(get_schema_version(), 30)
 
     def test_watchlist_tables_in_schema(self):
         """Watchlist tables should be in _TABLES."""

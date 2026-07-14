@@ -8,6 +8,59 @@
 
   const API_BASE = window.__API_BASE__ || "http://localhost:8000";
 
+  // Show error notification to user
+  function showErrorNotification(message) {
+    // Remove existing notifications first
+    const existing = document.querySelector('.widget-error-notification');
+    if (existing) existing.remove();
+
+    const notification = document.createElement('div');
+    notification.className = 'widget-error-notification';
+    notification.setAttribute('role', 'alert');
+    notification.innerHTML = `
+      <span>⚠️ ${message}</span>
+      <button class="widget-error-retry" onclick="retryRiskScores()">Retry</button>
+      <button class="widget-error-dismiss" onclick="this.parentElement.remove()">✕</button>
+    `;
+    document.body.appendChild(notification);
+    // Auto-dismiss after 15 seconds
+    setTimeout(() => notification.remove(), 15000);
+  }
+
+  // Global retry function
+  window.retryRiskScores = function() {
+    const notif = document.querySelector('.widget-error-notification');
+    if (notif) notif.remove();
+    init();
+  };
+
+  // Loading state renderer
+  function renderLoadingState() {
+    return `
+      <h2>⚠️ Startup Failure Risk Scores</h2>
+      <div class="risk-loading" role="status" aria-label="Loading risk scores">
+        <div class="skeleton-loader" style="padding:20px">
+          <div class="skeleton-bar" style="height:32px;margin-bottom:12px"></div>
+          <div class="skeleton-bar" style="height:80px;margin-bottom:12px"></div>
+          <div class="skeleton-bar" style="height:32px;width:60%"></div>
+        </div>
+        <p style="text-align:center;color:var(--text-secondary);padding:20px">Loading risk scores...</p>
+      </div>
+    `;
+  }
+
+  // Error state renderer
+  function renderErrorState(message) {
+    return `
+      <h2>⚠️ Startup Failure Risk Scores</h2>
+      <div class="risk-error" role="alert">
+        <p>${message}</p>
+        <small>Start with: <code>python api_server.py</code></small>
+        <small>Score startups with: <code>python run_agent.py --pipeline analysis</code></small>
+      </div>
+    `;
+  }
+
   async function loadRiskScores() {
     try {
       const resp = await fetch(`${API_BASE}/api/risk-scores?limit=50`);
@@ -16,19 +69,30 @@
       return data.results || [];
     } catch (err) {
       console.warn("Risk scores unavailable:", err);
+      showErrorNotification('Unable to load risk scores. Click retry when the API is available.');
       return null;
     }
   }
 
-  function renderRiskSection(scores) {
+  function renderRiskSection(scores, isLoading, errorMessage) {
     const section = document.createElement("div");
     section.id = "risk-section";
-    section.innerHTML = `
-      <h2>⚠️ Startup Failure Risk Scores</h2>
-      <div id="risk-content">
-        ${scores ? renderContent(scores) : renderFallback()}
-      </div>
-    `;
+
+    let content;
+    if (isLoading) {
+      content = renderLoadingState();
+    } else if (errorMessage) {
+      content = renderErrorState(errorMessage);
+    } else {
+      content = `
+        <h2>⚠️ Startup Failure Risk Scores</h2>
+        <div id="risk-content">
+          ${scores ? renderContent(scores) : renderFallback()}
+        </div>
+      `;
+    }
+
+    section.innerHTML = content;
     return section;
   }
 
@@ -139,7 +203,20 @@
 
   // Initialize — append to the dashboard when DOM is ready
   async function init() {
+    let container = document.getElementById("risk-widget-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "risk-widget-container";
+      const main = document.querySelector("main") || document.querySelector(".content") || document.body;
+      main.appendChild(container);
+    }
+
+    // Show loading state first
+    container.innerHTML = renderLoadingState();
+
+    // Load data
     const scores = await loadRiskScores();
+    container.innerHTML = '';
     const section = renderRiskSection(scores);
 
     // Try to insert into the dashboard's main content area

@@ -47,7 +47,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from config import setup_logging, load_config, get_project_root
 
 _logger = logging.getLogger("api_server")
-from db.connection import get_connection  # noqa: E402
+from db.connection import get_connection, pooled_connection  # noqa: E402
 from db import schema  # noqa: E402
 
 # FastAPI imports (graceful fallback)
@@ -66,19 +66,20 @@ if HAS_FASTAPI:
     @asynccontextmanager
     async def lifespan(app_instance):
         try:
-            conn = get_connection()
-            schema.init_schema(conn)
-            conn.close()
-            _logger.info(
-                "Database schema initialized at startup (version %d)",
-                schema.get_schema_version(),
-            )
+            with pooled_connection() as conn:
+                schema.init_schema(conn)
+                _logger.info(
+                    "Database schema initialized at startup (version %d)",
+                    schema.get_schema_version(),
+                )
         except Exception as e:
             _logger.warning(
                 "Schema init at startup failed (will retry per-request): %s", e
             )
         yield
-        # shutdown: nothing to clean up for now
+        # shutdown: dispose connection pool
+        from db.connection import dispose_pool
+        dispose_pool()
 
     app = FastAPI(
         title="Startup Research Report API",
@@ -247,6 +248,12 @@ if HAS_FASTAPI:
         from api.v2.feedback import router as v2_feedback_router
         from api.v2.watchlists import router as v2_watchlists_router
         from api.v2.billing import router as v2_billing_router
+        from api.v2.apis import router as v2_apis_router
+        from api.v2.endpoints import router as v2_endpoints_router
+        from api.v2.organizations import router as v2_orgs_router
+        from api.v2.scanner import router as v2_scanner_router
+        from api.v2.stats import router as v2_stats_router
+        from api.v2.government import router as v2_government_router
 
         app.include_router(v2_opportunities_router, prefix="/api")
         app.include_router(v2_signals_router, prefix="/api")
@@ -255,6 +262,14 @@ if HAS_FASTAPI:
         app.include_router(v2_feedback_router, prefix="/api")
         app.include_router(v2_watchlists_router, prefix="/api")
         app.include_router(v2_billing_router, prefix="/api")
+        # Manufacturing Intelligence Engine — Government Dashboard
+        app.include_router(v2_government_router, prefix="/api")
+        # API Endpoint Explorer routers
+        app.include_router(v2_apis_router, prefix="/api")
+        app.include_router(v2_endpoints_router, prefix="/api")
+        app.include_router(v2_orgs_router, prefix="/api")
+        app.include_router(v2_scanner_router, prefix="/api")
+        app.include_router(v2_stats_router, prefix="/api")
     except ImportError as e:
         _logger.warning("Could not import API v2 routers: %s", e)
 
@@ -585,55 +600,6 @@ For questions, contact: legal@example.com
             cursor.close()
             conn.close()
 
-    # ── Stream Pipeline Status & Health ─────────────────────────
-
-    @app.get("/api/stream/status")
-    def stream_status():
-        """Return pipeline metrics from Redis, and circuit breaker states.
-
-        Reads the most recent flush from Redis 'stream:metrics'.
-        Falls back to a summary dict if Redis is unavailable.
-        """
-        from utils.circuit_breaker import (
-            kafka_stream_breaker,
-            mysql_stream_breaker,
-            redis_stream_breaker,
-        )
-        import redis as redis_client
-        import os
-
-        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
-
-        result = {
-            "circuit_breakers": {
-                "mysql": mysql_stream_breaker.status,
-                "kafka": kafka_stream_breaker.status,
-                "redis": redis_stream_breaker.status,
-            },
-            "metrics_source": "unavailable",
-            "metrics": None,
-        }
-
-        try:
-            r = redis_client.from_url(
-                redis_url, socket_connect_timeout=2, decode_responses=True
-            )
-            raw = r.get("stream:metrics")
-            r.close()
-            if raw:
-                data = json.loads(raw)
-                result["metrics_source"] = "redis"
-                result["metrics"] = data
-                # Compute DLQ rate if we have data
-                total = data.get("signals_processed", 0)
-                signal_errors = data.get("signals_errored", 0)
-                if total > 0:
-                    result["dlq_rate"] = round(signal_errors / total, 4)
-        except Exception:
-            result["metrics_source"] = "unavailable"
-
-        return result
-
     @app.get("/api/stream/health")
     def stream_health():
         """Stream pipeline readiness probe for Kubernetes/load balancers.
@@ -644,8 +610,13 @@ For questions, contact: legal@example.com
         - Circuit breaker states (warn if open)
         """
         from utils.circuit_breaker import mysql_stream_breaker, redis_stream_breaker
-        import redis as redis_client
         import os
+
+        # Redis import with graceful degradation
+        try:
+            import redis as redis_client
+        except ImportError:
+            redis_client = None
 
         checks = {}
         is_ready = True
@@ -665,29 +636,42 @@ For questions, contact: legal@example.com
         # Redis check
         redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
         try:
+            if redis_client is None:
+                raise ImportError("redis module not installed")
             r = redis_client.from_url(
                 redis_url, socket_connect_timeout=2, decode_responses=True
             )
             r.ping()
             r.close()
             checks["redis"] = {"status": "ok"}
+        except ImportError as e:
+            checks["redis"] = {"status": "not_installed", "detail": str(e)}
+            # Redis is optional - don't fail readiness for it
         except Exception as e:
             checks["redis"] = {"status": "error", "detail": str(e)}
-            is_ready = False
+            # Redis issues are non-fatal for basic operation
 
         # Circuit breaker states (warn but don't fail)
-        checks["mysql_breaker"] = {
-            "state": mysql_stream_breaker.state.value,
-            "failure_count": mysql_stream_breaker._failure_count,
-        }
-        checks["redis_breaker"] = {
-            "state": redis_stream_breaker.state.value,
-            "failure_count": redis_stream_breaker._failure_count,
-        }
-        if (
-            mysql_stream_breaker.state.value == "open"
-            or redis_stream_breaker.state.value == "open"
-        ):
+        try:
+            checks["mysql_breaker"] = {
+                "state": mysql_stream_breaker.state.value,
+                "failure_count": mysql_stream_breaker._failure_count,
+            }
+        except Exception:
+            checks["mysql_breaker"] = {"state": "unknown", "error": "unavailable"}
+
+        try:
+            if redis_stream_breaker is not None:
+                checks["redis_breaker"] = {
+                    "state": redis_stream_breaker.state.value,
+                    "failure_count": redis_stream_breaker._failure_count,
+                }
+                if redis_stream_breaker.state.value == "open":
+                    checks["breakers_warn"] = True
+        except Exception:
+            checks["redis_breaker"] = {"state": "unknown", "error": "unavailable"}
+
+        if mysql_stream_breaker.state.value == "open":
             checks["breakers_warn"] = True
 
         response = {
@@ -696,77 +680,6 @@ For questions, contact: legal@example.com
         }
         status_code = 200 if is_ready else 503
         return JSONResponse(content=response, status_code=status_code)
-
-    # ── WebSocket for live deltas (stream/ws/live) ─────────────
-
-    @app.websocket("/ws/live")
-    async def ws_live(websocket: WebSocket):
-        """Bidirectional WebSocket for live signal updates.
-
-        On connect, immediately sends the latest metrics snapshot.
-        Then subscribes to Redis 'stream:score_deltas' channel and
-        broadcasts incoming score deltas to all connected clients.
-        """
-        import redis as redis_client
-        import os
-        from fastapi import WebSocketDisconnect
-
-        await websocket.accept()
-
-        # Send initial metrics snapshot
-        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
-        try:
-            r = redis_client.from_url(
-                redis_url, socket_connect_timeout=2, decode_responses=True
-            )
-            raw = r.get("stream:metrics")
-            r.close()
-            if raw:
-                snapshot = json.loads(raw)
-                await websocket.send_json(
-                    {"type": "metrics_snapshot", "data": snapshot}
-                )
-        except Exception:
-            pass
-
-        # Subscribe to Redis score_deltas channel
-        try:
-            r = redis_client.from_url(
-                redis_url, socket_connect_timeout=2, decode_responses=False
-            )
-            pubsub = r.pubsub()
-            pubsub.subscribe("stream:score_deltas")
-            _logger.debug("WebSocket client subscribed to stream:score_deltas")
-        except Exception:
-            pubsub = None
-            _logger.warning(
-                "Redis unavailable — WebSocket will not receive live deltas"
-            )
-
-        import json as _json
-
-        try:
-            while True:
-                if pubsub:
-                    msg = pubsub.get_message(
-                        ignore_subscribe_messages=True, timeout=1.0
-                    )
-                    if msg and msg["type"] == "message":
-                        delta = _json.loads(msg["data"])
-                        await websocket.send_json(
-                            {"type": "score_delta", "data": delta}
-                        )
-                else:
-                    await asyncio.sleep(1.0)
-        except WebSocketDisconnect:
-            pass
-        finally:
-            if pubsub:
-                try:
-                    pubsub.unsubscribe()
-                    pubsub.close()
-                except Exception:
-                    pass
 
     # ── Stats ─────────────────────────────────────────────────
 
@@ -1336,29 +1249,20 @@ For questions, contact: legal@example.com
 
     # ── Alert Preferences ──────────────────────────────────────
 
-    @app.get("/api/alerts/preferences")
-    def get_alert_preferences():
-        """Get current alert notification preferences."""
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT * FROM alert_preferences ORDER BY updated_at DESC LIMIT 1"
-        )
-        row = cursor.fetchone()
-        cursor.close()
-        conn.close()
-        if row:
-            prefs = dict(row)
-            # Convert INT booleans to actual booleans
-            for key in (
-                "email_enabled",
-                "slack_enabled",
-                "discord_enabled",
-                "webhook_enabled",
-            ):
-                prefs[key] = bool(prefs.get(key, 1))
-            return prefs
-        # Return defaults
+    def _alert_prefs_to_bool(row: dict) -> dict:
+        """Convert MySQL INT booleans to actual booleans."""
+        prefs = dict(row)
+        for key in (
+            "email_enabled",
+            "slack_enabled",
+            "discord_enabled",
+            "webhook_enabled",
+        ):
+            prefs[key] = bool(prefs.get(key, 1))
+        return prefs
+
+    def _alert_prefs_defaults() -> dict:
+        """Return default alert preferences."""
         return {
             "email_enabled": True,
             "slack_enabled": True,
@@ -1370,9 +1274,28 @@ For questions, contact: legal@example.com
             "quiet_hours_end": None,
         }
 
+    @app.get("/api/alerts/preferences")
+    def get_alert_preferences(current_user: dict = Depends(get_current_user)):
+        """Get current user's alert notification preferences."""
+        user_id = current_user.get("user_id")
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM alert_preferences WHERE user_id = %s", (user_id,)
+        )
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        if row:
+            return _alert_prefs_to_bool(row)
+        # Return defaults if no preferences exist
+        return _alert_prefs_defaults()
+
     @app.put("/api/alerts/preferences")
-    def update_alert_preferences(body: dict):
-        """Update alert notification preferences.
+    def update_alert_preferences(
+        body: dict, current_user: dict = Depends(get_current_user)
+    ):
+        """Update current user's alert notification preferences.
 
         Request body (all fields optional):
             {
@@ -1384,6 +1307,7 @@ For questions, contact: legal@example.com
                 "max_alerts_per_hour": 10
             }
         """
+        user_id = current_user.get("user_id")
         allowed = {
             "email_enabled",
             "slack_enabled",
@@ -1411,24 +1335,28 @@ For questions, contact: legal@example.com
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Check if preferences exist
+        # Use INSERT ... ON DUPLICATE KEY UPDATE for upsert
+        # First, check if user_id already exists
         cursor.execute(
-            "SELECT id FROM alert_preferences ORDER BY updated_at DESC LIMIT 1"
+            "SELECT id FROM alert_preferences WHERE user_id = %s", (user_id,)
         )
         existing = cursor.fetchone()
 
         if existing:
+            # Update existing
             set_clause = ", ".join(f"{k} = %s" for k in updates)
-            values = list(updates.values()) + [existing["id"]]
+            values = list(updates.values()) + [user_id]
             cursor.execute(
-                f"UPDATE alert_preferences SET {set_clause} WHERE id = %s", values
+                f"UPDATE alert_preferences SET {set_clause} WHERE user_id = %s", values
             )
         else:
-            cols = ", ".join(updates.keys())
-            placeholders = ", ".join(["%s"] * len(updates))
+            # Insert new with user_id
+            cols = ["user_id"] + list(updates.keys())
+            placeholders = "%s, " + ", ".join(["%s"] * len(updates))
+            values = [user_id] + list(updates.values())
             cursor.execute(
-                f"INSERT INTO alert_preferences ({cols}) VALUES ({placeholders})",
-                list(updates.values()),
+                f"INSERT INTO alert_preferences ({', '.join(cols)}) VALUES ({placeholders})",
+                values,
             )
 
         conn.commit()
@@ -2028,8 +1956,6 @@ For questions, contact: legal@example.com
         return metrics
 
     # ── Real-time WebSocket ───────────────────────────────────
-
-    import asyncio
 
     class ConnectionManager:
         """Manages active WebSocket connections for broadcasting live updates.

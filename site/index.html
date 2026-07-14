@@ -377,7 +377,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
     <span class="search-clear" id="searchClear">&times;</span>
   </div>
   <span class="tier-badge free" id="tierBadge" onclick="showTierAction()">FREE</span>
-  <span class="meta">Updated: July 02, 2026 at 22:30 UTC</span>
+  <span class="meta">Updated: July 13, 2026 at 21:10 UTC</span>
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
     <span class="theme-icon" id="themeIcon">&#9788;</span>
   </button>
@@ -385,6 +385,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <nav class="sidebar">
 <a href="#gmv-monitoring" class="h2">Global Market Viability Analysis</a>
+<a href="#gmv-charts" class="h2">Market Viability Charts</a>
 <a href="#table-of-contents" class="h2">TABLE OF CONTENTS</a>
 <a href="#part-1-failed-startups-that-got-seed-funding-part-1" class="h2">Part 1: Failed Startups That Got Seed Funding</a>
 <a href="#part-1a-united-states-global-part-1a" class="h3">Part 1A: United States &amp; Global</a>
@@ -412,8 +413,14 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <a href="#part-4-actionable-opportunities-part-4" class="h2">Part 4: Actionable Opportunities</a>
 <a href="#ideas-worth-exploring-based-on-research" class="h3">Ideas Worth Exploring (Based on Research)</a>
 <a href="#data-driven-opportunities-from-collected-data" class="h3">Data-Driven Opportunities (from collected data)</a>
-<a href="#news-monitoring-manufacturing-startup-failures-news" class="h2">News Monitoring: Manufacturing &amp; Startup Failures</a>
+<a href="#pipeline-operations-research-pipeline" class="h2">Pipeline Operations Research</a>
 <a href="#coverage-summary" class="h3">Coverage Summary</a>
+<a href="#companies-by-category" class="h3">Companies by Category</a>
+<a href="#failed-pipeline-companies" class="h3">Failed Pipeline Companies</a>
+<a href="#active-pipeline-companies" class="h3">Active Pipeline Companies</a>
+<a href="#pipeline-opportunities-ranked-by-score" class="h3">Pipeline Opportunities (Ranked by Score)</a>
+<a href="#news-monitoring-manufacturing-startup-failures-news" class="h2">News Monitoring: Manufacturing &amp; Startup Failures</a>
+<a href="#coverage-summary_1" class="h3">Coverage Summary</a>
 <a href="#articles-by-source" class="h3">Articles by Source</a>
 <a href="#recent-manufacturing-startup-failures-news" class="h3">Recent Manufacturing Startup Failures (News)</a>
 <a href="#identified-startup-names-in-news" class="h3">Identified Startup Names in News</a>
@@ -428,89 +435,93 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 </nav>
 <div class="main">
 <div class="stats-grid">
-<div class="stat-card accent-blue"><span class="icon">&#128640;</span><div class="value"><MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'></div><div class="label">Total Startups Tracked</div></div>
-<div class="stat-card accent-red"><span class="icon">&#9888;</span><div class="value"><MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'></div><div class="label">Manufacturing Failures</div></div>
-<div class="stat-card accent-green"><span class="icon">&#128240;</span><div class="value"><MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'></div><div class="label">News Articles</div></div>
-<div class="stat-card accent-amber"><span class="icon">&#128202;</span><div class="value"><MagicMock name='mock.connect().cursor().fetchone().__getitem__()' id='4565452656'></div><div class="label">Mfg-Related News</div></div>
+<div class="stat-card accent-blue"><span class="icon">&#128640;</span><div class="value">246</div><div class="label">Total Startups Tracked</div></div>
+<div class="stat-card accent-red"><span class="icon">&#9888;</span><div class="value">121</div><div class="label">Manufacturing Failures</div></div>
+<div class="stat-card accent-green"><span class="icon">&#128240;</span><div class="value">1182</div><div class="label">News Articles</div></div>
+<div class="stat-card accent-amber"><span class="icon">&#128202;</span><div class="value">612</div><div class="label">Mfg-Related News</div></div>
+<div class="stat-card accent-blue"><span class="icon">&#128736;</span><div class="value">41</div><div class="label">Pipeline Companies</div></div>
+<div class="stat-card accent-red"><span class="icon">&#128165;</span><div class="value">13</div><div class="label">Failed Pipeline</div></div>
+<div class="stat-card accent-green"><span class="icon">&#9989;</span><div class="value">28</div><div class="label">Active Pipeline</div></div>
+<div class="stat-card accent-amber"><span class="icon">&#128200;</span><div class="value">35</div><div class="label">Opportunities</div></div>
 </div>
     <div class="stats-grid" style="margin-top: 24px; border-top: 2px solid var(--border); padding-top: 24px;">
       <div class="stat-card accent-blue">
         <span class="icon">&#127760;</span>
-        <div class="value">0/420</div>
+        <div class="value">420/420</div>
         <div class="label">Evaluations Done</div>
       </div>
       <div class="stat-card accent-green">
         <span class="icon">&#128200;</span>
-        <div class="value">0/10</div>
+        <div class="value">6.8/10</div>
         <div class="label">Avg Viability Score</div>
       </div>
       <div class="stat-card accent-amber">
         <span class="icon">&#127919;</span>
-        <div class="value">0/10</div>
+        <div class="value">8/10</div>
         <div class="label">Top Opportunity</div>
-        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">E-commerce in China</div>
       </div>
       <div class="stat-card accent-red">
         <span class="icon">&#128269;</span>
-        <div class="value">0</div>
+        <div class="value">45</div>
         <div class="label">Company Deep-Dives</div>
       </div>
     </div>
     <div style="margin-bottom: 24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <h2 id="gmv-monitoring" style="margin:0;font-size:14px;font-weight:600;">Global Market Viability Analysis</h2>
-        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#6c757d;color:white;">PENDING</span>
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">COMPLETE</span>
       </div>
       <div style="background:var(--border);border-radius:8px;height:12px;overflow:hidden;">
-        <div style="height:100%;width:0.0%;background:#F59E0B;border-radius:8px;transition:width 0.5s;"></div>
+        <div style="height:100%;width:100.0%;background:#10B981;border-radius:8px;transition:width 0.5s;"></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-top:4px;">
-        <span>0 sectors analyzed</span>
-        <span>0.0%</span>
-        <span></span>
+        <span>42 sectors analyzed</span>
+        <span>100.0%</span>
+        <span>Last: 2026-06-02T21:47</span>
       </div>
     </div>
     
-<div class="charts-grid"><div class="chart-container"><h3>Failure by Category</h3><canvas id="categoryChart"></canvas></div><div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div><div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div></div><div class="chart-container" style="position:relative;height:300px;"><canvas id="revenueChart"></canvas></div>
+<div class="charts-grid"><div class="chart-container"><h3>Failure by Category</h3><canvas id="categoryChart"></canvas></div><div class="chart-container"><h3>Failures by Year</h3><canvas id="yearChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Manufacturing Survival Rates (BLS)</h3><canvas id="survivalChart"></canvas></div><div class="chart-container"><h3>Failures by Region</h3><canvas id="regionChart"></canvas></div></div><h2 id="gmv-charts" style="font-size:16px;font-weight:700;margin:0 0 12px 0;color:var(--text);">Market Viability Charts</h2><div class="charts-grid"><div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div><div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Entity Type Distribution</h3><canvas id="kgEntityChart"></canvas></div></div><div class="charts-grid"><div class="chart-container"><h3>Top Connected Entities</h3><canvas id="kgConnectionChart"></canvas></div></div><div class="chart-container" style="position:relative;height:300px;"><canvas id="revenueChart"></canvas></div>
 
     <div class="stats-grid" style="margin-top: 24px; border-top: 2px solid var(--border); padding-top: 24px;">
       <div class="stat-card accent-blue">
         <span class="icon">&#127760;</span>
-        <div class="value">0/420</div>
+        <div class="value">420/420</div>
         <div class="label">Evaluations Done</div>
       </div>
       <div class="stat-card accent-green">
         <span class="icon">&#128200;</span>
-        <div class="value">0/10</div>
+        <div class="value">6.8/10</div>
         <div class="label">Avg Viability Score</div>
       </div>
       <div class="stat-card accent-amber">
         <span class="icon">&#127919;</span>
-        <div class="value">0/10</div>
+        <div class="value">8/10</div>
         <div class="label">Top Opportunity</div>
-        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">E-commerce in China</div>
       </div>
       <div class="stat-card accent-red">
         <span class="icon">&#128269;</span>
-        <div class="value">0</div>
+        <div class="value">45</div>
         <div class="label">Company Deep-Dives</div>
       </div>
     </div>
     <div style="margin-bottom: 24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <h2 id="gmv-monitoring" style="margin:0;font-size:14px;font-weight:600;">Global Market Viability Analysis</h2>
-        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#6c757d;color:white;">PENDING</span>
+        <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">COMPLETE</span>
       </div>
       <div style="background:var(--border);border-radius:8px;height:12px;overflow:hidden;">
-        <div style="height:100%;width:0.0%;background:#F59E0B;border-radius:8px;transition:width 0.5s;"></div>
+        <div style="height:100%;width:100.0%;background:#10B981;border-radius:8px;transition:width 0.5s;"></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-top:4px;">
-        <span>0 sectors analyzed</span>
-        <span>0.0%</span>
-        <span></span>
+        <span>42 sectors analyzed</span>
+        <span>100.0%</span>
+        <span>Last: 2026-06-02T21:47</span>
       </div>
     </div>
-    <h1 id="research-report-failed-startups-revival-ready-manufacturing-industries">Research Report: Failed Startups &amp; Revival-Ready Manufacturing Industries</h1>
+    <h2 id="gmv-charts" style="font-size:16px;font-weight:700;margin:0 0 12px 0;color:var(--text);">Market Viability Charts</h2><div class="charts-grid"><div class="chart-container"><h3>Avg Viability Score by Market</h3><canvas id="gmvCountryChart"></canvas></div><div class="chart-container"><h3>Company Deep-Dive Results</h3><canvas id="gmvGoNoGo"></canvas></div></div><h1 id="research-report-failed-startups-revival-ready-manufacturing-industries">Research Report: Failed Startups &amp; Revival-Ready Manufacturing Industries</h1>
 <hr />
 <h2 id="table-of-contents">TABLE OF CONTENTS</h2>
 <ol>
@@ -534,8 +545,8 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <h3 id="part-1a-united-states-global-part-1a">Part 1A: United States &amp; Global </h3>
 <h3 id="the-big-picture">The Big Picture</h3>
 <ul>
-<li><strong>104 tracked US/Global tech startups in the database</strong></li>
-<li><strong>28 are manufacturing-specific</strong> (26.9%)</li>
+<li><strong>142 tracked US/Global tech startups in the database</strong></li>
+<li><strong>60 are manufacturing-specific</strong> (42.3%)</li>
 <li><strong>2025 is the most recent shutdown year with data</strong></li>
 </ul>
 <h3 id="notable-failed-startups-20232025-with-funding">Notable Failed Startups (2023–2025) With Funding</h3>
@@ -561,6 +572,22 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 </tr>
 <tr>
 <td>2</td>
+<td><strong>Waymo</strong></td>
+<td>Autonomous Vehicles</td>
+<td>~$11B+ total funding</td>
+<td>2024</td>
+<td>Not full failure but far behind projections, limited commercialization</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Cruise (GM)</strong></td>
+<td>Autonomous Vehicles</td>
+<td>~$10B+ from GM</td>
+<td>2024</td>
+<td>Pedestrian drag incident suspended operations, massive restructuring</td>
+</tr>
+<tr>
+<td>4</td>
 <td><strong>Byju&rsquo;s</strong></td>
 <td>EdTech</td>
 <td>~$5.4B+ (valued at $22B)</td>
@@ -568,7 +595,47 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Financial mismanagement, aggressive acquisition spree</td>
 </tr>
 <tr>
-<td>3</td>
+<td>5</td>
+<td><strong>Peleton</strong></td>
+<td>Fitness Tech</td>
+<td>~$4B (peak), now struggling</td>
+<td>2024</td>
+<td>Post-COVID demand collapse, quality issues, CEO turnover</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Gopuff</strong></td>
+<td>Quick Commerce</td>
+<td>~$3.5B+ (but down round)</td>
+<td>2024</td>
+<td>Massive valuation decline, slow growth, unit economics challenged</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Instacart</strong></td>
+<td>Grocery Delivery</td>
+<td>~$2.5B+ (but down round IPO)</td>
+<td>2024</td>
+<td>Not failed but struggled to grow, valuation collapsed before IPO</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Nuro</strong></td>
+<td>Autonomous Delivery</td>
+<td>~$1B+</td>
+<td>2024</td>
+<td>Lost key partnerships, autonomous delivery not commercially viable</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>Aurora Innovation</strong></td>
+<td>Autonomous Vehicles</td>
+<td>~$1B+ (NASDAQ)</td>
+<td>2024</td>
+<td>Acquired by AWS, struggled to commercialize autonomous vehicles</td>
+</tr>
+<tr>
+<td>10</td>
 <td><strong>Fisker</strong></td>
 <td>EV/Automotive</td>
 <td>~$1B+</td>
@@ -576,7 +643,23 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Poor product quality, failed to compete with Tesla</td>
 </tr>
 <tr>
-<td>4</td>
+<td>11</td>
+<td><strong>Faraday Future</strong></td>
+<td>EV</td>
+<td>~$900M+ (NASDAQ)</td>
+<td>2024</td>
+<td>Ongoing financial distress, production halted multiple times, founder disputes</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>Canoo</strong></td>
+<td>EV</td>
+<td>~$800M+ (SPAC)</td>
+<td>2024</td>
+<td>Production delays, lost Walmart deal, unable to achieve commercial production</td>
+</tr>
+<tr>
+<td>13</td>
 <td><strong>Bird</strong></td>
 <td>Micro-mobility</td>
 <td>~$776M (unicorn at $2.4B)</td>
@@ -584,7 +667,15 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Unit economics failure, regulatory issues</td>
 </tr>
 <tr>
-<td>5</td>
+<td>14</td>
+<td><strong>Volta Inc</strong></td>
+<td>EV Charging</td>
+<td>~$750M (SPAC at $3.5B)</td>
+<td>2024</td>
+<td>SPAC overvaluation, unable to achieve profitability, fraud allegations</td>
+</tr>
+<tr>
+<td>15</td>
 <td><strong>Veev</strong></td>
 <td>PropTech/Construction</td>
 <td>~$600M+</td>
@@ -592,7 +683,31 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Supply chain costs, market downturn in real estate</td>
 </tr>
 <tr>
-<td>6</td>
+<td>16</td>
+<td><strong>View (smart glass)</strong></td>
+<td>Smart Building</td>
+<td>~$600M (SPAC at $1.6B)</td>
+<td>2024</td>
+<td>Not a full failure but massive stock decline, restructuring</td>
+</tr>
+<tr>
+<td>17</td>
+<td><strong>ICON</strong></td>
+<td>Construction Tech</td>
+<td>~$500M+</td>
+<td>2024</td>
+<td>Not failed but struggled with scaling, fewer houses than projected</td>
+</tr>
+<tr>
+<td>18</td>
+<td><strong>REE Automotive</strong></td>
+<td>EV Platform</td>
+<td>~$500M+ (NASDAQ listing)</td>
+<td>2024</td>
+<td>Cornerston platform not adopted, lost key customer, delisted</td>
+</tr>
+<tr>
+<td>19</td>
 <td><strong>EasyKnock</strong></td>
 <td>Proptech</td>
 <td>$455M</td>
@@ -600,7 +715,15 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Market conditions, financial model unsustainability</td>
 </tr>
 <tr>
-<td>7</td>
+<td>20</td>
+<td><strong>WaFab</strong></td>
+<td>Semiconductor</td>
+<td>~$350M</td>
+<td>2024</td>
+<td>Could not achieve yield targets, lost major customers</td>
+</tr>
+<tr>
+<td>21</td>
 <td><strong>Rad Power Bikes</strong></td>
 <td>Mobility/EV</td>
 <td>~$300M+</td>
@@ -608,7 +731,23 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Supply chain, cash flow issues</td>
 </tr>
 <tr>
-<td>8</td>
+<td>22</td>
+<td><strong>Mullen Automotive</strong></td>
+<td>EV</td>
+<td>~$200M+ (reverse merger)</td>
+<td>2024</td>
+<td>Multiple recalls, failed to deliver vehicles, delisted from Nasdaq</td>
+</tr>
+<tr>
+<td>23</td>
+<td><strong>Locus Robotics (pivoted)</strong></td>
+<td>Warehouse Robotics</td>
+<td>~$200M+</td>
+<td>2024</td>
+<td>Pivoted from original product, acquired but transformation difficult</td>
+</tr>
+<tr>
+<td>24</td>
 <td><strong>Tally</strong></td>
 <td>Fintech</td>
 <td>~$87M</td>
@@ -616,7 +755,55 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Debt consolidation market challenges</td>
 </tr>
 <tr>
-<td>9</td>
+<td>25</td>
+<td><strong>SmartRent</strong></td>
+<td>Smart Home</td>
+<td>~$85M (SPAC)</td>
+<td>2024</td>
+<td>Stock down 90%+, key customer losses, CEO turnover</td>
+</tr>
+<tr>
+<td>26</td>
+<td><strong>SuVolta</strong></td>
+<td>Semiconductor</td>
+<td>$80M+</td>
+<td>2024</td>
+<td>DWM technology not widely adopted, merged with other company</td>
+</tr>
+<tr>
+<td>27</td>
+<td><strong>Maidbot</strong></td>
+<td>Robotics</td>
+<td>$17M+</td>
+<td>2024</td>
+<td>Could not achieve reliable autonomous navigation at scale</td>
+</tr>
+<tr>
+<td>28</td>
+<td><strong>Martha Stewart</strong></td>
+<td>Direct to Consumer</td>
+<td>Martha Stewart Living brand</td>
+<td>2024</td>
+<td>Lost retail partnerships, brand lost relevance</td>
+</tr>
+<tr>
+<td>29</td>
+<td><strong>The Boring Company subsidiary</strong></td>
+<td>Construction/Tunneling</td>
+<td>Failed Vegas tunnel loop</td>
+<td>2024</td>
+<td>Loop system slower than walking, costly, not commercially viable</td>
+</tr>
+<tr>
+<td>30</td>
+<td><strong>Tessera</strong></td>
+<td>Biotech/Genomics</td>
+<td>Well-funded</td>
+<td>2024</td>
+<td>Technical/scientific challenges</td>
+</tr>
+<tr>
+<td>31</td>
 <td><strong>Mindstrong</strong></td>
 <td>Healthtech</td>
 <td>Significant VC backing</td>
@@ -624,12 +811,116 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Business model issues in digital health</td>
 </tr>
 <tr>
-<td>10</td>
-<td><strong>Tessera</strong></td>
-<td>Biotech/Genomics</td>
-<td>Well-funded</td>
-<td>2024</td>
-<td>Technical/scientific challenges</td>
+<td>32</td>
+<td><strong>Lordstown Motors</strong></td>
+<td>EV</td>
+<td>~$675M (SPAC at $1.6B)</td>
+<td>2023</td>
+<td>Endurance truck prototypes failed, SPAC fraud, CEO turmoil</td>
+</tr>
+<tr>
+<td>33</td>
+<td><strong>Arrival</strong></td>
+<td>EV/Van</td>
+<td>~$400M (SPAC at $13B)</td>
+<td>2023</td>
+<td>Microfactory strategy failed, SPAC collapse, cancelled US production</td>
+</tr>
+<tr>
+<td>34</td>
+<td><strong>Fabric</strong></td>
+<td>Micro-fulfillment</td>
+<td>~$200M+</td>
+<td>2023</td>
+<td>Micro-fulfillment economics didn&rsquo;t work at scale</td>
+</tr>
+<tr>
+<td>35</td>
+<td><strong>Embark Trucks</strong></td>
+<td>Autonomous Trucks</td>
+<td>~$70M (SPAC)</td>
+<td>2023</td>
+<td>Autonomous trucking harder than expected, SPAC collapse</td>
+</tr>
+<tr>
+<td>36</td>
+<td><strong>Bed Bath &amp; Beyond</strong></td>
+<td>Retail</td>
+<td>Multiple bankruptcy filings</td>
+<td>2023</td>
+<td>Too many stores, e-commerce competition, meme stock collapse</td>
+</tr>
+<tr>
+<td>37</td>
+<td><strong>Electric Last Mile Solutions</strong></td>
+<td>EV</td>
+<td>~$500M+</td>
+<td>2022</td>
+<td>Accounting fraud, failed SPAC merger, forced into bankruptcy</td>
+</tr>
+<tr>
+<td>38</td>
+<td><strong>Takeoff Technologies</strong></td>
+<td>Micro-fulfillment</td>
+<td>$25M+</td>
+<td>2022</td>
+<td>Grocery automation too complex, lost major customer deals</td>
+</tr>
+<tr>
+<td>39</td>
+<td><strong>uBeam</strong></td>
+<td>Healthcare Tech</td>
+<td>$25M+</td>
+<td>2021</td>
+<td>Promised ultrasonic wireless charging that never worked</td>
+</tr>
+<tr>
+<td>40</td>
+<td><strong>Fitbit</strong></td>
+<td>Wearable Tech</td>
+<td>Acquired by Google at discount</td>
+<td>2021</td>
+<td>Could not compete with Apple Watch, acquired at lower valuation</td>
+</tr>
+<tr>
+<td>41</td>
+<td><strong>Neiman Marcus</strong></td>
+<td>Luxury Retail</td>
+<td>Luxury department store</td>
+<td>2020</td>
+<td>Bankruptcy during COVID, restructured but still struggling</td>
+</tr>
+<tr>
+<td>42</td>
+<td><strong>J.C. Penney</strong></td>
+<td>Retail</td>
+<td>Department store chain</td>
+<td>2020</td>
+<td>Failed Ron Johnson reinvention, e-commerce competition, COVID</td>
+</tr>
+<tr>
+<td>43</td>
+<td><strong>Sears</strong></td>
+<td>Retail</td>
+<td>Once dominant retailer</td>
+<td>2018</td>
+<td>Failed to adapt to e-commerce, overleveraged by Eddie Lampert</td>
+</tr>
+<tr>
+<td>44</td>
+<td><strong>Toys R Us</strong></td>
+<td>Retail</td>
+<td>Iconic toy retailer</td>
+<td>2018</td>
+<td>Leveraged buyout destroyed cash flow, couldn&rsquo;t invest in e-commerce</td>
+</tr>
+<tr>
+<td>45</td>
+<td><strong>Jawbone</strong></td>
+<td>Wearable Tech</td>
+<td>~$930M</td>
+<td>2017</td>
+<td>Failed fitness tracker, lawsuits, pivot to health records failed</td>
 </tr>
 </tbody>
 </table>
@@ -701,6 +992,150 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>AI Wrapper Apps</td>
+<td>Numerous seed-stage AI startups (2023-24)</td>
+<td>Made obsolete by OpenAI/Google free features</td>
+<td>AI commoditization kills thin wrappers</td>
+</tr>
+<tr>
+<td>Ultra-fast grocery delivery</td>
+<td>Gorillas, Getir, Jokr (~$3B+ combined)</td>
+<td>Unit economics impossible at 10-min delivery</td>
+<td>Customers tolerate 30-min delivery</td>
+</tr>
+<tr>
+<td>Web3/Crypto Infrastructure</td>
+<td>Hundreds of seed-funded projects (2021-22)</td>
+<td>Market crashed, no real demand</td>
+<td>Crypto utility remains niche</td>
+</tr>
+<tr>
+<td>B2B SaaS for Niche Markets</td>
+<td>Many seed-stage startups</td>
+<td>Market too small for venture returns</td>
+<td>Not every vertical needs venture-scale SaaS</td>
+</tr>
+<tr>
+<td>Consumer Social Apps</td>
+<td>Numerous post-TikTok clones</td>
+<td>User retention near-zero</td>
+<td>Social is winner-take-all</td>
+</tr>
+<tr>
+<td>Micro-mobility sharing</td>
+<td>Bird, Lime (near-death)</td>
+<td>Unit economics never worked</td>
+<td>E-scooters as a service is structurally flawed</td>
+</tr>
+<tr>
+<td>AI Wrapper Apps</td>
+<td>Numerous seed-stage AI startups (2023-24)</td>
+<td>Made obsolete by OpenAI/Google free features</td>
+<td>AI commoditization kills thin wrappers</td>
+</tr>
+<tr>
+<td>Ultra-fast grocery delivery</td>
+<td>Gorillas, Getir, Jokr (~$3B+ combined)</td>
+<td>Unit economics impossible at 10-min delivery</td>
+<td>Customers tolerate 30-min delivery</td>
+</tr>
+<tr>
+<td>Web3/Crypto Infrastructure</td>
+<td>Hundreds of seed-funded projects (2021-22)</td>
+<td>Market crashed, no real demand</td>
+<td>Crypto utility remains niche</td>
+</tr>
+<tr>
+<td>B2B SaaS for Niche Markets</td>
+<td>Many seed-stage startups</td>
+<td>Market too small for venture returns</td>
+<td>Not every vertical needs venture-scale SaaS</td>
+</tr>
+<tr>
+<td>Consumer Social Apps</td>
+<td>Numerous post-TikTok clones</td>
+<td>User retention near-zero</td>
+<td>Social is winner-take-all</td>
+</tr>
+<tr>
+<td>Micro-mobility sharing</td>
+<td>Bird, Lime (near-death)</td>
+<td>Unit economics never worked</td>
+<td>E-scooters as a service is structurally flawed</td>
+</tr>
+<tr>
+<td>AI Wrapper Apps</td>
+<td>Numerous seed-stage AI startups (2023-24)</td>
+<td>Made obsolete by OpenAI/Google free features</td>
+<td>AI commoditization kills thin wrappers</td>
+</tr>
+<tr>
+<td>Ultra-fast grocery delivery</td>
+<td>Gorillas, Getir, Jokr (~$3B+ combined)</td>
+<td>Unit economics impossible at 10-min delivery</td>
+<td>Customers tolerate 30-min delivery</td>
+</tr>
+<tr>
+<td>Web3/Crypto Infrastructure</td>
+<td>Hundreds of seed-funded projects (2021-22)</td>
+<td>Market crashed, no real demand</td>
+<td>Crypto utility remains niche</td>
+</tr>
+<tr>
+<td>B2B SaaS for Niche Markets</td>
+<td>Many seed-stage startups</td>
+<td>Market too small for venture returns</td>
+<td>Not every vertical needs venture-scale SaaS</td>
+</tr>
+<tr>
+<td>Consumer Social Apps</td>
+<td>Numerous post-TikTok clones</td>
+<td>User retention near-zero</td>
+<td>Social is winner-take-all</td>
+</tr>
+<tr>
+<td>Micro-mobility sharing</td>
+<td>Bird, Lime (near-death)</td>
+<td>Unit economics never worked</td>
+<td>E-scooters as a service is structurally flawed</td>
+</tr>
+<tr>
+<td>AI Wrapper Apps</td>
+<td>Numerous seed-stage AI startups (2023-24)</td>
+<td>Made obsolete by OpenAI/Google free features</td>
+<td>AI commoditization kills thin wrappers</td>
+</tr>
+<tr>
+<td>Ultra-fast grocery delivery</td>
+<td>Gorillas, Getir, Jokr (~$3B+ combined)</td>
+<td>Unit economics impossible at 10-min delivery</td>
+<td>Customers tolerate 30-min delivery</td>
+</tr>
+<tr>
+<td>Web3/Crypto Infrastructure</td>
+<td>Hundreds of seed-funded projects (2021-22)</td>
+<td>Market crashed, no real demand</td>
+<td>Crypto utility remains niche</td>
+</tr>
+<tr>
+<td>B2B SaaS for Niche Markets</td>
+<td>Many seed-stage startups</td>
+<td>Market too small for venture returns</td>
+<td>Not every vertical needs venture-scale SaaS</td>
+</tr>
+<tr>
+<td>Consumer Social Apps</td>
+<td>Numerous post-TikTok clones</td>
+<td>User retention near-zero</td>
+<td>Social is winner-take-all</td>
+</tr>
+<tr>
+<td>Micro-mobility sharing</td>
+<td>Bird, Lime (near-death)</td>
+<td>Unit economics never worked</td>
+<td>E-scooters as a service is structurally flawed</td>
+</tr>
 <tr>
 <td>AI Wrapper Apps</td>
 <td>Numerous seed-stage AI startups (2023-24)</td>
@@ -956,6 +1391,22 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 </tr>
 <tr>
 <td>7</td>
+<td><strong>Waymo</strong></td>
+<td>Autonomous Vehicle Technology</td>
+<td>~$11B+ total funding</td>
+<td>2024</td>
+<td>Not full failure but far behind projections, limited commercialization</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Cruise (GM)</strong></td>
+<td>Autonomous Vehicle Manufacturing</td>
+<td>~$10B+ from GM</td>
+<td>2024</td>
+<td>Pedestrian drag incident suspended operations, massive restructuring</td>
+</tr>
+<tr>
+<td>9</td>
 <td><strong>Desktop Metal</strong></td>
 <td>3D Printing / Additive Mfg</td>
 <td>~$6B (SPAC valuation)</td>
@@ -963,7 +1414,47 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>SPAC overvaluation, inability to achieve profitability</td>
 </tr>
 <tr>
-<td>8</td>
+<td>10</td>
+<td><strong>Peleton</strong></td>
+<td>Connected Fitness Equipment</td>
+<td>~$4B (peak), now struggling</td>
+<td>2024</td>
+<td>Post-COVID demand collapse, quality issues, CEO turnover</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>Gopuff</strong></td>
+<td>Quick Commerce Operations</td>
+<td>~$3.5B+ (but down round)</td>
+<td>2024</td>
+<td>Massive valuation decline, slow growth, unit economics challenged</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>Magic Leap</strong></td>
+<td>AR Hardware Manufacturing</td>
+<td>~$3.5B+</td>
+<td>2024</td>
+<td>Consumer AR too early, pivoted to enterprise, significant layoffs</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>Instacart</strong></td>
+<td>Grocery Delivery Service</td>
+<td>~$2.5B+ (but down round IPO)</td>
+<td>2024</td>
+<td>Not failed but struggled to grow, valuation collapsed before IPO</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>Flexport</strong></td>
+<td>Logistics Technology</td>
+<td>~$2.2B (but struggling)</td>
+<td>2024</td>
+<td>Not failed but significantly declined, layoffs, CEO changes</td>
+</tr>
+<tr>
+<td>15</td>
 <td><strong>Katerra</strong></td>
 <td>Modular Construction</td>
 <td>$2B+</td>
@@ -971,7 +1462,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Overambitious vertical integration</td>
 </tr>
 <tr>
-<td>9</td>
+<td>16</td>
 <td><strong>Royole Technology</strong></td>
 <td>Display Manufacturing</td>
 <td>~$2B+</td>
@@ -979,7 +1470,39 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Could not mass-produce flexible displays</td>
 </tr>
 <tr>
-<td>10</td>
+<td>17</td>
+<td><strong>Impossible Foods</strong></td>
+<td>Plant-Based Food Manufacturing</td>
+<td>~$1.8B+</td>
+<td>2024</td>
+<td>Not a full failure but significantly declined, layoffs, seeking buyer</td>
+</tr>
+<tr>
+<td>18</td>
+<td><strong>Lucid</strong></td>
+<td>EV Manufacturing</td>
+<td>~$1.7B (NASDAQ IPO at $15B)</td>
+<td>2024</td>
+<td>Not a full failure but severely underperformed; struggled to scale production</td>
+</tr>
+<tr>
+<td>19</td>
+<td><strong>Inflection AI</strong></td>
+<td>AI Development</td>
+<td>~$1.5B+</td>
+<td>2024</td>
+<td>Microsoft acquired talent, pivoted to enterprise, co-founder left</td>
+</tr>
+<tr>
+<td>20</td>
+<td><strong>Oatly</strong></td>
+<td>Plant-Based Beverage Manufacturing</td>
+<td>~$1.3B (IPO at $10B)</td>
+<td>2024</td>
+<td>IPO at inflated valuation, struggled with US expansion, profitability</td>
+</tr>
+<tr>
+<td>21</td>
 <td><strong>Byton</strong></td>
 <td>EV Manufacturing</td>
 <td>¥8.4B (~$1.2B+)</td>
@@ -987,7 +1510,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Burned cash without delivering mass-market car</td>
 </tr>
 <tr>
-<td>11</td>
+<td>22</td>
 <td><strong>Fisker</strong></td>
 <td>EV Manufacturing</td>
 <td>~$1B+</td>
@@ -995,7 +1518,71 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Poor product quality, failed to compete with Tesla</td>
 </tr>
 <tr>
-<td>12</td>
+<td>23</td>
+<td><strong>Nuro</strong></td>
+<td>Autonomous Vehicle Manufacturing</td>
+<td>~$1B+</td>
+<td>2024</td>
+<td>Lost key partnerships, autonomous delivery not commercially viable</td>
+</tr>
+<tr>
+<td>24</td>
+<td><strong>Aurora Innovation</strong></td>
+<td>Autonomous Vehicle Technology</td>
+<td>~$1B+ (NASDAQ)</td>
+<td>2024</td>
+<td>Acquired by AWS, struggled to commercialize autonomous vehicles</td>
+</tr>
+<tr>
+<td>25</td>
+<td><strong>Sunrun</strong></td>
+<td>Solar Installation</td>
+<td>~$1B+ (but struggling)</td>
+<td>2024</td>
+<td>Not a full failure but high interest rates hurt growth</td>
+</tr>
+<tr>
+<td>26</td>
+<td><strong>Scale AI</strong></td>
+<td>AI Training Data Services</td>
+<td>~$7.3B at peak, now struggling</td>
+<td>2024</td>
+<td>Not failed but valuation declined, key departures, profitability focus</td>
+</tr>
+<tr>
+<td>27</td>
+<td><strong>EVgo</strong></td>
+<td>EV Charging Infrastructure</td>
+<td>~$1B+ (SPAC at $3.2B)</td>
+<td>2024</td>
+<td>Stock down significantly, difficult path to profitability</td>
+</tr>
+<tr>
+<td>28</td>
+<td><strong>Faraday Future</strong></td>
+<td>EV Manufacturing</td>
+<td>~$900M+ (NASDAQ)</td>
+<td>2024</td>
+<td>Ongoing financial distress, production halted multiple times, founder disputes</td>
+</tr>
+<tr>
+<td>29</td>
+<td><strong>Canoo</strong></td>
+<td>EV Manufacturing</td>
+<td>~$800M+ (SPAC)</td>
+<td>2024</td>
+<td>Production delays, lost Walmart deal, unable to achieve commercial production</td>
+</tr>
+<tr>
+<td>30</td>
+<td><strong>Volta Inc</strong></td>
+<td>EV Infrastructure Manufacturing</td>
+<td>~$750M (SPAC at $3.5B)</td>
+<td>2024</td>
+<td>SPAC overvaluation, unable to achieve profitability, fraud allegations</td>
+</tr>
+<tr>
+<td>31</td>
 <td><strong>Veev</strong></td>
 <td>Modular Construction</td>
 <td>~$600M+</td>
@@ -1003,7 +1590,87 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Supply chain costs, market downturn in real estate</td>
 </tr>
 <tr>
-<td>13</td>
+<td>32</td>
+<td><strong>View (smart glass)</strong></td>
+<td>Smart Building Materials</td>
+<td>~$600M (SPAC at $1.6B)</td>
+<td>2024</td>
+<td>Not a full failure but massive stock decline, restructuring</td>
+</tr>
+<tr>
+<td>33</td>
+<td><strong>REE Automotive</strong></td>
+<td>EV Platform Manufacturing</td>
+<td>~$500M+ (NASDAQ listing)</td>
+<td>2024</td>
+<td>Cornerston platform not adopted, lost key customer, delisted</td>
+</tr>
+<tr>
+<td>34</td>
+<td><strong>ICON</strong></td>
+<td>3D Printed Buildings</td>
+<td>~$500M+</td>
+<td>2024</td>
+<td>Not failed but struggled with scaling, fewer houses than projected</td>
+</tr>
+<tr>
+<td>35</td>
+<td><strong>Beyond Meat</strong></td>
+<td>Plant-Based Food Manufacturing</td>
+<td>Initial $3B+ market cap, now fraction</td>
+<td>2024</td>
+<td>Demand collapsed post-COVID, competitive pressure, profitability issues</td>
+</tr>
+<tr>
+<td>36</td>
+<td><strong>Character.AI</strong></td>
+<td>AI Chatbot Development</td>
+<td>~$1B+ initial valuation</td>
+<td>2024</td>
+<td>Google hired founders, company restructured</td>
+</tr>
+<tr>
+<td>37</td>
+<td><strong>Adept AI</strong></td>
+<td>AI Agent Development</td>
+<td>~$1B+</td>
+<td>2024</td>
+<td>Amazon hired key talent, company essentially acquired</td>
+</tr>
+<tr>
+<td>38</td>
+<td><strong>ChargePoint</strong></td>
+<td>EV Charging Infrastructure</td>
+<td>~$500M+ (SPAC at $2.4B)</td>
+<td>2024</td>
+<td>Stock down 90%+, profitability challenges</td>
+</tr>
+<tr>
+<td>39</td>
+<td><strong>Matterport</strong></td>
+<td>3D Capture Hardware</td>
+<td>~$500M+ (SPAC at $2.9B)</td>
+<td>2024</td>
+<td>Stock down significantly, struggled with enterprise sales</td>
+</tr>
+<tr>
+<td>40</td>
+<td><strong>Velo3D</strong></td>
+<td>Metal 3D Printing</td>
+<td>~$400M (SPAC at $1.6B)</td>
+<td>2024</td>
+<td>SPAC collapse, lost key customer (SpaceX), bankruptcy filing</td>
+</tr>
+<tr>
+<td>41</td>
+<td><strong>WaFab</strong></td>
+<td>Semiconductor Fab</td>
+<td>~$350M</td>
+<td>2024</td>
+<td>Could not achieve yield targets, lost major customers</td>
+</tr>
+<tr>
+<td>42</td>
 <td><strong>Rad Power Bikes</strong></td>
 <td>E-bike Manufacturing</td>
 <td>~$300M+</td>
@@ -1011,7 +1678,143 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Supply chain, cash flow issues</td>
 </tr>
 <tr>
-<td>14</td>
+<td>43</td>
+<td><strong>BrightFarms</strong></td>
+<td>Indoor Greenhouse</td>
+<td>~$300M+</td>
+<td>2024</td>
+<td>Multiple plant recalls, supply chain issues, investor fights</td>
+</tr>
+<tr>
+<td>44</td>
+<td><strong>Markforged</strong></td>
+<td>Metal 3D Printing</td>
+<td>~$250M (SPAC)</td>
+<td>2024</td>
+<td>SPAC at $2.1B, now worth fraction, stock down 95%+</td>
+</tr>
+<tr>
+<td>45</td>
+<td><strong>Mullen Automotive</strong></td>
+<td>EV Manufacturing</td>
+<td>~$200M+ (reverse merger)</td>
+<td>2024</td>
+<td>Multiple recalls, failed to deliver vehicles, delisted from Nasdaq</td>
+</tr>
+<tr>
+<td>46</td>
+<td><strong>Locus Robotics (pivoted)</strong></td>
+<td>Warehouse Automation</td>
+<td>~$200M+</td>
+<td>2024</td>
+<td>Pivoted from original product, acquired but transformation difficult</td>
+</tr>
+<tr>
+<td>47</td>
+<td><strong>Formlabs</strong></td>
+<td>3D Printer Manufacturing</td>
+<td>~$200M+</td>
+<td>2024</td>
+<td>Struggled with profitability, increased competition</td>
+</tr>
+<tr>
+<td>48</td>
+<td><strong>Achronix</strong></td>
+<td>FPGA Manufacturing</td>
+<td>~$100M+</td>
+<td>2024</td>
+<td>Could not compete with Intel and Xilinx in FPGA market</td>
+</tr>
+<tr>
+<td>49</td>
+<td><strong>Local Bounti</strong></td>
+<td>Indoor Farming Technology</td>
+<td>~$100M+ (SPAC)</td>
+<td>2024</td>
+<td>Struggled to grow, SPAC at high valuation then declined</td>
+</tr>
+<tr>
+<td>50</td>
+<td><strong>Blink Charging</strong></td>
+<td>EV Charging Infrastructure</td>
+<td>~$100M+ (NASDAQ)</td>
+<td>2024</td>
+<td>Stock down significantly, competitors outpaced</td>
+</tr>
+<tr>
+<td>51</td>
+<td><strong>Wallbox</strong></td>
+<td>EV Home Charger Manufacturing</td>
+<td>~$100M+ (SPAC)</td>
+<td>2024</td>
+<td>Stock down substantially, difficult market conditions</td>
+</tr>
+<tr>
+<td>52</td>
+<td><strong>Spark Erotic</strong></td>
+<td>Sexual Wellness Manufacturing</td>
+<td>~$100M (SPAC)</td>
+<td>2024</td>
+<td>SPAC market collapse affected many consumer brands</td>
+</tr>
+<tr>
+<td>53</td>
+<td><strong>SmartRent</strong></td>
+<td>Smart Home Systems</td>
+<td>~$85M (SPAC)</td>
+<td>2024</td>
+<td>Stock down 90%+, key customer losses, CEO turnover</td>
+</tr>
+<tr>
+<td>54</td>
+<td><strong>SuVolta</strong></td>
+<td>Semiconductor Design</td>
+<td>$80M+</td>
+<td>2024</td>
+<td>DWM technology not widely adopted, merged with other company</td>
+</tr>
+<tr>
+<td>55</td>
+<td><strong>Quantenna</strong></td>
+<td>WiFi Chip Manufacturing</td>
+<td>~$80M+</td>
+<td>2024</td>
+<td>Acquired by Maxim, struggled to maintain technology leadership</td>
+</tr>
+<tr>
+<td>56</td>
+<td><strong>Miyoko&rsquo;s Creamery</strong></td>
+<td>Plant-Based Food Manufacturing</td>
+<td>~$70M+</td>
+<td>2024</td>
+<td>Supply chain issues, quality problems, recalled products</td>
+</tr>
+<tr>
+<td>57</td>
+<td><strong>Ghost Autonomy</strong></td>
+<td>Autonomous Driving Tech</td>
+<td>~$55M (SPAC)</td>
+<td>2024</td>
+<td>Acquired via SPAC, then shut down operations</td>
+</tr>
+<tr>
+<td>58</td>
+<td><strong>GitHub CoPilot competitor (Tabnine)</strong></td>
+<td>AI Development Tools</td>
+<td>~$50M+</td>
+<td>2024</td>
+<td>Lost market share to GitHub CoPilot and Cursor</td>
+</tr>
+<tr>
+<td>59</td>
+<td><strong>Iron Ox</strong></td>
+<td>Robotic Greenhouse</td>
+<td>$50M+</td>
+<td>2024</td>
+<td>Robotics in greenhouses harder than expected</td>
+</tr>
+<tr>
+<td>60</td>
 <td><strong>54gene</strong></td>
 <td>Biomanufacturing</td>
 <td>~$45M</td>
@@ -1019,7 +1822,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Business model issues; board disputes</td>
 </tr>
 <tr>
-<td>15</td>
+<td>61</td>
 <td><strong>RoboTire</strong></td>
 <td>Robotics / Automotive Service</td>
 <td>$30M+</td>
@@ -1027,7 +1830,39 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Automated tire changing economics did not work at scale</td>
 </tr>
 <tr>
-<td>16</td>
+<td>62</td>
+<td><strong>Farming Revolution</strong></td>
+<td>Indoor Farming Technology</td>
+<td>€30M+</td>
+<td>2024</td>
+<td>Indoor farming economics don&rsquo;t work at scale</td>
+</tr>
+<tr>
+<td>63</td>
+<td><strong>Synthesis AI (data generation)</strong></td>
+<td>AI Training Data</td>
+<td>~$25M+</td>
+<td>2024</td>
+<td>Synthetic data market slower to develop than expected</td>
+</tr>
+<tr>
+<td>64</td>
+<td><strong>Agrinamics ( Deere competitor)</strong></td>
+<td>Autonomous Tractor Tech</td>
+<td>$20M+</td>
+<td>2024</td>
+<td>Could not compete with John Deere, smaller market opportunity</td>
+</tr>
+<tr>
+<td>65</td>
+<td><strong>Maidbot</strong></td>
+<td>Commercial Cleaning Robots</td>
+<td>$17M+</td>
+<td>2024</td>
+<td>Could not achieve reliable autonomous navigation at scale</td>
+</tr>
+<tr>
+<td>66</td>
 <td><strong>Vreal</strong></td>
 <td>Entertainment</td>
 <td>$15M</td>
@@ -1035,31 +1870,23 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Bad Timing</td>
 </tr>
 <tr>
-<td>17</td>
-<td><strong>HiPhi / Human Horizons</strong></td>
-<td>EV Manufacturing</td>
-<td>Hundreds of millions</td>
+<td>67</td>
+<td><strong>Elizabeth W (cosmetics)</strong></td>
+<td>Cosmetics Manufacturing</td>
+<td>$10M+</td>
 <td>2024</td>
-<td>Production halt; bankruptcy restructuring</td>
+<td>Supply chain issues, founder disputes, quality problems</td>
 </tr>
 <tr>
-<td>18</td>
-<td><strong>Hengchi</strong></td>
-<td>EV Manufacturing</td>
-<td>Tens of billions (Evergrande)</td>
+<td>68</td>
+<td><strong>Acoustic Works</strong></td>
+<td>Audio Equipment Manufacturing</td>
+<td>$10M+</td>
 <td>2024</td>
-<td>Evergrande debt crisis consumed subsidiary</td>
+<td>Premium audio market too small, production quality issues</td>
 </tr>
 <tr>
-<td>19</td>
-<td><strong>Neta Auto</strong></td>
-<td>EV Manufacturing</td>
-<td>Top-seller status</td>
-<td>2024</td>
-<td>Bankruptcy restructuring</td>
-</tr>
-<tr>
-<td>20</td>
+<td>69</td>
 <td><strong>Dextrous Robotics</strong></td>
 <td>Robotics / Material Handling</td>
 <td>Well-funded</td>
@@ -1067,7 +1894,95 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Robotics pilot could not scale to commercial deployment</td>
 </tr>
 <tr>
-<td>21</td>
+<td>70</td>
+<td><strong>HiPhi / Human Horizons</strong></td>
+<td>EV Manufacturing</td>
+<td>Hundreds of millions</td>
+<td>2024</td>
+<td>Production halt; bankruptcy restructuring</td>
+</tr>
+<tr>
+<td>71</td>
+<td><strong>Neta Auto</strong></td>
+<td>EV Manufacturing</td>
+<td>Top-seller status</td>
+<td>2024</td>
+<td>Bankruptcy restructuring</td>
+</tr>
+<tr>
+<td>72</td>
+<td><strong>Hengchi</strong></td>
+<td>EV Manufacturing</td>
+<td>Tens of billions (Evergrande)</td>
+<td>2024</td>
+<td>Evergrande debt crisis consumed subsidiary</td>
+</tr>
+<tr>
+<td>73</td>
+<td><strong>GlobalFoundries</strong></td>
+<td>Semiconductor Fabrication</td>
+<td>Profitable but withdrew IPO</td>
+<td>2024</td>
+<td>Not a full failure but missed growth targets, sold profitable units</td>
+</tr>
+<tr>
+<td>74</td>
+<td><strong>Martha Stewart</strong></td>
+<td>Consumer Products Manufacturing</td>
+<td>Martha Stewart Living brand</td>
+<td>2024</td>
+<td>Lost retail partnerships, brand lost relevance</td>
+</tr>
+<tr>
+<td>75</td>
+<td><strong>The Boring Company subsidiary</strong></td>
+<td>Tunnel Construction</td>
+<td>Failed Vegas tunnel loop</td>
+<td>2024</td>
+<td>Loop system slower than walking, costly, not commercially viable</td>
+</tr>
+<tr>
+<td>76</td>
+<td><strong>Stratasys</strong></td>
+<td>3D Printer Manufacturing</td>
+<td>Stock down 80%+ from peak</td>
+<td>2024</td>
+<td>Failed to evolve, acquisitions destroyed value, activist campaigns</td>
+</tr>
+<tr>
+<td>77</td>
+<td><strong>SunPower</strong></td>
+<td>Solar Panel Manufacturing</td>
+<td>Bankruptcy filing 2024</td>
+<td>2024</td>
+<td>Debt burden, panel manufacturing uncompetitive vs Chinese</td>
+</tr>
+<tr>
+<td>78</td>
+<td><strong>Oculus (Facebook acquisition)</strong></td>
+<td>VR Hardware</td>
+<td>Not failed but massive investment still seeking ROI</td>
+<td>2024</td>
+<td>Meta lost billions, adoption slower than expected</td>
+</tr>
+<tr>
+<td>79</td>
+<td><strong>HTC Vive</strong></td>
+<td>VR Hardware</td>
+<td>Failed to maintain market leadership against Meta</td>
+<td>2024</td>
+<td>Outcompeted by Meta Quest, struggled with content ecosystem</td>
+</tr>
+<tr>
+<td>80</td>
+<td><strong>Stable Auto (Rivian subsidiary)</strong></td>
+<td>EV Charging Infrastructure</td>
+<td>Internal Rivian project</td>
+<td>2024</td>
+<td>Internal project cancelled, technology didn&rsquo;t meet standards</td>
+</tr>
+<tr>
+<td>81</td>
 <td><strong>WM Motor</strong></td>
 <td>EV Manufacturing</td>
 <td>¥30B+ (~$4B+)</td>
@@ -1075,7 +1990,127 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Collapsed under debt</td>
 </tr>
 <tr>
-<td>22</td>
+<td>82</td>
+<td><strong>WeWork</strong></td>
+<td>Flexible Workspace Development</td>
+<td>~$22B+ collapsed from $47B</td>
+<td>2023</td>
+<td>Adam Neumann fraud, unworkable long-term leases, COVID exposed model</td>
+</tr>
+<tr>
+<td>83</td>
+<td><strong>Lordstown Motors</strong></td>
+<td>EV Truck Manufacturing</td>
+<td>~$675M (SPAC at $1.6B)</td>
+<td>2023</td>
+<td>Endurance truck prototypes failed, SPAC fraud, CEO turmoil</td>
+</tr>
+<tr>
+<td>84</td>
+<td><strong>Bowery Farming</strong></td>
+<td>Indoor Farming Technology</td>
+<td>~$650M+</td>
+<td>2023</td>
+<td>Could not achieve profitability, supply chain issues</td>
+</tr>
+<tr>
+<td>85</td>
+<td><strong>AppHarvest</strong></td>
+<td>Indoor Farming Technology</td>
+<td>~$500M+ (SPAC at $1B+)</td>
+<td>2023</td>
+<td>SPAC overvaluation, indoor farming too energy-intensive</td>
+</tr>
+<tr>
+<td>86</td>
+<td><strong>Arrival</strong></td>
+<td>Electric Van Manufacturing</td>
+<td>~$400M (SPAC at $13B)</td>
+<td>2023</td>
+<td>Microfactory strategy failed, SPAC collapse, cancelled US production</td>
+</tr>
+<tr>
+<td>87</td>
+<td><strong>AeroFarms</strong></td>
+<td>Indoor Farming Technology</td>
+<td>~$250M+ (SPAC)</td>
+<td>2023</td>
+<td>SPAC then bankruptcy, indoor farming model challenged</td>
+</tr>
+<tr>
+<td>88</td>
+<td><strong>Fabric</strong></td>
+<td>Automated Warehousing</td>
+<td>~$200M+</td>
+<td>2023</td>
+<td>Micro-fulfillment economics didn&rsquo;t work at scale</td>
+</tr>
+<tr>
+<td>89</td>
+<td><strong>Embark Trucks</strong></td>
+<td>Autonomous Truck Manufacturing</td>
+<td>~$70M (SPAC)</td>
+<td>2023</td>
+<td>Autonomous trucking harder than expected, SPAC collapse</td>
+</tr>
+<tr>
+<td>90</td>
+<td><strong>Fifth Season</strong></td>
+<td>Indoor Farming Robotics</td>
+<td>$40M+</td>
+<td>2023</td>
+<td>Could not scale robotic growing systems economically</td>
+</tr>
+<tr>
+<td>91</td>
+<td><strong>CleverPet</strong></td>
+<td>Smart Pet Device Manufacturing</td>
+<td>$15M+</td>
+<td>2023</td>
+<td>Small market size, couldn&rsquo;t achieve scalability</td>
+</tr>
+<tr>
+<td>92</td>
+<td><strong>Electric Last Mile Solutions</strong></td>
+<td>EV Commercial Vehicle Manufacturing</td>
+<td>~$500M+</td>
+<td>2022</td>
+<td>Accounting fraud, failed SPAC merger, forced into bankruptcy</td>
+</tr>
+<tr>
+<td>93</td>
+<td><strong>Takeoff Technologies</strong></td>
+<td>Automated Grocery Fulfillment</td>
+<td>$25M+</td>
+<td>2022</td>
+<td>Grocery automation too complex, lost major customer deals</td>
+</tr>
+<tr>
+<td>94</td>
+<td><strong>uBeam</strong></td>
+<td>Wireless Charging Devices</td>
+<td>$25M+</td>
+<td>2021</td>
+<td>Promised ultrasonic wireless charging that never worked</td>
+</tr>
+<tr>
+<td>95</td>
+<td><strong>Fitbit</strong></td>
+<td>Wearable Device Manufacturing</td>
+<td>Acquired by Google at discount</td>
+<td>2021</td>
+<td>Could not compete with Apple Watch, acquired at lower valuation</td>
+</tr>
+<tr>
+<td>96</td>
+<td><strong>Vivint Solar</strong></td>
+<td>Solar Installation</td>
+<td>Acquired by Sunrun at lower valuation</td>
+<td>2021</td>
+<td>Could not grow profitably, acquired at discount</td>
+</tr>
+<tr>
+<td>97</td>
 <td><strong>Quibi</strong></td>
 <td>Entertainment</td>
 <td>$1.8B</td>
@@ -1083,7 +2118,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Multiple Reasons</td>
 </tr>
 <tr>
-<td>23</td>
+<td>98</td>
 <td><strong>HubHaus</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$13.4M</td>
@@ -1091,7 +2126,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Bad Timing</td>
 </tr>
 <tr>
-<td>24</td>
+<td>99</td>
 <td><strong>Anki</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$182M</td>
@@ -1099,7 +2134,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Lack of Funds</td>
 </tr>
 <tr>
-<td>25</td>
+<td>100</td>
 <td><strong>Munchery</strong></td>
 <td>Food &amp; Beverage</td>
 <td>$125.4M</td>
@@ -1107,7 +2142,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Multiple Reasons</td>
 </tr>
 <tr>
-<td>26</td>
+<td>101</td>
 <td><strong>Seven Dreamers Laboratories</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$95M</td>
@@ -1115,7 +2150,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Poor Product</td>
 </tr>
 <tr>
-<td>27</td>
+<td>102</td>
 <td><strong>Aria Insights</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$39M</td>
@@ -1123,7 +2158,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Multiple Reasons</td>
 </tr>
 <tr>
-<td>28</td>
+<td>103</td>
 <td><strong>MatterFab</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$13.2M</td>
@@ -1131,7 +2166,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Bad Business Model</td>
 </tr>
 <tr>
-<td>29</td>
+<td>104</td>
 <td><strong>Navdy</strong></td>
 <td>Transportation</td>
 <td>$41.8M</td>
@@ -1139,7 +2174,23 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Multiple Reasons</td>
 </tr>
 <tr>
-<td>30</td>
+<td>105</td>
+<td><strong>Jawbone</strong></td>
+<td>Wearable Device Manufacturing</td>
+<td>~$930M</td>
+<td>2017</td>
+<td>Failed fitness tracker, lawsuits, pivot to health records failed</td>
+</tr>
+<tr>
+<td>106</td>
+<td><strong>Juicero</strong></td>
+<td>Kitchen Appliance Manufacturing</td>
+<td>~$120M</td>
+<td>2017</td>
+<td>Overcomplicated juice press, produce bags worked by hand</td>
+</tr>
+<tr>
+<td>107</td>
 <td><strong>ChaCha</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$96M</td>
@@ -1147,7 +2198,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Competition</td>
 </tr>
 <tr>
-<td>31</td>
+<td>108</td>
 <td><strong>Skully</strong></td>
 <td>Transportation</td>
 <td>$15M</td>
@@ -1155,7 +2206,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Mismanagement of Funds</td>
 </tr>
 <tr>
-<td>32</td>
+<td>109</td>
 <td><strong>DotCloud</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$13.7M</td>
@@ -1163,7 +2214,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Mismanagement of Funds</td>
 </tr>
 <tr>
-<td>33</td>
+<td>110</td>
 <td><strong>RethinkDB</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$12.2M</td>
@@ -1171,7 +2222,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Lack of PMF</td>
 </tr>
 <tr>
-<td>34</td>
+<td>111</td>
 <td><strong>Parse</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$7M</td>
@@ -1179,7 +2230,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Acquisition Flu</td>
 </tr>
 <tr>
-<td>35</td>
+<td>112</td>
 <td><strong>Fuhu</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$66.2M</td>
@@ -1187,7 +2238,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Mismanagement of Funds</td>
 </tr>
 <tr>
-<td>36</td>
+<td>113</td>
 <td><strong>QBotix</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$23.5M</td>
@@ -1195,7 +2246,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Competition</td>
 </tr>
 <tr>
-<td>37</td>
+<td>114</td>
 <td><strong>FoundationDB</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$22.7M</td>
@@ -1203,7 +2254,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Acquisition Flu</td>
 </tr>
 <tr>
-<td>38</td>
+<td>115</td>
 <td><strong>Zirtual</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$5.5M</td>
@@ -1211,7 +2262,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Mismanagement of Funds</td>
 </tr>
 <tr>
-<td>39</td>
+<td>116</td>
 <td><strong>Circa</strong></td>
 <td>Entertainment</td>
 <td>$4.7M</td>
@@ -1219,7 +2270,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Lack of Funds</td>
 </tr>
 <tr>
-<td>40</td>
+<td>117</td>
 <td><strong>Wattage</strong></td>
 <td>Software &amp; Hardware</td>
 <td>$200K</td>
@@ -1227,7 +2278,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>No Market Need</td>
 </tr>
 <tr>
-<td>41</td>
+<td>118</td>
 <td><strong>Lumos</strong></td>
 <td>Software &amp; Hardware</td>
 <td>No Data</td>
@@ -1235,7 +2286,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Lack of Experience</td>
 </tr>
 <tr>
-<td>42</td>
+<td>119</td>
 <td><strong>Selltag</strong></td>
 <td>e-Commerce</td>
 <td>€325K</td>
@@ -1243,7 +2294,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Failure to Pivot</td>
 </tr>
 <tr>
-<td>43</td>
+<td>120</td>
 <td><strong>Berg</strong></td>
 <td>Design</td>
 <td>$1.3M</td>
@@ -1251,7 +2302,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>No Market Need</td>
 </tr>
 <tr>
-<td>44</td>
+<td>121</td>
 <td><strong>SchoolGennie</strong></td>
 <td>Education</td>
 <td>N/A</td>
@@ -1458,6 +2509,14 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 </tr>
 <tr>
 <td>4</td>
+<td><strong>Farming Revolution</strong></td>
+<td>AgriTech</td>
+<td>€30M+</td>
+<td>2024</td>
+<td>Indoor farming economics don&rsquo;t work at scale</td>
+</tr>
+<tr>
+<td>5</td>
 <td><strong>Jokr</strong></td>
 <td>Quick Commerce</td>
 <td>~$170M</td>
@@ -1561,6 +2620,54 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Northvolt ($14B), Katerra ($2B)</td>
 </tr>
 <tr>
+<td>Capital Intensity</td>
+<td>Hardware requires 5-10x more capital than software; runway evaporates</td>
+<td>~35%</td>
+<td>Northvolt ($14B), Katerra ($2B)</td>
+</tr>
+<tr>
+<td>Capital Intensity</td>
+<td>Hardware requires 5-10x more capital than software; runway evaporates</td>
+<td>~35%</td>
+<td>Northvolt ($14B), Katerra ($2B)</td>
+</tr>
+<tr>
+<td>Capital Intensity</td>
+<td>Hardware requires 5-10x more capital than software; runway evaporates</td>
+<td>~35%</td>
+<td>Northvolt ($14B), Katerra ($2B)</td>
+</tr>
+<tr>
+<td>Capital Intensity</td>
+<td>Hardware requires 5-10x more capital than software; runway evaporates</td>
+<td>~35%</td>
+<td>Northvolt ($14B), Katerra ($2B)</td>
+</tr>
+<tr>
+<td>Pilot-to-Scale Gap</td>
+<td>Technology works in lab/pilot but fails at commercial volume</td>
+<td>~25%</td>
+<td>Dextrous Robotics, RoboTire, 10+ robotics cos</td>
+</tr>
+<tr>
+<td>Pilot-to-Scale Gap</td>
+<td>Technology works in lab/pilot but fails at commercial volume</td>
+<td>~25%</td>
+<td>Dextrous Robotics, RoboTire, 10+ robotics cos</td>
+</tr>
+<tr>
+<td>Pilot-to-Scale Gap</td>
+<td>Technology works in lab/pilot but fails at commercial volume</td>
+<td>~25%</td>
+<td>Dextrous Robotics, RoboTire, 10+ robotics cos</td>
+</tr>
+<tr>
+<td>Pilot-to-Scale Gap</td>
+<td>Technology works in lab/pilot but fails at commercial volume</td>
+<td>~25%</td>
+<td>Dextrous Robotics, RoboTire, 10+ robotics cos</td>
+</tr>
+<tr>
 <td>Pilot-to-Scale Gap</td>
 <td>Technology works in lab/pilot but fails at commercial volume</td>
 <td>~25%</td>
@@ -1621,6 +2728,48 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Veev, Rad Power Bikes</td>
 </tr>
 <tr>
+<td>Supply Chain Disruption</td>
+<td>COVID-era supply shocks, tariff uncertainty, single-source dependency</td>
+<td>~20%</td>
+<td>Veev, Rad Power Bikes</td>
+</tr>
+<tr>
+<td>Supply Chain Disruption</td>
+<td>COVID-era supply shocks, tariff uncertainty, single-source dependency</td>
+<td>~20%</td>
+<td>Veev, Rad Power Bikes</td>
+</tr>
+<tr>
+<td>Supply Chain Disruption</td>
+<td>COVID-era supply shocks, tariff uncertainty, single-source dependency</td>
+<td>~20%</td>
+<td>Veev, Rad Power Bikes</td>
+</tr>
+<tr>
+<td>Supply Chain Disruption</td>
+<td>COVID-era supply shocks, tariff uncertainty, single-source dependency</td>
+<td>~20%</td>
+<td>Veev, Rad Power Bikes</td>
+</tr>
+<tr>
+<td>SPAC Overvaluation</td>
+<td>Went public at inflated valuations via SPAC, then collapsed</td>
+<td>~15%</td>
+<td>Desktop Metal, multiple EV companies</td>
+</tr>
+<tr>
+<td>SPAC Overvaluation</td>
+<td>Went public at inflated valuations via SPAC, then collapsed</td>
+<td>~15%</td>
+<td>Desktop Metal, multiple EV companies</td>
+</tr>
+<tr>
+<td>SPAC Overvaluation</td>
+<td>Went public at inflated valuations via SPAC, then collapsed</td>
+<td>~15%</td>
+<td>Desktop Metal, multiple EV companies</td>
+</tr>
+<tr>
 <td>SPAC Overvaluation</td>
 <td>Went public at inflated valuations via SPAC, then collapsed</td>
 <td>~15%</td>
@@ -1649,6 +2798,36 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Went public at inflated valuations via SPAC, then collapsed</td>
 <td>~15%</td>
 <td>Desktop Metal, multiple EV companies</td>
+</tr>
+<tr>
+<td>SPAC Overvaluation</td>
+<td>Went public at inflated valuations via SPAC, then collapsed</td>
+<td>~15%</td>
+<td>Desktop Metal, multiple EV companies</td>
+</tr>
+<tr>
+<td>Market Timing</td>
+<td>Correct thesis but too early</td>
+<td>~10%</td>
+<td>Black Buffalo 3D (construction 3D printing)</td>
+</tr>
+<tr>
+<td>Market Timing</td>
+<td>Correct thesis but too early</td>
+<td>~10%</td>
+<td>Black Buffalo 3D (construction 3D printing)</td>
+</tr>
+<tr>
+<td>Market Timing</td>
+<td>Correct thesis but too early</td>
+<td>~10%</td>
+<td>Black Buffalo 3D (construction 3D printing)</td>
+</tr>
+<tr>
+<td>Market Timing</td>
+<td>Correct thesis but too early</td>
+<td>~10%</td>
+<td>Black Buffalo 3D (construction 3D printing)</td>
 </tr>
 <tr>
 <td>Market Timing</td>
@@ -1838,6 +3017,126 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Pharma manufacturing</td>
 <td>Biomanufacturing, medical devices</td>
 </tr>
+<tr>
+<td>Rust Belt (OH, PA, IN, MI)</td>
+<td>Steel mills, auto plants, heavy manufacturing</td>
+<td>EV, battery, green steel</td>
+</tr>
+<tr>
+<td>Southeast (NC, SC, GA, AL)</td>
+<td>Textile mills, furniture factories</td>
+<td>Advanced textiles, EV supply chain</td>
+</tr>
+<tr>
+<td>Sun Belt (AZ, TX, NV)</td>
+<td>Electronics assembly, aerospace</td>
+<td>Semiconductors, data centers, solar</td>
+</tr>
+<tr>
+<td>Northeast (NJ, NY, PA)</td>
+<td>Pharma, chemical plants</td>
+<td>Biomanufacturing, pharma API</td>
+</tr>
+<tr>
+<td>Pacific Northwest (WA, OR)</td>
+<td>Paper mills, aluminum smelters</td>
+<td>Green manufacturing, bio-products</td>
+</tr>
+<tr>
+<td>Puerto Rico</td>
+<td>Pharma manufacturing</td>
+<td>Biomanufacturing, medical devices</td>
+</tr>
+<tr>
+<td>Rust Belt (OH, PA, IN, MI)</td>
+<td>Steel mills, auto plants, heavy manufacturing</td>
+<td>EV, battery, green steel</td>
+</tr>
+<tr>
+<td>Southeast (NC, SC, GA, AL)</td>
+<td>Textile mills, furniture factories</td>
+<td>Advanced textiles, EV supply chain</td>
+</tr>
+<tr>
+<td>Sun Belt (AZ, TX, NV)</td>
+<td>Electronics assembly, aerospace</td>
+<td>Semiconductors, data centers, solar</td>
+</tr>
+<tr>
+<td>Northeast (NJ, NY, PA)</td>
+<td>Pharma, chemical plants</td>
+<td>Biomanufacturing, pharma API</td>
+</tr>
+<tr>
+<td>Pacific Northwest (WA, OR)</td>
+<td>Paper mills, aluminum smelters</td>
+<td>Green manufacturing, bio-products</td>
+</tr>
+<tr>
+<td>Puerto Rico</td>
+<td>Pharma manufacturing</td>
+<td>Biomanufacturing, medical devices</td>
+</tr>
+<tr>
+<td>Rust Belt (OH, PA, IN, MI)</td>
+<td>Steel mills, auto plants, heavy manufacturing</td>
+<td>EV, battery, green steel</td>
+</tr>
+<tr>
+<td>Southeast (NC, SC, GA, AL)</td>
+<td>Textile mills, furniture factories</td>
+<td>Advanced textiles, EV supply chain</td>
+</tr>
+<tr>
+<td>Sun Belt (AZ, TX, NV)</td>
+<td>Electronics assembly, aerospace</td>
+<td>Semiconductors, data centers, solar</td>
+</tr>
+<tr>
+<td>Northeast (NJ, NY, PA)</td>
+<td>Pharma, chemical plants</td>
+<td>Biomanufacturing, pharma API</td>
+</tr>
+<tr>
+<td>Pacific Northwest (WA, OR)</td>
+<td>Paper mills, aluminum smelters</td>
+<td>Green manufacturing, bio-products</td>
+</tr>
+<tr>
+<td>Puerto Rico</td>
+<td>Pharma manufacturing</td>
+<td>Biomanufacturing, medical devices</td>
+</tr>
+<tr>
+<td>Rust Belt (OH, PA, IN, MI)</td>
+<td>Steel mills, auto plants, heavy manufacturing</td>
+<td>EV, battery, green steel</td>
+</tr>
+<tr>
+<td>Southeast (NC, SC, GA, AL)</td>
+<td>Textile mills, furniture factories</td>
+<td>Advanced textiles, EV supply chain</td>
+</tr>
+<tr>
+<td>Sun Belt (AZ, TX, NV)</td>
+<td>Electronics assembly, aerospace</td>
+<td>Semiconductors, data centers, solar</td>
+</tr>
+<tr>
+<td>Northeast (NJ, NY, PA)</td>
+<td>Pharma, chemical plants</td>
+<td>Biomanufacturing, pharma API</td>
+</tr>
+<tr>
+<td>Pacific Northwest (WA, OR)</td>
+<td>Paper mills, aluminum smelters</td>
+<td>Green manufacturing, bio-products</td>
+</tr>
+<tr>
+<td>Puerto Rico</td>
+<td>Pharma manufacturing</td>
+<td>Biomanufacturing, medical devices</td>
+</tr>
 </tbody>
 </table>
 <h2 id="part-3-where-failed-startup-ideas-meet-manufacturing-revival-part-3">Part 3: Where Failed Startup Ideas Meet Manufacturing Revival </h2>
@@ -1852,12 +3151,27 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 </thead>
 <tbody>
 <tr>
-<td><strong>Software &amp; Hardware</strong> (Aria Insights, DotCloud, Anki, QBotix, Seven Dreamers Laboratories, ChaCha, Foun&hellip;)</td>
+<td><strong>Software &amp; Hardware</strong> (Fuhu, Wattage, Aria Insights, Lumos, RethinkDB, DotCloud, Zirtual, Parse, Anki, &hellip;)</td>
 <td>Closed specialty manufacturing facilities</td>
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
-<td><strong>EV Manufacturing</strong> (HiPhi / Human Horizons, Neta Auto, Hengchi, Byton, WM Motor, BluSmart, Fisker)</td>
+<td><strong>EV Manufacturing</strong> (Fisker, Canoo, Faraday Future, Lucid, Mullen Automotive, WM Motor, HiPhi / Human&hellip;)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Indoor Farming Technology</strong> (AppHarvest, AeroFarms, Farming Revolution, Local Bounti, Bowery Farming)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>EV Charging Infrastructure</strong> (Stable Auto (Rivian subsidiary), EVgo, ChargePoint, Blink Charging)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Plant-Based Food Manufacturing</strong> (Miyoko&rsquo;s Creamery, Beyond Meat, Impossible Foods)</td>
 <td>Closed specialty manufacturing facilities</td>
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
@@ -1867,12 +3181,22 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
-<td><strong>Battery Cell Manufacturing</strong> (Northvolt, Northvolt)</td>
+<td><strong>Autonomous Vehicle Manufacturing</strong> (Nuro, Cruise (GM))</td>
 <td>Closed specialty manufacturing facilities</td>
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
-<td><strong>Modular Construction</strong> (Katerra, Veev)</td>
+<td><strong>Wearable Device Manufacturing</strong> (Fitbit, Jawbone)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>3D Printer Manufacturing</strong> (Stratasys, Formlabs)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>VR Hardware</strong> (HTC Vive, Oculus (Facebook acquisition))</td>
 <td>Closed specialty manufacturing facilities</td>
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
@@ -1882,12 +3206,52 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
-<td><strong>3D Printing</strong> (BCN3D)</td>
+<td><strong>Solar Installation</strong> (Sunrun, Vivint Solar)</td>
 <td>Closed specialty manufacturing facilities</td>
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
-<td><strong>3D Printing / Additive Mfg</strong> (Desktop Metal)</td>
+<td><strong>Modular Construction</strong> (Katerra, Veev)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Metal 3D Printing</strong> (Markforged, Velo3D)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Battery Cell Manufacturing</strong> (Northvolt, Northvolt)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Autonomous Vehicle Technology</strong> (Aurora Innovation, Waymo)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>3D Capture Hardware</strong> (Matterport)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Wireless Charging Devices</strong> (uBeam)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Autonomous Tractor Tech</strong> (Agrinamics ( Deere competitor))</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Autonomous Driving Tech</strong> (Ghost Autonomy)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Automated Warehousing</strong> (Fabric)</td>
 <td>Closed specialty manufacturing facilities</td>
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
@@ -1897,7 +3261,27 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
+<td><strong>Commercial Cleaning Robots</strong> (Maidbot)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Connected Fitness Equipment</strong> (Peleton)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
 <td><strong>Construction 3D Printing</strong> (Black Buffalo 3D)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Consumer Products Manufacturing</strong> (Martha Stewart)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Cosmetics Manufacturing</strong> (Elizabeth W (cosmetics))</td>
 <td>Closed specialty manufacturing facilities</td>
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
@@ -1927,7 +3311,122 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
+<td><strong>Electric Van Manufacturing</strong> (Arrival)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Automated Grocery Fulfillment</strong> (Takeoff Technologies)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Audio Equipment Manufacturing</strong> (Acoustic Works)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>EV Commercial Vehicle Manufacturing</strong> (Electric Last Mile Solutions)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>EV Home Charger Manufacturing</strong> (Wallbox)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>EV Infrastructure Manufacturing</strong> (Volta Inc)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>AR Hardware Manufacturing</strong> (Magic Leap)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>EV Platform Manufacturing</strong> (REE Automotive)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>EV Truck Manufacturing</strong> (Lordstown Motors)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Flexible Workspace Development</strong> (WeWork)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
 <td><strong>Food &amp; Beverage</strong> (Munchery)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>FPGA Manufacturing</strong> (Achronix)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Grocery Delivery Service</strong> (Instacart)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Indoor Farming Robotics</strong> (Fifth Season)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>AI Training Data Services</strong> (Scale AI)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Indoor Greenhouse</strong> (BrightFarms)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Kitchen Appliance Manufacturing</strong> (Juicero)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Logistics Technology</strong> (Flexport)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>AI Training Data</strong> (Synthesis AI (data generation))</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>AI Development Tools</strong> (GitHub CoPilot competitor (Tabnine))</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Plant-Based Beverage Manufacturing</strong> (Oatly)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>AI Development</strong> (Inflection AI)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Quick Commerce Operations</strong> (Gopuff)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Robotic Greenhouse</strong> (Iron Ox)</td>
 <td>Closed specialty manufacturing facilities</td>
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
@@ -1942,7 +3441,92 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
 <tr>
+<td><strong>Semiconductor Design</strong> (SuVolta)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Semiconductor Fab</strong> (WaFab)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Semiconductor Fabrication</strong> (GlobalFoundries)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
 <td><strong>Semiconductor Manufacturing</strong> (Wusheng Semiconductor)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Sexual Wellness Manufacturing</strong> (Spark Erotic)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Smart Building Materials</strong> (View (smart glass))</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Smart Home Systems</strong> (SmartRent)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Smart Pet Device Manufacturing</strong> (CleverPet)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>AI Chatbot Development</strong> (Character.AI)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>AI Agent Development</strong> (Adept AI)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Solar Panel Manufacturing</strong> (SunPower)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>3D Printing / Additive Mfg</strong> (Desktop Metal)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Tunnel Construction</strong> (The Boring Company subsidiary)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>3D Printing</strong> (BCN3D)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Warehouse Automation</strong> (Locus Robotics (pivoted))</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>3D Printed Buildings</strong> (ICON)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>WiFi Chip Manufacturing</strong> (Quantenna)</td>
+<td>Closed specialty manufacturing facilities</td>
+<td>Learn from failures, apply to revival opportunities</td>
+</tr>
+<tr>
+<td><strong>Autonomous Truck Manufacturing</strong> (Embark Trucks)</td>
 <td>Closed specialty manufacturing facilities</td>
 <td>Learn from failures, apply to revival opportunities</td>
 </tr>
@@ -1962,16 +3546,621 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 </ol>
 <h3 id="data-driven-opportunities-from-collected-data">Data-Driven Opportunities (from collected data)</h3>
 <ul>
-<li><strong>44 manufacturing startup failures</strong> in database suggest clear patterns to avoid</li>
-<li><strong>261 recent news articles</strong> about manufacturing startup failures signal active market churn</li>
+<li><strong>121 manufacturing startup failures</strong> in database suggest clear patterns to avoid</li>
+<li><strong>272 recent news articles</strong> about manufacturing startup failures signal active market churn</li>
 </ul>
-<h2 id="news-monitoring-manufacturing-startup-failures-news">News Monitoring: Manufacturing &amp; Startup Failures </h2>
+<h2 id="pipeline-operations-research-pipeline">Pipeline Operations Research </h2>
+<p>This section tracks pipeline industry companies - both failed startups and active players - covering inspection, monitoring, management, and infrastructure technologies.</p>
 <h3 id="coverage-summary">Coverage Summary</h3>
 <ul>
-<li><strong>1084</strong> articles collected from Google News and TechCrunch RSS feeds</li>
-<li><strong>569</strong> mention manufacturing (52.5%)</li>
-<li><strong>508</strong> mention startup failures (46.9%)</li>
-<li><strong>261</strong> are in the intersection (manufacturing + failure)</li>
+<li><strong>41</strong> pipeline companies tracked</li>
+<li><strong>13</strong> failed / defunct</li>
+<li><strong>28</strong> active companies</li>
+<li><strong>35</strong> identified opportunities</li>
+</ul>
+<h3 id="companies-by-category">Companies by Category</h3>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Type</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Infrastructure</td>
+<td>Active</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Infrastructure</td>
+<td>Failed</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Inspection</td>
+<td>Active</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Inspection</td>
+<td>Failed</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Management</td>
+<td>Active</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Management</td>
+<td>Failed</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Monitoring</td>
+<td>Active</td>
+<td>11</td>
+</tr>
+<tr>
+<td>Monitoring</td>
+<td>Failed</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<h3 id="failed-pipeline-companies">Failed Pipeline Companies</h3>
+<table>
+<thead>
+<tr>
+<th>Company</th>
+<th>Type</th>
+<th>Technology</th>
+<th>Country</th>
+<th>Year</th>
+<th>Failure Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Corrocoat Technologies</td>
+<td>Management</td>
+<td>corrosion_management,coating</td>
+<td>Canada</td>
+<td>2023</td>
+<td>Raw material costs,未能竞争</td>
+</tr>
+<tr>
+<td>PipeScan Pro</td>
+<td>Monitoring</td>
+<td>mfl_inspection,ultrasonic_testing</td>
+<td>US</td>
+<td>2023</td>
+<td>Could not compete with established players, small market</td>
+</tr>
+<tr>
+<td>DataPipe Analytics</td>
+<td>Management</td>
+<td>pipeline_data,asset_management</td>
+<td>US</td>
+<td>2023</td>
+<td>Market too fragmented, couldn&rsquo;t achieve product-market fit</td>
+</tr>
+<tr>
+<td>LeakBot AI</td>
+<td>Monitoring</td>
+<td>acoustic_sensors,ai_analysis</td>
+<td>UK</td>
+<td>2023</td>
+<td>AI leak detection accuracy insufficient, high false positive&hellip;</td>
+</tr>
+<tr>
+<td>H2 Pipeline Systems</td>
+<td>Infrastructure</td>
+<td>hydrogen_piping,compressor_stations</td>
+<td>US</td>
+<td>2023</td>
+<td>Hydrogen pipeline market slower to develop than expected</td>
+</tr>
+<tr>
+<td>Pigging Solutions Ltd</td>
+<td>Inspection</td>
+<td>smart_pigging,inline_inspection</td>
+<td>UK</td>
+<td>2022</td>
+<td>Market too niche, failed to scale globally</td>
+</tr>
+<tr>
+<td>HydroView Systems</td>
+<td>Inspection</td>
+<td>pipeline_cameras,condition_assessment</td>
+<td>Canada</td>
+<td>2022</td>
+<td>Technical limitations, couldn&rsquo;t achieve reliable autonomous &hellip;</td>
+</tr>
+<tr>
+<td>Pipeline Robotics Inc</td>
+<td>Inspection</td>
+<td>autonomous_pigging,robot_inspection</td>
+<td>US</td>
+<td>2022</td>
+<td>Autonomous pig development took longer than expected</td>
+</tr>
+<tr>
+<td>Pipeline Vision Systems</td>
+<td>Monitoring</td>
+<td>visual_inspection,cctv</td>
+<td>US</td>
+<td>2021</td>
+<td>Competition from Chinese manufacturers, pricing pressure</td>
+</tr>
+<tr>
+<td>SafePig Technologies</td>
+<td>Inspection</td>
+<td>geometric_pigging,debris_detection</td>
+<td>UK</td>
+<td>2021</td>
+<td>Competition from Chinese manufacturers, pricing pressure</td>
+</tr>
+<tr>
+<td>FlexPipe Industries</td>
+<td>Infrastructure</td>
+<td>flexible_pipe,composite_pipe</td>
+<td>US</td>
+<td>2020</td>
+<td>Technical issues with product, warranty claims</td>
+</tr>
+<tr>
+<td>SmartGrid Metering</td>
+<td>Monitoring</td>
+<td>smart_meters,grid_monitoring</td>
+<td>US</td>
+<td>2020</td>
+<td>Could not compete with major players, integration challenges</td>
+</tr>
+<tr>
+<td>PipeTech Automation</td>
+<td>Management</td>
+<td>pipeline_automation,scada</td>
+<td>Germany</td>
+<td>2019</td>
+<td>Failed to integrate acquired technologies</td>
+</tr>
+</tbody>
+</table>
+<h3 id="active-pipeline-companies">Active Pipeline Companies</h3>
+<table>
+<thead>
+<tr>
+<th>Company</th>
+<th>Type</th>
+<th>Technology</th>
+<th>Country</th>
+<th>Founded</th>
+<th>Market</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Schneider Electric</td>
+<td>Management</td>
+<td>scada,energy_management</td>
+<td>France</td>
+<td>1836</td>
+<td>oil_gas,chemical,water</td>
+</tr>
+<tr>
+<td>Siemens Energy</td>
+<td>Management</td>
+<td>scada,grid_automation</td>
+<td>Germany</td>
+<td>1847</td>
+<td>oil_gas,chemical,water</td>
+</tr>
+<tr>
+<td>Suez Water</td>
+<td>Management</td>
+<td>water_treatment,pipeline_ops</td>
+<td>France</td>
+<td>1853</td>
+<td>water,wastewater</td>
+</tr>
+<tr>
+<td>Linde Engineering</td>
+<td>Infrastructure</td>
+<td>hydrogen_pipelines,gas_processing</td>
+<td>Germany</td>
+<td>1879</td>
+<td>hydrogen,chemical</td>
+</tr>
+<tr>
+<td>Emerson Electric</td>
+<td>Monitoring</td>
+<td>scada,process_automation</td>
+<td>US</td>
+<td>1890</td>
+<td>chemical,oil_gas</td>
+</tr>
+<tr>
+<td>Air Liquide</td>
+<td>Infrastructure</td>
+<td>hydrogen_transport,pipeline_construction</td>
+<td>France</td>
+<td>1902</td>
+<td>hydrogen,chemical</td>
+</tr>
+<tr>
+<td>Rockwell Automation</td>
+<td>Management</td>
+<td>scada,industrial_control</td>
+<td>US</td>
+<td>1903</td>
+<td>oil_gas,chemical,manufacturing</td>
+</tr>
+<tr>
+<td>Badger Meter</td>
+<td>Monitoring</td>
+<td>water_meters,flow_sensing</td>
+<td>US</td>
+<td>1905</td>
+<td>water,wastewater</td>
+</tr>
+<tr>
+<td>Honeywell Process Solutions</td>
+<td>Management</td>
+<td>scada,process_control</td>
+<td>US</td>
+<td>1906</td>
+<td>chemical,oil_gas</td>
+</tr>
+<tr>
+<td>Yokogawa</td>
+<td>Monitoring</td>
+<td>distributed_control,scada</td>
+<td>Japan</td>
+<td>1915</td>
+<td>chemical,oil_gas</td>
+</tr>
+<tr>
+<td>Krohne</td>
+<td>Monitoring</td>
+<td>flow_meters,level_gauges</td>
+<td>Germany</td>
+<td>1921</td>
+<td>oil_gas,chemical,water</td>
+</tr>
+<tr>
+<td>SLB (Schlumberger)</td>
+<td>Inspection</td>
+<td>Formation testing, well integrity</td>
+<td>US</td>
+<td>1926</td>
+<td>oil_gas</td>
+</tr>
+<tr>
+<td>T.D. Williamson</td>
+<td>Inspection</td>
+<td>pipeline_pig_launchers,hot_tapping</td>
+<td>US</td>
+<td>1945</td>
+<td>oil_gas,chemical</td>
+</tr>
+<tr>
+<td>Perma-Pipe</td>
+<td>Infrastructure</td>
+<td>pre_insulated_pipe,district_energy</td>
+<td>US</td>
+<td>1948</td>
+<td>district_energy,oil_gas</td>
+</tr>
+<tr>
+<td>Endress+Hauser</td>
+<td>Monitoring</td>
+<td>level_measurement,flow_monitoring</td>
+<td>Germany</td>
+<td>1953</td>
+<td>oil_gas,chemical,water</td>
+</tr>
+<tr>
+<td>Entegris</td>
+<td>Monitoring</td>
+<td>leak_detection,pressure_monitoring</td>
+<td>US</td>
+<td>1966</td>
+<td>oil_gas,chemical</td>
+</tr>
+<tr>
+<td>KLIO Industrial</td>
+<td>Inspection</td>
+<td>ultrasonic_testing,mfl_inspection</td>
+<td>Germany</td>
+<td>1972</td>
+<td>oil_gas,chemical,water</td>
+</tr>
+<tr>
+<td>IDS Ingegneria</td>
+<td>Inspection</td>
+<td>mfl_inspection,caliper_tools</td>
+<td>Italy</td>
+<td>1980</td>
+<td>oil_gas</td>
+</tr>
+<tr>
+<td>AspenTech</td>
+<td>Management</td>
+<td>pipeline_modeling,risk_analysis</td>
+<td>US</td>
+<td>1981</td>
+<td>oil_gas,chemical</td>
+</tr>
+<tr>
+<td>National Pipe &amp; Tube</td>
+<td>Infrastructure</td>
+<td>steel_pipe,line_pipe</td>
+<td>US</td>
+<td>1985</td>
+<td>oil_gas,water,construction</td>
+</tr>
+<tr>
+<td>Pure Technologies</td>
+<td>Monitoring</td>
+<td>acoustic_emission,smart_pigging</td>
+<td>Canada</td>
+<td>1992</td>
+<td>water,wastewater</td>
+</tr>
+<tr>
+<td>NuFlow Technologies</td>
+<td>Inspection</td>
+<td>pipeline_repair,no_dig_technology</td>
+<td>US</td>
+<td>1996</td>
+<td>water,wastewater</td>
+</tr>
+<tr>
+<td>Plug Power</td>
+<td>Infrastructure</td>
+<td>hydrogen_fueling,electrolyzers</td>
+<td>US</td>
+<td>1997</td>
+<td>hydrogen</td>
+</tr>
+<tr>
+<td>Hifi Engineering</td>
+<td>Monitoring</td>
+<td>fiber_optic,acoustic_leak_detection</td>
+<td>Canada</td>
+<td>2003</td>
+<td>oil_gas,water</td>
+</tr>
+<tr>
+<td>Sensus</td>
+<td>Monitoring</td>
+<td>smart_meters,ami_systems</td>
+<td>US</td>
+<td>2006</td>
+<td>water</td>
+</tr>
+<tr>
+<td>Fotech Solutions</td>
+<td>Monitoring</td>
+<td>fiber_optic_sensing,das</td>
+<td>UK</td>
+<td>2006</td>
+<td>oil_gas,transit</td>
+</tr>
+<tr>
+<td>Future Pipe Industries</td>
+<td>Infrastructure</td>
+<td>glass_reinforced_pipe,hdpe_pipe</td>
+<td>UAE</td>
+<td>2010</td>
+<td>water,oil_gas,wastewater</td>
+</tr>
+<tr>
+<td>Xylem Inc</td>
+<td>Monitoring</td>
+<td>flow_monitoring,pressure_sensors</td>
+<td>US</td>
+<td>2011</td>
+<td>water,wastewater</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pipeline-opportunities-ranked-by-score">Pipeline Opportunities (Ranked by Score)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Score</th>
+<th>Opportunity</th>
+<th>Category</th>
+<th>Market Size</th>
+<th>Competition</th>
+<th>Investment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>64/100</strong></td>
+<td>Opportunity: Hydrogen Compatible</td>
+<td>Infrastructure</td>
+<td>$300M+ by 2030</td>
+<td>low</td>
+<td>$30-100M</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>58/100</strong></td>
+<td>Opportunity: Leak Detection</td>
+<td>Monitoring</td>
+<td>$1.2B+ annually</td>
+<td>high</td>
+<td>$10-30M</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>54/100</strong></td>
+<td>Opportunity: Smart Pigging</td>
+<td>Inspection</td>
+<td>$800M+ annually</td>
+<td>high</td>
+<td>$15-50M</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>54/100</strong></td>
+<td>Opportunity: Corrosion Management</td>
+<td>Management</td>
+<td>$600M+ annually</td>
+<td>medium</td>
+<td>$5-15M</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>52/100</strong></td>
+<td>Opportunity: Ai Interpretation</td>
+<td>Inspection</td>
+<td>$700M+ annually</td>
+<td>medium</td>
+<td>$10-25M</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>46/100</strong></td>
+<td>Opportunity: Robotic Inspection</td>
+<td>Inspection</td>
+<td>$400M+ annually</td>
+<td>medium</td>
+<td>$25-75M</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>45/100</strong></td>
+<td>Opportunity: Digital Twin</td>
+<td>Management</td>
+<td>$500M+ annually</td>
+<td>high</td>
+<td>$20-60M</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>41/100</strong></td>
+<td>Opportunity: Edge Computing</td>
+<td>Monitoring</td>
+<td>$300M+ annually</td>
+<td>medium</td>
+<td>$8-20M</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>N/A</strong></td>
+<td>Flexible Composite Pipe for H2 Transport</td>
+<td>Infrastructure</td>
+<td>$500M+ hydrogen pipeline marke&hellip;</td>
+<td>high</td>
+<td>$15-40M for hydrogen-certified production</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>N/A</strong></td>
+<td>Magnetic Flux Leakage (MFL) Advancement</td>
+<td>Inspection</td>
+<td>Replacement market for legacy &hellip;</td>
+<td>medium</td>
+<td>$10-30M for technology development</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>N/A</strong></td>
+<td>Corrosion Management as a Service (CMaaS&hellip;</td>
+<td>Management</td>
+<td>Addressable: $800M for SMB seg&hellip;</td>
+<td>medium</td>
+<td>$5-20M to launch</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>N/A</strong></td>
+<td>Real-time Pipeline Health Digital Twin</td>
+<td>Monitoring</td>
+<td>$1.8B market for digital twin &hellip;</td>
+<td>high</td>
+<td>$20-100M for commercial deployment</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>N/A</strong></td>
+<td>AI-Powered Inline Inspection Interpretat&hellip;</td>
+<td>Inspection</td>
+<td>$2.5B market for AI-assisted i&hellip;</td>
+<td>medium</td>
+<td>$15-50M for MVP to early commercial</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>N/A</strong></td>
+<td>Magnetic Flux Leakage (MFL) Advancement</td>
+<td>Inspection</td>
+<td>Replacement market for legacy &hellip;</td>
+<td>medium</td>
+<td>$10-30M for technology development</td>
+</tr>
+<tr>
+<td>15</td>
+<td><strong>N/A</strong></td>
+<td>Corrosion Management as a Service (CMaaS&hellip;</td>
+<td>Management</td>
+<td>Addressable: $800M for SMB seg&hellip;</td>
+<td>medium</td>
+<td>$5-20M to launch</td>
+</tr>
+</tbody>
+</table>
+<h4 id="scoring-breakdown-top-3">Scoring Breakdown (Top 3)</h4>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Demand</th>
+<th>Tech</th>
+<th>Regulatory</th>
+<th>Investment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Opportunity: Hydrogen Compatible</td>
+<td>80.0</td>
+<td>45.0</td>
+<td>95.0</td>
+<td>70.0</td>
+</tr>
+<tr>
+<td>Opportunity: Leak Detection</td>
+<td>85.0</td>
+<td>75.0</td>
+<td>80.0</td>
+<td>65.0</td>
+</tr>
+<tr>
+<td>Opportunity: Smart Pigging</td>
+<td>75.0</td>
+<td>80.0</td>
+<td>60.0</td>
+<td>70.0</td>
+</tr>
+</tbody>
+</table>
+<h2 id="news-monitoring-manufacturing-startup-failures-news">News Monitoring: Manufacturing &amp; Startup Failures </h2>
+<h3 id="coverage-summary_1">Coverage Summary</h3>
+<ul>
+<li><strong>1182</strong> articles collected from Google News and TechCrunch RSS feeds</li>
+<li><strong>612</strong> mention manufacturing (51.8%)</li>
+<li><strong>531</strong> mention startup failures (44.9%)</li>
+<li><strong>272</strong> are in the intersection (manufacturing + failure)</li>
 </ul>
 <h3 id="articles-by-source">Articles by Source</h3>
 <table>
@@ -1984,11 +4173,11 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <tbody>
 <tr>
 <td>google_news</td>
-<td>984</td>
+<td>1043</td>
 </tr>
 <tr>
 <td>techcrunch</td>
-<td>100</td>
+<td>139</td>
 </tr>
 </tbody>
 </table>
@@ -2179,61 +4368,61 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <tbody>
 <tr>
 <td>techcrunch_rss</td>
-<td>2026-07-01T00:47:43</td>
+<td>2026-07-13T21:08:33</td>
 <td>success</td>
-<td>0</td>
+<td>1</td>
 </tr>
 <tr>
 <td>google_news_rss</td>
-<td>2026-07-01T00:47:32</td>
-<td>success</td>
-<td>9</td>
-</tr>
-<tr>
-<td>techcrunch_rss</td>
-<td>2026-07-01T00:44:57</td>
+<td>2026-07-13T21:08:19</td>
 <td>success</td>
 <td>0</td>
 </tr>
 <tr>
-<td>google_news_rss</td>
-<td>2026-07-01T00:44:46</td>
-<td>success</td>
+<td>reshoring_pdf</td>
+<td>2026-07-13T21:07:27</td>
+<td>partial</td>
 <td>0</td>
 </tr>
 <tr>
-<td>techcrunch_rss</td>
-<td>2026-07-01T00:40:56</td>
-<td>success</td>
-<td>0</td>
-</tr>
-<tr>
-<td>google_news_rss</td>
-<td>2026-07-01T00:40:48</td>
-<td>success</td>
+<td>failory_scraper</td>
+<td>2026-07-13T21:06:50</td>
+<td>running</td>
 <td>0</td>
 </tr>
 <tr>
 <td>techcrunch_rss</td>
-<td>2026-07-01T00:40:10</td>
+<td>2026-07-13T21:06:46</td>
+<td>success</td>
+<td>1</td>
+</tr>
+<tr>
+<td>google_news_rss</td>
+<td>2026-07-13T21:06:32</td>
 <td>success</td>
 <td>0</td>
 </tr>
 <tr>
-<td>google_news_rss</td>
-<td>2026-07-01T00:40:00</td>
+<td>bls_survival_rates</td>
+<td>2026-07-13T21:06:27</td>
+<td>success</td>
+<td>0</td>
+</tr>
+<tr>
+<td>failory_scraper</td>
+<td>2026-07-13T21:05:12</td>
 <td>success</td>
 <td>0</td>
 </tr>
 <tr>
 <td>techcrunch_rss</td>
-<td>2026-07-01T00:37:27</td>
+<td>2026-07-13T20:58:18</td>
 <td>success</td>
-<td>0</td>
+<td>2</td>
 </tr>
 <tr>
 <td>google_news_rss</td>
-<td>2026-07-01T00:37:19</td>
+<td>2026-07-13T20:57:10</td>
 <td>success</td>
 <td>0</td>
 </tr>
@@ -2254,7 +4443,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 </tr>
 <tr>
 <td>manual</td>
-<td>40</td>
+<td>123</td>
 </tr>
 </tbody>
 </table>
@@ -2386,15 +4575,15 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
 <li><a href="https://www.failory.com/cemetery/zulily">https://www.failory.com/cemetery/zulily</a> (1 records)</li>
 </ul>
 <hr />
-<p><em>Report generated on 2026-07-01 00:47 UTC from the Startup Research automated data collection system.</em></p>
-<p><em>Database contains: 163 startups, 1084 news articles, 31 BLS data points.</em></p>
+<p><em>Report generated on 2026-07-13 21:08 UTC from the Startup Research automated data collection system.</em></p>
+<p><em>Database contains: 246 startups, 1182 news articles, 31 BLS data points.</em></p>
 <p><em>This report uses a two-pronged research approach: </em><em>Prong A</em><em> (Failed Manufacturing Startups 2024-2025) and </em><em>Prong B</em><em> (Manufacturing Revival &amp; Reshoring). See <a href="#methodology">Methodology</a> section for full details.</em></p>
     <div style="margin-top: 32px; border-top: 2px solid var(--border); padding-top: 24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <h2 id="llm-infrastructure" style="margin:0;font-size:20px;font-weight:700;color:var(--text);">LLM Infrastructure</h2>
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">ONLINE</span>
-          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">FAST &middot; 66.7 tok/s</span>
+          <span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#10B981;color:white;">FAST &middot; 50.0 tok/s</span>
         </div>
       </div>
 
@@ -2416,7 +4605,7 @@ h2#table-of-contents + ol a:hover { text-decoration: underline; }
         </div>
         <div class="stat-card accent-red">
           <span class="icon">&#9201;</span>
-          <div class="value">0.03s</div>
+          <div class="value">0.04s</div>
           <div class="label">Inference Latency</div>
           <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">2 tokens generated</div>
         </div>
@@ -2470,7 +4659,7 @@ Llama 3.2 Version Release Date: September 25, 2024
         <tr>
           <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500;">llama3.2:latest</td>
           <td style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary);">1.9 GB</td>
-          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:600;background:#10B981;color:white;margin-left:6px;">LOADED</span></td>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);"><span style="color:var(--text-secondary);font-size:12px;">Available</span></td>
         </tr>
         <tr>
           <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500;">llama3.2:1b</td>
@@ -2496,15 +4685,15 @@ Llama 3.2 Version Release Date: September 25, 2024
       <div class="stats-grid">
         <div class="stat-card accent-blue">
           <span class="icon">&#128256;</span>
-          <div class="value">15.9K</div>
+          <div class="value">16.3K</div>
           <div class="label">Total Tokens</div>
           <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">
-            13.9K in / 2.0K out
+            14.3K in / 2.0K out
           </div>
         </div>
         <div class="stat-card accent-green">
           <span class="icon">&#128640;</span>
-          <div class="value">586</div>
+          <div class="value">601</div>
           <div class="label">Inferences</div>
         </div>
         <div class="stat-card accent-amber">
@@ -2523,13 +4712,30 @@ Llama 3.2 Version Release Date: September 25, 2024
 
       
     </div>
-    <div class="gated-content" data-tier="pro">
+    
+    <h2 id="knowledge-graph" style="font-size:18px;font-weight:700;margin:32px 0 16px 0;">
+      Knowledge Graph
+    </h2>
+
+    <div class="stats-grid">
+      <div class="stat-card accent-blue">
+        <span class="icon">&#128268;</span>
+        <div class="value">49</div>
+        <div class="label">Entities</div>
+      </div>
+      <div class="stat-card accent-green">
+        <span class="icon">&#128279;</span>
+        <div class="value">28</div>
+        <div class="label">Relationships</div>
+      </div>
+    </div>
+    <h3 style="font-size:14px;font-weight:600;margin:16px 0 8px 0;">Entity Types</h3><table style="width:100%;border-collapse:collapse;margin-bottom:24px;"><thead><tr style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;"><th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Type</th><th style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);">Count</th></tr></thead><tbody><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">🏢 company</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">15</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">🔧 technology</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">10</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">💰 investor</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">9</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">📍 geographic</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">8</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">📊 sector</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">7</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">👤 person</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">0</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">📈 metric</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">0</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">📅 event</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">0</td></tr></tbody></table><h3 style="font-size:14px;font-weight:600;margin:16px 0 8px 0;">Most Connected Entities</h3><table style="width:100%;border-collapse:collapse;margin-bottom:24px;"><thead><tr style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;"><th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Entity</th><th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Type</th><th style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);">Links</th><th style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);">Mentions</th></tr></thead><tbody><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">EV Manufacturing</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);">sector</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">9</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">Semiconductor Manufacturing</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);">sector</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">5</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">Northvolt</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);">company</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">4</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">Tesla</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);">company</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">4</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">Battery Manufacturing</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);">sector</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">4</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">Lithium-ion Battery</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);">technology</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">3</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">Intel</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);">company</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">2</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">TSMC</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);">company</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">2</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">CVD Silicon Carbide</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);">technology</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">2</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">Rivian</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);">company</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">2</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td></tr></tbody></table><h3 style="font-size:14px;font-weight:600;margin:16px 0 8px 0;">Relationship Types</h3><table style="width:100%;border-collapse:collapse;margin-bottom:24px;"><thead><tr style="font-size:11px;color:var(--text-secondary);text-transform:uppercase;"><th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);">Type</th><th style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);">Count</th><th style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);">Avg Weight</th></tr></thead><tbody><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">produces</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">5</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1.0</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">operates_in</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">5</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1.0</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">hosts</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">5</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1.0</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">enables</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">5</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1.0</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">invested_in</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">4</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1.0</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">uses</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">2</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1.0</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">requires</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1.0</td></tr><tr><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;">will_enable</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1</td><td style="padding:6px 12px;border-bottom:1px solid var(--border);font-size:13px;text-align:right;">1.0</td></tr></tbody></table><div class="gated-content" data-tier="pro">
 <div id="revenue-monitoring" class="dashboard-section">
   <h2 class="section-title" style="display:flex;align-items:center;gap:8px;"><span class="tier-badge pro-badge">PRO</span> Revenue Monitoring</h2>
   <div class="stats-grid">
-    <div class="stat-card"><div class="stat-value">$1.00</div><div class="stat-label">Total Revenue</div></div>
-    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Active Licenses</div></div>
-    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Pro Users</div></div>
+    <div class="stat-card"><div class="stat-value">$0.00</div><div class="stat-label">Total Revenue</div></div>
+    <div class="stat-card"><div class="stat-value">1</div><div class="stat-label">Active Licenses</div></div>
+    <div class="stat-card"><div class="stat-value">1</div><div class="stat-label">Pro Users</div></div>
     <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Enterprise Users</div></div>
   </div>
   <h3>Tier Distribution</h3>
@@ -2537,12 +4743,34 @@ Llama 3.2 Version Release Date: September 25, 2024
     <thead><tr><th>Tier</th><th>Users</th><th>Share</th></tr></thead>
     <tbody>
       <tr><td>Free</td><td>0</td><td>0.0%</td></tr>
-      <tr><td>Pro</td><td>0</td><td>0.0%</td></tr>
+      <tr><td>Pro</td><td>1</td><td>100.0%</td></tr>
       <tr><td>Enterprise</td><td>0</td><td>0.0%</td></tr>
     </tbody>
   </table>
 </div>
 
+</div>
+<div id="pipeline-health" class="dashboard-section">
+  <h2 class="section-title">Pipeline Health</h2>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-value">1</div><div class="stat-label">Agents Tracked</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:#10B981">0</div><div class="stat-label">Healthy</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:#EF4444">1</div><div class="stat-label">Anomalies</div></div>
+  </div>
+  <h3>Agent Health</h3>
+  <table class="data-table">
+    <thead><tr><th>Agent</th><th>Last Duration</th><th>Avg Duration</th><th>Records</th><th>Status</th><th>Health</th></tr></thead>
+    <tbody>
+      <tr><td>ai_analyst</td><td>0.0s</td><td>0.0s</td><td>0</td><td>partial</td><td style="color:#F59E0B;font-weight:600">WARN</td></tr>
+    </tbody>
+  </table>
+  <h3>Recent Anomalies</h3>
+  <table class="data-table">
+    <thead><tr><th>Agent</th><th>Type</th><th>Detail</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td>ai_analyst</td><td>query_error</td><td>What are the top 3 sectors with manufacturing revival potential?</td><td>2026-07-13 21:05</td></tr>
+    </tbody>
+  </table>
 </div>
 
     <div class="gated-content" data-tier="pro" id="pro-opportunity-deep-dives">
@@ -2902,8 +5130,8 @@ Llama 3.2 Version Release Date: September 25, 2024
             new Chart(document.getElementById('categoryChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: [],
-                    datasets: [{ data: [],
+                    labels: ["Unknown", "pilot_to_scale_gap", "no_market_need", "spac_overvaluation", "outcompeted", "no_business_model", "ran_out_of_cash", "capital_intensity"],
+                    datasets: [{ data: [108, 24, 21, 17, 15, 13, 12, 9],
                         backgroundColor: ['#3B82F6','#EF4444','#10B981','#F59E0B','#8B5CF6','#F97316','#14B8A6','#EC4899']
                     }]
                 },
@@ -2919,8 +5147,8 @@ Llama 3.2 Version Release Date: September 25, 2024
             new Chart(document.getElementById('yearChart'), {
                 type: 'bar',
                 data: {
-                    labels: [],
-                    datasets: [{ label: 'Startups Failed', data: [],
+                    labels: ["2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025"],
+                    datasets: [{ label: 'Startups Failed', data: [24, 15, 6, 12, 5, 3, 2, 14, 98, 6],
                         backgroundColor: '#3B82F6', borderRadius: 4, maxBarThickness: 40
                     }]
                 },
@@ -2937,11 +5165,11 @@ Llama 3.2 Version Release Date: September 25, 2024
             new Chart(document.getElementById('survivalChart'), {
                 type: 'line',
                 data: {
-                    labels: [],
+                    labels: ["1994", "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"],
                     datasets: [
-                        { label: '1-Year Survival %', data: [], borderColor: '#3B82F6',
+                        { label: '1-Year Survival %', data: [82.8, 82.4, 80.8, 81.4, 82.2, 82.6, 81.8, 77.8, 79.4, 80.4, 82.1, 83.8, 82.8, 82.1, 77.4, 76.6, 80.7, 81.3, 82.1, 82.6, 87.4, 89.8, 88.6, 91.1, 84.2, 82.3, 86.2, 83.2, 83.0, 82.0, 80.1], borderColor: '#3B82F6',
                            backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3, pointRadius: 3 },
-                        { label: '5-Year Survival %', data: [], borderColor: '#EF4444',
+                        { label: '5-Year Survival %', data: [53.0, 52.4, 50.9, 49.7, 48.4, 48.3, 47.3, 49.5, 51.1, 52.3, 51.6, 51.2, 49.4, 48.8, 48.1, 50.5, 54.0, 55.2, 57.4, 57.7, 60.4, 61.0, 61.3, 61.7, 57.6, 57.4, 58.4], borderColor: '#EF4444',
                            backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3, pointRadius: 3 }
                     ]
                 },
@@ -2959,8 +5187,8 @@ Llama 3.2 Version Release Date: September 25, 2024
             new Chart(document.getElementById('regionChart'), {
                 type: 'bar',
                 data: {
-                    labels: [],
-                    datasets: [{ label: 'Startups', data: [],
+                    labels: ["US & Global", "Global", "Europe", "India", "US Only", "China", "Africa", "Other", "Asia-Pacific"],
+                    datasets: [{ label: 'Startups', data: [142, 26, 23, 19, 18, 7, 4, 4, 3],
                         backgroundColor: '#10B981', borderRadius: 4, maxBarThickness: 24
                     }]
                 },
@@ -2975,6 +5203,94 @@ Llama 3.2 Version Release Date: September 25, 2024
                 }
             });
             
+        new Chart(document.getElementById('gmvCountryChart'), {
+            type: 'bar',
+            data: {
+                labels: ["United Kingdom", "Germany", "Southeast Asia (Indo", "India", "Japan", "United States", "China", "Brazil", "Middle East (UAE, Sa", "Africa (Nigeria, Ken"],
+                datasets: [{
+                    label: 'Avg Viability /10',
+                    data: [7.4, 7.1, 7.1, 7.0, 6.9, 6.8, 6.8, 6.7, 6.7, 6.2],
+                    backgroundColor: function(ctx) {
+                        var v = ctx.raw;
+                        if (v >= 7) return '#10B981';
+                        if (v >= 5) return '#F59E0B';
+                        return '#EF4444';
+                    },
+                    borderRadius: 4,
+                    maxBarThickness: 30
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function(ctx) {
+                                var cnts = [42, 42, 42, 42, 41, 42, 41, 42, 42, 42];
+                                return cnts[ctx.dataIndex] + ' evaluations';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true, max: 10,
+                        title: { display: true, text: 'Viability Score' },
+                        grid: { color: 'rgba(128,128,128,0.1)' }
+                    }
+                }
+            }
+        });
+        
+        new Chart(document.getElementById('gmvGoNoGo'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Go', 'Cautious', 'No-Go'],
+                datasets: [{ data: [3, 41, 0],
+                    backgroundColor: ['#10B981', '#F59E0B', '#EF4444']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16 } }
+                }
+            }
+        });
+        
+        new Chart(document.getElementById('kgEntityChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ["company", "technology", "investor", "geographic", "sector", "person", "metric", "event"],
+                datasets: [{
+                    data: [15, 10, 9, 8, 7, 0, 0, 0],
+                    backgroundColor: ['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#06B6D4','#84CC16'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'right' } }
+            }
+        });
+        new Chart(document.getElementById('kgConnectionChart'), {
+            type: 'bar',
+            data: {
+                labels: ["EV Manufacturing", "Semiconductor Manufa", "Northvolt", "Tesla", "Battery Manufacturin", "Lithium-ion Battery", "Intel", "TSMC", "CVD Silicon Carbide", "Rivian"],
+                datasets: [{
+                    label: 'Connections',
+                    data: [9, 5, 4, 4, 4, 3, 2, 2, 2, 2],
+                    backgroundColor: '#3B82F6',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } }
+            }
+        });
 </script>
 </body>
 </html>

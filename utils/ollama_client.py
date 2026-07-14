@@ -11,6 +11,8 @@ import urllib.error
 import urllib.request
 from http.client import HTTPConnection
 
+from utils.http_client import MalformedApiResponseError, read_json_response
+
 _logger = logging.getLogger(__name__)
 
 # Module-level session for connection reuse
@@ -126,23 +128,46 @@ class OllamaClient:
                 )
                 response = conn.getresponse()
 
+                # Handle rate limiting (429) with Retry-After support
+                if response.status == 429:
+                    conn.close()
+                    key = f"{self._host}:{self._port}"
+                    _connection_pool.pop(key, None)
+
+                    # Read Retry-After header or use exponential backoff
+                    retry_after = response.getheader("Retry-After", "")
+                    try:
+                        wait = float(retry_after) if retry_after else self.backoff_base * (2 ** attempt)
+                    except ValueError:
+                        wait = self.backoff_base * (2 ** attempt)
+
+                    self._last_error = f"Rate limited, retrying in {wait:.1f}s"
+                    _logger.warning(
+                        "OllamaClient: Rate limited (429). Waiting %.1fs before retry %d/%d",
+                        wait,
+                        attempt,
+                        self.max_retries,
+                    )
+                    time.sleep(wait)
+                    continue
+
                 if response.status >= 500:
                     # Server error — retry
-                    body = response.read().decode()
+                    body = response.read().decode("utf-8", errors="replace")
                     raise urllib.error.URLError(
                         f"Ollama returned {response.status}: {body[:200]}"
                     )
 
                 if response.status >= 400:
                     # Client error — don't retry (bad request)
-                    body = response.read().decode()
+                    body = response.read().decode("utf-8", errors="replace")
                     self._last_error = (
                         f"Ollama client error {response.status}: {body[:200]}"
                     )
                     _logger.error("OllamaClient: %s", self._last_error)
                     return None
 
-                result = json.loads(response.read().decode())
+                result = read_json_response(response, provider_name="Ollama")
 
                 # Track token usage
                 prompt_tokens = result.get("prompt_eval_count", 0)
@@ -152,12 +177,29 @@ class OllamaClient:
                         from agents.ollama_usage_tracker_agent import _track_inference
 
                         _track_inference(model, prompt_tokens, completion_tokens)
-                    except Exception:
-                        pass  # Don't fail the request if tracking fails
+                    except ImportError as e:
+                        _logger.warning(
+                            "OllamaClient: Token tracker not available: %s", e
+                        )
+                    except (AttributeError, TypeError) as e:
+                        # Expected if module structure changes
+                        _logger.debug(
+                            "OllamaClient: Token tracker API mismatch: %s", e
+                        )
+                    except Exception as e:
+                        # Log unexpected errors but don't fail the request
+                        _logger.warning(
+                            "OllamaClient: Token tracking failed unexpectedly: %s", e
+                        )
 
                 self._last_error = None
                 content = result.get("message", {}).get("content", "")
                 return content
+
+            except MalformedApiResponseError as e:
+                self._last_error = str(e)
+                _logger.error("OllamaClient: %s", self._last_error)
+                return None
 
             except (BrokenPipeError, ConnectionResetError, ConnectionRefusedError) as e:
                 # Clear the cached connection — it's broken
@@ -166,8 +208,8 @@ class OllamaClient:
                 if conn:
                     try:
                         conn.close()
-                    except Exception:
-                        pass
+                    except OSError:
+                        pass  # Connection already closed, ignore
 
                 if attempt < self.max_retries:
                     wait = self.backoff_base * (2 ** (attempt - 1))
@@ -217,6 +259,10 @@ class OllamaClient:
         for key, conn in list(_connection_pool.items()):
             try:
                 conn.close()
-            except Exception:
+            except OSError:
+                # Connection already closed, ignore
+                pass
+            except AttributeError:
+                # Connection was None, ignore
                 pass
         _connection_pool.clear()

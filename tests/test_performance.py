@@ -119,7 +119,7 @@ class TestPerformanceEndpoint(unittest.TestCase):
             self.assertIn("cache", data)
         except (ImportError, OSError, AttributeError) as e:
             error_msg = str(e)
-            if any(x in error_msg for x in ["pymysql", "nodename", "nodename nor servname", "db"]:
+            if any(x in error_msg for x in ["pymysql", "nodename", "nodename nor servname", "db"]):
                 self.skipTest(f"Test environment unavailable: {error_msg[:100]}")
             raise
 

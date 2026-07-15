@@ -588,7 +588,7 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 
 ### Data-Driven Opportunities (from collected data)
 - **121 manufacturing startup failures** in database suggest clear patterns to avoid
-- **276 recent news articles** about manufacturing startup failures signal active market churn
+- **277 recent news articles** about manufacturing startup failures signal active market churn
 
 ## Pipeline Operations Research {#pipeline}
 
@@ -690,15 +690,15 @@ This section tracks pipeline industry companies - both failed startups and activ
 ## News Monitoring: Manufacturing & Startup Failures {#news}
 
 ### Coverage Summary
-- **1232** articles collected from Google News and TechCrunch RSS feeds
-- **643** mention manufacturing (52.2%)
-- **540** mention startup failures (43.8%)
-- **276** are in the intersection (manufacturing + failure)
+- **1235** articles collected from Google News and TechCrunch RSS feeds
+- **644** mention manufacturing (52.1%)
+- **542** mention startup failures (43.9%)
+- **277** are in the intersection (manufacturing + failure)
 
 ### Articles by Source
 | Source | Articles |
 |--------|----------|
-| google_news | 1069 |
+| google_news | 1072 |
 | techcrunch | 159 |
 | https://www.ogj.com/rss | 2 |
 | https://www.foodengineeringmag.com/rss | 2 |
@@ -823,16 +823,16 @@ This report was compiled using a **two-pronged research approach**:
 
 | Collector | Last Run | Status | Records |
 |-----------|----------|--------|---------|
-| social_media | 2026-07-15T00:43:32 | success | 0 |
-| techcrunch_rss | 2026-07-15T00:43:15 | success | 20 |
-| google_news_rss | 2026-07-15T00:42:43 | success | 26 |
-| github_trends | 2026-07-14T22:37:21 | success | 17 |
-| github_trends | 2026-07-14T20:57:31 | partial | 0 |
-| trade_publications | 2026-07-14T20:55:56 | success | 6 |
-| pipeline_company_collector | 2026-07-14T20:50:54 | success | 0 |
-| reshoring_pdf | 2026-07-13T21:09:02 | partial | 0 |
-| techcrunch_rss | 2026-07-13T21:08:33 | success | 1 |
-| google_news_rss | 2026-07-13T21:08:19 | success | 0 |
+| newsletter | 2026-07-15T02:55:49 | partial | 0 |
+| regulatory | 2026-07-15T02:55:39 | partial | 0 |
+| npm_pypi | 2026-07-15T02:55:33 | failed | 0 |
+| stackoverflow | 2026-07-15T02:55:24 | partial | 0 |
+| twitter | 2026-07-15T02:54:44 | partial | 0 |
+| website_monitor | 2026-07-15T02:54:41 | partial | 0 |
+| producthunt | 2026-07-15T02:54:38 | failed | 0 |
+| arxiv | 2026-07-15T02:54:20 | success | 200 |
+| opencorporates | 2026-07-15T02:54:15 | failed | 0 |
+| hn_live | 2026-07-15T02:54:06 | success | 61 |
 
 ### Data Sources
 | Source | Records |
@@ -969,8 +969,8 @@ This report was compiled using a **two-pronged research approach**:
 
 ---
 
-*Report generated on 2026-07-15 00:44 UTC from the Startup Research automated data collection system.*
+*Report generated on 2026-07-15 02:56 UTC from the Startup Research automated data collection system.*
 
-*Database contains: 246 startups, 1232 news articles, 31 BLS data points.*
+*Database contains: 246 startups, 1235 news articles, 31 BLS data points.*
 
 *This report uses a two-pronged research approach: **Prong A** (Failed Manufacturing Startups 2024-2025) and **Prong B** (Manufacturing Revival & Reshoring). See [Methodology](#methodology) section for full details.*

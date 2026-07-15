@@ -247,6 +247,7 @@ if HAS_FASTAPI:
         from api.v2.export import router as v2_export_router
         from api.v2.feedback import router as v2_feedback_router
         from api.v2.watchlists import router as v2_watchlists_router
+        from api.v2.alert_preferences import router as v2_alert_prefs_router
         from api.v2.billing import router as v2_billing_router
         from api.v2.apis import router as v2_apis_router
         from api.v2.endpoints import router as v2_endpoints_router
@@ -261,6 +262,7 @@ if HAS_FASTAPI:
         app.include_router(v2_export_router, prefix="/api")
         app.include_router(v2_feedback_router, prefix="/api")
         app.include_router(v2_watchlists_router, prefix="/api")
+        app.include_router(v2_alert_prefs_router, prefix="/api")
         app.include_router(v2_billing_router, prefix="/api")
         # Manufacturing Intelligence Engine — Government Dashboard
         app.include_router(v2_government_router, prefix="/api")

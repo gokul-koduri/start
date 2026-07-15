@@ -19,7 +19,7 @@ COMMANDS = {
     'status', 'stat', 'progress', 'state',
     'resume', 'continue', 'start',
     'track', 'log', 'note',
-    'help', 'h', '?",
+    'help', 'h', '?',
 }
 
 
@@ -240,7 +240,7 @@ class WorkTracker:
                         lines.append(f"Last action: {last_action}")
 
                     if remaining and extended:
-                        lines.append(f"Remaining items:")
+                        lines.append("Remaining items:")
                         for item in remaining:
                             lines.append(f"  - {item}")
 

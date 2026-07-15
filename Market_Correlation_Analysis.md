@@ -1,6 +1,6 @@
 # Cross-Module Market Correlation Analysis
 
-_Generated: 2026-07-13 23:41 UTC_
+_Generated: 2026-07-15 01:03 UTC_
 
 This report analyzes data across all 7 analysis modules to find which signals reinforce each other.
 
@@ -12,7 +12,7 @@ Correlations ranked by strength:
 | --- | --- | --- | --- |
 | 1 | Failure Reason Distribution vs BLS Survival Rates | +0.734 (strong positive) | ★★★ |
 | 2 | Average Funding Raised vs Year of Shutdown | +0.653 (moderate positive) | ★★★ |
-| 3 | Geographic Failure Density vs Whale Investor Activity | -0.068 (negligible negative) | ★ |
+| 3 | Geographic Failure Density vs Whale Investor Activity | -0.028 (negligible negative) | ★ |
 | 4 | Sector Failure Count vs Revival Opportunity Score | +0.000 (negligible positive) | ★ |
 | 5 | News Volume vs Failure Timing | +0.000 (negligible positive) | ★ |
 | 6 | Reshoring Jobs vs Revival Industry Match | +0.000 (negligible positive) | ★ |
@@ -24,7 +24,7 @@ Correlations ranked by strength:
 
 **2. 4. Average Funding Raised vs Year of Shutdown**: Pearson r (year vs avg funding) = +0.653 (moderate positive). Strong positive trend — recent failures had MORE capital to burn. The funding bubble is real.
 
-**3. 3. Geographic Failure Density vs Whale Investor Activity**: Pearson r (failure density vs whale mentions) = -0.068 (negligible negative). Whale investor activity and failure density are NOT strongly linked at the regional level.
+**3. 3. Geographic Failure Density vs Whale Investor Activity**: Pearson r (failure density vs whale mentions) = -0.028 (negligible negative). Whale investor activity and failure density are NOT strongly linked at the regional level.
 
 ---
 
@@ -100,16 +100,16 @@ Average 5-year survival rate by year:
 
 **Question**: Do whale investors target regions with high failure density?
 
-**Finding**: Pearson r (failure density vs whale mentions) = -0.068 (negligible negative). Whale investor activity and failure density are NOT strongly linked at the regional level.
+**Finding**: Pearson r (failure density vs whale mentions) = -0.028 (negligible negative). Whale investor activity and failure density are NOT strongly linked at the regional level.
 
 | Region | Failure Count | Whale Mentions |
 | --- | --- | --- |
 | US & Global | 142 | 0 |
-| Global | 26 | 3 |
-| Europe | 23 | 0 |
+| Global | 26 | 2 |
+| Europe | 23 | 1 |
 | India | 19 | 0 |
 | US Only | 18 | 0 |
-| China | 7 | 1 |
+| China | 7 | 0 |
 | Africa | 4 | 0 |
 | Other | 4 | 0 |
 | Asia-Pacific | 3 | 0 |
@@ -265,21 +265,21 @@ News articles by year:
 
 **Question**: Do our highest-scored opportunities have whale backing?
 
-**Finding**: 5/11 opportunities have whale backing. Avg score: 79.0 (backed) vs 64.2 (not backed), Δ=+14.8. Whale-backed opportunities have HIGHER scores — our scoring aligns with institutional interest.
+**Finding**: 7/11 opportunities have whale backing. Avg score: 72.1 (backed) vs 67.5 (not backed), Δ=+4.6. Scores are similar regardless of backing — whale activity is independent of our scoring.
 
 | Opportunity | Score | Risk | Whale Backed | Investors |
 | --- | --- | --- | --- | --- |
-| US & Global | 100 | low | Yes | TSMC, GIC |
-| Europe | 100 | low | Yes | TSMC, GIC |
-| Northvolt | 70 | low | Yes | TSMC, GIC |
-| Northvolt | 70 | low | Yes | TSMC, GIC |
-| WaFab | 70 | low | No | — |
+| US & Global | 100 | low | Yes | TSMC, GIC, Public Investment Fund |
+| Europe | 100 | low | Yes | TSMC |
+| Northvolt | 70 | low | Yes | TSMC |
+| Northvolt | 70 | low | Yes | TSMC |
+| WaFab | 70 | low | Yes | TSMC, GIC, Public Investment Fund |
 | Global | 70 | low | No | — |
 | US Only | 70 | low | No | — |
 | China | 70 | low | No | — |
 | India | 60 | low | No | — |
-| 54gene | 55 | medium | Yes | TSMC |
-| GlobalFoundries | 45 | medium | No | — |
+| 54gene | 50 | medium | Yes | TSMC |
+| GlobalFoundries | 45 | medium | Yes | TSMC, GIC, Public Investment Fund |
 
 ---
 

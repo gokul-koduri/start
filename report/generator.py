@@ -18,6 +18,7 @@ def generate_report(
     config: dict,
     output_path: str,
     section: str | None = None,
+    include_llm_insights: bool = False,
 ) -> str:
     """Generate the full markdown report from database data.
 
@@ -26,6 +27,7 @@ def generate_report(
         config: Application configuration dict.
         output_path: Where to write the .md file.
         section: If set, only generate that section (e.g., "part1").
+        include_llm_insights: If True, include LLM-generated insights sections.
 
     Returns:
         Path to the generated file.
@@ -34,6 +36,13 @@ def generate_report(
 
     if section is None or section == "header":
         parts.append(_render_header(conn))
+
+    if section is None:
+        # LLM insights after header (only in full report mode)
+        if include_llm_insights:
+            llm_insights = _render_llm_insights(conn)
+            if llm_insights:
+                parts.append(llm_insights)
 
     if section is None or section == "part1":
         parts.append(_render_part1(conn))
@@ -46,6 +55,9 @@ def generate_report(
 
     if section is None or section == "part4":
         parts.append(_render_part4(conn))
+
+    if section is None or section == "pipeline":
+        parts.append(_render_pipeline(conn))
 
     if section is None or section == "news":
         parts.append(_render_news_monitoring(conn))
@@ -818,3 +830,238 @@ def _query_startup_stats(conn, region: str) -> dict | None:
         "manufacturing_pct": pct,
         "latest_year": row["latest_year"],
     }
+
+
+# ── LLM Insights Rendering ─────────────────────────────────────────
+
+
+LLM_INSIGHT_ORDER = [
+    "executive_summary",
+    "failure_patterns",
+    "revival_opportunities",
+    "cross_references",
+    "opportunity_rankings",
+    "news_intelligence",
+]
+
+
+def _get_llm_insight(conn, insight_type: str) -> str | None:
+    """Get a cached LLM-generated insight from the database."""
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT content FROM report_insights
+            WHERE insight_type = %s
+              AND (valid_until IS NULL OR valid_until > NOW())
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (insight_type,),
+        )
+        row = cursor.fetchone()
+        return row["content"] if row else None
+    except Exception:
+        return None
+    finally:
+        cursor.close()
+
+
+def _render_llm_insights(conn) -> str:
+    """Render all available LLM insights as markdown sections."""
+    parts = []
+
+    for insight_type in LLM_INSIGHT_ORDER:
+        try:
+            # Try to get from database first
+            content = _get_llm_insight(conn, insight_type)
+
+            # If not in DB, try in-memory cache
+            if content is None:
+                try:
+                    from report.llm_insights_agent import _insights_memory_cache
+                    cache_key = f"{insight_type}:"
+                    if cache_key in _insights_memory_cache:
+                        content = _insights_memory_cache[cache_key]["content"]
+                except ImportError:
+                    pass
+
+            section_header = {
+                "executive_summary": "## AI Executive Summary {#ai-executive-summary}",
+                "failure_patterns": "## AI Failure Analysis {#ai-failure-analysis}",
+                "revival_opportunities": "## AI Revival Opportunities Analysis {#ai-revival-analysis}",
+                "cross_references": "## AI Connection Analysis {#ai-connection-analysis}",
+                "opportunity_rankings": "## AI-Recommended Opportunity Rankings {#ai-opportunity-rankings}",
+                "news_intelligence": "## AI News Intelligence {#ai-news-intelligence}",
+            }.get(insight_type, f"## AI Insights: {insight_type}")
+
+            if content:
+                parts.append(section_header)
+                parts.append("")
+                parts.append(content)
+                parts.append("")
+        except Exception as e:
+            _logger.warning("Failed to render LLM insight %s: %s", insight_type, e)
+            continue
+
+    return "\n".join(parts) if parts else ""
+
+
+def _has_llm_insights(conn) -> bool:
+    """Check if any LLM insights are available in the database."""
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT COUNT(*) as cnt FROM report_insights
+            WHERE valid_until IS NULL OR valid_until > NOW()
+            LIMIT 1
+            """
+        )
+        row = cursor.fetchone()
+        return (row["cnt"] or 0) > 0
+    except Exception:
+        return False
+    finally:
+        cursor.close()
+
+
+def _render_pipeline(conn) -> str:
+    """Render the Pipeline Operations section."""
+    lines = [
+        "## Pipeline Operations Research {#pipeline}",
+        "",
+        "This section tracks pipeline industry companies - both failed startups and active players - "
+        "covering inspection, monitoring, management, and infrastructure technologies.",
+        "",
+    ]
+
+    # Summary stats
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as cnt FROM pipeline_companies")
+    total = cursor.fetchone()["cnt"]
+    cursor.execute("SELECT COUNT(*) as cnt FROM pipeline_companies WHERE company_type = 'failed'")
+    failed = cursor.fetchone()["cnt"]
+    cursor.execute("SELECT COUNT(*) as cnt FROM pipeline_companies WHERE company_type = 'active'")
+    active = cursor.fetchone()["cnt"]
+    cursor.execute("SELECT COUNT(*) as cnt FROM pipeline_opportunities")
+    opps = cursor.fetchone()["cnt"]
+    cursor.close()
+
+    lines.append("### Coverage Summary")
+    lines.append(f"- **{total}** pipeline companies tracked")
+    lines.append(f"- **{failed}** failed / defunct")
+    lines.append(f"- **{active}** active companies")
+    lines.append(f"- **{opps}** identified opportunities")
+    lines.append("")
+
+    # Pipeline Categories breakdown
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT pipeline_type, company_type, COUNT(*) as cnt
+        FROM pipeline_companies
+        GROUP BY pipeline_type, company_type
+        ORDER BY pipeline_type, company_type
+    """)
+    categories = cursor.fetchall()
+    cursor.close()
+
+    if categories:
+        lines.append("### Companies by Category")
+        lines.append("| Category | Type | Count |")
+        lines.append("|----------|------|-------|")
+        for c in categories:
+            lines.append(f"| {c['pipeline_type'].title()} | {c['company_type'].title()} | {c['cnt']} |")
+        lines.append("")
+
+    # Failed Pipeline Companies
+    lines.append("### Failed Pipeline Companies")
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT name, pipeline_type, technology_focus, country, year_shutdown, failure_reason
+        FROM pipeline_companies
+        WHERE company_type = 'failed'
+        ORDER BY year_shutdown DESC
+    """)
+    failed_companies = cursor.fetchall()
+    cursor.close()
+
+    if failed_companies:
+        lines.append("| Company | Type | Technology | Country | Year | Failure Reason |")
+        lines.append("|---------|------|-----------|---------|------|----------------|")
+        for c in failed_companies:
+            tech = c['technology_focus'] or 'N/A'
+            reason = c['failure_reason'][:60] + '...' if c['failure_reason'] and len(c['failure_reason']) > 60 else (c['failure_reason'] or 'N/A')
+            lines.append(
+                f"| {c['name']} | {c['pipeline_type'].title()} | {tech} | {c['country'] or 'N/A'} | {c['year_shutdown'] or 'N/A'} | {reason} |"
+            )
+    else:
+        lines.append("*No failed pipeline companies recorded yet.*")
+    lines.append("")
+
+    # Active Pipeline Companies
+    lines.append("### Active Pipeline Companies")
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT name, pipeline_type, technology_focus, country, year_founded, market_segment
+        FROM pipeline_companies
+        WHERE company_type = 'active'
+        ORDER BY year_founded
+    """)
+    active_companies = cursor.fetchall()
+    cursor.close()
+
+    if active_companies:
+        lines.append("| Company | Type | Technology | Country | Founded | Market |")
+        lines.append("|---------|------|-----------|---------|---------|--------|")
+        for c in active_companies:
+            tech = c['technology_focus'] or 'N/A'
+            market = c['market_segment'] or 'N/A'
+            lines.append(
+                f"| {c['name']} | {c['pipeline_type'].title()} | {tech} | {c['country'] or 'N/A'} | {c['year_founded'] or 'N/A'} | {market} |"
+            )
+    else:
+        lines.append("*No active pipeline companies recorded yet.*")
+    lines.append("")
+
+    # Pipeline Opportunities ranked by opportunity score
+    lines.append("### Pipeline Opportunities (Ranked by Score)")
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT title, opportunity_type, pipeline_category, market_size_estimate,
+               competition_level, investment_needed, confidence_score,
+               opportunity_score, market_demand_score, technology_readiness,
+               regulatory_pressure, investment_interest
+        FROM pipeline_opportunities
+        ORDER BY opportunity_score DESC
+        LIMIT 15
+    """)
+    opportunities = cursor.fetchall()
+    cursor.close()
+
+    if opportunities:
+        lines.append("| # | Score | Opportunity | Category | Market Size | Competition | Investment |")
+        lines.append("|---|-------|-------------|----------|-------------|-------------|------------|")
+        for i, o in enumerate(opportunities, 1):
+            title = o['title'] if len(o['title']) <= 40 else o['title'][:40] + '...'
+            market = o['market_size_estimate'][:30] + '...' if o['market_size_estimate'] and len(o['market_size_estimate']) > 30 else (o['market_size_estimate'] or 'N/A')
+            score = f"{o['opportunity_score']:.0f}/100" if o['opportunity_score'] else 'N/A'
+            lines.append(
+                f"| {i} | **{score}** | {title} | {o['pipeline_category'].title()} | {market} | {o['competition_level'] or 'N/A'} | {o['investment_needed'] or 'N/A'} |"
+            )
+        lines.append("")
+        lines.append("#### Scoring Breakdown (Top 3)")
+        lines.append("| Category | Demand | Tech | Regulatory | Investment |")
+        lines.append("|----------|--------|------|------------|------------|")
+        for o in opportunities[:3]:
+            title = o['title'][:50]
+            demand = o['market_demand_score'] or 0
+            tech = o['technology_readiness'] or 0
+            reg = o['regulatory_pressure'] or 0
+            inv = o['investment_interest'] or 0
+            lines.append(f"| {title} | {demand} | {tech} | {reg} | {inv} |")
+    else:
+        lines.append("*No opportunities identified yet.*")
+    lines.append("")
+
+    return "\n".join(lines)

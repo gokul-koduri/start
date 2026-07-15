@@ -196,17 +196,45 @@ report:
   min_startups_for_region_section: 3
   manufacturing_highlight_threshold: 5
 
-# Ollama LLM configuration — shared by all agents via ModelManager
-ollama:
-  base_url: "http://localhost:11434"
-  models:
-    default: "llama3"
-    sentiment: "llama3.2:1b"
-    ner: "llama3"
-    summarization: "llama3"
-    failure_analysis: "llama3"
-    classification: "llama3"
-    chat: "llama3"
+# ── LLM Provider Configuration ──────────────────────────────────────────────
+# Configure which LLM provider to use for AI agents.
+# Primary: "nvidia_nim" (requires NVIDIA_NIM_API_KEY), Alternatives: "ollama", "codex"
+llm:
+  provider: "codex"  # Primary provider: nvidia_nim | ollama | codex
+
+  # Ollama configuration (default, local, free)
+  ollama:
+    base_url: "http://localhost:11434"
+    models:
+      default: "llama3"
+      sentiment: "llama3.2:1b"
+      ner: "llama3"
+      summarization: "llama3"
+      failure_analysis: "llama3"
+      classification: "llama3"
+      chat: "llama3"
+
+  # Codex configuration (via Free Claude Code proxy)
+  # Install FCC: curl -fsSL "https://github.com/Alishahryar1/free-claude-code/blob/main/scripts/install.sh?raw=1" | sh
+  # Then run: fcc-server
+  codex:
+    enabled: true  # Set to true to use Codex instead of Ollama
+    base_url: "http://localhost:8082/v1"  # FCC proxy
+    api_key: "${FCC_CODEX_API_KEY}"  # Get from FCC admin UI
+    models:
+      default: "nvidia_nim/nvidia/nemotron-3-super-120b-a12b"
+      code_gen: "opencode/gpt-5.3-codex"
+      analysis: "nvidia_nim/z-ai/glm5.1"
+      sentiment: "nvidia_nim/moonshotai/kimi-k2.5"
+
+  # NVIDIA NIM configuration (paid, requires NVIDIA API key)
+  nvidia_nim:
+    enabled: true
+    base_url: "https://integrate.api.nvidia.com/v1"
+    api_key: "${NVIDIA_NIM_API_KEY}"
+    models:
+      default: "meta/llama-3.1-405b-instruct"
+      code_gen: "nvidia/nemotron-3-super-120b-a12b"
 
 # Agent pipeline configuration
 agents:
@@ -794,3 +822,35 @@ auth:
   rate_limit_per_minute: 60
   max_api_keys_per_user: 10
   password_min_length: 8
+
+# ── Sprint Cycle Configuration ──
+sprint_cycle:
+  enabled: true
+  scan_interval_seconds: 300  # 5 minutes between cycles
+
+  # Approval thresholds
+  thresholds:
+    auto_approve_score: 40      # Below this = auto-approve
+    auto_approve_effort_min: 30 # Below this = minor task (minutes)
+
+  # Plan agent settings
+  codex:
+    plan_model: "nvidia_nim/z-ai/glm5.1"
+    max_plan_tokens: 4096
+
+  # Approval settings
+  approval:
+    timeout_hours: 24           # Auto-expire pending approvals after N hours
+    reminder_hours: 4           # Send reminder after N hours
+
+  # Notification settings
+  notifications:
+    email:
+      enabled: false
+      approver_email: "${APPROVER_EMAIL}"
+    webhook:
+      enabled: false
+      url: "${APPROVAL_WEBHOOK_URL}"
+
+  # State file for tracking
+  state_file: "sprint_state.json"

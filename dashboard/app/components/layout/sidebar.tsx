@@ -9,7 +9,6 @@ import {
   Search,
   LayoutGrid,
   TrendingUp,
-  Settings,
   Zap,
 } from "lucide-react";
 
@@ -58,15 +57,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="p-3 border-t border-zinc-800">
-        <Link
-          href="/radar"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors"
-        >
-          <Settings className="w-4 h-4" />
-          Settings
-        </Link>
-      </div>
-    </aside>
+      </aside>
   );
 }

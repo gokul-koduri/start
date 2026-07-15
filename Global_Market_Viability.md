@@ -1,6 +1,6 @@
 # Global Market Viability Analysis
 
-_Generated: 2026-06-11 06:05 UTC_
+_Generated: 2026-07-03 00:10 UTC_
 
 This report evaluates whether products from failed startups could succeed in 10 major global markets, using local LLM analysis (Ollama).
 

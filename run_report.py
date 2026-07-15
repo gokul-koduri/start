@@ -5,6 +5,7 @@ Usage:
     python run_report.py                                 # Generate full report
     python run_report.py --output path/to/report.md      # Custom output path
     python run_report.py --section part1                 # Generate only Part 1
+    python run_report.py --include-llm-insights          # Include LLM-generated insights
 """
 
 import argparse
@@ -38,6 +39,12 @@ def main():
         default=None,
         help="Generate only a specific section (e.g., part1, part2)",
     )
+    parser.add_argument(
+        "--include-llm-insights",
+        action="store_true",
+        help="Include LLM-generated insights (requires pre-generated insights via "
+        "scripts/generate_report_insights.py, or Ollama running for on-demand generation)",
+    )
 
     args = parser.parse_args()
 
@@ -61,7 +68,8 @@ def main():
 
     try:
         result_path = generate_report(
-            conn, config, str(output_path), section=args.section
+            conn, config, str(output_path), section=args.section,
+            include_llm_insights=args.include_llm_insights,
         )
         _logger.info("Report written to: %s", result_path)
     finally:

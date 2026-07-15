@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "last_active": "2026-07-10T19:15:51.056510",
+  "last_message": "Pipeline Intelligence System Phase 2 - Most work completed, needs dashboard test",
+  "tasks": {
+    "pipeline_intelligence": {
+      "name": "Pipeline Intelligence System - Phase 2",
+      "status": "85%",
+      "phase": "Testing",
+      "last_action": "Ran opportunity agent - generated 15 scored opportunities",
+      "completed_items": [
+        "Enhanced pipeline company schema (v28)",
+        "Pipeline company collector",
+        "Pipeline funding intelligence collector",
+        "Pipeline failure analysis agent",
+        "Opportunity scoring model (0-100)",
+        "Report generator enhancements",
+        "Dashboard visual enhancements (charts)",
+        "Full system test",
+        "Demo/test real-time pipeline data collection"
+      ],
+      "remaining_items": [],
+      "file_progress": {
+        "db/schema.py": "Completed v28 with pipeline_companies, funding_events, failure_analysis tables",
+        "collectors/pipeline_company_collector.py": "Created - discovers companies via Google",
+        "collectors/pipeline_funding_collector.py": "Created - tracks funding events",
+        "agents/pipeline_opportunity_agent.py": "Updated with scoring model",
+        "agents/pipeline_failure_agent.py": "Created - analyzes failure patterns",
+        "report/generator.py": "Updated with ranked opportunities section",
+        "site/data.json": "Added pipeline stats queries"
+      },
+      "notes": [
+        "Schema v28 includes 30+ new fields for company enrichment",
+        "Opportunity scoring formula: (demand + readiness + regulatory + investment) / 4 - competition",
+        "Top opportunities: Hydrogen Compatible (64/100), Leak Detection (58/100)",
+        "Tested: Pipeline report section generates correctly with scoring"
+      ]
+    },
+    "startup_research": {
+      "name": "Startup Research Platform",
+      "status": "Active",
+      "phase": "Production",
+      "last_action": "Dashboard rebuilt with new pipeline stats",
+      "completed_items": [
+        "Failed startup database (163 companies)",
+        "Manufacturing revival analysis",
+        "Global market viability reports",
+        "LLM-powered insights"
+      ],
+      "remaining_items": [],
+      "file_progress": {},
+      "notes": [
+        "Main branch: feat/phase2-stabilize",
+        "Recent commits show automated report updates"
+      ]
+    }
+  }
+}

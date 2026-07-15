@@ -1,0 +1,34 @@
+FROM python:3.12-slim
+
+LABEL maintainer="Gokul Koduri"
+LABEL description="Startup Research Report — AI-powered market intelligence platform (local dev)"
+
+WORKDIR /app
+
+# Create non-root runtime user
+RUN useradd -m -u 10001 appuser
+
+# System dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Lightweight dev dependencies for local development
+COPY requirements-dev.txt .
+RUN pip install --no-cache-dir -r requirements-dev.txt
+
+# Copy project
+COPY . .
+
+# Make scripts executable
+RUN chmod +x scripts/railway-start.sh
+
+# Ensure runtime user can read/execute app files
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
+EXPOSE 8000
+
+CMD ["scripts/railway-start.sh"]

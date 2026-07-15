@@ -1,6 +1,6 @@
 # Cross-Module Market Correlation Analysis
 
-_Generated: 2026-06-11 06:05 UTC_
+_Generated: 2026-07-13 23:41 UTC_
 
 This report analyzes data across all 7 analysis modules to find which signals reinforce each other.
 
@@ -10,21 +10,21 @@ Correlations ranked by strength:
 
 | Rank | Correlation | Pearson r | Strength |
 | --- | --- | --- | --- |
-| 1 | Sector Failure Count vs Revival Opportunity Score | +0.000 (negligible positive) | ★ |
-| 2 | Failure Reason Distribution vs BLS Survival Rates | +0.000 (negligible positive) | ★ |
-| 3 | Geographic Failure Density vs Whale Investor Activity | +0.000 (negligible positive) | ★ |
-| 4 | Average Funding Raised vs Year of Shutdown | +0.000 (negligible positive) | ★ |
+| 1 | Failure Reason Distribution vs BLS Survival Rates | +0.734 (strong positive) | ★★★ |
+| 2 | Average Funding Raised vs Year of Shutdown | +0.653 (moderate positive) | ★★★ |
+| 3 | Geographic Failure Density vs Whale Investor Activity | -0.068 (negligible negative) | ★ |
+| 4 | Sector Failure Count vs Revival Opportunity Score | +0.000 (negligible positive) | ★ |
 | 5 | News Volume vs Failure Timing | +0.000 (negligible positive) | ★ |
 | 6 | Reshoring Jobs vs Revival Industry Match | +0.000 (negligible positive) | ★ |
 | 7 | Opportunity Score vs Whale Investor Backing | +0.000 (negligible positive) | ★ |
 
 ### Top Findings
 
-**1. 1. Sector Failure Count vs Revival Opportunity Score**: Pearson r = +0.000 (negligible positive). Weak or no positive correlation — failures and revival scoring are largely independent signals.
+**1. 2. Failure Reason Distribution vs BLS Survival Rates**: Pearson r (failures vs survival rate by year) = +0.734 (strong positive). Surprising positive correlation — more failures recorded in higher-survival years (likely because more firms exist).
 
-**2. 2. Failure Reason Distribution vs BLS Survival Rates**: Pearson r (failures vs survival rate by year) = +0.000 (negligible positive). No strong relationship — failures are driven more by company-specific factors than macro survival rates.
+**2. 4. Average Funding Raised vs Year of Shutdown**: Pearson r (year vs avg funding) = +0.653 (moderate positive). Strong positive trend — recent failures had MORE capital to burn. The funding bubble is real.
 
-**3. 3. Geographic Failure Density vs Whale Investor Activity**: Pearson r (failure density vs whale mentions) = +0.000 (negligible positive). Whale investor activity and failure density are NOT strongly linked at the regional level.
+**3. 3. Geographic Failure Density vs Whale Investor Activity**: Pearson r (failure density vs whale mentions) = -0.068 (negligible negative). Whale investor activity and failure density are NOT strongly linked at the regional level.
 
 ---
 
@@ -43,17 +43,56 @@ Correlations ranked by strength:
 
 **Question**: Are failure categories concentrated in low-survival years?
 
-**Finding**: Pearson r (failures vs survival rate by year) = +0.000 (negligible positive). No strong relationship — failures are driven more by company-specific factors than macro survival rates.
+**Finding**: Pearson r (failures vs survival rate by year) = +0.734 (strong positive). Surprising positive correlation — more failures recorded in higher-survival years (likely because more firms exist).
 
 Failure category distribution:
 
 | Failure Category | Count |
 | --- | --- |
+| pilot_to_scale_gap | 24 |
+| no_market_need | 21 |
+| spac_overvaluation | 17 |
+| outcompeted | 15 |
+| no_business_model | 13 |
+| ran_out_of_cash | 12 |
+| capital_intensity | 9 |
+| market_timing | 7 |
+| poor_product | 7 |
+| governance | 6 |
+| supply_chain | 5 |
+| ineffective_marketing | 2 |
 
 Average 5-year survival rate by year:
 
 | Year | Avg 5yr Survival |
 | --- | --- |
+| 1994 | 53.0% |
+| 1995 | 52.4% |
+| 1996 | 50.9% |
+| 1997 | 49.7% |
+| 1998 | 48.4% |
+| 1999 | 48.3% |
+| 2000 | 47.3% |
+| 2001 | 49.5% |
+| 2002 | 51.1% |
+| 2003 | 52.3% |
+| 2004 | 51.6% |
+| 2005 | 51.2% |
+| 2006 | 49.4% |
+| 2007 | 48.8% |
+| 2008 | 48.1% |
+| 2009 | 50.5% |
+| 2010 | 54.0% |
+| 2011 | 55.2% |
+| 2012 | 57.4% |
+| 2013 | 57.7% |
+| 2014 | 60.4% |
+| 2015 | 61.0% |
+| 2016 | 61.3% |
+| 2017 | 61.7% |
+| 2018 | 57.6% |
+| 2019 | 57.4% |
+| 2020 | 58.4% |
 
 ---
 
@@ -61,10 +100,19 @@ Average 5-year survival rate by year:
 
 **Question**: Do whale investors target regions with high failure density?
 
-**Finding**: Pearson r (failure density vs whale mentions) = +0.000 (negligible positive). Whale investor activity and failure density are NOT strongly linked at the regional level.
+**Finding**: Pearson r (failure density vs whale mentions) = -0.068 (negligible negative). Whale investor activity and failure density are NOT strongly linked at the regional level.
 
 | Region | Failure Count | Whale Mentions |
 | --- | --- | --- |
+| US & Global | 142 | 0 |
+| Global | 26 | 3 |
+| Europe | 23 | 0 |
+| India | 19 | 0 |
+| US Only | 18 | 0 |
+| China | 7 | 1 |
+| Africa | 4 | 0 |
+| Other | 4 | 0 |
+| Asia-Pacific | 3 | 0 |
 
 ---
 
@@ -72,10 +120,29 @@ Average 5-year survival rate by year:
 
 **Question**: Are recent failures better-funded than older ones (bubble inflating)?
 
-**Finding**: Pearson r (year vs avg funding) = +0.000 (negligible positive). Flat — funding amounts haven't changed significantly across failure years.
+**Finding**: Pearson r (year vs avg funding) = +0.653 (moderate positive). Strong positive trend — recent failures had MORE capital to burn. The funding bubble is real.
 
 | Year Shutdown | Avg Funding | # Failures |
 | --- | --- | --- |
+| 2002 | $35.0M | 1 |
+| 2007 | $13.3M | 1 |
+| 2008 | $8.7M | 2 |
+| 2009 | $4.0M | 2 |
+| 2010 | $2.6M | 2 |
+| 2011 | $1.3M | 1 |
+| 2013 | $45.8M | 11 |
+| 2014 | $15.0M | 9 |
+| 2015 | $19.7M | 20 |
+| 2016 | $28.2M | 20 |
+| 2017 | $118.5M | 13 |
+| 2018 | $501.3M | 3 |
+| 2019 | $70.7M | 7 |
+| 2020 | $638.8M | 3 |
+| 2021 | $25.0M | 1 |
+| 2022 | $262.5M | 2 |
+| 2023 | $705.9M | 13 |
+| 2024 | $1431.3M | 81 |
+| 2025 | $565.0M | 4 |
 
 ---
 
@@ -89,6 +156,26 @@ Failures by year:
 
 | Year | Failure Count |
 | --- | --- |
+| 2002 | 1 |
+| 2007 | 1 |
+| 2008 | 3 |
+| 2009 | 2 |
+| 2010 | 2 |
+| 2011 | 1 |
+| 2012 | 1 |
+| 2013 | 12 |
+| 2014 | 11 |
+| 2015 | 27 |
+| 2016 | 24 |
+| 2017 | 15 |
+| 2018 | 6 |
+| 2019 | 12 |
+| 2020 | 5 |
+| 2021 | 3 |
+| 2022 | 2 |
+| 2023 | 14 |
+| 2024 | 98 |
+| 2025 | 6 |
 
 News articles by year:
 
@@ -101,10 +188,76 @@ News articles by year:
 
 **Question**: Are industries scored as 'reviving' actually creating reshoring jobs?
 
-**Finding**: Pearson r (jobs vs revival score) = +0.000 (negligible positive). Matched 0/0 reshoring industries to revival scores. No clear link between score and job count.
+**Finding**: Pearson r (jobs vs revival score) = +0.000 (negligible positive). Matched 14/66 reshoring industries to revival scores. No clear link between score and job count.
 
 | Reshoring Industry | Jobs | Matched Revival | Score |
 | --- | --- | --- | --- |
+| Semiconductors | 125000 | — | 0 |
+| Semiconductors | 125000 | — | 0 |
+| Semiconductors | 125000 | — | 0 |
+| Semiconductor | 115000 | semiconductor fabrication | 50.0 |
+| EV/Battery | 95000 | — | 0 |
+| EV/Battery | 95000 | — | 0 |
+| EV/Battery | 95000 | — | 0 |
+| Semiconductors | 85000 | — | 0 |
+| Semiconductors | 85000 | — | 0 |
+| Semiconductors | 85000 | — | 0 |
+| Electric Vehicle | 78000 | — | 0 |
+| EV/Battery | 72000 | — | 0 |
+| EV/Battery | 72000 | — | 0 |
+| EV/Battery | 72000 | — | 0 |
+| General Manufacturing | 65000 | battery cell manufacturing | 50.0 |
+| General Manufacturing | 65000 | battery cell manufacturing | 50.0 |
+| General Manufacturing | 65000 | battery cell manufacturing | 50.0 |
+| General Manufacturing | 55000 | battery cell manufacturing | 50.0 |
+| General Manufacturing | 55000 | battery cell manufacturing | 50.0 |
+| General Manufacturing | 55000 | battery cell manufacturing | 50.0 |
+| General Manufacturing | 48000 | battery cell manufacturing | 50.0 |
+| General Manufacturing | 48000 | battery cell manufacturing | 50.0 |
+| General Manufacturing | 48000 | battery cell manufacturing | 50.0 |
+| EV/Battery | 45000 | — | 0 |
+| EV/Battery | 45000 | — | 0 |
+| Solar/Storage | 45000 | — | 0 |
+| Battery | 45000 | battery cell manufacturing | 50.0 |
+| EV/Battery | 45000 | — | 0 |
+| Solar/Storage | 45000 | — | 0 |
+| Solar/Storage | 45000 | — | 0 |
+| Defense/Space | 35000 | — | 0 |
+| Defense/Space | 35000 | — | 0 |
+| Defense/Space | 35000 | — | 0 |
+| Electronics | 35000 | — | 0 |
+| Electronics | 35000 | — | 0 |
+| Electronics | 35000 | — | 0 |
+| Semiconductors | 30000 | — | 0 |
+| Semiconductors | 30000 | — | 0 |
+| Semiconductors | 30000 | — | 0 |
+| Solar/Storage | 28000 | — | 0 |
+| Pharmaceuticals | 28000 | — | 0 |
+| Solar/Storage | 28000 | — | 0 |
+| Pharmaceuticals | 28000 | — | 0 |
+| Pharmaceuticals | 28000 | — | 0 |
+| Solar/Storage | 28000 | — | 0 |
+| Medical Equipment | 25000 | — | 0 |
+| Medical Equipment | 25000 | — | 0 |
+| Medical Equipment | 25000 | — | 0 |
+| Pharmaceutical | 22000 | pharmaceutical & biomanufacturing | 50.0 |
+| Steel/Metals | 22000 | — | 0 |
+| Steel/Metals | 22000 | — | 0 |
+| Steel/Metals | 22000 | — | 0 |
+| Pharmaceuticals | 18000 | — | 0 |
+| Solar | 18000 | solar panel & component manufacturing | 50.0 |
+| Pharmaceuticals | 18000 | — | 0 |
+| Pharmaceuticals | 18000 | — | 0 |
+| Textiles/Apparel | 15000 | — | 0 |
+| Textiles/Apparel | 15000 | — | 0 |
+| Textiles/Apparel | 15000 | — | 0 |
+| Pharmaceuticals | 15000 | — | 0 |
+| Pharmaceuticals | 15000 | — | 0 |
+| Pharmaceuticals | 15000 | — | 0 |
+| Solar/Storage | 12000 | — | 0 |
+| Solar/Storage | 12000 | — | 0 |
+| Solar/Storage | 12000 | — | 0 |
+| Steel | 8000 | steel & primary metals | 50.0 |
 
 ---
 
@@ -112,10 +265,21 @@ News articles by year:
 
 **Question**: Do our highest-scored opportunities have whale backing?
 
-**Finding**: 0/0 opportunities have whale backing. Avg score: 0.0 (backed) vs 0.0 (not backed), Δ=+0.0. Scores are similar regardless of backing — whale activity is independent of our scoring.
+**Finding**: 5/11 opportunities have whale backing. Avg score: 79.0 (backed) vs 64.2 (not backed), Δ=+14.8. Whale-backed opportunities have HIGHER scores — our scoring aligns with institutional interest.
 
 | Opportunity | Score | Risk | Whale Backed | Investors |
 | --- | --- | --- | --- | --- |
+| US & Global | 100 | low | Yes | TSMC, GIC |
+| Europe | 100 | low | Yes | TSMC, GIC |
+| Northvolt | 70 | low | Yes | TSMC, GIC |
+| Northvolt | 70 | low | Yes | TSMC, GIC |
+| WaFab | 70 | low | No | — |
+| Global | 70 | low | No | — |
+| US Only | 70 | low | No | — |
+| China | 70 | low | No | — |
+| India | 60 | low | No | — |
+| 54gene | 55 | medium | Yes | TSMC |
+| GlobalFoundries | 45 | medium | No | — |
 
 ---
 

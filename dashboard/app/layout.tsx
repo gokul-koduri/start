@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
-import { Sidebar } from "@/app/components/layout/sidebar";
-import { Header } from "@/app/components/layout/header";
-import { FeedbackButton } from "@/app/components/feedback/FeedbackButton";
+import { Sidebar } from "@/app/components/layout/Sidebar";
+import { Header } from "@/app/components/layout/Header";
 
 export const metadata: Metadata = {
-  title: "Opportunity Intelligence Platform",
-  description: "Real-time startup intelligence — open-source alternative to Crunchbase",
+  title: "API Explorer - Discover and Monitor API Endpoints",
+  description: "A modern API endpoint explorer and monitoring platform. Discover, organize, and monitor APIs across the internet.",
 };
 
 export default function RootLayout({
@@ -18,7 +17,7 @@ export default function RootLayout({
   const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       {plausibleDomain && (
         <Script
           src="https://plausible.io/js/script.js"
@@ -26,13 +25,16 @@ export default function RootLayout({
           strategy="afterInteractive"
         />
       )}
-      <body className="min-h-screen bg-surface-primary text-zinc-50 flex">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-1 p-6 overflow-y-auto">{children}</main>
+      <body className="min-h-screen bg-bg-primary text-text-primary antialiased">
+        <div className="flex">
+          <Sidebar />
+          <div className="flex-1 lg:ml-64 min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-1 p-6">
+              {children}
+            </main>
+          </div>
         </div>
-        <FeedbackButton />
       </body>
     </html>
   );

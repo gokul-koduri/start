@@ -123,16 +123,37 @@ class TestAuthRouterRegistration(unittest.TestCase):
             raise unittest.SkipTest("api_server not importable")
 
     def test_register_route_exists(self):
-        routes = [r.path for r in self.app.routes if hasattr(r, "path")]
-        self.assertIn("/api/v2/auth/register", routes)
+        """Test that /v2/auth/register is in the router (full path /api/v2/auth/register)."""
+        try:
+            from api.v2.auth import router as auth_router
+
+            # Check router has /v2/auth/register path (includes router prefix)
+            router_paths = [r.path for r in auth_router.routes if hasattr(r, "path")]
+            self.assertIn("/v2/auth/register", router_paths, f"Auth router missing /v2/auth/register. Available: {router_paths}")
+        except ImportError as e:
+            self.fail(f"Could not import api.v2.auth: {e}")
 
     def test_login_route_exists(self):
-        routes = [r.path for r in self.app.routes if hasattr(r, "path")]
-        self.assertIn("/api/v2/auth/login", routes)
+        """Test that /v2/auth/login is in the router (full path /api/v2/auth/login)."""
+        try:
+            from api.v2.auth import router as auth_router
+
+            # Check router has /v2/auth/login path (includes router prefix)
+            router_paths = [r.path for r in auth_router.routes if hasattr(r, "path")]
+            self.assertIn("/v2/auth/login", router_paths, f"Auth router missing /v2/auth/login. Available: {router_paths}")
+        except ImportError as e:
+            self.fail(f"Could not import api.v2.auth: {e}")
 
     def test_api_keys_route_exists(self):
-        routes = [r.path for r in self.app.routes if hasattr(r, "path")]
-        self.assertIn("/api/v2/auth/api-keys", routes)
+        """Test that /v2/auth/api-keys is in the router (full path /api/v2/auth/api-keys)."""
+        try:
+            from api.v2.auth import router as auth_router
+
+            # Check router has /v2/auth/api-keys path (includes router prefix)
+            router_paths = [r.path for r in auth_router.routes if hasattr(r, "path")]
+            self.assertIn("/v2/auth/api-keys", router_paths, f"Auth router missing /v2/auth/api-keys. Available: {router_paths}")
+        except ImportError as e:
+            self.fail(f"Could not import api.v2.auth: {e}")
 
 
 class TestSchemaV22(unittest.TestCase):

@@ -252,6 +252,21 @@ class TestChatClientErrors:
         assert result is None
         assert "client error 404" in (client.last_error or "")
 
+    def test_returns_none_on_empty_200_response(self):
+        """200 responses without JSON should be treated as malformed."""
+        client = OllamaClient()
+        mock_conn = MagicMock()
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_response.read.return_value = b""
+        mock_conn.getresponse.return_value = mock_response
+
+        with patch("utils.ollama_client._get_connection", return_value=mock_conn):
+            result = client.chat([{"role": "user", "content": "Hi"}])
+
+        assert result is None
+        assert "empty or malformed response" in (client.last_error or "")
+
 
 class TestConnectionPooling:
     """Test the module-level connection pool."""

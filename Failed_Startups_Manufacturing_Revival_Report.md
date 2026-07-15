@@ -972,3 +972,5 @@ This report was compiled using a **two-pronged research approach**:
 *Database contains: 246 startups, 1182 news articles, 31 BLS data points.*
 
 *This report uses a two-pronged research approach: **Prong A** (Failed Manufacturing Startups 2024-2025) and **Prong B** (Manufacturing Revival & Reshoring). See [Methodology](#methodology) section for full details.*
+
+

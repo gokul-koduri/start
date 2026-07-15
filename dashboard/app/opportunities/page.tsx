@@ -10,6 +10,7 @@ import {
   getScoreBg,
 } from "@/lib/api";
 import { ArrowUpDown, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ScoreDistributionChart, TrendChart } from "@/components/ui/charts";
 
 interface Opportunity {
   id: number;
@@ -33,6 +34,7 @@ export default function OpportunitiesPage() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [scoreFilter, setScoreFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [scoreDistribution, setScoreDistribution] = useState<Array<{ range: string; count: number }>>([]);
 
   useEffect(() => {
     async function load() {
@@ -40,7 +42,28 @@ export default function OpportunitiesPage() {
         const data = await fetchAPI<{ opportunities: Opportunity[] }>(
           "/api/opportunities?limit=100"
         );
-        setOpportunities(data.opportunities || []);
+        const oppData = data.opportunities || [];
+        setOpportunities(oppData);
+
+        // Generate score distribution
+        if (oppData.length > 0) {
+          const distribution = [
+            { range: "80+", count: 0 },
+            { range: "75-79", count: 0 },
+            { range: "60-74", count: 0 },
+            { range: "40-59", count: 0 },
+            { range: "<40", count: 0 },
+          ];
+          oppData.forEach((o: Opportunity) => {
+            const score = o.composite_score || 0;
+            if (score >= 80) distribution[0].count++;
+            else if (score >= 75) distribution[1].count++;
+            else if (score >= 60) distribution[2].count++;
+            else if (score >= 40) distribution[3].count++;
+            else distribution[4].count++;
+          });
+          setScoreDistribution(distribution);
+        }
       } catch {
         // graceful degradation
       } finally {
@@ -111,6 +134,47 @@ export default function OpportunitiesPage() {
           </p>
         </div>
       </div>
+
+      {/* Score Distribution Chart */}
+      {scoreDistribution.length > 0 && (
+        <div className="grid lg:grid-cols-2 gap-4">
+          <ScoreDistributionChart
+            data={scoreDistribution}
+            title="Score Breakdown"
+          />
+          <div className="bg-surface-card border border-zinc-800 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-zinc-400 mb-4">Key Insights</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-zinc-400">High Priority (80+)</span>
+                <span className="text-sm font-mono text-accent-green">
+                  {scoreDistribution[0]?.count || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-zinc-400">Medium Priority (60-79)</span>
+                <span className="text-sm font-mono text-accent-blue">
+                  {(scoreDistribution[1]?.count || 0) + (scoreDistribution[2]?.count || 0)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-zinc-400">Low Priority (<60)</span>
+                <span className="text-sm font-mono text-zinc-500">
+                  {(scoreDistribution[3]?.count || 0) + (scoreDistribution[4]?.count || 0)}
+                </span>
+              </div>
+              <div className="pt-2 border-t border-zinc-800">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-zinc-300">Total Tracked</span>
+                  <span className="text-lg font-mono text-zinc-100">
+                    {opportunities.length}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex items-center gap-3">

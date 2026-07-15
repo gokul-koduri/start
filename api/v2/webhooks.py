@@ -6,8 +6,137 @@ from pydantic import BaseModel
 from db.connection import get_connection
 from db import schema
 import json
+from datetime import datetime, timedelta, timezone
 
 router = APIRouter(prefix="/v2/webhooks", tags=["webhooks"])
+
+
+def zapier_new_alerts(hours: int = 24, limit: int = 50) -> dict:
+    """Get recent alert history for Zapier integration.
+
+    This is a standalone function callable from tests or other modules.
+    Returns alerts from the past N hours for recent entity changes.
+    """
+    conn = get_connection()
+    schema.init_schema(conn)
+    cursor = conn.cursor()
+
+    since = datetime.now(timezone.utc) - timedelta(hours=hours)
+
+    cursor.execute(
+        """SELECT wah.id, wah.watchlist_id, wah.alert_type,
+                  wah.entity_name, wah.old_score, wah.new_score, wah.delta,
+                  wah.created_at, w.name as watchlist_name
+           FROM watchlist_alert_history wah
+           JOIN watchlists w ON w.id = wah.watchlist_id
+           WHERE wah.created_at >= %s
+           ORDER BY wah.created_at DESC
+           LIMIT %s""",
+        (since, limit),
+    )
+
+    alerts = []
+    for row in cursor.fetchall():
+        alert = dict(row)
+        alert["watchlist_name"] = row.get("watchlist_name", "")
+        alerts.append(alert)
+
+    cursor.close()
+    conn.close()
+
+    return {
+        "alerts": alerts,
+        "count": len(alerts),
+        "hours": hours,
+        "since": since.isoformat(),
+    }
+
+
+class WebhookDispatcher:
+    """Dispatcher for sending webhook events to registered endpoints."""
+
+    def dispatch(self, url: str, event_type: str, payload: dict) -> dict:
+        """Dispatch an event to a webhook URL.
+
+        In production, this would use httpx or requests to actually send the webhook.
+        For now, returns a mock success response.
+        """
+        return {
+            "url": url,
+            "event_type": event_type,
+            "dispatched": True,
+            "status_code": 200,
+        }
+
+
+def dispatch_event(event: str, limit: int = 100) -> dict:
+    """Dispatch an event to all matching registered webhooks.
+
+    This is a standalone function callable from tests or other modules.
+    """
+    conn = get_connection()
+    schema.init_schema(conn)
+    cursor = conn.cursor()
+
+    # Find all active webhooks that want this event type
+    cursor.execute(
+        """SELECT id, url, events_json, headers_json
+           FROM api_webhooks
+           WHERE active = 1
+           LIMIT %s""",
+        (limit,),
+    )
+
+    webhooks = []
+    matched = 0
+    results = []
+
+    for row in cursor.fetchall():
+        wh = dict(row)
+        events = []
+        try:
+            if wh.get("events_json"):
+                events = json.loads(wh["events_json"])
+            else:
+                events = []
+        except (json.JSONDecodeError, TypeError):
+            events = []
+
+        # Check if this webhook wants this event type
+        want_this_event = event in events or "*" in events
+
+        if want_this_event:
+            matched += 1
+            webhook_id = wh["id"]
+            url = wh.get("url", "")
+
+            # Dispatch to this webhook
+            dispatcher = WebhookDispatcher()
+            try:
+                result = dispatcher.dispatch(url, event, {"event": event, "timestamp": datetime.now(timezone.utc).isoformat()})
+                results.append({
+                    "webhook_id": webhook_id,
+                    "url": url,
+                    "success": True,
+                })
+            except Exception as e:
+                results.append({
+                    "webhook_id": webhook_id,
+                    "url": url,
+                    "success": False,
+                    "error": str(e),
+                })
+
+        webhooks.append(wh)
+
+    cursor.close()
+    conn.close()
+
+    return {
+        "matched": matched,
+        "event_type": event,
+        "results": results,
+    }
 
 
 class WebhookCreate(BaseModel):

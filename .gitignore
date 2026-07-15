@@ -92,3 +92,4 @@ com.startup-research.*.plist
 *.log
 *.pid
 data/collectors.lock
+nvidia-nim

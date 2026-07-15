@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ohio Manufacturing Opportunity Intelligence Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @media print {
+    @page { margin: 1.5cm 2cm; size: A4; }
+    body { font-size: 10pt; }
+  }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 11pt;
+    color: #1a1a2e;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    line-height: 1.5;
+  }
+  /* Header */
+  .report-header {
+    border-bottom: 3px solid #1e3a5f;
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+  }
+  .report-header h1 {
+    font-size: 20pt;
+    font-weight: 700;
+    color: #1e3a5f;
+    letter-spacing: -0.5px;
+  }
+  .report-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 6px 16px;
+    font-size: 9pt;
+    color: #555;
+    margin-top: 6px;
+    background: #f8f9fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 8px 12px;
+  }
+  .report-meta strong { color: #1e3a5f; }
+
+  /* KPI strip */
+  .kpi-strip {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .kpi-box {
+    flex: 1;
+    min-width: 100px;
+    background: #1e3a5f;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .kpi-box.green { background: #065f46; }
+  .kpi-box.blue { background: #1e40af; }
+  .kpi-box.purple { background: #5b21b6; }
+  .kpi-box.orange { background: #92400e; }
+  .kpi-value { font-size: 18pt; font-weight: 700; color: #fff; }
+  .kpi-label { font-size: 8pt; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Recommendation table */
+  .rec-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 9.5pt; }
+  .rec-table th {
+    background: #1e3a5f;
+    color: white;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .rec-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+  }
+  .rec-table tr:hover { background: #f8fafc; }
+  .rec-table .rank { font-weight: 700; color: #1e3a5f; width: 30px; text-align: center; }
+  .rec-table .score-cell { font-weight: 700; white-space: nowrap; }
+  .score-high { color: #065f46; }
+  .score-mid { color: #92400e; }
+  .score-low { color: #991b1b; }
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 99px;
+    font-size: 8pt;
+    font-weight: 600;
+  }
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-yellow { background: #fef3c7; color: #92400e; }
+  .badge-orange { background: #fed7aa; color: #c2410c; }
+  .badge-gray { background: #f3f4f6; color: #6b7280; }
+
+  /* Confidence indicator */
+  .conf-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+  }
+  .conf-high { background: #10b981; }
+  .conf-mid { background: #f59e0b; }
+  .conf-low { background: #ef4444; }
+
+  /* Opportunity cards */
+  .opp-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    page-break-inside: avoid;
+  }
+  .opp-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .opp-rank {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #1e3a5f;
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 11pt;
+    flex-shrink: 0;
+  }
+  .opp-rank.gold { background: #b45309; }
+  .opp-rank.green { background: #065f46; }
+  .opp-rank.yellow { background: #92400e; }
+  .opp-title {
+    font-size: 12pt; font-weight: 600; color: #1e3a5f;
+    flex: 1;
+  }
+  .opp-grade {
+    font-size: 14pt; font-weight: 800; color: #1e3a5f;
+    min-width: 30px; text-align: right;
+  }
+  .opp-grade.gold { color: #b45309; }
+  .opp-grade.green { color: #065f46; }
+  .opp-title-sub { font-size: 9pt; color: #6b7280; margin-top: 2px; }
+  .opp-scores-row {
+    display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .score-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 99px;
+    padding: 3px 8px;
+    font-size: 8.5pt;
+    font-weight: 600;
+  }
+  .score-chip.demand { background: #dcfce7; border-color: #86efac; }
+  .score-chip.gap { background: #dbeafe; border-color: #93c5fd; }
+  .score-chip.feas { background: #f3e8ff; border-color: #d8b4fe; }
+  .score-chip.timing { background: #ccfbf1; border-color: #5eead4; }
+  .score-chip.comp { background: #fee2e2; border-color: #fca5a5; }
+  .opp-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .meta-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 8.5pt;
+  }
+  .meta-item .meta-label {
+    color: #6b7280; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .meta-item .meta-val { font-weight: 700; color: #1e3a5f; font-size: 9pt; }
+  .opp-desc {
+    font-size: 9pt; color: #374151;
+    background: #fffbeb;
+    border-left: 3px solid #fbbf24;
+    border-radius: 0 4px 4px 0;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+  }
+  .opp-actions {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 9pt;
+    color: #065f46;
+  }
+  .evidence-list { margin-top: 6px; }
+  .evidence-list li { margin-left: 14px; font-size: 8.5pt; color: #374151; }
+
+  /* Policy section */
+  .policy-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px; margin-bottom: 16px;
+  }
+  .policy-item {
+    background: #eff6ff;
+    border: 1px solid #93c5fd;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 9pt;
+  }
+  .policy-item strong { color: #1e40af; }
+  .policy-item span { color: #374151; }
+
+  /* Footer */
+  .report-footer {
+    border-top: 2px solid #1e3a5f;
+    padding-top: 10px;
+    margin-top: 30px;
+    font-size: 8pt;
+    color: #6b7280;
+  }
+  .section-label {
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9ca3af;
+    font-weight: 600;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="report-header">
+    <h1>Ohio Manufacturing Opportunity Intelligence Report</h1>
+    <div class="report-meta">
+      <div><strong>Prepared for:</strong> Ohio Development Services Agency</div>
+      <div><strong>Date:</strong> July 07, 2026</div>
+      <div><strong>Model:</strong> v2.0.0</div>
+      <div><strong>Sector:</strong> EV Battery Manufacturing</div>
+      <div><strong>Region:</strong> Ohio, USA</div>
+    </div>
+  </div>
+
+  <div class="kpi-strip">
+    <div class="kpi-box green">
+      <div class="kpi-value">7</div>
+      <div class="kpi-label">Opportunities</div>
+    </div>
+    <div class="kpi-box purple">
+      <div class="kpi-value">73</div>
+      <div class="kpi-label">Avg Score /100</div>
+    </div>
+    <div class="kpi-box blue">
+      <div class="kpi-value">$635B</div>
+      <div class="kpi-label">Total Market</div>
+    </div>
+    <div class="kpi-box green">
+      <div class="kpi-value">5,930</div>
+      <div class="kpi-label">Est. Direct Jobs</div>
+    </div>
+  </div>
+
+  <p class="section-label">Recommendation Summary</p>
+  <table class="rec-table">
+    <thead>
+      <tr>
+        <th>#</th><th>Opportunity</th><th>Score</th><th>Jobs</th><th>CAPEX</th><th>Confidence</th><th>Recommendation</th>
+      </tr>
+    </thead>
+    <tbody><tr><td class="rank">1</td><td>Revival: Midwest Battery Manufacturing Hub (Closed EVS Facil</td><td class="score-cell score-high"><b>77</b></td><td>1,800</td><td>$400–800M</td><td><span class="conf-dot conf-mid"></span>Medium</td><td><span class="badge badge-green">Strong</span></td></tr>
+<tr><td class="rank">2</td><td>Battery Recycling and Black Mass Processing</td><td class="score-cell score-high"><b>76</b></td><td>180</td><td>$60–180M</td><td><span class="conf-dot conf-mid"></span>Medium</td><td><span class="badge badge-green">Strong</span></td></tr>
+<tr><td class="rank">3</td><td>Ohio Anode Materials Processing (Graphite/Silicon)</td><td class="score-cell score-high"><b>75</b></td><td>280</td><td>$150–400M</td><td><span class="conf-dot conf-mid"></span>Medium</td><td><span class="badge badge-green">Strong</span></td></tr>
+<tr><td class="rank">4</td><td>Ohio Battery Pack Integration and Assembly</td><td class="score-cell score-mid"><b>75</b></td><td>450</td><td>$80–200M</td><td><span class="conf-dot conf-mid"></span>Medium</td><td><span class="badge badge-yellow">Conditional</span></td></tr>
+<tr><td class="rank">5</td><td>Ohio Lithium-Ion Battery Cell Manufacturing</td><td class="score-cell score-mid"><b>72</b></td><td>2,500</td><td>$1200–2800M</td><td><span class="conf-dot conf-mid"></span>Medium</td><td><span class="badge badge-yellow">Conditional</span></td></tr>
+<tr><td class="rank">6</td><td>Battery Thermal Management and Safety Systems</td><td class="score-cell score-mid"><b>69</b></td><td>120</td><td>$20–60M</td><td><span class="conf-dot conf-mid"></span>Medium</td><td><span class="badge badge-yellow">Conditional</span></td></tr>
+<tr><td class="rank">7</td><td>Ohio Sodium-Ion Battery Manufacturing</td><td class="score-cell score-mid"><b>64</b></td><td>600</td><td>$200–600M</td><td><span class="conf-dot conf-low"></span>Low</td><td><span class="badge badge-yellow">Conditional</span></td></tr></tbody>
+  </table>
+
+  <p class="section-label">Policy Alignment</p>
+  <div class="policy-grid">
+    <div class="policy-item"><strong>CHIPS & Science Act</strong><br><span>Battery manufacturing credits ($35/kWh production credit)</span></div>
+    <div class="policy-item"><strong>Inflation Reduction Act</strong><br><span>Domestic content requirements for EVs</span></div>
+    <div class="policy-item"><strong>Ohio TechCred Program</strong><br><span>Workforce training for advanced manufacturing</span></div>
+    <div class="policy-item"><strong>Bipartisan Infrastructure Law</strong><br><span>Grid energy storage buildout</span></div>
+  </div>
+
+  <p class="section-label">Detailed Opportunity Analysis</p>
+  <div class="opp-card">
+  <div class="opp-header">
+    <div class="opp-rank gold">1</div>
+    <div>
+      <div class="opp-title">Revival: Midwest Battery Manufacturing Hub (Closed EVS Facility)</div>
+      <div class="opp-title-sub">EV Battery &middot; Battery Cell Manufacturing &middot; revival</div>
+    </div>
+    <div class="opp-grade" style="color:#065f46">A</div>
+    <span class="badge badge-green">STRONG</span>
+  </div>
+
+  <div class="opp-scores-row">
+    <span class="score-chip demand">Demand: <b>85</b></span>
+    <span class="score-chip gap">Supply Gap: <b>82</b></span>
+    <span class="score-chip feas">Feasibility: <b>71</b></span>
+    <span class="score-chip timing">Timing: <b>88</b></span>
+    <span class="score-chip comp">Competition: <b>50</b></span>
+  </div>
+
+  <div class="opp-meta-grid">
+    <div class="meta-item">
+      <div class="meta-label">Total Market (TAM)</div>
+      <div class="meta-val">$215B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Serviceable Mkt</div>
+      <div class="meta-val">$8B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Growth Rate</div>
+      <div class="meta-val">30%/yr</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. CAPEX</div>
+      <div class="meta-val">$400–$800M</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Time to Market</div>
+      <div class="meta-val">24 months</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. Direct Jobs</div>
+      <div class="meta-val">1,800</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Confidence</div>
+      <div class="meta-val"><span class="conf-dot conf-mid"></span>Medium</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Addressable Customers</div>
+      <div class="meta-val">Automotive OEMs, Government (energy storage)</div>
+    </div>
+  </div>
+
+  <div class="opp-desc">Several abandoned or underutilized manufacturing facilities in Ohio could be repurposed for battery production. Past attempts failed due to: (1) inadequate demand signals at the time, (2) insufficient scale, and (3) lack of policy support. All three factors have now changed: massive demand (Honda alone needs cells for 750K EVs/year by 2030), scale economics are achievable at 20+ GWh, and CHIPS Act...</div>
+  
+</div>
+<div class="opp-card">
+  <div class="opp-header">
+    <div class="opp-rank gold">2</div>
+    <div>
+      <div class="opp-title">Battery Recycling and Black Mass Processing</div>
+      <div class="opp-title-sub">EV Battery &middot; Battery Recycling &middot; new_build</div>
+    </div>
+    <div class="opp-grade" style="color:#065f46">A</div>
+    <span class="badge badge-green">STRONG</span>
+  </div>
+
+  <div class="opp-scores-row">
+    <span class="score-chip demand">Demand: <b>74</b></span>
+    <span class="score-chip gap">Supply Gap: <b>86</b></span>
+    <span class="score-chip feas">Feasibility: <b>71</b></span>
+    <span class="score-chip timing">Timing: <b>84</b></span>
+    <span class="score-chip comp">Competition: <b>65</b></span>
+  </div>
+
+  <div class="opp-meta-grid">
+    <div class="meta-item">
+      <div class="meta-label">Total Market (TAM)</div>
+      <div class="meta-val">$22B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Serviceable Mkt</div>
+      <div class="meta-val">$2B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Growth Rate</div>
+      <div class="meta-val">35%/yr</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. CAPEX</div>
+      <div class="meta-val">$60–$180M</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Time to Market</div>
+      <div class="meta-val">20 months</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. Direct Jobs</div>
+      <div class="meta-val">180</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Confidence</div>
+      <div class="meta-val"><span class="conf-dot conf-mid"></span>Medium</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Addressable Customers</div>
+      <div class="meta-val">Battery Cell Manufacturers, Automotive OEMs, EV Fleet Operators</div>
+    </div>
+  </div>
+
+  <div class="opp-desc">The wave of first-generation EVs reaching end-of-life (2026+) creates a massive recycling opportunity. Ohio's central location and existing scrap recycling infrastructure position it well. Black mass (lithium, cobalt, nickel, manganese) processing offers 60%+ margins. IRA requires battery manufacturers to use minimum recycled content (6% by 2026, 15% by 2031), creating guaranteed demand. A 10,000-...</div>
+  
+</div>
+<div class="opp-card">
+  <div class="opp-header">
+    <div class="opp-rank gold">3</div>
+    <div>
+      <div class="opp-title">Ohio Anode Materials Processing (Graphite/Silicon)</div>
+      <div class="opp-title-sub">EV Battery &middot; Battery Materials &middot; new_build</div>
+    </div>
+    <div class="opp-grade" style="color:#065f46">A</div>
+    <span class="badge badge-green">STRONG</span>
+  </div>
+
+  <div class="opp-scores-row">
+    <span class="score-chip demand">Demand: <b>78</b></span>
+    <span class="score-chip gap">Supply Gap: <b>91</b></span>
+    <span class="score-chip feas">Feasibility: <b>52</b></span>
+    <span class="score-chip timing">Timing: <b>81</b></span>
+    <span class="score-chip comp">Competition: <b>70</b></span>
+  </div>
+
+  <div class="opp-meta-grid">
+    <div class="meta-item">
+      <div class="meta-label">Total Market (TAM)</div>
+      <div class="meta-val">$48B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Serviceable Mkt</div>
+      <div class="meta-val">$3B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Growth Rate</div>
+      <div class="meta-val">20%/yr</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. CAPEX</div>
+      <div class="meta-val">$150–$400M</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Time to Market</div>
+      <div class="meta-val">30 months</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. Direct Jobs</div>
+      <div class="meta-val">280</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Confidence</div>
+      <div class="meta-val"><span class="conf-dot conf-mid"></span>Medium</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Addressable Customers</div>
+      <div class="meta-val">Battery Cell Manufacturers, Anode Material Distributors, Research Institutions</div>
+    </div>
+  </div>
+
+  <div class="opp-desc">Battery anode materials represent a critical supply chain gap. China processes 95%+ of natural graphite for batteries. A domestic anode facility would address national security concerns and qualify for IRA advanced manufacturing credits. Ohio's access to coal-derived graphite (from regional coal washing operations) and specialty chemicals industry provides feedstock advantages. A medium-scale faci...</div>
+  
+</div>
+<div class="opp-card">
+  <div class="opp-header">
+    <div class="opp-rank green">4</div>
+    <div>
+      <div class="opp-title">Ohio Battery Pack Integration and Assembly</div>
+      <div class="opp-title-sub">EV Battery &middot; Battery Pack Assembly &middot; new_build</div>
+    </div>
+    <div class="opp-grade" style="color:#065f46">B</div>
+    <span class="badge badge-yellow">CONDITIONAL</span>
+  </div>
+
+  <div class="opp-scores-row">
+    <span class="score-chip demand">Demand: <b>82</b></span>
+    <span class="score-chip gap">Supply Gap: <b>75</b></span>
+    <span class="score-chip feas">Feasibility: <b>78</b></span>
+    <span class="score-chip timing">Timing: <b>72</b></span>
+    <span class="score-chip comp">Competition: <b>60</b></span>
+  </div>
+
+  <div class="opp-meta-grid">
+    <div class="meta-item">
+      <div class="meta-label">Total Market (TAM)</div>
+      <div class="meta-val">$85B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Serviceable Mkt</div>
+      <div class="meta-val">$4B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Growth Rate</div>
+      <div class="meta-val">22%/yr</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. CAPEX</div>
+      <div class="meta-val">$80–$200M</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Time to Market</div>
+      <div class="meta-val">18 months</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. Direct Jobs</div>
+      <div class="meta-val">450</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Confidence</div>
+      <div class="meta-val"><span class="conf-dot conf-mid"></span>Medium</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Addressable Customers</div>
+      <div class="meta-val">Commercial Fleet Operators, Bus Manufacturers, Grid Storage Developers</div>
+    </div>
+  </div>
+
+  <div class="opp-desc">Lower CAPEX entry point ($80-200M) compared to cell manufacturing, with 18-month time to market. Battery pack assembly serves a diverse customer base including commercial vehicles (buses, trucks), marine, industrial equipment, and stationary storage. Ohio's central logistics network provides 2-day delivery to 80% of US manufacturing. No major dedicated pack assembly facility exists in Ohio despite...</div>
+  
+</div>
+<div class="opp-card">
+  <div class="opp-header">
+    <div class="opp-rank green">5</div>
+    <div>
+      <div class="opp-title">Ohio Lithium-Ion Battery Cell Manufacturing</div>
+      <div class="opp-title-sub">EV Battery &middot; Battery Cell Manufacturing &middot; new_build</div>
+    </div>
+    <div class="opp-grade" style="color:#065f46">B</div>
+    <span class="badge badge-yellow">CONDITIONAL</span>
+  </div>
+
+  <div class="opp-scores-row">
+    <span class="score-chip demand">Demand: <b>88</b></span>
+    <span class="score-chip gap">Supply Gap: <b>82</b></span>
+    <span class="score-chip feas">Feasibility: <b>58</b></span>
+    <span class="score-chip timing">Timing: <b>76</b></span>
+    <span class="score-chip comp">Competition: <b>45</b></span>
+  </div>
+
+  <div class="opp-meta-grid">
+    <div class="meta-item">
+      <div class="meta-label">Total Market (TAM)</div>
+      <div class="meta-val">$215B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Serviceable Mkt</div>
+      <div class="meta-val">$18B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Growth Rate</div>
+      <div class="meta-val">25%/yr</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. CAPEX</div>
+      <div class="meta-val">$1200–$2800M</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Time to Market</div>
+      <div class="meta-val">36 months</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. Direct Jobs</div>
+      <div class="meta-val">2,500</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Confidence</div>
+      <div class="meta-val"><span class="conf-dot conf-mid"></span>Medium</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Addressable Customers</div>
+      <div class="meta-val">Automotive OEMs, EV Startups, Energy Storage Integrators</div>
+    </div>
+  </div>
+
+  <div class="opp-desc">Ohio is well-positioned to host gigafactory-scale lithium-ion battery cell production. Multiple major OEMs (Honda, GM) have committed EV production in Ohio, creating massive untapped demand for domestically manufactured battery cells. Current US battery capacity meets only 40% of projected 2030 demand. A 40 GWh facility would supply ~500,000 vehicles/year. Ohio's industrial heritage, workforce tra...</div>
+  
+</div>
+<div class="opp-card">
+  <div class="opp-header">
+    <div class="opp-rank yellow">6</div>
+    <div>
+      <div class="opp-title">Battery Thermal Management and Safety Systems</div>
+      <div class="opp-title-sub">EV Battery &middot; Battery Components &middot; new_build</div>
+    </div>
+    <div class="opp-grade" style="color:#065f46">B</div>
+    <span class="badge badge-yellow">CONDITIONAL</span>
+  </div>
+
+  <div class="opp-scores-row">
+    <span class="score-chip demand">Demand: <b>75</b></span>
+    <span class="score-chip gap">Supply Gap: <b>68</b></span>
+    <span class="score-chip feas">Feasibility: <b>83</b></span>
+    <span class="score-chip timing">Timing: <b>68</b></span>
+    <span class="score-chip comp">Competition: <b>45</b></span>
+  </div>
+
+  <div class="opp-meta-grid">
+    <div class="meta-item">
+      <div class="meta-label">Total Market (TAM)</div>
+      <div class="meta-val">$15B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Serviceable Mkt</div>
+      <div class="meta-val">$1B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Growth Rate</div>
+      <div class="meta-val">28%/yr</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. CAPEX</div>
+      <div class="meta-val">$20–$60M</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Time to Market</div>
+      <div class="meta-val">14 months</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. Direct Jobs</div>
+      <div class="meta-val">120</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Confidence</div>
+      <div class="meta-val"><span class="conf-dot conf-mid"></span>Medium</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Addressable Customers</div>
+      <div class="meta-val">Battery Pack Assemblers, Automotive OEMs, Defense Contractors</div>
+    </div>
+  </div>
+
+  <div class="opp-desc">Battery thermal management is a $15B+ market growing 28%/year. Safety incidents (EV fires) are driving OEM demand for better thermal runaway prevention. This opportunity focuses on manufacturing thermal management components in Ohio — lower CAPEX ($20-60M) than cell or pack production, but high margins (40-60%) and essential safety function. Ohio's plastics/composites industry can serve as a base ...</div>
+  
+</div>
+<div class="opp-card">
+  <div class="opp-header">
+    <div class="opp-rank yellow">7</div>
+    <div>
+      <div class="opp-title">Ohio Sodium-Ion Battery Manufacturing</div>
+      <div class="opp-title-sub">EV Battery &middot; Next-Gen Battery Chemistry &middot; new_build</div>
+    </div>
+    <div class="opp-grade" style="color:#92400e">C</div>
+    <span class="badge badge-yellow">CONDITIONAL</span>
+  </div>
+
+  <div class="opp-scores-row">
+    <span class="score-chip demand">Demand: <b>55</b></span>
+    <span class="score-chip gap">Supply Gap: <b>90</b></span>
+    <span class="score-chip feas">Feasibility: <b>38</b></span>
+    <span class="score-chip timing">Timing: <b>52</b></span>
+    <span class="score-chip comp">Competition: <b>85</b></span>
+  </div>
+
+  <div class="opp-meta-grid">
+    <div class="meta-item">
+      <div class="meta-label">Total Market (TAM)</div>
+      <div class="meta-val">$35B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Serviceable Mkt</div>
+      <div class="meta-val">$1B</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Growth Rate</div>
+      <div class="meta-val">45%/yr</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. CAPEX</div>
+      <div class="meta-val">$200–$600M</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Time to Market</div>
+      <div class="meta-val">42 months</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Est. Direct Jobs</div>
+      <div class="meta-val">600</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Confidence</div>
+      <div class="meta-val"><span class="conf-dot conf-low"></span>Low</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Addressable Customers</div>
+      <div class="meta-val">Utility Companies, Solar Integrators, Entry-Level EV OEMs</div>
+    </div>
+  </div>
+
+  <div class="opp-desc">Sodium-ion batteries are emerging as a lower-cost, more sustainable alternative to lithium-ion for stationary storage and entry-level EVs. Cost advantage: 20-40% lower than LFP. No lithium/cobalt dependency. A 5 GWh Ohio facility could serve Midwest grid storage markets. CATL, BYD, and Reliance are building Na-ion gigafactories globally — US has none yet. This is an emerging opportunity (Timing Sc...</div>
+  
+</div>
+
+
+  <div class="report-footer">
+    Report generated: 2026-07-07 04:36 UTC | Manufacturing Opportunity Intelligence Platform v2.0.0 |
+    Data sources: BloombergNEF, DOE Vehicle Technologies Office, IEA Global EV Outlook, Benchmark Mineral Intelligence,
+    Argonne National Lab, Ohio EDC, Ohio TechCred. |
+    <strong>IMPORTANT:</strong> CAPEX estimates require validation with equipment suppliers and real estate
+    brokers. Scores are directional. Low-confidence recommendations (confidence < 50%) should be validated
+    with on-site assessments before any investment decisions.
+  </div>
+</body>
+</html>

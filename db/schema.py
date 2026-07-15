@@ -4,7 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-_SCHEMA_VERSION = 24
+_SCHEMA_VERSION = 30
 
 _TABLES = [
     """
@@ -486,6 +486,7 @@ _TABLES = [
     """
     CREATE TABLE IF NOT EXISTS alert_preferences (
         id                  INT PRIMARY KEY AUTO_INCREMENT,
+        user_id             INT NOT NULL,
         email_enabled       INT DEFAULT 1,
         slack_enabled       INT DEFAULT 1,
         discord_enabled     INT DEFAULT 1,
@@ -495,7 +496,9 @@ _TABLES = [
         quiet_hours_end     VARCHAR(5) COMMENT 'HH:MM UTC, e.g. 08:00',
         max_alerts_per_hour INT DEFAULT 20,
         created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_user_prefs (user_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
     """
@@ -1417,6 +1420,399 @@ _TABLES = [
         INDEX idx_wah_created (created_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """,
+    # -------------------------------------------------------------------------
+    # LLM Report Insights (v11)
+    # -------------------------------------------------------------------------
+    """
+    CREATE TABLE IF NOT EXISTS report_insights (
+        id               INT PRIMARY KEY AUTO_INCREMENT,
+        insight_type     VARCHAR(100) NOT NULL COMMENT 'executive_summary, failure_patterns, etc.',
+        section          VARCHAR(50) NOT NULL COMMENT 'header, part1, part2, etc.',
+        content          TEXT NOT NULL COMMENT 'Rendered markdown content',
+        raw_response     TEXT COMMENT 'Full JSON response from LLM',
+        model_used       VARCHAR(100) NOT NULL DEFAULT 'llama3',
+        generation_ms    INT DEFAULT 0,
+        cached           TINYINT DEFAULT 0,
+        confidence_score FLOAT DEFAULT NULL,
+        valid_until      DATETIME COMMENT 'Cache expiry (NULL = no expiry)',
+        error_message    TEXT,
+        generated_at     VARCHAR(50) NOT NULL,
+        created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_ri_type (insight_type),
+        INDEX idx_ri_section (section),
+        INDEX idx_ri_valid_until (valid_until),
+        UNIQUE KEY uq_insight_type_section (insight_type, section)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Pipeline Operations Research (v27) ──
+    """
+    CREATE TABLE IF NOT EXISTS pipeline_companies (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        name                VARCHAR(255) NOT NULL,
+        company_type        VARCHAR(50) NOT NULL COMMENT 'failed, active, acquired',
+        pipeline_type       VARCHAR(100) NOT NULL COMMENT 'inspection, management, infrastructure, monitoring',
+        technology_focus   VARCHAR(255) COMMENT 'smart_pigging, leak_detection, corrosion_mgmt, etc.',
+        country             VARCHAR(100),
+        region              VARCHAR(100),
+
+        -- Company details
+        year_founded        INT,
+        year_shutdown       INT,
+        headquarters        VARCHAR(255),
+        website             VARCHAR(2048),
+        employee_count      INT,
+        company_description TEXT,
+
+        -- Funding & Investment
+        funding_total       DOUBLE,
+        last_funding_round  VARCHAR(100),
+        last_funding_date   DATE,
+        investors           TEXT COMMENT 'JSON: list of investor names',
+        peak_valuation_usd  DOUBLE,
+
+        -- Market positioning
+        technology_stack    TEXT COMMENT 'JSON: full tech stack',
+        market_segments     VARCHAR(255) COMMENT 'oil_gas, water, chemical, hydrogen',
+        geographic_focus    VARCHAR(255) COMMENT 'regions served',
+        customers           TEXT COMMENT 'JSON: notable customers',
+        competitive_position VARCHAR(50) COMMENT 'leader, challenger, niche',
+
+        -- Status & History
+        company_status      VARCHAR(50) DEFAULT 'active' COMMENT 'active, declined, acquired, bankrupt',
+        acquisition_status  VARCHAR(50),
+        acquisition_by      VARCHAR(255),
+        acquisition_year    INT,
+        failure_reason      TEXT,
+
+        -- Data quality
+        data_confidence_score FLOAT DEFAULT 0.5 COMMENT '0.0-1.0 confidence in data',
+        last_enriched_at    DATETIME,
+
+        -- Sources
+        funding_raised_usd  DOUBLE,
+        description         TEXT,
+        key_technology      TEXT COMMENT 'JSON: list of key technologies',
+        market_segment      VARCHAR(100) COMMENT 'oil_gas, water, chemical, general',
+        source              VARCHAR(100),
+        source_url          VARCHAR(2048),
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_pipeline_name (name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS pipeline_opportunities (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        opportunity_type    VARCHAR(100) NOT NULL COMMENT 'technology_gap, market_need, revival_candidate',
+        pipeline_category   VARCHAR(100) NOT NULL COMMENT 'inspection, management, corrosion, etc.',
+        title               VARCHAR(500) NOT NULL,
+        description         TEXT NOT NULL,
+
+        -- Market analysis
+        market_size_estimate TEXT COMMENT 'Estimated market size',
+        market_demand_score   FLOAT COMMENT '0-100: market demand',
+        technology_readiness FLOAT COMMENT '0-100: technology maturity',
+        regulatory_pressure  FLOAT COMMENT '0-100: regulatory push',
+        investment_interest   FLOAT COMMENT '0-100: investor interest',
+
+        -- Scoring
+        opportunity_score   FLOAT COMMENT '0-100: overall score (avg of above - competition)',
+        competition_level   VARCHAR(50) COMMENT 'low, medium, high',
+        competition_score    FLOAT COMMENT '0-100: competition intensity',
+
+        entry_barriers      VARCHAR(255),
+        investment_needed   VARCHAR(100),
+        confidence_score    FLOAT DEFAULT 0.5 COMMENT '0.0-1.0 confidence',
+        related_company_id  INT COMMENT 'FK to pipeline_companies.id if applicable',
+        source_data        TEXT COMMENT 'JSON: supporting data',
+
+        analyzed_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS pipeline_funding_events (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        company_name        VARCHAR(255) NOT NULL,
+        round_type          VARCHAR(50) NOT NULL COMMENT 'Seed, Series A, B, C, IPO, Acquisition',
+        amount_usd          BIGINT,
+        announced_date      DATE,
+        investors_json      TEXT COMMENT 'JSON: list of investor names',
+        lead_investors      TEXT,
+        valuation_at_round  BIGINT,
+        source              VARCHAR(100),
+        source_url          VARCHAR(2048),
+        collected_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_funding_event (company_name, round_type, announced_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS pipeline_failure_analysis (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        analysis_type       VARCHAR(100) NOT NULL COMMENT 'failure_pattern, hardware_vs_software, etc.',
+        category            VARCHAR(100) COMMENT 'inspection, management, etc.',
+        insight_json        TEXT NOT NULL COMMENT 'JSON: detailed insights',
+        pattern_count       INT DEFAULT 0,
+        confidence          FLOAT DEFAULT 0.5,
+        recommendation_json TEXT COMMENT 'JSON: recommendations for revival',
+        analyzed_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_analysis_category (analysis_type, category)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ─── Phase v2: Manufacturing Opportunity Intelligence Engine ───
+    """
+    CREATE TABLE IF NOT EXISTS manufacturing_opportunities (
+        -- Identity
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        opportunity_type    VARCHAR(50) NOT NULL COMMENT 'new_build, revival, expansion',
+        title               VARCHAR(500) NOT NULL COMMENT 'e.g., Ohio EV Battery Manufacturing',
+        description         TEXT NOT NULL,
+
+        -- Industry classification
+        sector              VARCHAR(255) NOT NULL COMMENT 'e.g., EV Battery, Semiconductors',
+        sub_sector          VARCHAR(255),
+        manufacturing_process VARCHAR(500) COMMENT 'e.g., Lithium-ion cell manufacturing',
+
+        -- Multi-dimensional scoring (0-100)
+        opportunity_score   FLOAT COMMENT 'Should this company exist?',
+        demand_score        FLOAT COMMENT 'Market demand 0-100',
+        supply_gap_score    FLOAT COMMENT 'Supply gap 0-100',
+        feasibility_score   FLOAT COMMENT 'Manufacturing feasibility 0-100',
+        timing_score        FLOAT COMMENT 'Timing/opportunity window 0-100',
+        competition_score   FLOAT COMMENT 'Competition intensity 0-100',
+
+        -- Revival scoring (for failed company revivals)
+        revival_score       FLOAT COMMENT 'Could failed company succeed today? 0-100',
+        failure_addressed   FLOAT COMMENT 'Original failure reason addressed 0-100',
+        market_change       FLOAT COMMENT 'Market conditions change 0-100',
+        tech_change         FLOAT COMMENT 'Technology change 0-100',
+        cost_change         FLOAT COMMENT 'Cost structure change 0-100',
+        policy_change       FLOAT COMMENT 'Policy change 0-100',
+
+        -- Market intelligence
+        total_addressable_market_billion FLOAT COMMENT 'TAM in $B',
+        service_addressable_market_billion FLOAT COMMENT 'SAM in $B',
+        expected_growth_rate_pct  FLOAT COMMENT 'Annual growth %',
+        addressable_customer_types TEXT COMMENT 'JSON: list of customer segments',
+        estimated_capex_min       BIGINT COMMENT 'Minimum CAPEX in USD',
+        estimated_capex_max       BIGINT COMMENT 'Maximum CAPEX in USD',
+        time_to_market_months     INT COMMENT 'Estimated months to first revenue',
+        jobs_creation_estimate    INT COMMENT 'Estimated direct jobs',
+
+        -- Evidence and confidence
+        evidence_json       TEXT COMMENT 'JSON: supporting signals and sources',
+        confidence_score    FLOAT COMMENT '0-1: How confident are we in this opportunity',
+        confidence_factors_json TEXT COMMENT 'JSON: breakdown of confidence components',
+        model_version       VARCHAR(50) COMMENT 'Scoring model version',
+        model_score_date    DATETIME COMMENT 'When score was computed',
+
+        -- Status and tracking
+        status              VARCHAR(50) DEFAULT 'active' COMMENT 'active, validated, pursued, archived',
+        priority            INT DEFAULT 0 COMMENT '1=highest, higher=lower',
+
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_opportunity_title (title(200))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS opportunity_outcomes (
+        -- Links opportunity to actual outcomes
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        opportunity_id      INT NOT NULL,
+        audience_type       VARCHAR(50) NOT NULL COMMENT 'government, investor, founder',
+
+        -- Recommendation delivery
+        recommended_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        delivered_to       VARCHAR(255) COMMENT 'Email/contact the recommendation was sent to',
+        interaction_type    VARCHAR(50) COMMENT 'viewed, downloaded, discussed, meeting_scheduled',
+        interaction_at      DATETIME,
+
+        -- Outcome tracking
+        outcome_type        VARCHAR(50) COMMENT 'reviewed, funded, company_created, investment_made, jobs_created, not_pursued',
+        outcome_detail      TEXT COMMENT 'Details of what happened',
+        outcome_date        DATETIME,
+
+        -- Attribution (what in our recommendation led to the outcome)
+        successful_factors_json TEXT COMMENT 'JSON: what factors in our score were accurate',
+        missed_factors_json     TEXT COMMENT 'JSON: what we missed or got wrong',
+
+        -- Source tracking
+        source_opportunity_id INT COMMENT 'Reference to failed_startup or other source entity',
+        customer_id         INT COMMENT 'FK to users/customers if tracked',
+        notes               TEXT,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+        FOREIGN KEY (opportunity_id) REFERENCES manufacturing_opportunities(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS regional_fit_scores (
+        -- Where should an opportunity be built? (cross-reference opportunities x regions)
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        opportunity_id      INT NOT NULL,
+        region              VARCHAR(100) NOT NULL COMMENT 'e.g., Ohio, Michigan, Southeast',
+
+        -- Component scores (0-100)
+        regional_fit_score  FLOAT COMMENT 'Overall regional fit 0-100',
+        workforce_score     FLOAT COMMENT 'Workforce availability 0-100',
+        infrastructure_score FLOAT COMMENT 'Industrial infrastructure 0-100',
+        supplier_score      FLOAT COMMENT 'Supplier ecosystem maturity 0-100',
+        energy_score        FLOAT COMMENT 'Energy costs and availability 0-100',
+        incentive_score     FLOAT COMMENT 'Policy/incentive alignment 0-100',
+        logistics_score     FLOAT COMMENT 'Logistics access 0-100',
+
+        -- Contextual data
+        details_json        TEXT COMMENT 'JSON: specific data supporting each score',
+        ranked_position     INT COMMENT 'Rank among regions for this opportunity',
+        confidence_score    FLOAT COMMENT '0-1: confidence in the ranking',
+
+        -- Cost factors for this region
+        avg_hourly_wage_usd FLOAT COMMENT 'Average manufacturing wage in region',
+        electricity_cost_kwh FLOAT COMMENT 'Industrial electricity $/kWh',
+        property_tax_rate   FLOAT COMMENT 'Effective property tax rate',
+        incentive_value_millions FLOAT COMMENT 'Est. incentive package $M',
+        training_cost_per_worker FLOAT,
+
+        model_version       VARCHAR(50),
+        scored_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_opp_region (opportunity_id, region)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS founder_fit_scores (
+        -- Which founder should build this? (cross-reference opportunity x founder profile)
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        opportunity_id      INT NOT NULL,
+        founder_profile_id  INT COMMENT 'Reference to a stored founder profile, or NULL for ad-hoc',
+
+        -- Founder match scores (0-100)
+        founder_fit_score   FLOAT COMMENT 'Overall founder-opportunity match 0-100',
+        expertise_score     FLOAT COMMENT 'Domain expertise match 0-100',
+        experience_score    FLOAT COMMENT 'Manufacturing experience 0-100',
+        capital_score       FLOAT COMMENT 'Capital access match 0-100',
+        network_score       FLOAT COMMENT 'Relevant network connections 0-100',
+        location_score      FLOAT COMMENT 'Location fit 0-100',
+
+        -- Gap analysis
+        gap_analysis_json   TEXT COMMENT 'JSON: which factors are gaps',
+        recommended_learning_json TEXT COMMENT 'JSON: what founder should learn',
+        suggested_cos_founders_json TEXT COMMENT 'JSON: complementary cofounder profiles',
+
+        -- Recommendation
+        recommendation      VARCHAR(50) COMMENT 'strong_fit, good_fit, partial_fit, poor_fit',
+        confidence_score    FLOAT,
+        model_version       VARCHAR(50),
+        scored_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_opp_founder (opportunity_id, founder_profile_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    # ── Sprint Cycle tables ──
+    """
+    CREATE TABLE IF NOT EXISTS sprint_tasks (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        task_id             VARCHAR(100) NOT NULL UNIQUE COMMENT 'e.g., SPRINT-2026-001',
+        title               VARCHAR(500) NOT NULL,
+        description         TEXT,
+
+        -- Classification
+        task_type           VARCHAR(50) NOT NULL COMMENT 'feature, bugfix, research, improvement',
+        priority            INT DEFAULT 5 COMMENT '1=highest priority',
+
+        -- Opportunity scoring (from OpportunityPipelineAgent)
+        opportunity_score   FLOAT COMMENT '0-100 composite score',
+        task_effort_minutes INT COMMENT 'Estimated effort in minutes',
+
+        -- State machine
+        state               VARCHAR(50) NOT NULL DEFAULT 'scanned' COMMENT 'scanned, planned, approved, rejected, in_progress, done, failed',
+
+        -- Codex planning output
+        plan_document       TEXT COMMENT 'Implementation plan from Codex/Plan Agent',
+        plan_version        INT DEFAULT 1,
+        plan_file_path      VARCHAR(500) COMMENT 'Path to plan document in docs/plans/',
+
+        -- Execution tracking
+        assigned_agent      VARCHAR(100),
+        started_at          DATETIME,
+        completed_at        DATETIME,
+        execution_notes     TEXT,
+
+        -- Source tracking
+        source              VARCHAR(100) COMMENT 'opportunity_pipeline, manual, sprint_backlog',
+        related_opp_id      INT COMMENT 'FK to manufacturing_opportunities.id',
+
+        -- Metadata
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+        INDEX idx_state (state),
+        INDEX idx_priority (priority),
+        INDEX idx_opp_score (opportunity_score DESC),
+        INDEX idx_created (created_at DESC)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS pending_approvals (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        sprint_task_id      INT NOT NULL,
+
+        -- Approval details
+        approver_email      VARCHAR(255) COMMENT 'Email of designated approver',
+        approval_type       VARCHAR(50) NOT NULL COMMENT 'major_task, scope_change, plan_revision',
+
+        -- Request details
+        request_summary     TEXT,
+        plan_preview        TEXT COMMENT 'First 1000 chars of plan',
+        plan_file_url       VARCHAR(500) COMMENT 'URL/path to full plan',
+
+        -- Decision
+        decision            VARCHAR(20) COMMENT 'approved, rejected, changes_requested',
+        decision_at         DATETIME,
+        decision_notes      TEXT,
+
+        -- Notification tracking
+        notified_at         DATETIME,
+        responded_at        DATETIME,
+        reminder_sent_at    DATETIME,
+
+        -- Expiry
+        expires_at          DATETIME,
+
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY (sprint_task_id) REFERENCES sprint_tasks(id) ON DELETE CASCADE,
+        INDEX idx_pending (decision, created_at),
+        INDEX idx_expires (expires_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS cycle_audit_log (
+        id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
+        cycle_id            VARCHAR(50) NOT NULL COMMENT 'UUID for each scan cycle',
+        sprint_task_id      VARCHAR(100) COMMENT 'Link to sprint_tasks.task_id',
+
+        -- Action tracking
+        action              VARCHAR(50) NOT NULL COMMENT 'scanned, planned, approved, rejected, executed, auto_approved, skipped',
+
+        -- Details
+        details_json        TEXT COMMENT 'JSON: action-specific details',
+        llm_calls_json     TEXT COMMENT 'JSON: Codex/LLM API calls made',
+        opportunity_data    TEXT COMMENT 'JSON: opportunity that triggered this task',
+
+        -- Timing
+        duration_ms         INT,
+        cycle_started_at    DATETIME,
+        cycle_completed_at  DATETIME,
+
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+        INDEX idx_cycle (cycle_id),
+        INDEX idx_task (sprint_task_id),
+        INDEX idx_action (action),
+        INDEX idx_created (created_at DESC)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """,
 ]
 
 _INDEXES = [
@@ -1502,6 +1898,44 @@ _INDEXES = [
     "CREATE INDEX idx_oe_attempts ON outbound_emails(attempts, max_attempts);",
     "CREATE INDEX idx_edl_email_created ON email_delivery_log(outbound_email_id, created_at);",
     "CREATE INDEX idx_es_created ON email_suppressions(created_at);",
+    # ── Pipeline Operations Research indexes ──
+    "CREATE INDEX idx_pipeline_company_type ON pipeline_companies(company_type);",
+    "CREATE INDEX idx_pipeline_type ON pipeline_companies(pipeline_type);",
+    "CREATE INDEX idx_pipeline_country ON pipeline_companies(country);",
+    "CREATE INDEX idx_pipeline_region ON pipeline_companies(region);",
+    "CREATE INDEX idx_pipeline_shutdown_year ON pipeline_companies(year_shutdown);",
+    "CREATE INDEX idx_pipeline_opp_type ON pipeline_opportunities(opportunity_type);",
+    "CREATE INDEX idx_pipeline_opp_category ON pipeline_opportunities(pipeline_category);",
+    "CREATE INDEX idx_pipeline_opp_confidence ON pipeline_opportunities(confidence_score DESC);",
+    "CREATE INDEX idx_pipeline_opp_score ON pipeline_opportunities(opportunity_score DESC);",
+    # Pipeline funding events
+    "CREATE INDEX idx_pfe_company ON pipeline_funding_events(company_name);",
+    "CREATE INDEX idx_pfe_round_date ON pipeline_funding_events(announced_date DESC);",
+    "CREATE INDEX idx_pfe_amount ON pipeline_funding_events(amount_usd DESC);",
+    # Pipeline failure analysis
+    "CREATE INDEX idx_pfa_type ON pipeline_failure_analysis(analysis_type);",
+    "CREATE INDEX idx_pfa_category ON pipeline_failure_analysis(category);",
+    # ── Phase v2: Manufacturing Opportunity Intelligence indexes ──
+    "CREATE INDEX idx_mfg_opp_sector ON manufacturing_opportunities(sector);",
+    "CREATE INDEX idx_mfg_opp_type ON manufacturing_opportunities(opportunity_type);",
+    "CREATE INDEX idx_mfg_opp_score ON manufacturing_opportunities(opportunity_score DESC);",
+    "CREATE INDEX idx_mfg_opp_priority ON manufacturing_opportunities(priority, status);",
+    "CREATE INDEX idx_mfg_opp_confidence ON manufacturing_opportunities(confidence_score DESC);",
+    "CREATE INDEX idx_mfg_opp_created ON manufacturing_opportunities(created_at DESC);",
+    "CREATE INDEX idx_mfg_outcome_opp ON opportunity_outcomes(opportunity_id);",
+    "CREATE INDEX idx_mfg_outcome_type ON opportunity_outcomes(outcome_type);",
+    "CREATE INDEX idx_mfg_outcome_date ON opportunity_outcomes(outcome_date);",
+    "CREATE INDEX idx_regional_opp ON regional_fit_scores(opportunity_id);",
+    "CREATE INDEX idx_regional_region ON regional_fit_scores(region);",
+    "CREATE INDEX idx_regional_score ON regional_fit_scores(regional_fit_score DESC);",
+    "CREATE INDEX idx_founder_opp ON founder_fit_scores(opportunity_id);",
+    "CREATE INDEX idx_founder_score ON founder_fit_scores(founder_fit_score DESC);",
+    # ── Sprint Cycle indexes ──
+    "CREATE INDEX idx_sprint_task_type ON sprint_tasks(task_type);",
+    "CREATE INDEX idx_sprint_task_state ON sprint_tasks(state);",
+    "CREATE INDEX idx_sprint_task_created ON sprint_tasks(created_at DESC);",
+    "CREATE INDEX idx_pending_task ON pending_approvals(sprint_task_id);",
+    "CREATE INDEX idx_pending_decision ON pending_approvals(decision);",
 ]
 
 
@@ -1516,8 +1950,170 @@ def init_schema(conn) -> None:
         except Exception as e:
             _logger.debug("Index creation note: %s", e)
     conn.commit()
-    cursor.close()
     _logger.info("Database schema initialized (version %d)", _SCHEMA_VERSION)
+
+    # ── API tables (need separate cursor) ──
+    cursor = conn.cursor()
+    _api_tables = [
+        """
+    CREATE TABLE IF NOT EXISTS api_organizations (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        name                VARCHAR(255) NOT NULL,
+        slug                VARCHAR(100) UNIQUE,
+        website             VARCHAR(2048),
+        logo_url            VARCHAR(2048),
+        description         TEXT,
+        country             VARCHAR(100),
+        founded_year        INT,
+        employee_count      VARCHAR(50),
+        social_links_json   TEXT COMMENT 'JSON: social media links',
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_api_org_slug (slug),
+        INDEX idx_api_org_country (country),
+        INDEX idx_api_org_name (name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """,
+        """
+    CREATE TABLE IF NOT EXISTS api_registries (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        name                VARCHAR(255) NOT NULL,
+        organization_id     INT,
+        description         TEXT,
+        documentation_url   VARCHAR(2048),
+        base_url            VARCHAR(2048),
+        is_public           TINYINT DEFAULT 1,
+        popularity_score   INT DEFAULT 0,
+        api_version         VARCHAR(20),
+        category            VARCHAR(100),
+        tags_json           TEXT COMMENT 'JSON: list of tags',
+        logo_url            VARCHAR(2048),
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (organization_id) REFERENCES api_organizations(id) ON DELETE SET NULL,
+        INDEX idx_api_reg_org (organization_id),
+        INDEX idx_api_reg_category (category),
+        INDEX idx_api_reg_popularity (popularity_score DESC),
+        INDEX idx_api_reg_name (name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """,
+        """
+    CREATE TABLE IF NOT EXISTS api_endpoints (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        registry_id         INT NOT NULL,
+        method              VARCHAR(10) NOT NULL COMMENT 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD',
+        path                VARCHAR(500) NOT NULL,
+        full_url            VARCHAR(2048),
+        summary             VARCHAR(500),
+        description         TEXT,
+        auth_type           VARCHAR(50),
+        rate_limit          VARCHAR(100),
+        response_format     VARCHAR(50),
+        status              VARCHAR(20) DEFAULT 'active',
+        latency_ms          INT,
+        popularity_score   INT DEFAULT 0,
+        security_score      INT DEFAULT 0,
+        tags_json           TEXT COMMENT 'JSON: list of tags',
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (registry_id) REFERENCES api_registries(id) ON DELETE CASCADE,
+        INDEX idx_ep_reg (registry_id),
+        INDEX idx_ep_method (method),
+        INDEX idx_ep_status (status),
+        INDEX idx_ep_popularity (popularity_score DESC),
+        INDEX idx_ep_security (security_score DESC)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """,
+        """
+    CREATE TABLE IF NOT EXISTS endpoint_requests (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        endpoint_id         INT NOT NULL,
+        content_type        VARCHAR(100),
+        headers_json        TEXT COMMENT 'JSON: required headers',
+        body_schema_json    TEXT COMMENT 'JSON: request body schema',
+        query_params_json   TEXT COMMENT 'JSON: query parameters',
+        path_params_json    TEXT COMMENT 'JSON: path parameters',
+        example_request     TEXT,
+        example_response    TEXT,
+        response_codes_json TEXT COMMENT 'JSON: possible response codes',
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (endpoint_id) REFERENCES api_endpoints(id) ON DELETE CASCADE,
+        INDEX idx_er_ep (endpoint_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """,
+        """
+    CREATE TABLE IF NOT EXISTS endpoint_technologies (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        endpoint_id         INT NOT NULL,
+        technology          VARCHAR(100) NOT NULL,
+        category            VARCHAR(50),
+        version             VARCHAR(50),
+        confidence          FLOAT DEFAULT 1.0,
+        detected_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (endpoint_id) REFERENCES api_endpoints(id) ON DELETE CASCADE,
+        INDEX idx_et_ep (endpoint_id),
+        INDEX idx_et_tech (technology),
+        INDEX idx_et_category (category)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """,
+        """
+    CREATE TABLE IF NOT EXISTS security_analyses (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        endpoint_id         INT NOT NULL,
+        check_type          VARCHAR(100),
+        severity            VARCHAR(20),
+        finding             TEXT,
+        recommendation      TEXT,
+        analyzed_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (endpoint_id) REFERENCES api_endpoints(id) ON DELETE CASCADE,
+        INDEX idx_sa_ep (endpoint_id),
+        INDEX idx_sa_severity (severity),
+        INDEX idx_sa_type (check_type)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """,
+        """
+    CREATE TABLE IF NOT EXISTS scan_jobs (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        scan_type           VARCHAR(50),
+        target_url          VARCHAR(2048) NOT NULL,
+        status              VARCHAR(20) DEFAULT 'pending' COMMENT 'pending, running, completed, failed',
+        progress            INT DEFAULT 0 COMMENT '0-100',
+        results_count       INT DEFAULT 0,
+        options_json        TEXT COMMENT 'JSON: scan configuration',
+        error_message       TEXT,
+        started_at          DATETIME,
+        completed_at        DATETIME,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_sj_status (status),
+        INDEX idx_sj_created (created_at DESC),
+        INDEX idx_sj_target (target_url(255))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """,
+        """
+    CREATE TABLE IF NOT EXISTS api_favorites (
+        id                  INT PRIMARY KEY AUTO_INCREMENT,
+        user_id             INT NOT NULL,
+        endpoint_id         INT,
+        registry_id          INT,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (endpoint_id) REFERENCES api_endpoints(id) ON DELETE CASCADE,
+        FOREIGN KEY (registry_id) REFERENCES api_registries(id) ON DELETE CASCADE,
+        INDEX idx_af_user (user_id),
+        INDEX idx_af_ep (endpoint_id),
+        INDEX idx_af_reg (registry_id),
+        UNIQUE KEY uq_af_user_ep (user_id, endpoint_id),
+        UNIQUE KEY uq_af_user_reg (user_id, registry_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """,
+    ]
+
+    # Execute API tables
+    for table_sql in _api_tables:
+        cursor.execute(table_sql)
+
+    conn.commit()
+    _logger.info("API Endpoint Explorer tables created (version %d)", _SCHEMA_VERSION)
 
 
 def get_schema_version() -> int:

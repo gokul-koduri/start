@@ -43,9 +43,30 @@ class GithubTrendsCollector(BaseCollector):
         search_queries = gh_config.get(
             "search_queries",
             [
+                # Existing AI/ML queries
                 "created:>{since} stars:>5 language:python topic:machine-learning",
                 "created:>{since} stars:>5 topic:startup topic:saas",
                 "created:>{since} stars:>5 topic:ai topic:agent topic:llm",
+                # Manufacturing & Industrial Keywords
+                "created:>{since} stars:>5 language:python topic:manufacturing",
+                "created:>{since} stars:>5 language:python topic:robotics",
+                "created:>{since} stars:>5 language:python topic:industrial-automation",
+                "created:>{since} stars:>5 language:python topic:plc topic:scada",
+                "created:>{since} stars:>5 language:python topic:digital-twin",
+                "created:>{since} stars:>5 language:python topic:predictive-maintenance",
+                "created:>{since} stars:>5 language:python topic:computer-vision topic:manufacturing",
+                # Pipeline/Oil & Gas Keywords
+                "created:>{since} stars:>5 language:python topic:pipeline topic:oil-gas",
+                "created:>{since} stars:>5 language:python topic:scada topic:automation",
+                "created:>{since} stars:>5 language:python topic:hydraulic topic:machinery",
+                "created:>{since} stars:>5 language:python topic:leak-detection",
+                # Supply Chain & Logistics
+                "created:>{since} stars:>5 language:python topic:supply-chain",
+                "created:>{since} stars:>5 language:python topic:logistics topic:optimization",
+                # Semiconductor & EV Manufacturing
+                "created:>{since} stars:>5 language:python topic:semiconductor topic:chip-design",
+                "created:>{since} stars:>5 language:python topic:ev topic:battery-management",
+                "created:>{since} stars:>5 language:python topic:energy-storage topic:grid",
             ],
         )
 
@@ -90,13 +111,21 @@ class GithubTrendsCollector(BaseCollector):
                     created = item.get("created_at", "")
                     pushed = item.get("pushed_at", "")
 
+                    # Format dates for MySQL (GitHub format: 2026-07-08T08:12:17Z -> 2026-07-08 08:12:17)
+                    def format_gitHub_date(dt_str):
+                        if not dt_str:
+                            return None
+                        # Replace Z with nothing and T with space
+                        return dt_str.replace("Z", "").replace("T", " ")[:19]
+
+                    created_fmt = format_gitHub_date(created)
+                    pushed_fmt = format_gitHub_date(pushed)
+
                     # Calculate star velocity (stars per day since creation)
                     weekly_stars_delta = 0
-                    if created:
+                    if created_fmt:
                         try:
-                            created_dt = datetime.fromisoformat(
-                                created.replace("Z", "+00:00")
-                            )
+                            created_dt = datetime.strptime(created_fmt, "%Y-%m-%d %H:%M:%S")
                             age_days = max(
                                 1, (datetime.now(timezone.utc) - created_dt).days
                             )
@@ -125,11 +154,11 @@ class GithubTrendsCollector(BaseCollector):
                             language,
                             (description or "")[:1000],
                             ",".join(topics) if topics else None,
-                            created[:26] if created else None,
-                            pushed[:26] if pushed else None,
+                            created_fmt,
+                            pushed_fmt,
                             weekly_stars_delta,
                             "github_trending",
-                            datetime.now(timezone.utc).isoformat(),
+                            datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
                         ),
                     )
 
@@ -146,8 +175,8 @@ class GithubTrendsCollector(BaseCollector):
                             f"{repo_name} ({language}) — {stars}★",
                             (description or "")[:5000],
                             repo_name,
-                            pushed[:26] if pushed else created[:26],
-                            datetime.now(timezone.utc).isoformat(),
+                            pushed_fmt if pushed_fmt else created_fmt,
+                            datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
                         ),
                     )
 

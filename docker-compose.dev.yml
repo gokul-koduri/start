@@ -1,0 +1,82 @@
+# ── Lightweight Development Setup ─────────────────────────
+#
+# Only MySQL + Redis — ~1.5 GB RAM total.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d
+#   make dev-api          # Start API server locally
+#   make dev-test         # Run tests
+#
+# All heavy services (Ollama, Kafka, Elasticsearch, ClickHouse,
+# TimescaleDB, Qdrant) are NOT started. Agents that depend on
+# them will gracefully degrade (return mock/cached data).
+
+version: "3.8"
+
+services:
+  # ── MySQL Database (required) ───────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: startup-research-db
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-devpassword}
+      MYSQL_DATABASE: startup_research
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_PASSWORD:-devpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+
+  # ── Redis Cache (required) ──────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: startup-research-redis
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+
+volumes:
+  mysql_dev_data:
+  redis_dev_data:

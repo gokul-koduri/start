@@ -1,0 +1,13 @@
+# Startup Research Report - Span Agent Schedule
+# Generated: 2026-07-14
+#
+# To install: crontab scripts/span-agent-cron.txt
+#
+# Morning health check (8:00 AM daily)
+0 8 * * * cd /Users/kodurigokul/Desktop/Startup_Research_Report && .venv/bin/python run_agent.py --span status >> data/logs/span-status.log 2>&1
+
+# Daily pipeline run (8:30 AM daily)
+30 8 * * * cd /Users/kodurigokul/Desktop/Startup_Research_Report && .venv/bin/python run_agent.py --span run --pipeline-arg daily >> data/logs/pipeline.log 2>&1
+
+# Weekly deep report (Sunday 9 AM)
+0 9 * * 0 cd /Users/kodurigokul/Desktop/Startup_Research_Report && .venv/bin/python run_agent.py --span report --type opportunity_report --topic "Weekly Review" >> data/logs/reports.log 2>&1

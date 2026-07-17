@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 mock_pymysql = MagicMock()
 sys.modules["pymysql"] = mock_pymysql
 sys.modules["pymysql.cursors"] = mock_pymysql.cursors
+sys.modules["pymysql.connections"] = mock_pymysql.connections
 
 from agents.ai_analyst_agent import AIAnalystAgent  # noqa: E402
 

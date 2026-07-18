@@ -1,16 +1,15 @@
-# Sprint Parameter Tracker — Machine-Readable
-# Enforces: No sprint may start until the previous sprint is 100% complete.
-# Last updated: 2026-06-10 (Phase 2 validation: Sprints 2+3+4 validated via integration gate)
-
+# Sprint Parameterer Tracker — Machine-Readable
+# Enforces: Sprint N+1 is BLOCKED until Sprint N reaches 100%
+# Last updated: 2026-07-17 (Sprint 6 COMPLETE)
 meta:
   version: 1
   project: Opportunity Intelligence Platform
   total_sprints: 8
   progression_rule: "Sprint N+1 is BLOCKED until Sprint N reaches 100%"
-  last_validated: "2026-06-10"
+  last_validated: "2026-07-17"
 
-current_sprint: 5
-current_sprint_status: "READY"
+current_sprint: 7
+current_sprint_status: "UNLOCKED"
 next_sprint_unlocked: true
 
 sprints:
@@ -269,33 +268,63 @@ sprints:
 
   sprint_5:
     name: "Watchlists + Alerts"
-    theme: "Watchlist CRUD, smart alerts, daily digest"
+    theme: "Watchlists, smart alerts, daily digest"
     weeks: "9-10"
     estimated_hours: 28
-    status: "READY"
-    completion_pct: 0
-    gate_passed: false
+    status: "COMPLETE"
+    completion_pct: 100
+    gate_passed: true
     blocker: null
 
   sprint_6:
     name: "Export + Integrations"
-    theme: "CSV/PDF export, webhooks, agent cleanup"
+    theme: "CSV/PDF/Parquet export, webhooks, agent cleanup"
     weeks: "11-12"
     estimated_hours: 40
-    status: "BLOCKED"
-    completion_pct: 0
-    gate_passed: false
-    blocker: "Sprint 5 not 100% complete"
+    status: "COMPLETE"
+    completion_pct: 100
+    gate_passed: true
+    blocker: null
+
+    objectives:
+      O-6.1:
+        description: "Real PDF export (fpdf2)"
+        target: "PDF generation with charts, tables, text"
+        status: "DONE"
+      O-6.2:
+        description: "Parquet export"
+        target: "Export to .parquet format for data pipelines"
+        status: "DONE"
+      O-6.3:
+        description: "Agent cleanup"
+        target: "Reviewed ExportAgent vs api/export.py"
+        status: "DONE"
+
+    tasks:
+      T-100: { description: "Real PDF export with fpdf2", effort: "4h", status: "DONE", completed_at: "2026-07-17" }
+      T-101: { description: "PDF templates for reports", effort: "3h", status: "DONE", completed_at: "2026-07-17" }
+      T-102: { description: "PDF multi-section (charts, tables, text)", effort: "4h", status: "DONE", completed_at: "2026-07-17" }
+      T-103: { description: "Parquet export implementation", effort: "2h", status: "DONE", completed_at: "2026-07-17" }
+      T-104: { description: "Export tests (6 passing)", effort: "2h", status: "DONE", completed_at: "2026-07-17" }
+      T-105: { description: "Agent review and cleanup", effort: "1h", status: "DONE", completed_at: "2026-07-17" }
+      T-106: { description: "Sprint 6 validation", effort: "1h", status: "DONE", completed_at: "2026-07-17" }
+
+    definition_of_done:
+      pdf_export_working: true
+      parquet_export_working: true
+      csv_json_endpoints_working: true
+      agent_cleanup_reviewed: true
+      tests_passing: true
 
   sprint_7:
     name: "Pro Tier + Billing"
     theme: "Stripe, feature gating, Pro features"
     weeks: "13-14"
     estimated_hours: 34
-    status: "BLOCKED"
+    status: "READY"
     completion_pct: 0
     gate_passed: false
-    blocker: "Sprint 6 not 100% complete"
+    blocker: null
 
   sprint_8:
     name: "Polish + V1 Release"

@@ -2,7 +2,7 @@
 
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 
@@ -20,5 +20,26 @@ def mock_pymysql(monkeypatch):
     mock_pymysql = MagicMock()
     mock_pymysql.cursors = MagicMock()
     mock_pymysql.cursors.DictCursor = MagicMock
+    # Required by DBUtils PooledDB
+    mock_pymysql.threadsafety = 1
+    mock_pymysql.paramstyle = "pyformat"
+
+    # Mock connect function that returns a proper connection-like object
+    mock_cursor = MagicMock()
+    mock_cursor.__enter__ = MagicMock(return_value=mock_cursor)
+    mock_cursor.__exit__ = MagicMock(return_value=False)
+    mock_cursor.fetchone.return_value = None
+    mock_cursor.fetchall.return_value = []
+
+    mock_conn = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+    mock_conn.cursor.__enter__ = MagicMock(return_value=mock_cursor)
+    mock_conn.cursor.__exit__ = MagicMock(return_value=False)
+
+    def mock_connect(*args, **kwargs):
+        return mock_conn
+
+    mock_pymysql.connect = mock_connect
+
     monkeypatch.setitem(sys.modules, "pymysql", mock_pymysql)
     monkeypatch.setitem(sys.modules, "pymysql.cursors", mock_pymysql.cursors)

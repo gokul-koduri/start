@@ -124,6 +124,7 @@ with st.sidebar:
             "🎭 Sentiment Analysis",
             "📋 Feedback Analytics",
             "⚡ Performance",
+            "💳 Billing & Subscription",
         ],
         label_visibility="collapsed",
     )

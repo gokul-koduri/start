@@ -50,12 +50,14 @@ class TestAPIRoutesRegistered(unittest.TestCase):
     def test_alerts_route_exists(self):
         """GET /api/alerts returns a response."""
         resp = self.client.get("/api/alerts")
-        self.assertIn(resp.status_code, (200, 500))
+        # 401 = auth required, 500/503 = DB unavailable with mock, 200 = success
+        self.assertIn(resp.status_code, (200, 401, 500, 503))
 
     def test_alert_preferences_get_route(self):
         """GET /api/alerts/preferences returns a response."""
         resp = self.client.get("/api/alerts/preferences")
-        self.assertIn(resp.status_code, (200, 500))
+        # 401 = auth required (route exists but needs auth), 200/500 = valid responses
+        self.assertIn(resp.status_code, (200, 401, 500))
 
     def test_pipeline_runs_route_exists(self):
         """GET /api/pipeline-runs returns a response."""

@@ -321,10 +321,42 @@ sprints:
     theme: "Stripe, feature gating, Pro features"
     weeks: "13-14"
     estimated_hours: 34
-    status: "READY"
-    completion_pct: 0
+    status: "IN_PROGRESS"
+    completion_pct: 25
     gate_passed: false
     blocker: null
+
+    objectives:
+      O-7.1:
+        description: "Stripe webhook endpoint"
+        target: "FastAPI webhook for Stripe events"
+        status: "DONE"
+      O-7.2:
+        description: "Feature gating"
+        target: "Tier-based feature access enforcement"
+        status: "DONE"
+      O-7.3:
+        description: "Dashboard billing UI"
+        target: "Show subscription status in dashboard"
+        status: "NOT_STARTED"
+      O-7.4:
+        description: "Billing integration tests"
+        target: "End-to-end billing flow tests"
+        status: "NOT_STARTED"
+
+    tasks:
+      T-700: { description: "Stripe webhook in FastAPI", effort: "2h", status: "DONE", completed_at: "2026-07-20" }
+      T-701: { description: "Billing tests (11 passing)", effort: "2h", status: "DONE", completed_at: "2026-07-20" }
+      T-702: { description: "conftest pymysql mock fix", effort: "1h", status: "DONE", completed_at: "2026-07-20" }
+      T-703: { description: "Dashboard billing UI", effort: "4h", status: "NOT_STARTED" }
+      T-704: { description: "Billing integration tests", effort: "4h", status: "NOT_STARTED" }
+      T-705: { description: "Sprint 7 validation", effort: "2h", status: "NOT_STARTED" }
+
+    definition_of_done:
+      stripe_webhook_working: true
+      billing_endpoints_tested: true
+      feature_gating_working: true
+      dashboard_billing_enabled: false
 
   sprint_8:
     name: "Polish + V1 Release"

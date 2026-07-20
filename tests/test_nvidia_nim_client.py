@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+import urllib.error
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -57,7 +58,9 @@ def test_client_auth_headers_work_for_server_endpoint(monkeypatch):
         importlib.import_module("pydantic_settings")
         importlib.import_module("loguru")
     except ModuleNotFoundError:
-        pytest.skip("nvidia-nim runtime dependencies are not available in this test environment")
+        pytest.skip(
+            "nvidia-nim runtime dependencies are not available in this test environment"
+        )
 
     from fastapi.testclient import TestClient
 
@@ -118,3 +121,35 @@ def test_client_rejects_empty_200_response(monkeypatch):
 
     assert result is None
     assert "empty or malformed response" in (client.last_error or "")
+
+
+def test_client_retry_on_connection_error(monkeypatch):
+    """Test that the client retries on connection errors and succeeds on later attempt."""
+    client = NvidiaNimClient(
+        base_url="https://example.com/v1",
+        api_key="test-key",
+        max_retries=3,
+    )
+
+    success_response = MagicMock()
+    success_response.status = 200
+    success_response.read.return_value = (
+        b'{"output": [{"content": {"text": "Hello response"}}]}'
+    )
+    success_response.__enter__ = Mock(return_value=success_response)
+    success_response.__exit__ = Mock(return_value=False)
+
+    connection_error = urllib.error.URLError("Connection reset")
+
+    with patch("utils.nvidia_nim_client.urllib.request.urlopen") as mock_urlopen, patch(
+        "time.sleep"
+    ):
+        mock_urlopen.side_effect = [
+            connection_error,
+            connection_error,
+            success_response,
+        ]
+
+        result = client.chat([{"role": "user", "content": "hello"}])
+
+    assert result == "Hello response"

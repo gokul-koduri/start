@@ -24,9 +24,9 @@
 ### Part 1A: United States & Global {#part-1a}
 
 ### The Big Picture
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'> tracked US/Global tech startups in the database**
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'> are manufacturing-specific** (<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__().__truediv__().__mul__().__round__()' id='4764578832'>%)
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'> is the most recent shutdown year with data**
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'> tracked US/Global tech startups in the database**
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'> are manufacturing-specific** (<MagicMock name='mock.cursor().fetchone().__getitem__().__truediv__().__mul__().__round__()' id='4521036640'>%)
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'> is the most recent shutdown year with data**
 
 ### Notable Failed Startups (2023–2025) With Funding
 
@@ -133,18 +133,18 @@ The single most distinctive pattern in manufacturing startup failures is the gap
 8. **Turn former chemical plants into rare earth processing facilities** — DOE grants available; strategic necessity
 
 ### Data-Driven Opportunities (from collected data)
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'> manufacturing startup failures** in database suggest clear patterns to avoid
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'> recent news articles** about manufacturing startup failures signal active market churn
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'> manufacturing startup failures** in database suggest clear patterns to avoid
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'> recent news articles** about manufacturing startup failures signal active market churn
 
 ## Pipeline Operations Research {#pipeline}
 
 This section tracks pipeline industry companies - both failed startups and active players - covering inspection, monitoring, management, and infrastructure technologies.
 
 ### Coverage Summary
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'>** pipeline companies tracked
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'>** failed / defunct
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'>** active companies
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'>** identified opportunities
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'>** pipeline companies tracked
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'>** failed / defunct
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'>** active companies
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'>** identified opportunities
 
 ### Companies by Category
 | Category | Type | Count |
@@ -169,10 +169,10 @@ This section tracks pipeline industry companies - both failed startups and activ
 ## News Monitoring: Manufacturing & Startup Failures {#news}
 
 ### Coverage Summary
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'>** articles collected from Google News and TechCrunch RSS feeds
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'>** mention manufacturing (<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__().__truediv__().__mul__().__round__()' id='4764578832'>%)
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'>** mention startup failures (<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__().__truediv__().__mul__().__round__()' id='4764578832'>%)
-- **<MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'>** are in the intersection (manufacturing + failure)
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'>** articles collected from Google News and TechCrunch RSS feeds
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'>** mention manufacturing (<MagicMock name='mock.cursor().fetchone().__getitem__().__truediv__().__mul__().__round__()' id='4521036640'>%)
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'>** mention startup failures (<MagicMock name='mock.cursor().fetchone().__getitem__().__truediv__().__mul__().__round__()' id='4521036640'>%)
+- **<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'>** are in the intersection (manufacturing + failure)
 
 ### Articles by Source
 | Source | Articles |
@@ -213,8 +213,8 @@ This report was compiled using a **two-pronged research approach**:
 
 ---
 
-*Report generated on 2026-07-20 16:15 UTC from the Startup Research automated data collection system.*
+*Report generated on 2026-07-22 05:50 UTC from the Startup Research automated data collection system.*
 
-*Database contains: <MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'> startups, <MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'> news articles, <MagicMock name='mock.PooledDB().connection().cursor().fetchone().__getitem__()' id='4702476656'> BLS data points.*
+*Database contains: <MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'> startups, <MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'> news articles, <MagicMock name='mock.cursor().fetchone().__getitem__()' id='4512723984'> BLS data points.*
 
 *This report uses a two-pronged research approach: **Prong A** (Failed Manufacturing Startups 2024-2025) and **Prong B** (Manufacturing Revival & Reshoring). See [Methodology](#methodology) section for full details.*

@@ -2,7 +2,7 @@
 
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, PropertyMock
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -43,3 +43,7 @@ def mock_pymysql(monkeypatch):
 
     monkeypatch.setitem(sys.modules, "pymysql", mock_pymysql)
     monkeypatch.setitem(sys.modules, "pymysql.cursors", mock_pymysql.cursors)
+    # Required for db/connection.py: from pymysql.connections import Connection
+    mock_pymysql.connections = MagicMock()
+    mock_pymysql.connections.Connection = MagicMock
+    monkeypatch.setitem(sys.modules, "pymysql.connections", mock_pymysql.connections)

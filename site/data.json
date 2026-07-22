@@ -1,15 +1,15 @@
 {
-  "last_updated": "2026-07-22T05:46:36.816732+00:00",
-  "total_startups": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4809545328'>",
-  "manufacturing_startups": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4809545328'>",
-  "total_articles": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4809545328'>",
-  "manufacturing_articles": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4809545328'>",
+  "last_updated": "2026-07-22T17:55:06.821786+00:00",
+  "total_startups": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4675038832'>",
+  "manufacturing_startups": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4675038832'>",
+  "total_articles": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4675038832'>",
+  "manufacturing_articles": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4675038832'>",
   "recent_failures": [],
   "pipeline": {
-    "total_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4809545328'>",
-    "failed_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4809545328'>",
-    "active_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4809545328'>",
-    "opportunities": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4809545328'>",
+    "total_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4675038832'>",
+    "failed_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4675038832'>",
+    "active_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4675038832'>",
+    "opportunities": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4675038832'>",
     "recent": []
   },
   "gmv_monitoring": {
@@ -31,33 +31,12 @@
   "llm_infrastructure": {
     "status": "online",
     "endpoint": "http://localhost:11434",
-    "models": [
-      {
-        "name": "llama3.2:latest",
-        "size_bytes": 2019393189
-      },
-      {
-        "name": "llama3.2:1b",
-        "size_bytes": 1321098329
-      },
-      {
-        "name": "llama3:latest",
-        "size_bytes": 4661224676
-      }
-    ],
+    "models": [],
     "loaded_models": [],
     "total_vram_mb": 0,
-    "test_latency_s": 0.13,
-    "test_tokens": 3,
-    "model_details": {
-      "name": "llama3.2:latest",
-      "family": "llama",
-      "format": "gguf",
-      "quantization_level": "Q4_K_M",
-      "parameter_count": 3212749888,
-      "quantization_version": 2,
-      "license": "LLAMA 3.2 COMMUNITY LICENSE AGREEMENT\nLlama 3.2 Version Release Date: September 25, 2024\n\n\u201cAgreement\u201d means the terms an"
-    }
+    "test_latency_s": 0,
+    "test_tokens": 0,
+    "model_details": {}
   },
   "llm_pricing": {
     "providers": [],
@@ -68,11 +47,11 @@
     "cheapest_output": {}
   },
   "ollama_usage": {
-    "total_prompt_tokens": 26518,
-    "total_completion_tokens": 4003,
-    "total_tokens": 30521,
-    "inference_count": 1180,
-    "cost_equivalence": "<MagicMock name='mock.cursor().fetchall().__getitem__().get()' id='4806141488'>",
+    "total_prompt_tokens": 26569,
+    "total_completion_tokens": 4015,
+    "total_tokens": 30584,
+    "inference_count": 1183,
+    "cost_equivalence": "<MagicMock name='mock.cursor().fetchall().__getitem__().get()' id='4693646400'>",
     "snapshots": [],
     "status": "tracking"
   },
@@ -80,7 +59,7 @@
     "categories": {},
     "total_recommendations": 0,
     "estimated_savings_pct": 0,
-    "last_recommended": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4803032176'>"
+    "last_recommended": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4691152816'>"
   },
   "llm_benchmarks": {
     "models": [],
@@ -95,8 +74,8 @@
     "active_alerts": 0
   },
   "knowledge_graph": {
-    "total_entities": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4803623392'>",
-    "total_relationships": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4803623392'>",
+    "total_entities": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4690429856'>",
+    "total_relationships": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4690429856'>",
     "entity_types": [],
     "top_entities": [],
     "relationship_types": [],

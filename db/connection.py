@@ -1,48 +1,81 @@
-"""MySQL connection management with PyMySQL, DictCursor, and DBUtils connection pooling."""
+"""Database connection management - supports MySQL and PostgreSQL (Neon).
 
-import os
+Uses MySQL for local dev, PostgreSQL for production/Neon.
+Set DATABASE_URL for PostgreSQL, or use MYSQL_* env vars for MySQL.
+
+Usage:
+    from db.connection import get_connection, pooled_connection
+
+    with pooled_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM startups")
+"""
+
 import logging
-from contextlib import contextmanager
+import os
+import re
 from typing import Generator, Optional
 from unittest.mock import MagicMock
 
-import pymysql
-
-# Gracefully handle test mocks - pymysql may be a MagicMock in test environment
+# Third-party imports
 try:
+    import pymysql
     from pymysql.cursors import DictCursor
     from pymysql.connections import Connection
-except (ImportError, AttributeError):
+except ImportError:
+    pymysql = None
     DictCursor = type("DictCursor", ())
     Connection = type("Connection", ())
 
-_pymysql_mock = MagicMock()
-if "pymysql" in __import__("sys").modules and isinstance(
-    __import__("sys").modules.get("pymysql"), MagicMock
-):
-    _pymysql_mock = __import__("sys").modules.get("pymysql")
+try:
+    import psycopg2
+    from psycopg2 import pool as pg_pool_module
+    from psycopg2.extras import RealDictCursor
+except ImportError:
+    psycopg2 = None
+    pg_pool_module = None
 
 try:
     from dbutils.pooled_db import PooledDB as _RealPooledDB
-
-    # Check if PooledDB is real or a mock (detect test environment)
-    _POOLED_AVAILABLE = not isinstance(_RealPooledDB, MagicMock)
 except ImportError:
-    _POOLED_AVAILABLE = False
     _RealPooledDB = None
 
 _logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
+# Detect database type
+# ---------------------------------------------------------------------------
+_DATABASE_URL = os.environ.get("DATABASE_URL", "")
+_use_postgres = bool(_DATABASE_URL)
+
+# Pool availability flags
+_PG_POOL_AVAILABLE = psycopg2 is not None
+_POOLED_AVAILABLE = _RealPooledDB is not None and not isinstance(_RealPooledDB, MagicMock)
+
+# ---------------------------------------------------------------------------
 # Global state
 # ---------------------------------------------------------------------------
+_pg_pool = None
+_mysql_pool: Optional = None
 _connection_params: Optional[dict] = None
-_pool: Optional = None
 
 
 # ---------------------------------------------------------------------------
-# Parameter loading
+# Helpers
 # ---------------------------------------------------------------------------
+
+
+def _is_mock() -> bool:
+    """Detect if we're in test mode (mocked pymysql/pg)."""
+    import sys
+
+    if pymysql and "pymysql" in sys.modules and isinstance(sys.modules.get("pymysql"), MagicMock):
+        return True
+    if pg_pool_module and isinstance(pg_pool_module, MagicMock):
+        return True
+    return False
+
+
 def _get_mysql_params() -> dict:
     """Load MySQL connection parameters from environment variables."""
     global _connection_params
@@ -71,54 +104,89 @@ def _get_mysql_params() -> dict:
     return _connection_params
 
 
-# ---------------------------------------------------------------------------
-# Pool helper for detecting test/mock environments
-# ---------------------------------------------------------------------------
-def _is_mock_pooled_db() -> bool:
-    """Detect if PooledDB/pymysql is a mock object (test environment)."""
-    # Check if PooledDB itself is mocked
-    if _POOLED_AVAILABLE and isinstance(_RealPooledDB, MagicMock):
-        return True
-    # Check if pymysql is mocked (common in test fixtures)
-    if isinstance(pymysql, MagicMock):
-        return True
-    # Check if pymysql module is mocked by checking for MagicMock in its class
-    import sys
-    if "pymysql" in sys.modules:
-        pym = sys.modules["pymysql"]
-        if isinstance(pym, MagicMock):
-            return True
-    return False
+def _get_pg_params() -> dict:
+    """Parse DATABASE_URL for PostgreSQL connection params."""
+    url = os.environ.get("DATABASE_URL", "")
+    if not url:
+        raise ValueError("DATABASE_URL not set for PostgreSQL connection")
+
+    # Parse connection string - handle query params correctly
+    match = re.match(
+        r"postgresql(?:ql)?://(?:(?P<user>[^:@]+):(?P<password>[^@]+)@)?(?P<host>[^:/]+)(?::(?P<port>\d+))?/(?P<database>[^?]+)(?:\?(?P<query>.+))?",
+        url,
+    )
+    if not match:
+        raise ValueError(f"Invalid DATABASE_URL format: {url}")
+
+    params = match.groupdict()
+    db = params.get("database", "postgres")
+    query = params.get("query", "")
+
+    # Parse SSL mode from query params if present
+    sslmode = "require"
+    if query:
+        for param in query.split("&"):
+            if param.startswith("sslmode="):
+                sslmode = param.split("=", 1)[1]
+
+    return {
+        "host": params.get("host", ""),
+        "port": int(params["port"]) if params.get("port") else 5432,
+        "database": db,
+        "user": params.get("user") or "postgres",
+        "password": params.get("password") or "",
+        "sslmode": sslmode,
+    }
 
 
 # ---------------------------------------------------------------------------
-# Connection pool (singleton)
+# PostgreSQL pool
 # ---------------------------------------------------------------------------
-def _get_pool():
-    """Get or create the DBUtils pooled connection pool (lazy singleton).
 
-    Pool settings:
-        mincached: 2 connections opened on startup
-        maxcached: 10 connections max cached in the pool
-        maxconnections: 30 connections max total (pool + overflow)
-        blocking: True — threads wait for a connection when pool is exhausted
-    """
-    global _pool
-    if _pool is not None:
-        return _pool
 
-    if _is_mock_pooled_db():
-        _logger.debug("PooledDB is mocked — skipping pool creation (test mode)")
-        _pool = MagicMock()
-        return _pool
+def _get_pg_pool():
+    """Get or create PostgreSQL connection pool (Neon/serverless)."""
+    global _pg_pool
+    if _pg_pool is not None:
+        return _pg_pool
+
+    if _is_mock():
+        _logger.debug("PostgreSQL pool mocked (test mode)")
+        return MagicMock()
+
+    if not _PG_POOL_AVAILABLE:
+        raise ImportError(
+            "PostgreSQL support requires psycopg2. Install: pip install psycopg2-binary"
+        )
+
+    params = _get_pg_params()
+    _pg_pool = pg_pool_module.ThreadedConnectionPool(minconn=1, maxconn=10, **params)
+    _logger.info("Created PostgreSQL connection pool (Neon/serverless)")
+    return _pg_pool
+
+
+# ---------------------------------------------------------------------------
+# MySQL pool
+# ---------------------------------------------------------------------------
+
+
+def _get_mysql_pool():
+    """Get or create MySQL connection pool."""
+    global _mysql_pool
+    if _mysql_pool is not None:
+        return _mysql_pool
+
+    if _is_mock():
+        _logger.debug("MySQL pool mocked (test mode)")
+        return MagicMock()
 
     if not _POOLED_AVAILABLE:
         raise ImportError(
-            "DBUtils PooledDB is not available. Install: pip install DBUtils"
+            "DBUtils PooledDB not available. Install: pip install DBUtils"
         )
 
     params = _get_mysql_params()
-    _pool = _RealPooledDB(
+    _mysql_pool = _RealPooledDB(
         creator=pymysql,
         mincached=2,
         maxcached=10,
@@ -127,139 +195,93 @@ def _get_pool():
         cursorclass=DictCursor,
         **params,
     )
-    _logger.info(
-        "Created DBUtils pooled connection (mincached=2, maxcached=10, "
-        "maxconnections=30)"
-    )
-    return _pool
+    _logger.info("Created MySQL connection pool")
+    return _mysql_pool
 
 
 # ---------------------------------------------------------------------------
-# Connection sources
+# Public API
 # ---------------------------------------------------------------------------
 
 
-def get_connection(**overrides) -> Connection:
-    """Get a MySQL connection from the pool with DictCursor.
+def get_connection(**overrides):
+    """Get a database connection from the pool.
 
-    PREFERRED method. Uses a persistent connection pool so connections are
-    reused rather than created fresh on every call. Significantly faster under
-    load.
-
-    Usage:
-        conn = get_connection()
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM table")
-            ...
-        finally:
-            conn.close()   # Returns to pool, does NOT terminate the connection
-
-    Returns: pymysql.Connection
+    Auto-detects PostgreSQL (DATABASE_URL) vs MySQL (MYSQL_* vars).
     """
-    pool = _get_pool()
+    if _use_postgres:
+        pool = _get_pg_pool()
+        if isinstance(pool, MagicMock):
+            return MagicMock()
+        return pool.getconn()  # ThreadedConnectionPool uses getconn()
+
+    pool = _get_mysql_pool()
     if isinstance(pool, MagicMock):
         return MagicMock()
-    conn = pool.connection()
-    return conn
+    return pool.connection()
 
 
-def get_pure_connection(**overrides) -> Connection:
-    """Alias for get_connection(). Preferred for production usage."""
-    return get_connection(**overrides)
-
-
-@contextmanager
-def pooled_connection(**overrides) -> Generator[Connection, None, None]:
-    """Context manager for pooled connections — guarantees return-to-pool.
+def pooled_connection(**overrides) -> Generator:
+    """Context manager for pooled connections.
 
     Usage:
         with pooled_connection() as conn:
-            with conn.cursor(DictCursor) as cur:
-                cur.execute("SELECT * FROM failed_startups LIMIT 5")
-                results = cur.fetchall()
-        # conn automatically returned to pool on exit
-
-    Yields: pymysql.Connection
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
     """
+    is_pg = _use_postgres
     conn = get_connection(**overrides)
     try:
         yield conn
     finally:
         if not isinstance(conn, MagicMock):
-            conn.close()
+            try:
+                if is_pg:
+                    _pg_pool.putconn(conn)  # Return to pool
+                else:
+                    conn.close()
+            except Exception:
+                pass
 
 
-def get_raw_connection(**overrides) -> Connection:
-    """Get a raw (non-pooled) MySQL connection.
+def get_raw_connection(**overrides):
+    """Get a raw (non-pooled) connection."""
+    if _use_postgres:
+        params = _get_pg_params()
+        return psycopg2.connect(**params, cursor_factory=RealDictCursor)
 
-    Use this ONLY for one-off scripts, CLI tools, or tests. In production
-    service code always use get_connection() or pooled_connection().
-
-    Creates a fresh connection every call — no pooling.
-
-    Returns: pymysql.Connection
-    """
     params = {**_get_mysql_params(), **overrides}
     params["cursorclass"] = DictCursor
     return pymysql.connect(**params)
 
 
-# ---------------------------------------------------------------------------
-# Pool management
-# ---------------------------------------------------------------------------
-
-
-def configure_pool(
-    mincached: int = 2,
-    maxcached: int = 10,
-    maxconnections: int = 30,
-) -> None:
-    """Reconfigure the connection pool (disposes existing pool first)."""
-    global _pool
-
-    if _pool is not None and not _is_mock_pooled_db():
-        _pool.close()
-        _pool = None
-        _logger.debug("Closed existing connection pool")
-
-    if _is_mock_pooled_db():
-        return
-
-    params = _get_mysql_params()
-    _pool = _RealPooledDB(
-        creator=pymysql,
-        mincached=mincached,
-        maxcached=maxcached,
-        maxconnections=maxconnections,
-        blocking=True,
-        cursorclass=DictCursor,
-        **params,
-    )
-    _logger.info(
-        "Pool reconfigured (mincached=%d, maxcached=%d, maxconnections=%d)",
-        mincached,
-        maxcached,
-        maxconnections,
-    )
-
-
 def dispose_pool() -> None:
-    """Shut down the pool and close all pooled connections."""
-    global _pool
-    if _pool is not None and not _is_mock_pooled_db():
-        _pool.close()
-        _pool = None
-        _logger.info("Connection pool disposed")
+    """Shut down connection pool(s)."""
+    global _mysql_pool, _pg_pool
+
+    if _mysql_pool is not None and not _is_mock():
+        try:
+            _mysql_pool.close()
+        except Exception:
+            pass
+        _mysql_pool = None
+
+    if _pg_pool is not None and not _is_mock():
+        try:
+            _pg_pool.closeall()
+        except Exception:
+            pass
+        _pg_pool = None
+
+    _logger.info("Connection pool(s) disposed")
 
 
 def pool_status() -> dict:
-    """Return current pool statistics (useful for monitoring)."""
-    is_mock = _is_mock_pooled_db()
+    """Return current pool statistics."""
     return {
-        "pool_initialized": _pool is not None and not is_mock,
-        "test_mode": is_mock,
-        "mincached": 2,
-        "maxcached": 10,
-        "maxconnections": 30,
+        "database_type": "postgresql" if _use_postgres else "mysql",
+        "pool_initialized": (
+            _pg_pool is not None if _use_postgres else _mysql_pool is not None
+        ),
+        "test_mode": _is_mock(),
     }

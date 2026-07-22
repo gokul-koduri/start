@@ -1,15 +1,15 @@
 {
-  "last_updated": "2026-07-22T18:16:53.615668+00:00",
-  "total_startups": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4711500784'>",
-  "manufacturing_startups": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4711500784'>",
-  "total_articles": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4711500784'>",
-  "manufacturing_articles": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4711500784'>",
+  "last_updated": "2026-07-22T22:14:18.804486+00:00",
+  "total_startups": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4674279072'>",
+  "manufacturing_startups": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4674279072'>",
+  "total_articles": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4674279072'>",
+  "manufacturing_articles": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4674279072'>",
   "recent_failures": [],
   "pipeline": {
-    "total_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4711500784'>",
-    "failed_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4711500784'>",
-    "active_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4711500784'>",
-    "opportunities": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4711500784'>",
+    "total_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4674279072'>",
+    "failed_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4674279072'>",
+    "active_companies": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4674279072'>",
+    "opportunities": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4674279072'>",
     "recent": []
   },
   "gmv_monitoring": {
@@ -47,19 +47,19 @@
     "cheapest_output": {}
   },
   "ollama_usage": {
-    "total_prompt_tokens": 26569,
-    "total_completion_tokens": 4015,
-    "total_tokens": 30584,
-    "inference_count": 1183,
-    "cost_equivalence": "<MagicMock name='mock.cursor().fetchall().__getitem__().get()' id='4728585152'>",
+    "total_prompt_tokens": 0,
+    "total_completion_tokens": 0,
+    "total_tokens": 0,
+    "inference_count": 0,
+    "cost_equivalence": "<MagicMock name='mock.cursor().fetchall().__getitem__().get()' id='4678095008'>",
     "snapshots": [],
-    "status": "tracking"
+    "status": "no_data"
   },
   "llm_portfolio": {
     "categories": {},
     "total_recommendations": 0,
     "estimated_savings_pct": 0,
-    "last_recommended": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4736956176'>"
+    "last_recommended": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4691219936'>"
   },
   "llm_benchmarks": {
     "models": [],
@@ -74,8 +74,8 @@
     "active_alerts": 0
   },
   "knowledge_graph": {
-    "total_entities": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4705605328'>",
-    "total_relationships": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4705605328'>",
+    "total_entities": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4674297760'>",
+    "total_relationships": "<MagicMock name='mock.cursor().fetchone().__getitem__()' id='4674297760'>",
     "entity_types": [],
     "top_entities": [],
     "relationship_types": [],

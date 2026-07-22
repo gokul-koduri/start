@@ -1,0 +1,13 @@
+[build]
+  publish = "site"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production]
+  command = "echo 'No build needed - serving static files'"

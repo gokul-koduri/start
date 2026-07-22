@@ -150,6 +150,9 @@ class LLMProviderFactory:
             elif provider_name == "nvidia_nim":
                 from utils.nim_provider import NvidiaNimProvider
                 cls.register("nvidia_nim", NvidiaNimProvider)
+            elif provider_name == "groq":
+                from utils.groq_provider import GroqProvider
+                cls.register("groq", GroqProvider)
 
         if provider_name not in cls._providers:
             raise ValueError(

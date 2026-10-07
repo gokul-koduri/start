@@ -61,7 +61,7 @@ jobs:
 
       - name: Test Summary
         if: always()
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v3
         with:
           name: Test Results
           path: test-results.xml

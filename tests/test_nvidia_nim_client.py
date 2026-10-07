@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import sys
 import urllib.error
@@ -70,7 +71,7 @@ def test_client_auth_headers_work_for_server_endpoint(monkeypatch):
 
     app = create_app()
     settings = Settings()
-    api_key = "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"
+    api_key = os.getenv("NVIDIA_NIM_API_KEY", "test-key")
     settings.anthropic_auth_token = api_key
     app.dependency_overrides[get_settings] = lambda: settings
 

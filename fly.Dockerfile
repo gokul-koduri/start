@@ -1,5 +1,5 @@
 # fly.Dockerfile — All-in-one MySQL + FastAPI for Fly.io
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 LABEL maintainer="Gokul Koduri"
 LABEL description="Opportunity Intelligence Platform — Live Demo"
